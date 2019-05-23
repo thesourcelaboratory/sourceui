@@ -2232,7 +2232,6 @@ sourceui.customField = function (element, setup) {
 			setval: function (val) {
 				var nouislider = Element.data('nouislider');
 				return nouislider.set(val);
-				return true;
 			},
 			getval: function () {
 				var nouislider = Element.data('nouislider');

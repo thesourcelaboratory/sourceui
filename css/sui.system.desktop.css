@@ -537,7 +537,7 @@
 .sui-image-editor > .window { width:40%; height:76%; position:absolute; left:30%; top:12%; box-shadow: 0 0 32px rgba(0,0,0,0.55); }
 .sui-image-editor > .window > .edition > div > .buttons > li > a.button { line-height:36px; }
 
-.sui-view .sui-content .sui-layout.table { display:table; min-height:calc(100% - 56px); width:100% }
+.sui-view .sui-content .sui-layout.table { display:table; height:calc(100% - 56px); width:100% }
 .sui-view .sui-content .sui-layout.cell { display:table-cell; vertical-align:top; }
 .sui-view .sui-content .sui-layout.row { display:table-row; }
 
