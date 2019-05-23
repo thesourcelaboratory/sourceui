@@ -1,0 +1,213 @@
+
+
+.sui-calendar { width:100%; font-size:13.3333px; }
+
+.sui-calendar > .modes { background:#FFF; overflow:hidden; }
+.sui-calendar > .modes > div {  display:none; }
+
+/* CALENDAR -------------------------------------------- */
+.sui-calendar > .modes > .date > .swiper { transform:translateX(0px); }
+.sui-calendar > ul.modetabs { margin:0; padding:0; display:table; list-style:none; width:100%; /*border-bottom: rgba(0,0,0,0.045) solid 1px;*/ }
+.sui-calendar > ul.modetabs > li { display:none; color:#555; text-align:center; font-weight:bold; vertical-align:middle; height:44px; padding:0; border:none; }
+.sui-calendar > ul.modetabs > li a.none { color:#b6b6b6; }
+.sui-calendar > .modes > .date > ul.navigate { margin:0; padding:0; display:table; list-style:none; width:100%; border-bottom: rgba(0,0,0,0.045) solid 1px; }
+.sui-calendar > .modes > .date > ul.navigate > li { display:table-cell; color:#555; text-align:center; vertical-align:middle; height:44px; }
+.sui-calendar > .modes > .date > ul.navigate > li a { display:inline-block; width:100%; height:100%; }
+.sui-calendar > .modes > .date > ul.navigate > li:not(.disable) a:active { background:rgba(0,0,0,0.1.8); }
+.sui-calendar > .modes > .date > ul.navigate > li a:before { content:''; display:inline-block; height: 100%; vertical-align: middle; }
+.sui-calendar > .modes > .date > ul.navigate > li a u { display:inline-block; vertical-align: middle; text-decoration:none; }
+.sui-calendar > .modes > .date > ul.navigate > li.arrow { width:44px; padding:0; border:none; }
+.sui-calendar > .modes > .date > ul.navigate > li.arrow a u { display:inline-block; width:8px; height:8px; border-left:#555 solid 3px; border-bottom:#555 solid 3px; transform:rotate(45deg);  }
+.sui-calendar > .modes > .date > ul.navigate > li.arrow.next a u { transform:rotate(225deg); }
+.sui-calendar > .modes > .date > ul.navigate > li.arrow.disable { opacity:0.15; }
+.sui-calendar > .modes > .date > ul.navigate > li.title a { display:none; font-size:12.6666px; font-weight:bold; letter-spacing: -0.5px; }
+.sui-calendar > .modes > .date.days > ul.navigate > li.title a.month { display:inline-block; }
+.sui-calendar > .modes > .date.days > ol.weekname { margin:0; padding:0; display:table; list-style:none; width:100%; table-layout:fixed; }
+.sui-calendar > .modes > .date.days > ol.weekname > li { display:table-cell; color:#AAA; text-align:center; vertical-align:middle; height:24px; }
+.sui-calendar > .modes > .date.days > ol.weekname > li.weekend { color:#BBB; }
+.sui-calendar > .modes > .date.days > ol.weekname > li.sunday { color:#eb8e6e; }
+.sui-calendar > .modes > .date.days > ol.weekname > li > b { display:none; }
+.sui-calendar > .modes > .date.days > ol.weekname > li > b.abbr { display:inline-block; }
+.sui-calendar > .modes > .date.days > .days { background:#FFF; }
+.sui-calendar > .modes > .date.days > .days > ol.week { margin:0; padding:0; display:table; list-style:none; width:100%; table-layout:fixed; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li { position:relative; display:table-cell; color:#999; text-align:center; vertical-align:middle; height:33px; transition:all 150ms; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li > .day { position:relative; display:inline-block; width:100%; height:100%; transition: all 200ms; z-index:2; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li > .day:before { content:''; display:inline-block; height: 100%; vertical-align: middle; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li > .day u { display:inline-block; vertical-align: middle; height:36px; line-height:36px; text-decoration:none; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li > a.day { color:#777; cursor:pointer; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li > span.day { color:#AAA; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.today > .day { background:rgba(0,0,0,0.085); }
+
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled { overflow:hidden; font-weight:bold; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .day { color:#222; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules { background:transparent; position:absolute; height:auto; width:100%; left:0; top:50%; margin:0; margin-top:6px; display:flex; flex-wrap:wrap; justify-content:center; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule { display:inline-block; width:8px; height:3px; margin:0.5px; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule > * { display:none; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled.disable > .schedules > .schedule { background:#CCC !important; }
+
+/*
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .day { font-weight: bold; color:#333; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules { background:#555; position:absolute; left:50%; top:50%; width:8px; height:2px; margin:9px 0 0 -4px; z-index:1; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule { display:none; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled.sunday > .schedules,
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled.holiday > .schedules { background:#eb3d1d; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules { background:#FFF; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled.disable > .schedules { background:#CCC; }
+*/
+.sui-calendar > .modes > .date.days > .days > ol.week > li.sunday > .day { color:#eb3d1d; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.holiday { background-image:url(../img/diagonal-999.svg?2133) !important; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.holiday > .day { color:#cccccc; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.out-month > .day { opacity:0.355; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.disable { background:transparent; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.disable > .day { opacity:0.645; color:#CCC !important;  }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.range { background:rgba(32,28,28,0.75); }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.range .day { color:#FFF; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.range.today .day {  background:rgba(255,255,255,0.125); }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.range.disable { background:rgba(32,28,28,0.06); }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.selected { background:rgba(32,28,28,0.75); }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.selected .day { color:#FFF; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.today.selected .day { background:rgba(255,255,255,0.125); }
+.sui-calendar > .modes > .date.days > .days.outmounth-hidden > ol.week > li.out-month > * { display:none; }
+.sui-calendar > .modes > .date.months > ul.navigate > li.title a.year { display:inline-block; font-size:14px; }
+.sui-calendar > .modes > .date.months > ol.weekname { display:none; }
+.sui-calendar > .modes > .date.months > .months { background:#FFF; }
+.sui-calendar > .modes > .date.months > .months > ol { margin:0; padding:0; display:table; list-style:none; width:100%; table-layout:fixed; }
+.sui-calendar > .modes > .date.months > .months > ol > li { position:relative; display:table-cell; color:#999; text-align:center; vertical-align:middle; height:60px; transition:all 150ms; }
+.sui-calendar > .modes > .date.months > .months > ol > li > a { color:#555; font-weight:500; cursor:pointer; position:relative; display:inline-block; width:100%; height:100%; transition: all 200ms; z-index:2; }
+.sui-calendar > .modes > .date.months > .months > ol > li > a:before { content:''; display:inline-block; height: 100%; vertical-align: middle; }
+.sui-calendar > .modes > .date.months > .months > ol > li > a u { display:inline-block; vertical-align: middle; width:32px; height:32px; line-height:32px; text-decoration:none; }
+.sui-calendar > .modes > .date.months > .months > ol > li.disable > a { opacity:0.645; color:#BBB !important; }
+.sui-calendar > .modes > .date.months > .months > ol > li.today > a { font-weight:bold; background:rgba(0,0,0,0.085); }
+.sui-calendar > .modes > .date.months > .months > ol > li > a:active { color:#FFF; background:rgba(32,28,28,0.65); }
+.sui-calendar > .modes > .date.years > ul.navigate > li.title a.root { display:inline-block; }
+.sui-calendar > .modes > .date.years > ol.weekname { display:none; }
+.sui-calendar > .modes > .date.years > .years { background:#FFF; }
+.sui-calendar > .modes > .date.years > .years > ol { margin:0; padding:0; display:table; list-style:none; width:100%; table-layout:fixed; }
+.sui-calendar > .modes > .date.years > .years > ol > li { position:relative; display:table-cell; color:#999; text-align:center; vertical-align:middle; height:60px; transition:all 150ms; }
+.sui-calendar > .modes > .date.years > .years > ol > li > a { color:#666; font-size:12px; font-weight:500; cursor:pointer; position:relative; display:inline-block; width:100%; height:100%; transition: all 200ms; z-index:2; }
+.sui-calendar > .modes > .date.years > .years > ol > li > a:before { content:''; display:inline-block; height: 100%; vertical-align: middle; }
+.sui-calendar > .modes > .date.years > .years > ol > li > a u { display:inline-block; vertical-align: middle; width:32px; height:32px; line-height:32px; text-decoration:none; }
+.sui-calendar > .modes > .date.years > .years > ol > li.disable > a { opacity:0.645; color:#BBB !important; }
+.sui-calendar > .modes > .date.years > .years > ol > li.today > a { font-weight:bold; background:rgba(0,0,0,0.085); }
+.sui-calendar > .modes > .date.years > .years > ol > li > a:active { color:#FFF; background:rgba(32,28,28,0.65); }
+/* --------------------------------------------------- */
+
+/* CLOCK --------------------------------------------- */
+.sui-calendar > ul.modetabs > li.time > a { display:table; height:44px; margin: 0 auto; letter-spacing:-0.5px; }
+.sui-calendar > ul.modetabs > li.time > a > b { display:table-cell; min-width:44px; color:#777; font-weight:bold; text-align:center; position:relative; vertical-align: middle; }
+.sui-calendar > ul.modetabs > li.time > a > b.active { background:#FFF; color:#444; }
+.sui-calendar > ul.modetabs > li.time > a > b:not(.seconds):before { content:''; position:absolute; right:-2px; top:16px; width:4px; height:4px; background:rgba(32,28,28,0.3); z-index:10; border-radius:50%; }
+.sui-calendar > ul.modetabs > li.time > a > b:not(.seconds):after { content:''; position:absolute; right:-2px; top:24px; width:4px; height:4px; background:rgba(32,28,28,0.3); z-index:10; border-radius:50%; }
+.sui-calendar.short > ul.modetabs > li.time > a > b { min-width:64px; }
+.sui-calendar.short > ul.modetabs > li.time > a > b.minutes:before { display:none; }
+.sui-calendar.short > ul.modetabs > li.time > a > b.minutes:after { display:none; }
+.sui-calendar.short > ul.modetabs > li.time > a > b.seconds { display:none; }
+.sui-calendar > .modes > .time { height:285px; position:relative; /* background:#f6f6f6; */  background:#FFF; }
+.sui-calendar > .modes > .time > .clock { /* background:#FFF; box-shadow:inset 0 0 0 2px #eaeaea; */ width:260px; height:260px; position:absolute; left:50%; top:50%; margin:-130px 0 0 -130px; border-radius:50%; overflow:hidden; }
+.sui-calendar > .modes > .time > .clock > * { width:260px; height:260px; display:none; position:relative; }
+.sui-calendar > .modes > .time > .clock > *:before { width:100px; text-align:center; position:absolute; left:50%; top:38%; margin-left:-50px; color:#333; font-size:10px; font-weight:bold; opacity:0.225; }
+.sui-calendar > .modes > .time > .clock > .hours:before { content:'HORAS'; }
+.sui-calendar > .modes > .time > .clock > .minutes:before { content:'MINUTOS'; }
+.sui-calendar > .modes > .time > .clock > .seconds:before { content:'SEGUNDOS'; }
+.sui-calendar > .modes > .time > .clock > .canvas { display:block; position:absolute; }
+.sui-calendar > .modes > .time > .clock > .canvas svg { width:260px; height:260px; }
+.sui-calendar > .modes > .time > .clock > .canvas line { stroke: #504e4e; stroke-width:4; stroke-linecap: round; }
+.sui-calendar > .modes > .time > .clock > .canvas .bearing { stroke: #504e4e; stroke-width:4; fill:#FFF;}
+.sui-calendar > .modes > .time > .clock .tick { position:absolute; font-size:15px; color:#555; letter-spacing:-0.5px; border-radius:50%; line-height:36px; text-align:center; width:36px; height:36px; cursor:pointer; }
+.sui-calendar > .modes > .time > .clock .tick.selected { color:#FFF; font-weight:bold; background:#555; }
+.sui-calendar > .modes > .time > .clock .tick.opaque { opacity:0.4; }
+.sui-calendar > .modes > .time.hours > .clock > .hours { display:block; }
+.sui-calendar > .modes > .time.minutes > .clock > .minutes { display:block; }
+.sui-calendar > .modes > .time.seconds > .clock > .seconds { display:block; }
+/* --------------------------------------------------- */
+
+
+@media screen and (max-width: 780px) {
+/* Calendar Modes ------------------------------------ */
+.sui-calendar.date > ul.modetabs > li.date { display:table-cell; font-size:11px; background:rgba(255,255,255,0.95);  }
+.sui-calendar.date > .modes > .date { display:block; }
+.sui-calendar.time > ul.modetabs > li.time { display:table-cell; font-size:17px; background:rgba(255,255,255,0.7); }
+.sui-calendar.time > .modes > .time { display:block; }
+.sui-calendar.datetime > ul.modetabs > li.date { display:table-cell; font-size:11px; }
+.sui-calendar.datetime > ul.modetabs > li.time { display:table-cell; font-size:13px; width:10px; }
+.sui-calendar.datetime.date > ul.modetabs > li.time { background:rgba(176,174,174,0.65); color:rgba(255,255,255,0.7); }
+.sui-calendar.datetime.date > ul.modetabs > li.time  > a > b { background:transparent; color:inherit; }
+.sui-calendar.datetime.date > ul.modetabs > li.time  > a > b:before { background:rgba(255,255,255,0.7); }
+.sui-calendar.datetime.date > ul.modetabs > li.time  > a > b:after { background:rgba(255,255,255,0.7); }
+.sui-calendar.datetime.time > ul.modetabs > li.date { background:rgba(176,174,174,0.65); color:rgba(255,255,255,0.7); }
+/* --------------------------------------------------- */
+}
+
+@media screen and (min-width: 781px) {
+	.sui-calendar > ul.modetabs > .date { display:none !important; }
+	.sui-calendar > ul.modetabs > .time { display:none !important; }
+	.sui-calendar > .modes { display:table; width:100%; }
+	.sui-calendar > .modes > div { display:table-cell !important; }
+	.sui-calendar > .modes > .date > ul.navigate > li { height:36px;  }
+	.sui-calendar > .modes > .date > ul.navigate > li.arrow { width:36px; }
+	.sui-calendar > .modes > .date.days > .days > ol.week > li > .day:before { vertical-align: top; }
+	.sui-calendar > .modes > .date.days > .days > ol.week > li > .day u { height:32px; line-height:32px; }
+	.sui-calendar > .modes > div:empty { display:none !important; }
+
+	.sui-calendar > .modes > .time > .clock .tick { font-size:12px; }
+	.sui-calendar > .modes > .time { height:260px;  }
+
+	.sui-calendar.datetime > ul.modetabs > .time { display:block !important; background:none !important; position:absolute; right:74px; top:136px; width:128px !important; z-index:1; }
+	.sui-calendar.datetime > ul.modetabs > .time > a { height:44px !important; background:none !important; }
+	.sui-calendar.datetime > ul.modetabs > .time > a > b { min-width:44px !important; background:rgba(255,255,255,0.85) !important; font-size:18px; color:#CCC; border-radius:50%; }
+	.sui-calendar.datetime > ul.modetabs > .time > a > b.active { background:rgba(210,210,210,0.75) !important; color:#444; }
+	.sui-calendar.datetime  > .modes > div { width:50%;  }
+	.sui-calendar.datetime  > .modes > .date { border-right: rgba(0,0,0,0.065) solid 1px; }
+
+	.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules { top:28px; margin:0; }
+	.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule { width:24px; height:4px; margin:0.5px; }
+
+}
+
+
+.sui-calendar.disable a { opacity:0.645; color:#BBB !important; }
+.sui-calendar.disable li { color:#BBB !important; }
+.sui-calendar.disable u { color:#BBB !important; }
+.sui-calendar.disable .schedules { opacity:0.645; background:#BBB !important; }
+.sui-calendar.disable .schedule { background:#BBB !important; }
+.sui-calendar > .modes > .disable .tick { color:#BBB !important; }
+.sui-calendar > .modes > .disable .canvas line { display:none; }
+
+
+.sui-calendar .from-prev { animation: fromprev 250ms ease-out; }
+.sui-calendar .from-center { animation: fromcenter 250ms ease-out; }
+.sui-calendar .from-next { animation: fromnext 250ms ease-out; }
+.sui-calendar .range-start { animation: rangestart 600ms infinite; }
+
+@keyframes fromprev {
+	0% { opacity:0; transform: translateX(-100px); }
+	100% { opacity:1; transform: translateX(0); }
+}
+@keyframes fromcenter {
+	0% { opacity:0; transform: scale(1.25); }
+	100% { opacity:1; transform: scale(1); }
+}
+@keyframes fromnext {
+	0% { opacity:0; transform: translateX(100px); }
+	100% { opacity:1; transform: translateX(0); }
+}
+@keyframes rangestart {
+	0% { opacity:0.1; }
+	50% { opacity:1; }
+	100% { opacity:0.1; }
+}
+
+
+.sui-calendar .large-zero {	animation: largezero 250ms ease-out; }
+.sui-calendar .small-zero {	animation: smallzero 250ms ease-out; }
+
+@keyframes largezero {
+	0% { opacity:0.3; transform: scale(1.2); }
+	100% { opacity:1; transform: scale(1); }
+}
+@keyframes smallzero {
+	0% { opacity:0.3; transform: scale(0.85); }
+	100% { opacity:1; transform: scale(1); }
+}
+
+

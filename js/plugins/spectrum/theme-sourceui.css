@@ -1,0 +1,119 @@
+@charset "utf-8";
+@import url("spectrum.css");
+/* CSS Document */
+.sp-container, .sp-container button, .sp-container input, .sp-color, .sp-hue, .sp-clear {
+    font: normal 12px 'Roboto', "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+	width: 100%;
+}
+.sp-container {
+    background-color: #FFF;
+    border:none;
+	height: 240px;
+}
+
+.sp-picker-container, .sp-palette-container {
+    padding: 0;
+    padding-bottom: 300px;
+    margin-bottom: -244px;
+}
+.sp-picker-container {
+    width: 100%;
+    border-left:none;
+}
+.sp-top {
+    height: 140px;
+	margin-bottom: 0px !important;
+}
+.sp-color, .sp-hue, .sp-clear {
+    border:none;
+}
+.sp-color {
+	right: 0;
+	overflow:hidden;
+}
+.sp-dragger {
+    border-radius: 12px;
+    height: 16px;
+    width: 16px;
+    border: 1px solid #fff;
+    background:none;
+	margin:8px 0 0 8px;
+	box-shadow: 0 0 2px 0px #000;
+}
+.sp-hue {
+    position: absolute;
+    right:inherit;
+    top: 164px;
+    left: 50%;
+	height:10px;
+	margin: 0 0 0 -144px;
+    border-radius: 10px;
+	width: 288px;
+    background: -moz-linear-gradient(right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    background: -ms-linear-gradient(right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    background: -o-linear-gradient(right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    background: -webkit-gradient(linear, left left, left right, from(#ff0000), color-stop(0.17, #ffff00), color-stop(0.33, #00ff00), color-stop(0.5, #00ffff), color-stop(0.67, #0000ff), color-stop(0.83, #ff00ff), to(#ff0000));
+    background: -webkit-linear-gradient(right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+}
+.sp-slider {
+    position: absolute;
+	margin-left:-10px;
+    top: -5px;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #333;
+    background: #FFF;
+    border-radius: 16px;
+	opacity:1;
+}
+.sp-fill {
+    padding-top: 120px;
+}
+.sp-alpha {
+    bottom: -64px;
+    right: 0;
+    left: 0;
+    height: 10px;
+    margin: 16px 32px;
+    border-radius: 10px;
+	background-size:6px 6px;
+}
+.sp-alpha-inner {
+    border:none;
+	border-radius: 12px;
+}
+.sp-alpha-handle {
+    position: absolute;
+	margin-left:-2px;
+    top: -5px;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #333;
+    background: #FFF;
+    border-radius: 16px;
+	opacity:1;
+}
+.sp-input {
+    font-size: 12px !important;
+    border:none;
+    padding: 4px 8px;
+    margin: 0;
+    width: 100%;
+    background: transparent;
+    color: #666;
+	font-weight:500 !important;
+}
+.sp-input:focus {
+	border:none;
+    color: #222;
+}
+.sp-button-container {
+	display:none;	
+}
