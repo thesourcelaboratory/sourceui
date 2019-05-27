@@ -66,7 +66,8 @@
 
         this.icon = function (color) {
             //var iconurl = '../../../core/js/plugins/leaflet/markers/default-'+color+'.png';
-            var iconurl = 'https://cdn.jsdelivr.net/gh/thesourcelaboratory/sourceui/js/plugins/leaflet/markers/default-' + color + '.png';
+            //var iconurl = 'https://cdn.jsdelivr.net/gh/thesourcelaboratory/sourceui/js/plugins/leaflet/markers/default-' + color + '.png';
+            var iconurl = 'https://thesourcelaboratory.github.io/sourceui/js/plugins/leaflet/markers/default-' + color + '.png';
             //var iconurl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-'+color+'.png';
             return new L.Icon({
                 iconUrl: iconurl,

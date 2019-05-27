@@ -162,7 +162,7 @@
 .sui-widget.finder > .finder > .sui-filterset.horizontal ul > li,
 .sui-widget.finder > .finder > .sui-filterset.horizontal ul > li * { cursor:pointer; }
 .sui-widget.finder > .finder > .sui-filterset.horizontal ul > li.empty { line-height:40px; font-size:12px; }
-.sui-widget.finder > .finder > .sui-filterset.horizontal .sui-filter { font-size:12.5px;}
+.sui-widget.finder > .finder > .sui-filterset.horizontal .sui-filter { font-size:11px;}
 .sui-widget.helper > .helper { padding:30px 0; }
 .sui-widget > .helper > *:not(.close) { padding:8px 40px; }
 /* --------------------------------------------------- */

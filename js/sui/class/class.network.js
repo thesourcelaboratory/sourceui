@@ -1814,15 +1814,16 @@ sourceui.Network = function () {
 				}
 			}
 		};
-		this.localNotification = function (data) {
+		this.localNotification = function (payload) {
+			var data = payload.data;
 			if (!Socket.activewindow && Notification.permission == 'granted') {
-				var notification = new Notification(data.title, { body: data.description || data.label, icon: data.image });
+				var notification = new Notification(data.title, { body: $('<div>' + (data.description || data.label) + '</div>').text(), icon: data.image });
 				notification.onclick = function (event) {
 					window.focus();
 					$('#' + data.id).trigger('click');
 					this.close();
 				};
-				notification.show();
+				if (notification.show) notification.show();
 			}
 		};
 		this.open = function () {
@@ -1910,6 +1911,13 @@ sourceui.Network = function () {
 			if (data.label) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'label', content: data.label });
 			if (data.description) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'description', content: data.description });
 			if (data.sendtime) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'datetime', content: $.timeagoHTML(data.sendtime) });
+
+			if (data.link['@clone']) {
+				data.link = $(data.link['@clone']).link(data.link);
+				data.link.placement = 'replace';
+				delete data.link['@clone'];
+			}
+
 			return Template.get('panel', 'aside', 'nav', 'item', {
 				attr: { id: data.id },
 				data: { status: data.status, link: data.link },
@@ -2032,7 +2040,7 @@ sourceui.Network = function () {
 			if ($sector.length) {
 				if (setup.tab && $tab.length) {
 					$tab.trigger('click');
-					if (setup.placement !== 'replace') return false;
+					if (!setup.placement || setup.placement.indexOf('replace') === -1) return false;
 				}
 			}
 

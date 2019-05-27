@@ -256,7 +256,7 @@ a code { display:none !important }
 .sui-nav .group.notif li.has-avatar .avatar { display:block; position:absolute; top:8px; left:11px; width:48px; height:48px; line-height:48px; background:#FFF; text-align:center; border-radius:100%; background-repeat:no-repeat; background-position:center; background-size:cover; }
 .sui-nav .group.notif li.has-icon { padding:8px 8px 8px 72px; min-height:64px; }
 .sui-nav .group.notif li.has-icon .icon { display:block; position:absolute; top:8px; left:11px; width:48px; height:48px; line-height:46px; background:rgba(0,0,0,0.2); color:#FFF; text-align:center; border-radius:50%; }
-.sui-nav .group.notif li.has-icon .icon:before { font-size:28px; }
+.sui-nav .group.notif li.has-icon .icon:before { font-size:22px; }
 .sui-nav .group.notif li.has-subicon { padding:8px 8px 8px 72px; min-height:64px; }
 .sui-nav .group.notif li.has-subicon .subicon { display:block; position:absolute; top:6px; left:42px; width:22px; height:22px; line-height:18px; background:rgba(0,0,0,0.2); color:#FFF; text-align:center; border-radius:50%; }
 .sui-nav .group.notif li.has-subicon .subicon:before { font-size:12px; }
@@ -667,7 +667,7 @@ a code { display:none !important }
 /* PROFILE ------------------------------------------- */
 .sui-widget.profile { background:transparent; border-color:rgba(0,0,0,0.15); }
 .sui-widget.profile > .area { padding:0 50px; position:relative; min-height:128px; background:transparent; display:flex; justify-content:space-between; align-items:center; color:#FFF; }
-.sui-widget.profile > .area > .identifier { display:flex; align-items:center; white-space:nowrap; }
+.sui-widget.profile > .area > .identifier { display:flex; align-items:center; white-space:wrap; }
 .sui-widget.profile > .area > .identifier > .avatar { width:90px; min-width:90px; max-width:90px; height:90px; border-radius:45px; background-size:cover; background-repeat:no-repeat; margin-right:16px; }
 .sui-widget.profile > .area > .identifier > .abbr { width:84px; min-width:84px; max-width:84px; height:84px; line-height:84px; border-radius:42px; margin-right:16px; background-color:#ffffff33;  color:#FFF; font-size:28px; text-align:center; font-weight:bold; letter-spacing:-1.5px; }
 .sui-widget.profile > .area > .identifier > .icon { width:84px; min-width:84px; max-width:84px; height:84px; line-height:76px; border-radius:42px; margin-right:16px; background-color:#ffffff33;  color:#FFF; font-size:32px; text-align:center; font-weight:bold; letter-spacing:-1.5px; }
@@ -739,9 +739,6 @@ a code { display:none !important }
 .sui-widget.datagrid > .area .list > .linegroup > h3 > span:empty { display:none; }
 .sui-widget.datagrid > .area .list > .linegroup > .lines { width:100%; display:table; }
 .sui-widget.datagrid > .area .list > .linegroup:empty { display:none; }
-.sui-widget.datagrid > .area .list .empty { color:#d6d6d6; background:#FFF; text-align:center; padding:12px; font-size:11px; }
-.sui-widget.datagrid > .area .list .empty i { display:block; margin-bottom:4px; color:#e4e4e4; font-size:12px; }
-.sui-widget.datagrid > .area .list .empty i[class*='icon-']:before { font-size:36px; }
 .sui-widget.datagrid > .area .list .line { position:relative; cursor:pointer; }
 .sui-widget.datagrid > .area .list .line.pep-active { opacity:1 !important; z-index:11 !important; }
 .sui-widget.datagrid > .area .list .line > .col.seq { min-width: 40px; color:#BBB !important; font-weight:bold; font-size:10px !important; text-align:center; background:rgba(32,32,32,0.025); }
@@ -797,6 +794,9 @@ a code { display:none !important }
 .sui-widget.datagrid > .area .list .line.done .col:not(.swiper):not(.check) { opacity:0.5; }
 .sui-widget.datagrid.marged > .area .list .col.pad { display:none !important; }
 .sui-widget.datagrid > .area .list .line.progress { filter:grayscale(0); }
+.sui-widget.datagrid > .area .empty { color:#d6d6d6; background:#FFF; text-align:center; padding:12px; font-size:11px; }
+.sui-widget.datagrid > .area .empty i { display:block; margin-bottom:4px; color:#e4e4e4; font-size:12px; }
+.sui-widget.datagrid > .area .empty i[class*='icon-']:before { font-size:36px; }
 /* --------------------------------------------------- */
 
 /* EXPLORER ------------------------------------------ */
@@ -1150,13 +1150,14 @@ a code { display:none !important }
 .sui-widget.finder > .finder > .sui-fieldset .sui-field.search  > .wrap > .table > .cell.sufix { display:none; }
 .sui-widget.finder.search > .finder > .sui-fieldset { display:block !important; }
 .sui-widget.finder.search > .finder > .sui-filterset { display:none !important; }
-.sui-widget.finder.search > .finder > .sui-buttonset.horizontal .sui-button a.search { color:#333; }
+.sui-widget.finder.search > .finder > .sui-fieldset .sui-field:before { bottom:-1px; }
+.sui-widget.finder.search > .finder > .sui-buttonset.horizontal .sui-button a.search { color:#FFF; background:#666; }
 .sui-widget.finder.filter > .finder > .sui-fieldset { display:none !important; }
 .sui-widget.finder.filter > .finder > .sui-filterset { display:flex !important; }
-.sui-widget.finder.filter > .finder > .sui-buttonset.horizontal .sui-button a.filter { color:#333; }
+.sui-widget.finder.filter > .finder > .sui-buttonset.horizontal .sui-button a.filter { color:#FFF; background:#666; }
 .sui-widget.finder > .finder > .sui-buttonset.horizontal { display:block; padding:0; }
 .sui-widget.finder > .finder > .sui-buttonset.horizontal .sui-button { margin:0; background:transparent !important; border-radius:0; box-shadow:none; }
-.sui-widget.finder > .finder > .sui-buttonset.horizontal .sui-button a { color:#AAA; border-radius:0; }
+.sui-widget.finder > .finder > .sui-buttonset.horizontal .sui-button a { color:#555; border-radius:0; }
 .sui-widget.finder > .finder > .sui-buttonset.horizontal .sui-button a:hover { background-color:rgba(0,0,0,0.05); }
 .sui-widget.finder > .finder > .sui-buttonset.horizontal .sui-button.disable a { color:#e9e9e9 !important; cursor:default !important; }
 .sui-widget.finder > .finder > .sui-buttonset.horizontal .sui-button.disable a:hover { background-color:transparent !important; }
@@ -1278,7 +1279,7 @@ body.debug.bugopened .sui-bug-modal > .container > p > span { display:block; }
 .sui-floatbox > .item:empty { display:none; }
 .sui-floatbox > .item > *:empty { display:none; }
 
-.sui-notify-container { position:absolute; bottom:0; left:50%; width:480px; margin-left:-240px; z-index:99999998;  }
+.sui-notify-container { position:absolute; bottom:0; left:50%; width:480px; margin-left:-240px; z-index:9999999999;  }
 .sui-notify-container > div { position:relative; z-index:1; }
 .sui-notify-container .sui-notify { position:absolute; bottom:0; padding:24px 36px 24px 24px; width:100%; min-height:16px; background:rgba(40,40,40,0.95); color:#FFF; box-shadow:0 4px 24px rgba(0,0,0,0.5); }
 .sui-notify-container .sui-notify .close { display:block; position:absolute; right:4px; top:4px; width:32px; height:32px; line-height:32px; text-align:center; cursor:pointer; opacity:.6; }
@@ -1607,7 +1608,7 @@ a.focus > .activity-focus { background:rgba(23,139,238,0.07) !important; border-
 	-webkit-justify-content: center;
 	flex-direction: column;
 	-webkit-flex-direction: column;
-	z-index:9999999999;
+	z-index:9999999998;
 }
 .sui-spinner .container {
 	width: 20%;

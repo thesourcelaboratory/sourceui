@@ -83,6 +83,22 @@ Extensor do método jquery que integra a habilidade de retornar todos os atribut
 
 /*
 ---------------------------
+jQuery.fn.switchClass
+---------------------------
+Extensor do método jquery que pertence bizarramente ao UI
+---------------------------
+*/
+(function () {
+	$.fn.switchClass = function (a, b) {
+		this.addClass(b);
+		this.removeClass(a);
+		return this;
+	};
+})();
+
+
+/*
+---------------------------
 jQuery.ache
 ---------------------------
 Extensor do método de expressão de seltor de jquery que retorna todos os elementos que contenha a string dada como nome dos seus atributos
