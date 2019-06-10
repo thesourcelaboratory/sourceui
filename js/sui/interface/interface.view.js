@@ -132,11 +132,10 @@ sourceui.interface.view = function ($view, setup) {
 							}
 							$.each(wgdata.data, function (k, v) {
 								if ((v || v === 0) && wgdata.info[k]) {
-									console.log(wgdata.info[k]);
 									if ($ul) {
 										$ul.append(Template.get('wg', 'form', 'filter', {
 											class: { selected: 'selected' },
-											label: { name: wgdata.info[k].label + ': ', value: wgdata.info[k].text || ($.isArray(v) ? v.join(',') : v), content: '' },
+											label: { name: wgdata.info[k].label, value: wgdata.info[k].text || ($.isArray(v) ? v.join(',') : v), content: '' },
 											data: { name: k }
 										}));
 										$ul.find('[data-name="' + k + '"]').data('value', v);
@@ -163,6 +162,8 @@ sourceui.interface.view = function ($view, setup) {
 						}
 					});
 					event.stopPropagation();
+				} else if (data.alias == 'clear') {
+					View.widgets.filter('.form, .wizard').find('.sui-field').val('');
 				} else if (data.alias == 'refresh') {
 					$a.data('linkCache', false);
 					Network.link.call($a, data);
@@ -285,7 +286,6 @@ sourceui.interface.view = function ($view, setup) {
 		setTimeout(function () {
 			View.scrolltabs.scrollLeft(9999).customScroll('update');
 		}, 10);
-
 	}
 	/*
 	var $viewtab = View.element.find('#suiTabToAppend');

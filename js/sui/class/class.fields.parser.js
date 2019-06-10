@@ -45,6 +45,8 @@ sourceui.templates.fields = new sourceui.Template({
 	label:
 		//'<label class="label">@{label}@{reqflag}<small class="notify"></small></label>',
 		'<label class="label">@{label}@{reqflag}<br /><small class="notify"></small></label>',
+	help: 
+		'<mark class="help">?</mark>',
 	wrap: {
 		simple:
 			'<div class="wrap" style="@{style:background}@{style:color}@{style:bold}@{style:size}@{style:width}@{style:height}">' +
@@ -52,6 +54,7 @@ sourceui.templates.fields = new sourceui.Template({
 			'@{child:box}' +
 			'@{child:addon}' +
 			'<mark class="badge">@{qtselected}</mark>' +
+			'<mark class="help">@{texthelp}</mark>' +
 			'</div>',
 	},
 	js:
@@ -567,6 +570,7 @@ sourceui.parserField = function (element, setup) {
 						wrap: Template.get('wrap', tpl.wrap, {
 							style: setup.style,
 							qtselected: setup.list.selected ? setup.list.selected.length : '',
+							texthelp: setup.help,
 							child: {
 								table: HTML.common.table(tpl),
 								box: HTML.common.box(tpl),
@@ -1075,14 +1079,13 @@ sourceui.parserField = function (element, setup) {
 		},
 		number: {
 			simple: function () {
-				Field.setup.convertval = Field.setup.convertval || 'number';
-				return HTML.common.field({ input: 'number' });
+				return HTML.common.field({ input: 'tel' });
 			},
 			integer: function () {
 				Field.setup.convertval = Field.setup.convertval || 'integer';
 				Field.setup.placeholder = Field.setup.placeholder || '&#177;000';
 				Field.setup.mask = Field.setup.mask || 'integer';
-				return HTML.common.field({ input: 'text' });
+				return HTML.common.field({ input: 'tel' });
 			},
 			float: function () {
 				Field.setup.convertval = Field.setup.convertval || 'float';

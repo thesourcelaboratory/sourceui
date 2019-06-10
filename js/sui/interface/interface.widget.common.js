@@ -20,7 +20,7 @@
  * @param {string} author - The author of the book.
  */
 
-sourceui.interface.widget.common = function($widget,setup){
+sourceui.interface.widget.common = function ($widget, setup) {
 
 	'use strict';
 
@@ -40,93 +40,93 @@ sourceui.interface.widget.common = function($widget,setup){
 	Common.toolbar = this.widget.find('.title .toolbar');
 	Common.code = this.widget.children('code');
 
-	Common.code.each(function(){
+	Common.code.each(function () {
 		var $code = $(this);
 		var attr = $code.attr();
-		if (attr.type == 'event' && attr.on){
-			Common.widget.on(attr.on,function(event,args){
+		if (attr.type == 'event' && attr.on) {
+			Common.widget.on(attr.on, function (event, args) {
 				eval($.suiEvent($code));
 			});
 		}
 	});
 
 
-	if(!this.controller){
+	if (!this.controller) {
 		this.controller = this.toolbar;
 	}
-	Common.toggleTools = function(action,toggle,controller){
+	Common.toggleTools = function (action, toggle, controller) {
 		var $source = this;
 		controller = controller || Common.controller;
-		var $tools = controller.find('[data-event-enable*="'+action+'"],[data-event-disable*="'+action+'"]');
-		$tools = $tools.add(Common.buttons.filter('[data-event-enable*="'+action+'"],[data-event-disable*="'+action+'"]'));
-		$tools.each(function(){
+		var $tools = controller.find('[data-event-enable*="' + action + '"],[data-event-disable*="' + action + '"]');
+		$tools = $tools.add(Common.buttons.filter('[data-event-enable*="' + action + '"],[data-event-disable*="' + action + '"]'));
+		$tools.each(function () {
 			var $tool = $(this);
 			var typetog;
 			var prevent;
 			var $typed;
-			if ($tool.is('[data-type-enable]')){
+			if ($tool.is('[data-type-enable]')) {
 				typetog = $tool.data('type-enable');
-				if ($source && $source instanceof jQuery){
-					$typed = $source.filter('[data-type="'+typetog+'"]');
+				if ($source && $source instanceof jQuery) {
+					$typed = $source.filter('[data-type="' + typetog + '"]');
 					if ($typed.length < $source.length) prevent = 'enable';
 				}
 			}
-			if ($tool.is('[data-type-disable]')){
+			if ($tool.is('[data-type-disable]')) {
 				typetog = $tool.data('type-disable');
-				if ($source && $source instanceof jQuery){
-					$typed = $source.filter('[data-type="'+typetog+'"]');
+				if ($source && $source instanceof jQuery) {
+					$typed = $source.filter('[data-type="' + typetog + '"]');
 					if ($typed.length < $source.length) prevent = 'disable';
 				}
 			}
-			if (toggle){
+			if (toggle) {
 				if (toggle == 'enable' && prevent !== 'enable') {
 					$tool.parent().disable(false);
 				} else if (toggle == 'disable' && prevent !== 'disable') {
 					$tool.parent().disable(true);
 				}
 			} else {
-				if ($tool.is('[data-event-enable*="'+action+'"]') && prevent !== 'enable') {
+				if ($tool.is('[data-event-enable*="' + action + '"]') && prevent !== 'enable') {
 					$tool.parent().disable(false);
-				} else if ($tool.is('[data-event-disable*="'+action+'"]') && prevent !== 'disable') {
+				} else if ($tool.is('[data-event-disable*="' + action + '"]') && prevent !== 'disable') {
 					$tool.parent().disable(true);
 				}
 			}
 		});
 	};
-	Common.widget.children('.helper').on('click','.close',function(){
+	Common.widget.children('.helper').on('click', '.close', function () {
 		Common.widget.toggleClass('helper');
 	});
-	Common.controller.on('click','li a',function(event){
+	Common.controller.on('click', 'li a', function (event) {
 		var $this = $(this);
 		if ($this.isDisable()) return;
-		if ($this.data('alias') == 'print'){
+		if ($this.data('alias') == 'print') {
 			window.print();
-		} else if ($this.hasClass('helper')){
+		} else if ($this.hasClass('helper')) {
 			Common.widget.toggleClass('helper');
-		} else if ($this.hasClass('filter')){
+		} else if ($this.hasClass('filter')) {
 			Common.widget.toggleClass('filter');
-		} else if ($this.hasClass('colapse')){
+		} else if ($this.hasClass('colapse')) {
 			Common.widget.toggleClass('colapse');
-		} else if ($this.hasClass('areatoggle')){
+		} else if ($this.hasClass('areatoggle')) {
 			var $title = $this.closest('.title');
 			Common.widget.removeClass('a1 a2 a3 a4 a5 a6 a7 a8');
-			Common.widget.addClass('areatoggle a'+($this.parent().index()+1));
+			Common.widget.addClass('areatoggle a' + ($this.parent().index() + 1));
 			$title.find('h3 span').text($this.data('title'));
-		} else if ($this.hasClass('maximize')){
+		} else if ($this.hasClass('maximize')) {
 			var $view = Common.widget.closest('.sui-view');
 			var $scroll = $view.find('.sui-content.scroll-default');
-			var nowScroll =  $scroll.scrollTop();
+			var nowScroll = $scroll.scrollTop();
 			var lastScroll = Common.widget.data('lastScroll');
 			Common.widget.toggleClass('maximized');
-			Common.widget.data('lastScroll',Common.widget.find());
+			Common.widget.data('lastScroll', Common.widget.find());
 			Common.widget.closest('.sui-view').toggleClass('maximized').closest('.sui-sector').toggleClass('maximized');
 			if (lastScroll) $scroll.scrollTop(lastScroll);
-			Common.widget.data('lastScroll',nowScroll||0);
+			Common.widget.data('lastScroll', nowScroll || 0);
 			Common.widget.trigger('widget:resize');
-		} else if ($this.hasClass('sourcecode')){
+		} else if ($this.hasClass('sourcecode')) {
 			var $mce = Common.widget.find('.sui-field.mce');
 			var $cdm = Common.widget.find('.sui-field.code');
-			if (Common.widget.hasClass('codesourced')){
+			if (Common.widget.hasClass('codesourced')) {
 				$mce.val($cdm.val()).consider();
 				$cdm.ignore();
 				Common.widget.removeClass('codesourced');
@@ -138,8 +138,8 @@ sourceui.interface.widget.common = function($widget,setup){
 			Common.widget.trigger('widget:resize');
 		}
 	});
-	Common.calcSort = function(axis,dragger,droppers){
-		var a = { },
+	Common.calcSort = function (axis, dragger, droppers) {
+		var a = {},
 			o = dragger,
 			mini = 10000000000,
 			closest = {};
@@ -150,8 +150,8 @@ sourceui.interface.widget.common = function($widget,setup){
 		a.height = o.height();
 		a.x = a.left + (a.width / 2);
 		a.y = a.top + (a.height / 2);
-		$.each(droppers||[],function(i,p){
-			if (p.hasClass('dragger')){
+		$.each(droppers || [], function (i, p) {
+			if (p.hasClass('dragger')) {
 				return true;
 			}
 			var b = {};
@@ -165,10 +165,10 @@ sourceui.interface.widget.common = function($widget,setup){
 			b.xs = b.xs * b.xs;
 			b.ys = b.y - a.y;
 			b.ys = b.ys * b.ys;
-			b.z = Math.sqrt( b.xs + b.ys );
-			if (b.z <= mini){
+			b.z = Math.sqrt(b.xs + b.ys);
+			if (b.z <= mini) {
 				mini = b.z;
-				if (axis){
+				if (axis) {
 					closest.placement = (a.y > b.y) ? 'after' : 'before';
 				} else {
 					closest.placement = (a.x > b.x) ? 'after' : 'before';
@@ -179,68 +179,68 @@ sourceui.interface.widget.common = function($widget,setup){
 		return closest;
 	};
 	Common.order = {
-		exec : function($li,o){
+		exec: function ($li, o) {
 			var $col = $(this);
 			var $list = $col.closest('.list');
 			var data = {
-				col : $col,
-				header : $col.parent(),
-				list : $list,
-				area : $list.parent(),
-				idx : $col.data('index'),
-				filter : {
-					limitStart : 0,
-					limitLength : parseInt($list.data('length')) || 20,
-					limitTotal : parseInt($list.data('total')) || 0,
-					sortBy : null,
-					sortOrd : null
+				col: $col,
+				header: $col.parent(),
+				list: $list,
+				area: $list.parent(),
+				idx: $col.data('index'),
+				filter: {
+					limitStart: 0,
+					limitLength: parseInt($list.data('length')) || 20,
+					limitTotal: parseInt($list.data('total')) || 0,
+					sortBy: null,
+					sortOrd: null
 				}
 			};
-			if (data.filter.limitStart + data.filter.limitLength < data.filter.limitTotal){
-				Common.order.remote.call(data,$li,o);
+			if (data.filter.limitStart + data.filter.limitLength < data.filter.limitTotal) {
+				Common.order.remote.call(data, $li, o);
 			} else {
-				Common.order.local.call(data,$li,o);
+				Common.order.local.call(data, $li, o);
 			}
 		},
-		remote : function($li,o){
+		remote: function ($li, o) {
 			var data = this;
-			var orderType = (data.col.hasClass('asc')) ? 'desc' : ((data.col.hasClass('desc')) ? null : 'asc' );
+			var orderType = (data.col.hasClass('asc')) ? 'desc' : ((data.col.hasClass('desc')) ? null : 'asc');
 			if (o === orderType) return;
 			if (o) orderType = o;
 			var setup = {
-				target : '@widget-area',
-				render : '@datagrid-list',
+				target: '@widget-area',
+				render: '@datagrid-list',
 				//cache : true,
-				filter : data.filter,
-				ondone : function(){
-					if ($li && $li.length){
-						$li.attr('class','icon-0').siblings('li').attr('class','icon-0');
-						if (orderType == 'asc') $li.attr('class','selected icon-angle-down');
-						else if (orderType == 'desc') $li.attr('class','selected icon-angle-up');
+				filter: data.filter,
+				ondone: function () {
+					if ($li && $li.length) {
+						$li.attr('class', 'icon-0').siblings('li').attr('class', 'icon-0');
+						if (orderType == 'asc') $li.attr('class', 'selected icon-angle-down');
+						else if (orderType == 'desc') $li.attr('class', 'selected icon-angle-up');
 					}
 				}
 			};
-			if (orderType){
+			if (orderType) {
 				setup.filter.sortBy = data.col.data('name') || data.col.data('index');
 				setup.filter.sortOrd = orderType;
 			}
-			if (data.area.length && data.area.link().sui){
-				Network.link.call(data.col,setup);
+			if (data.area.length && data.area.link().sui) {
+				Network.link.call(data.col, setup);
 			}
 		},
-		local : function($li,o){
+		local: function ($li, o) {
 			var data = this;
 			data.col.siblings('.col').removeClass('order asc desc');
 			data.col.addClass('order');
-			if (o){
+			if (o) {
 				data.col.addClass(o);
 			} else {
-				if (data.col.hasClass('asc')){
-					data.col.switchClass('asc','desc');
-				} else if (data.col.hasClass('desc')){
+				if (data.col.hasClass('asc')) {
+					data.col.switchClass('asc', 'desc');
+				} else if (data.col.hasClass('desc')) {
 					data.col.removeClass('desc');
 					Common.order.exec.call(data.col.siblings('.seq'));
-					if ($li && $li.length) $li.attr('class','icon-0');
+					if ($li && $li.length) $li.attr('class', 'icon-0');
 					return;
 				} else {
 					data.col.addClass('asc');
@@ -248,30 +248,30 @@ sourceui.interface.widget.common = function($widget,setup){
 			}
 			data.lines = data.area.find('.lines');
 			data.lines = (!data.lines.length) ? data.area.find('.list') : data.lines;
-			if (data.lines.length){
-				data.lines.each(function(){
+			if (data.lines.length) {
+				data.lines.each(function () {
 					var $line = $(this);
 					var $items = $line.children('.line');
 					var ords = [];
 					$items.children('.col').removeClass('order asc desc');
-					$items.each(function(){
+					$items.each(function () {
 						var ln = $(this),
-							sl = ln.children('[data-index="'+data.idx+'"]'),
+							sl = ln.children('[data-index="' + data.idx + '"]'),
 							ord = {
-								value : sl.data('original') || sl.text(),
-								element : ln
+								value: sl.data('original') || sl.text(),
+								element: ln
 							};
 						ords.push(ord);
 					});
-					ords.sort(function(a,b){
-						if (data.col.hasClass('asc')){
-							if (!isNaN(a.value) && !isNaN(b.value)){ return parseFloat(a.value)-parseFloat(b.value); }
-							if(a.value < b.value) { return -1; }
-							if(a.value > b.value) { return 1; }
+					ords.sort(function (a, b) {
+						if (data.col.hasClass('asc')) {
+							if (!isNaN(a.value) && !isNaN(b.value)) { return parseFloat(a.value) - parseFloat(b.value); }
+							if (a.value < b.value) { return -1; }
+							if (a.value > b.value) { return 1; }
 						} else {
-							if (!isNaN(a.value) && !isNaN(b.value)) { return parseFloat(b.value)-parseFloat(a.value); }
-							if(a.value > b.value) { return -1; }
-							if(a.value < b.value) { return 1; }
+							if (!isNaN(a.value) && !isNaN(b.value)) { return parseFloat(b.value) - parseFloat(a.value); }
+							if (a.value > b.value) { return -1; }
+							if (a.value < b.value) { return 1; }
 						}
 						return 0;
 					});
@@ -279,112 +279,115 @@ sourceui.interface.widget.common = function($widget,setup){
 						$line.masonry('destroy');
 					}
 					$items.remove();
-					$.each(ords||[],function(i,o){
-						o.element.children('[data-index="'+data.idx+'"]').addClass('order');
+					$.each(ords || [], function (i, o) {
+						o.element.children('[data-index="' + data.idx + '"]').addClass('order');
 						$line.append(o.element);
 					});
-					if (Common.widget.hasClass('mansory')){
+					if (Common.widget.hasClass('mansory')) {
 						$line.masonry({
 							itemSelector: '.images .line.image',
 							percentPosition: true,
 							columnWidth: '.sizer'
 						});
 					}
-					var globalname = 'datagrid-order:'+Common.widget.attr('id');
-					var colname = $.getSelector(data.col[0]).replace(/\.order|\.asc|\.desc/g,'');
+					var globalname = 'datagrid-order:' + Common.widget.attr('id');
+					var colname = $.getSelector(data.col[0]).replace(/\.order|\.asc|\.desc/g, '');
 					var globaldata = {};
 					globaldata[colname] = data.col.hasClass('asc') ? 'asc' : 'desc';
-					Device.Global.set(globalname,globaldata);
+					Device.Global.set(globalname, globaldata);
 				});
 			}
 			data.list.children('.paginator').appendTo(data.list);
-			if ($li && $li.length){
-				$li.attr('class','icon-0').siblings('li').attr('class','icon-0');
-				if (data.col.is('.asc')) $li.attr('class','selected icon-angle-down');
-				else if (data.col.is('.desc')) $li.attr('class','selected icon-angle-up');
+			if ($li && $li.length) {
+				$li.attr('class', 'icon-0').siblings('li').attr('class', 'icon-0');
+				if (data.col.is('.asc')) $li.attr('class', 'selected icon-angle-down');
+				else if (data.col.is('.desc')) $li.attr('class', 'selected icon-angle-up');
 			}
 
 		}
 
 	};
 	Common.paginate = {
-		exec : function(){
+		exec: function () {
 			var $link = $(this),
 				$list = $link.closest('.list'),
 				$lines = $link.closest('.lines'),
 				data = {
-					link : $link,
-					list : $list,
-					lines : $lines,
-					area : $list.parent(),
-					filter : {
-						limitStart : parseInt($list.data('start')) || 0,
-						limitLength : parseInt($list.data('length')) || 20,
-						limitTotal : parseInt($list.data('total')),
-						sortBy : $list.data('by'),
-						sortOrd : $list.data('ord')
+					link: $link,
+					list: $list,
+					lines: $lines,
+					area: $list.parent(),
+					filter: {
+						limitStart: parseInt($list.data('start')) || 0,
+						limitLength: parseInt($list.data('length')) || 20,
+						limitTotal: parseInt($list.data('total')),
+						sortBy: $list.data('by'),
+						sortOrd: $list.data('ord')
 					}
 				};
-				if (data.list.data('paginator') == 'buttonDown'){
-					data.filter.limitStart += data.filter.limitLength;
-					Common.paginate.buttonDown.call(data);
-				}
+			if (data.list.data('paginator') == 'buttonDown') {
+				data.filter.limitStart += data.filter.limitLength;
+				Common.paginate.buttonDown.call(data);
+			}
 		},
-		buttonDown : function(){
+		buttonDown: function () {
 			var data = this;
 			var setup = {
-				target : '@widget-paginator',
-				render : '@datagrid-line',
-				filter : data.filter,
+				target: '@widget-paginator',
+				render: '@datagrid-line',
+				filter: data.filter,
 			};
-			setup.ondone = function(){
-				data.list.data('start',data.filter.limitStart);
-				data.list.attr('data-start',data.filter.limitStart);
-				if (!data.list.children('.paginator').length){
+			setup.ondone = function () {
+				data.list.data('start', data.filter.limitStart);
+				data.list.attr('data-start', data.filter.limitStart);
+				if (!data.list.children('.paginator').length) {
 					data.list.removeAttr('data-paginator');
 				}
 			};
-			Network.link.call(data.link,setup);
+			Network.link.call(data.link, setup);
 		}
 	};
 	Common.swipe = {
-		open : function($item){
+		open: function ($item) {
 			if (!$item.length) { return; }
 			$item.addClass('swiped');
 			var $swiper = $item.find('.swiper');
 			var $actions = $swiper.find('.actions');
 			if (!$actions.length) return;
-			var width = $actions.width();
+			var width = $actions.outerWidth();
+			if (!Device.ismobile) {
+				$actions.css('left', $swiper.outerWidth() + $swiper.next('.pad').outerWidth());
+			}
 			$item.velocity({
-				translateX:-width
-			},{
-				duration: 220,
-				easing: 'ease-out'
-			});
+				translateX: -width
+			}, {
+					duration: 220,
+					easing: 'ease-out'
+				});
 			$item.trigger('checkswipe');
 		},
-		close : function($item,options){
+		close: function ($item, options) {
 			if ($item.hasClass('sui-widget')) { $item = $item.find('.area > .list .line.swiped, .area > .list .file.swiped, .area > .list .folder.swiped'); }
 			if (!$item.length) { return; }
 			$item.velocity({
 				translateX: 0,
-			},$.extend({
-				duration:220,
-				complete : function(){
+			}, $.extend({
+				duration: 220,
+				complete: function () {
 					$item.removeClass('swiped');
 				},
 				easing: 'ease-in'
-			},options));
+			}, options));
 			$item.trigger('uncheckswipe');
 		}
 	};
 	Common.context = {
-		on : function($item){
+		on: function ($item) {
 			if (!$item.length) { return; }
 			$item.addClass('contexted');
 			$item.trigger('check');
 		},
-		off : function($item,ease){
+		off: function ($item, ease) {
 			if ($item.hasClass('sui-widget')) { $item = $item.find('.area > .list .line.contexted, .area > .list .file.contexted, .area > .list .folder.contexted'); }
 			if (!$item.length) { return; }
 			$item.removeClass('contexted');
@@ -392,19 +395,19 @@ sourceui.interface.widget.common = function($widget,setup){
 		}
 	};
 	Common.line = {
-		linkData : function(data,$line){
+		linkData: function (data, $line) {
 			var lata = $line.link('_self');
 			if (data.seed) data.seed += $.toInt($line.closest('[data-link-origin][data-link-seed]').data('link-seed')) || 0;
-			if (lata.key || lata.parentkey){
-				if (lata.key) data.key =  $.isArray(lata.key) ? lata.key[0] : lata.key;
+			if (lata.key || lata.parentkey) {
+				if (lata.key) data.key = $.isArray(lata.key) ? lata.key[0] : lata.key;
 				if (lata.parentkey) data.parentkey = lata.parentkey;
-				data.seed = (data.seed) ? data.seed + (lata.seed||0) || 0 : lata.seed||0;
+				data.seed = (data.seed) ? data.seed + (lata.seed || 0) || 0 : lata.seed || 0;
 				delete lata.key;
 				delete lata.parentkey;
 				delete lata.seed;
 			}
 			data.cancelnested = true;
-			return $.extend(data,lata);
+			return $.extend(data, lata);
 		}
 	}
 };

@@ -1298,6 +1298,9 @@ sourceui.interface.plugins = function () {
 				event.stopPropagation();
 			});
 			$.CURR.FloatSector = $sector;
+		},
+		close: function () {
+
 		}
 	};
 

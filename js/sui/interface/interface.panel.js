@@ -20,7 +20,7 @@
  * @param {string} author - The author of the book.
  */
 
-sourceui.interface.panel = function(){
+sourceui.interface.panel = function () {
 
 	'use strict';
 
@@ -48,57 +48,58 @@ sourceui.interface.panel = function(){
 	Dom.context = this.context = $('#suiContext');
 	Dom.sectorsContainer = this.sectorsContainer = $('#suiSectorsContainer');
 	Dom.floatSectorContainer = this.floatSectorContainer = $('#suiFloatSectorContainer');
-	Dom.leftAndMain = this.leftAndMain = $([this.navLeft,this.main]).map(function(){return this.toArray();});
-	Dom.leftMainFloat = this.leftMainFloat = $([this.navLeft,this.main,this.floatSectorContainer]).map(function(){return this.toArray();});
+	Dom.leftAndMain = this.leftAndMain = $([this.navLeft, this.main]).map(function () { return this.toArray(); });
+	Dom.leftMainFloat = this.leftMainFloat = $([this.navLeft, this.main, this.floatSectorContainer]).map(function () { return this.toArray(); });
 
-	Dom.document.on('panelready',function(event){
+	Dom.document.on('panelready', function (event) {
 		Dom.body.removeClass('loading sui-ajax').children('.sui-spinner:eq(0)').remove();
 		Dom.panel.show();
 	});
 
 
-	Dom.main.on('click',function(){
+	Dom.main.on('click', function () {
 		var $body = Dom.body;
-		if (Device.ismobile){
+		if (Device.ismobile) {
 			$body.addClass('leftcollapsed');
 		}
 	});
-	Dom.main.on('swiperight',function(event){
+	Dom.main.on('swiperight', function (event) {
 		$('body').removeClass('leftcollapsed');
+		console.log(event);
 		event.stopPropagation();
 	});
-	Dom.asideLeft.on('click','.logo',function(event){
+	Dom.asideLeft.on('click', '.logo', function (event) {
 		if (Device.ismobile) Dom.asideLeft.trigger('swipeleft');
 		Dom.sectorTabs.find('.unclosable').trigger('click');
 	});
-	Dom.asideLeft.on('swipeleft',function(event){
+	Dom.asideLeft.on('swipeleft', function (event) {
 		$('body').addClass('leftcollapsed');
 		event.stopPropagation();
 	});
-	if (this.navTools.find('li.notifications.notified').length){
+	if (this.navTools.find('li.notifications.notified').length) {
 		Plugin.notification.badge(0);
 	}
-	Dom.navTools.on('click','li',function(event){
+	Dom.navTools.on('click', 'li', function (event) {
 		var $this = $(this);
 		var $navs = $this.removeClass('selected').closest('.navtools').siblings('nav');
-		var $nav = $navs.filter('#'+$this.data('id'));
-		if (!$this.hasClass('selected')){
+		var $nav = $navs.filter('#' + $this.data('id'));
+		if (!$this.hasClass('selected')) {
 			$this.parent().children().removeClass('selected');
 			$this.addClass('selected');
 			$navs.removeClass('selected');
 			$nav.addClass('selected').qrcode();
-			if ($this.data('notification') && !$this.hasClass('has-clicked')){
+			if ($this.data('notification') && !$this.hasClass('has-clicked')) {
 				$this.addClass('has-clicked');
 				Socket.permission();
 			}
-			if ($this.hasClass('notified')){
+			if ($this.hasClass('notified')) {
 				Plugin.notification.shown();
 			}
 			var $qru = $nav.find('.qrcode-url').html('');
-			if ($qru.length){
+			if ($qru.length) {
 				$qru.qrcode({
-					text:window.location.href,
-					fill:'#403d3c',
+					text: window.location.href,
+					fill: '#403d3c',
 					size: 200,
 				});
 			}
@@ -106,115 +107,115 @@ sourceui.interface.panel = function(){
 		if (!Device.ismobile) $.CURR.navTool = $this;
 		event.stopPropagation();
 	});
-	Dom.leftMainFloat.on('click','.sui-link:not(.selected)',function(event,data){ // :attrHas("data-link"):not(.selected)
+	Dom.leftMainFloat.on('click', '.sui-link:not(.selected), .sui-link[data-link-tab="sector"][data-link-placement="replace"]', function (event, data) { // :attrHas("data-link"):not(.selected)
 		var $this = $(this);
 		if ($this.isDisable()) return;
-		Network.link.call($this,data);
+		Network.link.call($this, data);
 		Panel.navLeft.find('.area > .blocklist > li.selected').trigger('click');
 		if ($.CURR.navTool) Dom.document.trigger('click');
 	});
-	Dom.navLeft.on('click','.sui-link',function(event,data){ // :attrHas("data-link"):not(.selected)
+	Dom.navLeft.on('click', '.sui-link', function (event, data) { // :attrHas("data-link"):not(.selected)
 		event.stopPropagation();
 	});
-	Dom.navLeft.on('click','#authLogout',function(event,data){
+	Dom.navLeft.on('click', '#authLogout', function (event, data) {
 		var $this = $(this);
-		Network.link.call($this,{
-			cache : false,
-			ondone : function(setup){
+		Network.link.call($this, {
+			cache: false,
+			ondone: function (setup) {
 				Dom.body.find('.sui-header-top, .sui-header-bar, #suiAsideLeft, #suiMain').remove();
-				setTimeout(function(){window.location.reload(true);},250);
+				setTimeout(function () { window.location.reload(true); }, 250);
 			}
 		});
 	});
-	Dom.navLeft.on('click','.sui-link:not(.selected)',function(){ // :attrHas("data-link"):not(.selected)
+	Dom.navLeft.on('click', '.sui-link:not(.selected)', function () { // :attrHas("data-link"):not(.selected)
 		var $this = $(this);
 		if ($this.isDisable()) return;
-		if ($this.tag() == 'li'){
+		if ($this.tag() == 'li') {
 			Panel.navLeft.find('.sui-link.selected').removeClass('selected');
 			$this.addClass('selected');
-			if (Device.ismobile){
+			if (Device.ismobile) {
 				Dom.body.addClass('leftcollapsed');
 			}
 		}
 
 	});
-	Dom.navLeft.on('click','.sui-link.selected',function(event){ // :attrHas("data-link"):not(.selected)
-		if (Device.ismobile){
+	Dom.navLeft.on('click', '.sui-link.selected', function (event) { // :attrHas("data-link"):not(.selected)
+		if (Device.ismobile) {
 			Dom.body.addClass('leftcollapsed');
 		}
 	});
-	Dom.navLeft.on('click','.area > .blocklist > li',function(event){
+	Dom.navLeft.on('click', '.area > .blocklist > li', function (event) {
 		var $this = $(this);
 		var $nav = $this.closest('.sui-nav');
-		if ($('body').hasClass('leftcollapsed') && !Device.ismobile){
-			if ($this.hasClass('selected')){
+		if ($('body').hasClass('leftcollapsed') && !Device.ismobile) {
+			if ($this.hasClass('selected')) {
 				$this.removeClass('selected');
-				$nav.find('.block#'+$this.data('id')).removeClass('selected');
+				$nav.find('.block#' + $this.data('id')).removeClass('selected');
 			} else {
 				$this.closest('.sui-nav').find('.block.selected').removeClass('selected');
 				$this.siblings('li.selected').removeClass('selected');
 				$this.addClass('selected');
-				$nav.find('.block#'+$this.data('id')).addClass('selected');
+				$nav.find('.block#' + $this.data('id')).addClass('selected');
 			}
 		} else {
 			$nav.find('.block.selected').removeClass('selected');
 			$this.siblings('li').removeClass('selected');
-			$nav.find('.block#'+$this.data('id')).addClass('selected');
+			$nav.find('.block#' + $this.data('id')).addClass('selected');
 			$this.addClass('selected');
 			$nav.find('.scroll-custom').customScroll('update');
 		}
 		event.stopPropagation();
 	});
-	Dom.navLeft.on('click','.area > .block > .wrap > .group > .name',function(event){
+	Dom.navLeft.on('click', '.area > .block > .wrap > .group > .name', function (event) {
 		var $group = $(this).parent();
-		if ($group.hasClass('collapsed')){
+		if ($group.hasClass('collapsed')) {
 			$group.removeClass('collapsed').addClass('expanded');
 		} else {
 			$group.removeClass('expanded').addClass('collapsed');
 		}
 		Panel.navLeft.find('.scroll-custom').customScroll('update');
 	});
-	Dom.navLeft.on('click','.group .item',function(event){
+	Dom.navLeft.on('click', '.group .item', function (event) {
 		var $this = $(this);
-		if ($this.closest('.sui-nav').data('alias') == 'notifications'){
+		if ($this.closest('.sui-nav').data('alias') == 'notifications') {
 			Plugin.notification.readed($this);
 		}
 	});
-	Dom.leftCollapser.on('click',function(event){
+	Dom.leftCollapser.on('click', function (event) {
 		$('body').toggleClass('leftcollapsed');
 		event.stopPropagation();
 	});
-	Dom.sectorTabs.on('animeclose','li:not(.selected)',function(event){
+	Dom.sectorTabs.on('animeclose', 'li:not(.selected)', function (event) {
 		var $this = $(this);
-		var $sector = Panel.sectorsContainer.children('#'+$this.data('sector'));
+		var $sector = Panel.sectorsContainer.children('#' + $this.data('sector'));
 		if (Device.ismobile) {
-			$sector.hide().css('opacity',0);
+			$sector.hide().css('opacity', 0);
 			$sector.velocity({
-				scale:[1,1.2],
-				opacity:[1,0],
-				display:'block'
-			},{
-				duration:220,
-				complete : function(){ $sector.css('transform',''); }
-			},'ease-out');
+				scale: [1, 1.2],
+				opacity: [1, 0],
+				display: 'block'
+			}, {
+					duration: 220,
+					complete: function () { $sector.css('transform', ''); }
+				}, 'ease-out');
 		}
 		$this.trigger('click');
 	});
-	Dom.sectorTabs.on('click','li',function(event,animate,fake){
+	Dom.sectorTabs.on('click', 'li', function (event, animate, fake) {
 		var $this = $(this);
-		var $opener = $this.data('opener') || Panel.navLeft.find('.sui-link[data-link-sector="'+$this.data('sector')+'"]');
-		var $sector = Panel.sectorsContainer.children('#'+$this.data('sector'));
+		var $opener = $this.data('opener') || Panel.navLeft.find('.sui-link[data-link-sector="' + $this.data('sector') + '"]');
+		var $sector = Panel.sectorsContainer.children('#' + $this.data('sector'));
 		//////////////////////////////////////////
-		if (!$sector.data('tab')) $sector.data('tab',$this);
+		if (!$sector.data('tab')) $sector.data('tab', $this);
 		//////////////////////////////////////////
 		Panel.sectorsContainer.children('.sui-sector.selected:not(.alwaysactive)').removeClass('selected');
-		if (animate){
-			Panel.sectorsContainer.children('#'+$this.data('sector')).css('opacity',0).addClass('selected').velocity({
-				translateX:animate=='next'?[0,50]:[0,-50],
-				opacity:[1,0]
-			},{
-				duration:220,
-			},'ease-out');
+		if (animate) {
+			Panel.sectorsContainer.children('#' + $this.data('sector')).css('opacity', 0).addClass('selected').velocity({
+				translateX: animate == 'next' ? [0, 50] : [0, -50],
+				opacity: [1, 0]
+			}, {
+					duration: 220,
+				}, 'ease-out');
 		} else {
 			$sector.addClass('selected');
 		}
@@ -225,55 +226,55 @@ sourceui.interface.panel = function(){
 		///////////////////////////////////////////////
 		// HISTORY
 		///////////////////////////////////////////////
-		if (!fake && $sector.data('history')){
+		if (!fake && $sector.data('history')) {
 			Network.history.tab($sector);
 		}
 		///////////////////////////////////////////////
 		event.stopPropagation();
 	});
-	Dom.sectorTabs.on('swipeleft','li',function(event){
-		if (Device.ismobile){
+	Dom.sectorTabs.on('swipeleft', 'li', function (event) {
+		if (Device.ismobile) {
 			var $this = $(this);
-			$this.next('li').trigger('click',['next']);
+			$this.next('li').trigger('click', ['next']);
 			event.stopPropagation();
 		}
 	});
-	Dom.sectorTabs.on('swiperight','li',function(event){
-		if (Device.ismobile){
+	Dom.sectorTabs.on('swiperight', 'li', function (event) {
+		if (Device.ismobile) {
 			var $this = $(this);
-			$this.prev('li').trigger('click',['prev']);
+			$this.prev('li').trigger('click', ['prev']);
 			event.stopPropagation();
 		}
 	});
-	Dom.sectorTabs.on('click','li .close',function(event){
+	Dom.sectorTabs.on('click', 'li .close', function (event) {
 		var $this = $(this),
 			$tab = $this.parent();
-		Panel.sectorsContainer.children('#'+$tab.data('sector')).trigger('sector:close');
+		Panel.sectorsContainer.children('#' + $tab.data('sector')).trigger('sector:close');
 		event.stopPropagation();
 	});
 
-	Dom.context.on('sector:close','.sui-sector',function(event){
+	Dom.context.on('sector:close', '.sui-sector', function (event) {
 		var $sector = $(this).removeClass('sui-prevent-close');
 		var $views = Array.prototype.reverse.call($sector.find('#suiViewsContainer > .sui-view'));
 		var isPrevented = false;
-		$views.each(function(){
-			if (!$sector.hasClass('sui-prevent-close')){
-				$(this).trigger('view:close',[true]);
+		$views.each(function () {
+			if (!$sector.hasClass('sui-prevent-close')) {
+				$(this).trigger('view:close', [true]);
 			} else {
 				isPrevented = true;
 				return false;
 			}
 		});
-		if (!isPrevented){
-			if ($sector.hasClass('float')){
+		if (!isPrevented) {
+			if ($sector.hasClass('float')) {
 				$sector.parent().trigger('click');
 			} else {
-				var	$tab = Panel.sectorTabs.find('[data-sector="'+$sector.data('sector')+'"]');
-				var	$prev = $tab.prev();
-				var	$next = $tab.next();
+				var $tab = Panel.sectorTabs.find('[data-sector="' + $sector.data('sector') + '"]');
+				var $prev = $tab.prev();
+				var $next = $tab.next();
 				$sector.remove();
-				if ($tab.length){
-					if ($tab.hasClass('selected')){
+				if ($tab.length) {
+					if ($tab.hasClass('selected')) {
 						if ($next.length) {
 							$next.trigger('animeclose');
 						} else if ($prev.length) {
@@ -281,7 +282,7 @@ sourceui.interface.panel = function(){
 						}
 					}
 					if (!$next.length && !$prev.length) {
-						Panel.navLeft.find('.sui-link[data-link-sector="'+$tab.data('sector')+'"]').removeClass('selected');
+						Panel.navLeft.find('.sui-link[data-link-sector="' + $tab.data('sector') + '"]').removeClass('selected');
 					}
 					$tab.remove();
 				}
@@ -294,32 +295,36 @@ sourceui.interface.panel = function(){
 	$('#suiAuth').remove();
 	Dom.document.find('.scroll-custom').customScroll();
 
-	if (!Device.ismobile){
+	if (!Dom.navLeft.find('.area > .blocklist > li.selected').length) {
+		Dom.navLeft.find('.area > .blocklist > li:eq(0)').trigger('click');
+	}
+
+	if (!Device.ismobile) {
 		var $draggable = Dom.asideLeft.find('.sui-draggable').draggabilly({
 			axis: 'x'
 		});
-		$draggable.on('dragStart',function(){
+		$draggable.on('dragStart', function () {
 			Dom.body.addClass('drag-horizontal');
 		});
-		$draggable.on('dragEnd',function(){
-			$draggable.trigger('move',[$draggable.offset().left]);
+		$draggable.on('dragEnd', function () {
+			$draggable.trigger('move', [$draggable.offset().left]);
 			Dom.body.removeClass('drag-horizontal');
 		});
-		$draggable.on('move',function(event,x){
+		$draggable.on('move', function (event, x) {
 			var dw = $draggable.width();
-			x = x + dw/2;
+			x = x + dw / 2;
 			Dom.asideLeft.width(x);
 			Dom.main.css({
-				'left':x+'px',
-				'width': 'calc(100% - '+x+'px)'
+				'left': x + 'px',
+				'width': 'calc(100% - ' + x + 'px)'
 			});
-			Device.Global.set('drag-panel-position',{
+			Device.Global.set('drag-panel-position', {
 				position: x
 			});
 			window.dispatchEvent(new Event('resize'));
 		});
-		var x = Device.Global.get('drag-panel-position')||{};
-		$draggable.draggabilly('setPosition', x.position).trigger('move',[x.position]);
+		var x = Device.Global.get('drag-panel-position') || {};
+		$draggable.draggabilly('setPosition', x.position).trigger('move', [x.position]);
 	}
 
 };

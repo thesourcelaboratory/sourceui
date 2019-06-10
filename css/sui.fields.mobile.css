@@ -35,6 +35,9 @@
 .sui-field .sui-droplist { display:none !important; }
 .sui-field > .wrap { position:relative; }
 .sui-field > .wrap > .badge { display:none; position:absolute; top:-14px; right:8px; padding:2px; background:#5a5858; color:#FFF; font-size:8px; text-align:center; font-weight:bold; width:16px; height:16px; line-height:12px; border-radius:16px; }
+.sui-field > .wrap > .help { display:block; margin-top:0px; position:relative; padding:6px 8px; background:#b7b7b7; color:#FFF; font-size:11px; text-align:left; font-weight:500; width:100%; border-radius:4px; }
+.sui-field > .wrap > .help:before { content:''; display:block; position:absolute; right:6px; top:-3px; background:#b7b7b7; width:8px; height:8px; transform: rotate(45deg); }
+.sui-field > .wrap > .help:empty { display:none !important; }
 .sui-field > .wrap > .table { display:table; width:100%; /* table-layout: fixed;*/ }
 .sui-field:last-child { border-bottom-color:transparent; }
 .sui-field > .wrap > .table > .cell { display:table-cell; position:relative; vertical-align:middle; width:200px; height:34px; cursor:text; }

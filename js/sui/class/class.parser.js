@@ -24,7 +24,7 @@ sourceui.templates.interface = new sourceui.Template({
 	chart:
 		'<div class="chart" data-chart-type="@{data:type}">@{data:json}</div>',
 	datasheet:
-		'<div class="sheet" data-name="@{data:name}"><code>@{data:json}</code></div>',
+		'<div class="noswipe sheet" data-name="@{data:name}"><code>@{data:json}</code></div>',
 	/*
 	spinner :
 		'<div class="sui-spinner">'+
@@ -531,7 +531,14 @@ sourceui.templates.interface = new sourceui.Template({
 				description:
 					'<@{value:tag} data-index="@{value:index}" class="col @{class:order} @{class:type} @{class:is} @{class:icon} @{class:info}"@{style}@{async}><div class="fixflow">@{label:content}</div></@{value:tag}>',
 				image:
-					'<@{value:tag} data-index="@{value:index}" data-original="@{prop:original}" class="col @{class:order} @{class:type} @{class:is}"@{async}@{data}><div class="img"@{style}></div></@{value:tag}>',
+					'<@{value:tag} data-index="@{value:index}" data-original="@{prop:original}" class="col @{class:order} @{class:type} @{class:is}"@{data}><div class="img"@{style}@{async}></div></@{value:tag}>',
+				icon:
+					'<@{value:tag} data-index="@{value:index}" data-original="@{prop:original}" class="col @{class:order} @{class:type} @{class:is}"@{data}><i class="icon @{class:icon}"@{style}></i></@{value:tag}>',
+				abbr:
+					'<@{value:tag} data-index="@{value:index}" data-original="@{prop:original}" class="col @{class:order} @{class:type} @{class:is}"@{data}><div class="abbr"@{style}@{async}>@{label:content}</div></@{value:tag}>',
+				ordinary:
+					'<@{value:tag} data-index="@{value:index}" data-original="@{prop:original}" class="col @{class:order} @{class:type} @{class:is}"@{data}><div class="ordinary"@{style}@{async}>@{label:content}</div></@{value:tag}>',
+
 				flex: {
 					container:
 						'<div class="flexer">@{child:items}</div>',
@@ -836,7 +843,7 @@ sourceui.templates.interface = new sourceui.Template({
 		},
 		map: {
 			map:
-				'<div class="map"@{attr}></div>',
+				'<div class="noswipe map"@{attr}></div>',
 		},
 		log: {
 			timeline:
@@ -1331,7 +1338,7 @@ sourceui.Parser = function () {
 						type: 'error',
 						name: 'Validação',
 						label: 'Ops... algo errado não está certo, Batman',
-						message: 'Dados do formulário são invalidos',
+						message: 'Os dados do formulário são invalidos',
 					});
 				}
 
@@ -2013,7 +2020,8 @@ sourceui.Parser = function () {
 										if (hd.class.type == 'key') { data.label.content = '<small class="icon-key3">' + data.label.content + '</small>'; }
 										else if (hd.class.type == 'image') { data.style['background-image'] = 'url(' + data.label.content + ')'; data.label.content = ''; }
 										else if (hd.class.type == 'icon') { data.class.icon = data.label.content; data.label.content = ''; if (data.prop.color) { data.style['background-color'] = data.style.color = data.prop.color; } }
-										else if (hd.class.type == 'abbr') { data.style['background-color'] = data.prop.color || '#898787'; }
+										else if (hd.class.type == 'abbr') { data.style['background-color'] = data.prop.color || '#00000088'; }
+										else if (hd.class.type == 'ordinary') { data.style['background-color'] = data.prop.color || '#FFF'; }
 										else if (hd.class.type == 'rounded') { data.value.tag = 'mark'; data.label.content = '<span' + ((data.prop.color) ? ' style="background:' + $.colorfy(data.label.content, data.prop.color) + '"' : '') + '>' + data.label.content + '</span>'; }
 										else if (hd.class.type == 'filled') { data.value.tag = 'mark'; data.style.background = $.colorfy(data.label.content, data.prop.color); }
 										else if (hd.class.type == 'number') { data.style.color = $.colorfy(data.label.content, data.prop.color); }
@@ -2021,6 +2029,9 @@ sourceui.Parser = function () {
 
 										if (hd.class.type == 'description') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'description', data, Template.get);
 										else if (hd.class.type == 'image') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'image', data, Template.get);
+										else if (hd.class.type == 'icon') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'icon', data, Template.get);
+										else if (hd.class.type == 'abbr') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'abbr', data, Template.get);
+										else if (hd.class.type == 'ordinary') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'ordinary', data, Template.get);
 										else if (hd.class.type == 'flex') {
 											var htmlItem = '';
 											suiColumn.findChild('flex', function () {
@@ -2043,7 +2054,7 @@ sourceui.Parser = function () {
 												} else if (this.nodeName == 'image') {
 													jdata.style['background-image'] = 'url(' + jdata.label.content + ')'; jdata.label.content = '';
 													jast = { image: jdata.style['background-image'] };
-												} else if (this.nodeName == 'image') {
+												} else if (this.nodeName == 'icon') {
 													jdata.class.icon = jdata.label.content; jdata.label.content = '';
 													if (jdata.prop.color) {
 														jdata.style['background-color'] = jdata.prop.color;
@@ -2105,12 +2116,19 @@ sourceui.Parser = function () {
 					treeview: function (sui) {
 						var suiTree = sui,
 							htmlTree = '',
-							htmlNodes = '';
+							htmlNodes = '',
+							htmlEmpty = '';
 						htmlTree = suiTree.toHTML('wg', 'datagrid', 'treeview', 'container', Template.get);
 						suiTree.findChild('node', function () {
 							htmlNodes += Components.libs.widget.datagrid.treenode(this);
+						}, function () {
+							suiTree.findChild('empty', function () {
+								htmlEmpty += this.toHTML('empty', { child: { html: this.content() } }, Template.get);
+							}, function () {
+								htmlEmpty += suiTree.toHTML('empty', { child: { html: 'Não há registros' } }, Template.get);
+							});
 						});
-						return Template.replace(htmlTree, { child: { content: '<ul>' + htmlNodes + '</ul>' } });
+						return Template.replace(htmlTree, { child: { content: htmlEmpty || '<ul>' + htmlNodes + '</ul>' } });
 					},
 					treenode: function (sui) {
 						var suiNode = sui,

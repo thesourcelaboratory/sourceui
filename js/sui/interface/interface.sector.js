@@ -20,7 +20,7 @@
  * @param {string} author - The author of the book.
  */
 
-sourceui.interface.sector = function(){
+sourceui.interface.sector = function () {
 
 	'use strict';
 
@@ -31,5 +31,21 @@ sourceui.interface.sector = function(){
 	var Debug = Device.Debug;
 	var Interface = sourceui.interface;
 	var Dom = Interface.dom;
+
+
+	Dom.main.on('swipeleft', '.sui-tabs-view > ol > li', function (event) {
+		if (Device.ismobile) {
+			var $this = $(this);
+			$this.next('li').trigger('click', ['next']);
+			event.stopPropagation();
+		}
+	});
+	Dom.main.on('swiperight', '.sui-tabs-view > ol > li', function (event) {
+		if (Device.ismobile) {
+			var $this = $(this);
+			$this.prev('li').trigger('click', ['prev']);
+			event.stopPropagation();
+		}
+	});
 
 };

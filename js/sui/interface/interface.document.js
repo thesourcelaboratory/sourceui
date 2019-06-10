@@ -296,8 +296,8 @@ sourceui.interface.document = function () {
 		});
 		if (!Device.ismobile) {
 			ui.find('.sui-layout.table.mansory .cell').each(function () {
+				var $cell = $(this);
 				setTimeout(function () {
-					var $cell = $(this);
 					var maxh = 0;
 					$cell.children().each(function () {
 						var $this = $(this);

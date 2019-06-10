@@ -392,7 +392,6 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 			var $f = $(this);
 			ftr = $.extend(true, ftr, Datagrid.deparam($f.data('name'), $f.data('value')));
 		});
-		console.log(ftr);
 		return $.deparam(ftr);
 	};
 

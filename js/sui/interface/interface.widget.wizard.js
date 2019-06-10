@@ -20,7 +20,7 @@
  * @param {string} author - The author of the book.
  */
 
-sourceui.interface.widget.wizard = function(){
+sourceui.interface.widget.wizard = function ($widget, setup) {
 
 	'use strict';
 
@@ -32,44 +32,46 @@ sourceui.interface.widget.wizard = function(){
 	var Interface = sourceui.interface;
 	var Dom = Interface.dom;
 
-	Form.valid = true;
-	Form.widget = $widget;
-	Form.common = new Interface.widget.common($widget,setup);
-	Form.fields = Form.widget.find('.sui-field');
-	Form.buttons = Form.widget.find('.sui-buttonset .sui-button a');
-	Form.fields.customField();
-	Form.widget.on('field:input',function(event,$lines){
+	Wizard.valid = true;
+	Wizard.widget = $widget;
+	Wizard.common = new Interface.widget.common($widget, setup);
+	Wizard.fields = Wizard.widget.find('.sui-field');
+	Wizard.buttons = Wizard.widget.find('.sui-buttonset .sui-button a');
+	Wizard.fields.customField();
+	Wizard.widget.on('field:input', function (event, $lines) {
 		var $field = $(event.target).addClass('modified');
 		Wizard.common.toggleTools('field:input');
 	});
-	Form.widget.on('field:change',function(event,$lines){
+	Wizard.widget.on('field:change', function (event, $lines) {
 		var $field = $(event.target).addClass('modified');
 		Wizard.common.toggleTools('field:change');
 	});
-	Form.buttons.on('click',function(event){
+	Wizard.buttons.on('click', function (event) {
 		var $a = $(this);
-		if ($a.data('alias') == 'submit'){
-			$a.data('linkCache',false);
+		if ($a.data('alias') == 'submit') {
+			$a.data('linkCache', false);
 			Wizard.widgetData();
-			if (Wizard.valid === true){
-				Network.link.call($a,Wizard.wgdata);
+			if (Wizard.valid === true) {
+				Network.link.call($a, Wizard.wgdata);
 				event.stopImmediatePropagation();
 			} else {
 				Wizard.widget.closest('.sui-view').trigger('form:invalid');
 			}
+		} else if ($a.data('alias') == 'close' || $a.data('alias') == 'cancel') {
+			Dom.floatSectorContainer.find('.sui-sector .close').click();
 		}
-	});	
-	
-	Form.widgetData = function(){
-		Wizard.wgdata = { data:{}, validate:{} };
+	});
+
+	Wizard.widgetData = function () {
+		Wizard.wgdata = { data: {}, validate: {} };
 		Wizard.valid = true;
-		Wizard.fields.filter(':not(.disable):not(.ignored)').each(function(){
+		Wizard.fields.filter(':not(.disable):not(.ignored)').each(function () {
 			var $field = $(this);
 			var status = $field.validate();
-			if (status === true){
+			if (status === true) {
 				Wizard.wgdata.data[$field.data('name')] = $field.val();
 				var vdata = $field.data('validate');
-				if (vdata) Wizard.wgdata.validate[$field.data('name')] = $.extend({id:$field.attr('id')},vdata);
+				if (vdata) Wizard.wgdata.validate[$field.data('name')] = $.extend({ id: $field.attr('id') }, vdata);
 			} else if (status !== true) {
 				Wizard.valid = status;
 				return true;

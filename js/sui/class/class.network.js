@@ -92,234 +92,261 @@ sourceui.Network = function () {
 		}).trace();
 	}, false);
 
-	var Metric = function () {
-		var Metric = this;
-		this.data = {};
-		this.res = {};
-		/*
-		---------------------------
-		Metric.add()
-		---------------------------
-		Método utilizado para criar os pontos das métricas.
-		Os pontos analíticos de entrada são:
-		- requestStartTime - valor timestamp do momento em que a requisição é solicitada
-		- requestEndTime - valor timestamp do momento em que a requisição é realizada
-		- responseStartTime - valor timestamp do momento em que a resposta ao servidor é obtida
-		- responseEndTime - valor timestamp do momento em que a resposta ao servidor é baixada
-		- processStartTime - valor timestamp do momento em que a resposta começa a ser processada pelo jquery
-		- processEndTime - valor timestamp do momento em que a resposta é totalmente processada pelo jquery
-		- parseStartTime - valor timestamp do momento em que a resposta processada começa a ser analizada pelo parser
-		- parseEndTime - valor timestamp do momento em que a resposta processada é finalizada pelo parser e fica disponível no documento
-			@setup - object - required - objeto de setup da requisição
-			@t - string - required - ponto analítico que recebe o timestamp
-		---------------------------
-		*/
-		this.add = function (t, v) {
-			Metric.data[t] = v || new Date().getTime();
-		};
-		/*
-		---------------------------
-		Ajax.metric.calc()
-		---------------------------
-		Método utilizado para calcular os pontos das métricas ao final da requisição.
-		Os valores calculados substituem os pontos analíticos de base. Um outro ponto analítico é criado:
-		- totalTime - ponto analítico contendo o tempo total gasto pela requisição
-			@setup - object - required - objeto de setup da requisição
-		---------------------------
-		*/
-		this.calc = function () {
-			var m = Metric.data;
-			var nm = {
-				requestTime: (m.requestEndTime) ? m.requestEndTime - m.requestStartTime : 0,
-				responseTime: (m.responseEndTime) ? m.responseEndTime - m.responseStartTime : 0,
-				processTime: (m.processEndTime) ? m.processEndTime - m.processStartTime : 0,
-				parseTime: (m.parseEndTime) ? m.parseEndTime - m.parseStartTime : 0,
-				//totalTime : (m.parseEndTime) ? m.parseEndTime - m.requestStartTime : 0, // calcula o tempo final
-				bytesTotal: m.bytesTotal // calcula o tempo final
+	class Metric {
+		constructor() {
+			var Metric = this;
+			this.data = {};
+			this.res = {};
+			/*
+			---------------------------
+			Metric.add()
+			---------------------------
+			Método utilizado para criar os pontos das métricas.
+			Os pontos analíticos de entrada são:
+			- requestStartTime - valor timestamp do momento em que a requisição é solicitada
+			- requestEndTime - valor timestamp do momento em que a requisição é realizada
+			- responseStartTime - valor timestamp do momento em que a resposta ao servidor é obtida
+			- responseEndTime - valor timestamp do momento em que a resposta ao servidor é baixada
+			- processStartTime - valor timestamp do momento em que a resposta começa a ser processada pelo jquery
+			- processEndTime - valor timestamp do momento em que a resposta é totalmente processada pelo jquery
+			- parseStartTime - valor timestamp do momento em que a resposta processada começa a ser analizada pelo parser
+			- parseEndTime - valor timestamp do momento em que a resposta processada é finalizada pelo parser e fica disponível no documento
+				@setup - object - required - objeto de setup da requisição
+				@t - string - required - ponto analítico que recebe o timestamp
+			---------------------------
+			*/
+			this.add = function (t, v) {
+				Metric.data[t] = v || new Date().getTime();
 			};
-			nm.totalTime = nm.requestTime + nm.responseTime + nm.processTime + nm.parseTime;
-			nm.responseSpeed = (nm.bytesTotal / 1000) / (nm.responseTime / 1000);
-			return Metric.res = nm; // substitui os pontos analíticos por valores calculados
-		};
-
-		this.result = function () {
-			return Metric.res;
-		};
-
-	};
-
-	var IDBCache = function () {
-		var Cache = this;
-		var Ready = false;
-		var DB;
-		var now = new Date().getTime();
-		var expire = 2592000; // 30 dias
-		var caches = {};
-		var Console = Debug.get('IndexDB');
-		if (typeof IDBStore == 'function') DB = new IDBStore({
-			dbVersion: 1,
-			storeName: 'suiCache',
-			keyPath: 'requestKey',
-			autoIncrement: false,
-			onStoreReady: function () {
-				//Cache.clear();
-				Ready = true;
-				Console.notice({
-					mode: 'Status',
-					title: 'IDBStore Cache is ready',
-				});
-				if (Console.length == 3) Console.trace();
-				Cache.getAll();
-			}
-		});
-		this.failback = function (error) {
-			Console.error({
-				mode: 'Status',
-				title: 'IDBStore Cache error',
-				content: error
-			});
-			if (Console.length == 2) Console.trace();
-		};
-		this.set = function (setup, callback, failback) {
-			if (!setup.requestKey || !setup.response || setup.error) return;
-			var key = setup.requestKey;
-			var s;
-			if (caches[key]) {
-				caches[key].response = {
-					responseKey: setup.response.responseKey,
-					status: setup.response.status,
-					textData: setup.response.textData,
-					cacheData: setup.response.cacheData || {},
+			/*
+			---------------------------
+			Ajax.metric.calc()
+			---------------------------
+			Método utilizado para calcular os pontos das métricas ao final da requisição.
+			Os valores calculados substituem os pontos analíticos de base. Um outro ponto analítico é criado:
+			- totalTime - ponto analítico contendo o tempo total gasto pela requisição
+				@setup - object - required - objeto de setup da requisição
+			---------------------------
+			*/
+			this.calc = function () {
+				var m = Metric.data;
+				var nm = {
+					requestTime: (m.requestEndTime) ? m.requestEndTime - m.requestStartTime : 0,
+					responseTime: (m.responseEndTime) ? m.responseEndTime - m.responseStartTime : 0,
+					processTime: (m.processEndTime) ? m.processEndTime - m.processStartTime : 0,
+					parseTime: (m.parseEndTime) ? m.parseEndTime - m.parseStartTime : 0,
+					//totalTime : (m.parseEndTime) ? m.parseEndTime - m.requestStartTime : 0, // calcula o tempo final
+					bytesTotal: m.bytesTotal // calcula o tempo final
 				};
-				s = caches[key];
-			} else {
-				s = {
-					requestKey: setup.requestKey,
-					key: setup.key,
-					name: setup.name,
-					origin: setup.origin,
-					tab: setup.tab,
-					sui: setup.sui,
-					response: {
+				nm.totalTime = nm.requestTime + nm.responseTime + nm.processTime + nm.parseTime;
+				nm.responseSpeed = (nm.bytesTotal / 1000) / (nm.responseTime / 1000);
+				return Metric.res = nm; // substitui os pontos analíticos por valores calculados
+			};
+			this.result = function () {
+				return Metric.res;
+			};
+		}
+	}
+
+	class IDBCache {
+		constructor() {
+			var Cache = this;
+			var Ready = false;
+			var DB;
+			var now = new Date().getTime();
+			var expire = 2592000; // 30 dias
+			var caches = {};
+			var Console = Debug.get('IndexDB');
+			if (typeof IDBStore == 'function')
+				DB = new IDBStore({
+					dbVersion: 1,
+					storeName: 'suiCache',
+					keyPath: 'requestKey',
+					autoIncrement: false,
+					onStoreReady: function () {
+						//Cache.clear();
+						Ready = true;
+						Console.notice({
+							mode: 'Status',
+							title: 'IDBStore Cache is ready',
+						});
+						if (Console.length == 3)
+							Console.trace();
+						Cache.getAll();
+					}
+				});
+			this.failback = function (error) {
+				Console.error({
+					mode: 'Status',
+					title: 'IDBStore Cache error',
+					content: error
+				});
+				if (Console.length == 2)
+					Console.trace();
+			};
+			this.set = function (setup, callback, failback) {
+				if (!setup.requestKey || !setup.response || setup.error)
+					return;
+				var key = setup.requestKey;
+				var s;
+				if (caches[key]) {
+					caches[key].response = {
 						responseKey: setup.response.responseKey,
 						status: setup.response.status,
 						textData: setup.response.textData,
 						cacheData: setup.response.cacheData || {},
-					}
-				};
-				caches[key] = s;
-			}
-			if (DB) DB.put(s, function () {
-				caches[key].response.parsedJQ = setup.response.parsedJQ;
-				if (callback) callback(key);
-			}, failback || this.failback);
-		};
-		this.get = function (setup) {
-			var key = setup.requestKey;
-			var cache = caches[key];
-			if (cache) {
-				$.extend(true, setup, cache);
-				return setup;
-			}
-			return null;
-		};
-		this.getAll = function (failback) {
-			if (DB) DB.getAll(function (result) {
-				$.each(result, function (k, v) {
-					caches[v.requestKey] = v;
-				});
-			}, failback || this.failback);
-		};
-		this.remove = function (setup, callback, failback) {
-			var key = setup.requestKey;
-			delete caches[key];
-			if (DB) DB.remove(key, function (result) {
-				if (result !== false && callback) callback(result);
-			}, failback || this.failback);
-		};
-		this.clear = function (callback, failback) {
-			caches = {};
-			if (DB) DB.clear(function () {
-				if (callback) callback();
-			}, failback || this.failback);
-		};
-		this.ready = function () {
-			return Ready;
-		};
-	};
+					};
+					s = caches[key];
+				}
+				else {
+					s = {
+						requestKey: setup.requestKey,
+						key: setup.key,
+						name: setup.name,
+						origin: setup.origin,
+						tab: setup.tab,
+						sui: setup.sui,
+						response: {
+							responseKey: setup.response.responseKey,
+							status: setup.response.status,
+							textData: setup.response.textData,
+							cacheData: setup.response.cacheData || {},
+						}
+					};
+					caches[key] = s;
+				}
+				if (DB)
+					DB.put(s, function () {
+						caches[key].response.parsedJQ = setup.response.parsedJQ;
+						if (callback)
+							callback(key);
+					}, failback || this.failback);
+			};
+			this.get = function (setup) {
+				var key = setup.requestKey;
+				var cache = caches[key];
+				if (cache) {
+					$.extend(true, setup, cache);
+					return setup;
+				}
+				return null;
+			};
+			this.getAll = function (failback) {
+				if (DB)
+					DB.getAll(function (result) {
+						$.each(result, function (k, v) {
+							caches[v.requestKey] = v;
+						});
+					}, failback || this.failback);
+			};
+			this.remove = function (setup, callback, failback) {
+				var key = setup.requestKey;
+				delete caches[key];
+				if (DB)
+					DB.remove(key, function (result) {
+						if (result !== false && callback)
+							callback(result);
+					}, failback || this.failback);
+			};
+			this.clear = function (callback, failback) {
+				caches = {};
+				if (DB)
+					DB.clear(function () {
+						if (callback)
+							callback();
+					}, failback || this.failback);
+			};
+			this.ready = function () {
+				return Ready;
+			};
+		}
+	}
 
-	var IDBLocal = function () {
-		var Local = this;
-		var Ready = false;
-		var DB;
-		var now = new Date().getTime();
-		var expire = 2592000; // 30 dias
-		var localdata = {};
-		var Console = Debug.get('IndexDB');
-		if (typeof IDBStore == 'function') DB = new IDBStore({
-			dbVersion: 1,
-			storeName: 'suiLocal',
-			keyPath: 'apppath',
-			autoIncrement: false,
-			onStoreReady: function () {
-				Local.getLocal();
-				Console.notice({
-					mode: 'Status',
-					title: 'IDBStore Local Data is ready',
-				});
-				if (Console.length == 3) Console.trace();
-			}
-		});
-		this.failback = function (error) {
-			Console.error({
-				mode: 'Status',
-				title: 'IDBStore Local Data error',
-				content: error
-			});
-			if (Console.length == 2) Console.trace();
-		};
-		this.set = function (data, callback, failback) {
-			if (!data.session) return;
-			data.apppath = window.location.host + window.location.pathname;
-			if (data.apppath !== localdata.apppath || data.session !== localdata.session) {
-				//Local.remove();
-				localdata = data;
-				if (DB) DB.put(localdata, callback, failback || this.failback);
-				else if (callback) callback(localdata.id);
-			}
-		};
-		this.get = function (key) {
-			return localdata || {};
-		};
-		this.getLocal = function (failback) {
-			if (DB) DB.getAll(function (result) {
-				Ready = true;
-				var apppath = window.location.host + window.location.pathname;
-				$.each(result, function (k, v) {
-					if (apppath === v.apppath) {
-						localdata = v;
-						return false;
+	class IDBLocal {
+		constructor() {
+			var Local = this;
+			var Ready = false;
+			var DB;
+			var now = new Date().getTime();
+			var expire = 2592000; // 30 dias
+			var localdata = {};
+			var Console = Debug.get('IndexDB');
+			if (typeof IDBStore == 'function')
+				DB = new IDBStore({
+					dbVersion: 1,
+					storeName: 'suiLocal',
+					keyPath: 'apppath',
+					autoIncrement: false,
+					onStoreReady: function () {
+						Local.getLocal();
+						Console.notice({
+							mode: 'Status',
+							title: 'IDBStore Local Data is ready',
+						});
+						if (Console.length == 3)
+							Console.trace();
 					}
 				});
-			}, failback || this.failback);
-		};
-		this.remove = function (setup, callback, failback) {
-			var apppath = window.location.host + window.location.pathname;
-			localdata = {};
-			if (DB) DB.remove(apppath, function (result) {
-				if (result !== false && callback) callback(result);
-			}, failback || this.failback);
-		};
-		this.clear = function (callback, failback) {
-			localdata = {};
-			if (DB) DB.clear(function () {
-				if (callback) callback();
-			}, failback || this.failback);
-		};
-		this.ready = function () {
-			return Ready;
-		};
-	};
+			this.failback = function (error) {
+				Console.error({
+					mode: 'Status',
+					title: 'IDBStore Local Data error',
+					content: error
+				});
+				if (Console.length == 2)
+					Console.trace();
+			};
+			this.set = function (data, callback, failback) {
+				if (!data.session)
+					return;
+				data.apppath = window.location.host + window.location.pathname;
+				if (data.apppath !== localdata.apppath || data.session !== localdata.session) {
+					//Local.remove();
+					localdata = data;
+					if (DB)
+						DB.put(localdata, callback, failback || this.failback);
+					else if (callback)
+						callback(localdata.id);
+				}
+			};
+			this.get = function (key) {
+				return localdata || {};
+			};
+			this.getLocal = function (failback) {
+				if (DB)
+					DB.getAll(function (result) {
+						Ready = true;
+						var apppath = window.location.host + window.location.pathname;
+						$.each(result, function (k, v) {
+							if (apppath === v.apppath) {
+								localdata = v;
+								return false;
+							}
+						});
+					}, failback || this.failback);
+			};
+			this.remove = function (setup, callback, failback) {
+				var apppath = window.location.host + window.location.pathname;
+				localdata = {};
+				if (DB)
+					DB.remove(apppath, function (result) {
+						if (result !== false && callback)
+							callback(result);
+					}, failback || this.failback);
+			};
+			this.clear = function (callback, failback) {
+				localdata = {};
+				if (DB)
+					DB.clear(function () {
+						if (callback)
+							callback();
+					}, failback || this.failback);
+			};
+			this.ready = function () {
+				return Ready;
+			};
+		}
+	}
 
 
 	var Local = new IDBLocal();
@@ -331,1103 +358,675 @@ sourceui.Network = function () {
 	this.localClear = Local.clear;
 	this.localGet = Local.get;
 	// --------------------------------
-
-	var Ajax = function (setup) {
-
-		var Ajax = this;
-
-		setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1) ? setup.sui : Server.name + setup.sui;
-
-		var Console = Debug.get('Network', {
-			mode: (Server.cors ? 'CORS ' : '') + Server.protocol.toUpperCase(),
-			key: setup.suisrc
-		});
-
-		if (setup.geolocation === false) {
-			Console.warn({
-				mode: 'GEO',
-				title: 'Device Geolocation position not found'
+	class Ajax {
+		constructor(setup) {
+			var Ajax = this;
+			setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1) ? setup.sui : Server.name + setup.sui;
+			var Console = Debug.get('Network', {
+				mode: (Server.cors ? 'CORS ' : '') + Server.protocol.toUpperCase(),
+				key: setup.suisrc
 			});
-		} else if (typeof setup.geolocation == 'object') {
-			if (setup.geolocation) {
-				Console.info({
+			if (setup.geolocation === false) {
+				Console.warn({
 					mode: 'GEO',
-					title: 'Device Geolocation was found!',
-					content: 'https://www.openstreetmap.org/#map=18/' + setup.geolocation.lat + '/' + setup.geolocation.lon
+					title: 'Device Geolocation position not found'
 				});
 			}
-		}
-
-		this.abort = function (silent) {
-			if (setup.xhr) {
-				if (setup.process) {
-					Notify.open({
-						type: 'warn',
-						name: 'Muita calma nessa hora...',
-						label: setup.suiname,
-						message: 'O processo está em andamento e precisa ser concluído pelo servidor.',
+			else if (typeof setup.geolocation == 'object') {
+				if (setup.geolocation) {
+					Console.info({
+						mode: 'GEO',
+						title: 'Device Geolocation was found!',
+						content: 'https://www.openstreetmap.org/#map=18/' + setup.geolocation.lat + '/' + setup.geolocation.lon
 					});
-				} else {
-					setup.xhr.abort();
-					if (!silent) {
-						Ajax.loading.stop();
-						Console.warn({
-							type: 'XHR',
-							title: 'Connection aborted'
-						}).show();
+				}
+			}
+			this.abort = function (silent) {
+				if (setup.xhr) {
+					if (setup.process) {
 						Notify.open({
 							type: 'warn',
-							name: 'Alerta de Rede',
+							name: 'Muita calma nessa hora...',
 							label: setup.suiname,
-							message: 'A requisição foi cancelada',
+							message: 'O processo está em andamento e precisa ser concluído pelo servidor.',
 						});
 					}
-				}
-			}
-		};
-
-		/*
-		---------------------------
-		Ajax.snip()
-		---------------------------
-		Método para inserção de strings html no DOM via cahe.
-			@setup - object - required - objeto de setup da requisição ajax.
-		---------------------------
-		*/
-		/*
-		this.snip = function(s){
-			var setup = s;
-			console.log(setup.response, setup.field);
-			if (setup.response.parsedSNIP){
-				var snip = setup.response.parsedSNIP;
-				$.each(snip||[],function(k,v){
-					if (setup.field && setup.field.length){
-						var $field = setup.field.filter( v.selector ? v.selector : ( v.name ? '[data-name="'+v.name+'"]' : '#'+v.id ) );
-						if ($field.length){
-							var Field = $field.data('customField');
-							Field.snip(v.html);
-						}
-					} else {
-						var $target = v.target;
-						if ($target.length){
-							if (setup.placement.indexOf('append') > -1){
-								$target.append(v.html);
-							} else if (setup.placement.indexOf('prepend') > -1){
-								$target.prepend(v.html);
-							} else if (setup.placement.indexOf('inner') > -1){
-								$target.html(v.html);
-							} else if (setup.placement.indexOf('replace') > -1){
-								$target.replaceWith(v.html);
-							}
+					else {
+						setup.xhr.abort();
+						if (!silent) {
+							Ajax.loading.stop();
+							Console.warn({
+								type: 'XHR',
+								title: 'Connection aborted'
+							}).show();
+							Notify.open({
+								type: 'warn',
+								name: 'Alerta de Rede',
+								label: setup.suiname,
+								message: 'A requisição foi cancelada',
+							});
 						}
 					}
-				});
-			}
-		};
-		*/
-
-		/*
-		---------------------------
-		Ajax.exists()
-		---------------------------
-		Método para testar se o que foi parseado existe no DOM.
-			@setup - object - required - objeto de setup da requisição ajax.
-		---------------------------
-		*/
-		this.exists = function (s) {
-
-			if (setup.response.parsedHTML) {
-				var sdata = Device.session.data();
-				if (sdata.device.vendor == 'Apple') {
-					setup.response.parsedHTML = setup.response.parsedHTML.replace(/\$/g, 'S');
 				}
-			}
-
-			if (setup.render) return false;
-
-			if (s) setup = s;
-			setup.response.parsedJQ = $(setup.response.parsedHTML);
-			var $exists;
-			var jqid = setup.response.parsedJQ.attr('id');
-			var tgid = setup.target ? setup.target.attr('id') : null;
-			if (jqid === tgid) $exists = setup.target;
-			else $exists = setup.target ? setup.target.find('#' + jqid) : $('#' + jqid);
-			if ($exists.length) {
-				setup.placement = setup.placement ? setup.placement.replace(/append|prepend/g, 'replace') : setup.placement;
-				//setup.placement = (setup.placement.indexOf('replace') > -1) ? setup.placement : 'replace';
-				//setup.placement = 'replace'; // priciso vir aqui depois pra olha se tem algum pau quando o replace funciona em uma view que já existe
-				setup.target = $exists;
-				return true;
-			}
-			return false;
-		};
-
-
-		/*
-		---------------------------
-		Ajax.html()
-		---------------------------
-		Método para inserção de strings html no DOM.
-			@setup - object - required - objeto de setup da requisição ajax.
-		---------------------------
-		*/
-		this.html = function (s) {
-
-			if (s) setup = s;
-
-			// CSS =======================
-			if (setup.response.parsedCSS) {
-				var $css = $(setup.response.parsedCSS);
-				var id = $css.attr('id');
-				if ($('#suiHead > #' + id).length == 0) {
-					$css.appendTo($('#suiHead'));
-				}
-			}
-			// ===========================
-
-			if (setup.target && setup.target.length && setup.response.parsedHTML) {
-				setup.response.parsedJQ = setup.response.parsedJQ || $(setup.response.parsedHTML);
-
-				var $viewsToClose;
-				if (setup.placement) {
-					if (setup.placement.indexOf('close-next-views') > -1) {
-						$viewsToClose = Array.prototype.reverse.call(setup.view.nextAll());
-					} else if (setup.placement.indexOf('close-prev-views') > -1) {
-						$viewsToClose = Array.prototype.reverse.call(setup.view.prevAll());
-					} else if (setup.placement.indexOf('close-all-views') > -1 || setup.placement.indexOf('close-views') > -1) {
-						$viewsToClose = setup.view.siblings();
-					} else if (setup.placement.indexOf('close-self-view') > -1) {
-						$viewsToClose = Array.prototype.reverse.call(setup.view.nextAll());
-						setup.view.trigger('view:close');
-					}
-					if ($viewsToClose) {
-						$viewsToClose.each(function () {
-							if (!setup.exists || (setup.target[0] !== this)) {
-								$(this).trigger('view:close');
+			};
+			/*
+			---------------------------
+			Ajax.snip()
+			---------------------------
+			Método para inserção de strings html no DOM via cahe.
+				@setup - object - required - objeto de setup da requisição ajax.
+			---------------------------
+			*/
+			/*
+			this.snip = function(s){
+				var setup = s;
+				console.log(setup.response, setup.field);
+				if (setup.response.parsedSNIP){
+					var snip = setup.response.parsedSNIP;
+					$.each(snip||[],function(k,v){
+						if (setup.field && setup.field.length){
+							var $field = setup.field.filter( v.selector ? v.selector : ( v.name ? '[data-name="'+v.name+'"]' : '#'+v.id ) );
+							if ($field.length){
+								var Field = $field.data('customField');
+								Field.snip(v.html);
 							}
-						});
+						} else {
+							var $target = v.target;
+							if ($target.length){
+								if (setup.placement.indexOf('append') > -1){
+									$target.append(v.html);
+								} else if (setup.placement.indexOf('prepend') > -1){
+									$target.prepend(v.html);
+								} else if (setup.placement.indexOf('inner') > -1){
+									$target.html(v.html);
+								} else if (setup.placement.indexOf('replace') > -1){
+									$target.replaceWith(v.html);
+								}
+							}
+						}
+					});
+				}
+			};
+			*/
+			/*
+			---------------------------
+			Ajax.exists()
+			---------------------------
+			Método para testar se o que foi parseado existe no DOM.
+				@setup - object - required - objeto de setup da requisição ajax.
+			---------------------------
+			*/
+			this.exists = function (s) {
+				if (setup.response.parsedHTML) {
+					var sdata = Device.session.data();
+					if (sdata.device.vendor == 'Apple') {
+						setup.response.parsedHTML = setup.response.parsedHTML.replace(/(?!\$\()\$/g, 'S');
 					}
-
-					if (setup.exists) {
-						setup.placement.replace(/prepend|append|inner/gi, 'replace');
+				}
+				if (setup.render)
+					return false;
+				if (s)
+					setup = s;
+				setup.response.parsedJQ = $(setup.response.parsedHTML);
+				var $exists;
+				var jqid = setup.response.parsedJQ.attr('id');
+				var tgid = setup.target ? setup.target.attr('id') : null;
+				if (jqid === tgid)
+					$exists = setup.target;
+				else
+					$exists = setup.target ? setup.target.find('#' + jqid) : $('#' + jqid);
+				if ($exists.length) {
+					setup.placement = setup.placement ? setup.placement.replace(/append|prepend/g, 'replace') : setup.placement;
+					//setup.placement = (setup.placement.indexOf('replace') > -1) ? setup.placement : 'replace';
+					//setup.placement = 'replace'; // priciso vir aqui depois pra olha se tem algum pau quando o replace funciona em uma view que já existe
+					setup.target = $exists;
+					return true;
+				}
+				return false;
+			};
+			/*
+			---------------------------
+			Ajax.html()
+			---------------------------
+			Método para inserção de strings html no DOM.
+				@setup - object - required - objeto de setup da requisição ajax.
+			---------------------------
+			*/
+			this.html = function (s) {
+				if (s)
+					setup = s;
+				// CSS =======================
+				if (setup.response.parsedCSS) {
+					var $css = $(setup.response.parsedCSS);
+					var id = $css.attr('id');
+					if ($('#suiHead > #' + id).length == 0) {
+						$css.appendTo($('#suiHead'));
 					}
-
-					if (setup.placement.indexOf('append') > -1) {
-						setup.target.append(setup.response.parsedJQ);
-					} else if (setup.placement.indexOf('prepend') > -1) {
-						setup.target.prepend(setup.response.parsedJQ);
-					} else if (setup.placement.indexOf('inner') > -1) {
-						setup.target.html(setup.response.parsedJQ);
-					} else if (setup.placement.indexOf('replace') > -1) {
+				}
+				// ===========================
+				if (setup.target && setup.target.length && setup.response.parsedHTML) {
+					setup.response.parsedJQ = setup.response.parsedJQ || $(setup.response.parsedHTML);
+					var $viewsToClose;
+					if (setup.placement) {
+						if (setup.placement.indexOf('close-next-views') > -1) {
+							$viewsToClose = Array.prototype.reverse.call(setup.view.nextAll());
+						}
+						else if (setup.placement.indexOf('close-prev-views') > -1) {
+							$viewsToClose = Array.prototype.reverse.call(setup.view.prevAll());
+						}
+						else if (setup.placement.indexOf('close-all-views') > -1 || setup.placement.indexOf('close-views') > -1) {
+							$viewsToClose = setup.view.siblings();
+						}
+						else if (setup.placement.indexOf('close-self-view') > -1) {
+							$viewsToClose = Array.prototype.reverse.call(setup.view.nextAll());
+							setup.view.trigger('view:close');
+						}
+						if ($viewsToClose) {
+							$viewsToClose.each(function () {
+								if (!setup.exists || (setup.target[0] !== this)) {
+									$(this).trigger('view:close');
+								}
+							});
+						}
 						if (setup.exists) {
-							if (!setup.target.attr('data-link-key') || setup.target.attr('data-link-key') === setup.response.parsedJQ.attr('data-link-key')) {
+							setup.placement.replace(/prepend|append|inner/gi, 'replace');
+						}
+						if (setup.placement.indexOf('append') > -1) {
+							setup.target.append(setup.response.parsedJQ);
+						}
+						else if (setup.placement.indexOf('prepend') > -1) {
+							setup.target.prepend(setup.response.parsedJQ);
+						}
+						else if (setup.placement.indexOf('inner') > -1) {
+							setup.target.html(setup.response.parsedJQ);
+						}
+						else if (setup.placement.indexOf('replace') > -1) {
+							if (setup.exists) {
+								if (!setup.target.attr('data-link-key') || setup.target.attr('data-link-key') === setup.response.parsedJQ.attr('data-link-key')) {
+									setup.target.replaceWith(setup.response.parsedJQ
+										.data('scrollTop', setup.target.data('scrollTop'))
+										.attr('data-history', setup.target.attr('data-history'))
+										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed'] }));
+								}
+								else {
+									setup.target.replaceWith(setup.response.parsedJQ
+										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed'] }));
+								}
+							}
+							else
+								setup.target.replaceWith(setup.response.parsedJQ);
+						}
+					}
+					else {
+						setup.target.html(setup.response.parsedJQ);
+					}
+					/*
+					if (setup.placement == 'append'){
+						setup.target.append(setup.response.parsedJQ);
+					} else if (setup.placement == 'prepend'){
+						setup.target.prepend(setup.response.parsedJQ);
+					} else if (setup.placement == 'replace'){
+						if (setup.exists){
+							if (!setup.target.attr('data-link-key') || setup.target.attr('data-link-key') === setup.response.parsedJQ.attr('data-link-key')){
 								setup.target.replaceWith(setup.response.parsedJQ
-									.data('scrollTop', setup.target.data('scrollTop'))
-									.attr('data-history', setup.target.attr('data-history'))
-									.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed'] })
+									.data('scrollTop',setup.target.data('scrollTop'))
+									.attr('data-history',setup.target.attr('data-history'))
+									.mergeClass(setup.target)
 								);
 							} else {
 								setup.target.replaceWith(setup.response.parsedJQ
-									.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed'] })
+									.mergeClass(setup.target,{ ignoreInTarget:['covered','ignored','removed'] })
 								);
 							}
 						}
 						else setup.target.replaceWith(setup.response.parsedJQ);
-					}
-				} else {
-					setup.target.html(setup.response.parsedJQ);
-				}
-
-				/*
-				if (setup.placement == 'append'){
-					setup.target.append(setup.response.parsedJQ);
-				} else if (setup.placement == 'prepend'){
-					setup.target.prepend(setup.response.parsedJQ);
-				} else if (setup.placement == 'replace'){
-					if (setup.exists){
-						if (!setup.target.attr('data-link-key') || setup.target.attr('data-link-key') === setup.response.parsedJQ.attr('data-link-key')){
-							setup.target.replaceWith(setup.response.parsedJQ
-								.data('scrollTop',setup.target.data('scrollTop'))
-								.attr('data-history',setup.target.attr('data-history'))
-								.mergeClass(setup.target)
-							);
-						} else {
-							setup.target.replaceWith(setup.response.parsedJQ
-								.mergeClass(setup.target,{ ignoreInTarget:['covered','ignored','removed'] })
-							);
+					} else if (setup.placement == 'inner'){
+						setup.target.html(setup.response.parsedJQ);
+					} else if (setup.placement == 'close-next-views-and-append'){
+						if (setup.view.length){
+							 // ###########################################################
+							 // não testar aqui o fechamento aqui.
+							 // testar no close da sui.interface.js (555)
+							 // ###########################################################
+							var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
+							console.log($nextAll);
+							$nextAll.each(function(){
+								$(this).trigger('view:close');
+							});
+							setup.target.append(setup.response.parsedJQ);
 						}
-					}
-					else setup.target.replaceWith(setup.response.parsedJQ);
-				} else if (setup.placement == 'inner'){
-					setup.target.html(setup.response.parsedJQ);
-				} else if (setup.placement == 'close-next-views-and-append'){
-					if (setup.view.length){
-						 // ###########################################################
-						 // não testar aqui o fechamento aqui.
-						 // testar no close da sui.interface.js (555)
-						 // ###########################################################
-						var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
-						console.log($nextAll);
-						$nextAll.each(function(){
-							$(this).trigger('view:close');
-						});
-						setup.target.append(setup.response.parsedJQ);
-					}
-				} else if (setup.placement == 'close-next-views-and-replace'){
-					var $target = (setup.target.is('.sui-view')) ? setup.target : setup.view;
-					if ($target.length){
-						 // ###########################################################
-						 // não testar aqui o fechamento aqui.
-						 // testar no close da sui.interface.js (555)
-						 // ###########################################################
-						var $nextAll = Array.prototype.reverse.call($target.nextAll());
-						$nextAll.each(function(){
-							$(this).trigger('view:close');
-						});
-						setup.target.replaceWith(setup.response.parsedJQ);
-					}
-				} else if (setup.placement == 'close-self-view-and-replace'){
-					if (setup.view.length){
-						 // ###########################################################
-						 // não testar aqui o fechamento aqui.
-						 // testar no close da sui.interface.js (555)
-						 // ###########################################################
-						var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
-						$nextAll.each(function(){
-							$(this).trigger('view:close');
-						});
-						setup.view.trigger('view:close');
-						setup.target.replaceWith(setup.response.parsedJQ);
-					}
-				} else if (setup.placement == 'close-self-view'){
-					if (setup.view.length){
-						 // ###########################################################
-						 // não testar aqui o fechamento aqui.
-						 // testar no close da sui.interface.js (555)
-						 // ###########################################################
-						var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
-						$nextAll.each(function(){
-							$(this).trigger('view:close');
-						});
-						setup.view.trigger('view:close');
-					}
-				} else {
-					setup.target.html(setup.response.parsedJQ);
-				}
-				*/
-
-			} else if (setup.field && setup.field.length && setup.response.parsedHTML) {
-				setup.response.parsedJQ = setup.response.parsedJQ || $(setup.response.parsedHTML);
-				var $wrap = setup.response.parsedJQ.wrap('<div/>');
-				var $topper = setup.widget || setup.view || setup.sector || $(document);
-				$.each(setup.field, function (k, f) {
-					var $field = (typeof f == 'object') ? f : (f.indexOf('#') === 0 ? $topper.find(f) : $topper.find('.sui-field[data-name="' + f + '"]'));
-					if ($field.length) {
-						var fid = $field.attr('id');
-						var selector = (fid) ? '#' + fid : '[' + ($field.data('name') ? 'data-name="' + $field.data('name') + '"' : '') + ']';
-						var $rend = $wrap.find(selector);
-						if ($rend.length) {
-							$field.replaceWith($rend);
+					} else if (setup.placement == 'close-next-views-and-replace'){
+						var $target = (setup.target.is('.sui-view')) ? setup.target : setup.view;
+						if ($target.length){
+							 // ###########################################################
+							 // não testar aqui o fechamento aqui.
+							 // testar no close da sui.interface.js (555)
+							 // ###########################################################
+							var $nextAll = Array.prototype.reverse.call($target.nextAll());
+							$nextAll.each(function(){
+								$(this).trigger('view:close');
+							});
+							setup.target.replaceWith(setup.response.parsedJQ);
 						}
-					}
-				});
-			} else if (setup.placement == 'close-self-view') {
-				if (setup.view.length) {
-					// ###########################################################
-					// não testar aqui o fechamento aqui.
-					// testar no close da sui.interface.js (555)
-					// ###########################################################
-					var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
-					$nextAll.each(function () {
-						$(this).trigger('view:close');
-					});
-					setup.view.trigger('view:close');
-				}
-			}
-
-			// JS ========================
-			if (setup.response.parsedJS) {
-				var $js = $(setup.response.parsedJS);
-				$js.appendTo($('#suiHead')).remove();
-			}
-			// ===========================
-
-
-		};
-		this.loading = { // subclasse para as animações enquanto a requisição é realizada
-			/*
-			---------------------------
-			Ajax.loading.start()
-			---------------------------
-			Método utilizado para acionar a animação no momento em que a requisição é efetuada.
-				@setup - object - required - objeto de setup da requisição
-			---------------------------
-			*/
-			start: function () {
-				if (setup.command == 'reload' && Device.ismobile) return;
-				if (!setup.loadborder) {
-					if (!setup.target) {
-						if (setup.element && setup.element.length) setup.loadborder = setup.element.closest('.sui-views-container, form');
+					} else if (setup.placement == 'close-self-view-and-replace'){
+						if (setup.view.length){
+							 // ###########################################################
+							 // não testar aqui o fechamento aqui.
+							 // testar no close da sui.interface.js (555)
+							 // ###########################################################
+							var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
+							$nextAll.each(function(){
+								$(this).trigger('view:close');
+							});
+							setup.view.trigger('view:close');
+							setup.target.replaceWith(setup.response.parsedJQ);
+						}
+					} else if (setup.placement == 'close-self-view'){
+						if (setup.view.length){
+							 // ###########################################################
+							 // não testar aqui o fechamento aqui.
+							 // testar no close da sui.interface.js (555)
+							 // ###########################################################
+							var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
+							$nextAll.each(function(){
+								$(this).trigger('view:close');
+							});
+							setup.view.trigger('view:close');
+						}
 					} else {
-						setup.loadborder = setup.target;
-					}
-				}
-				if (!setup.iscache && setup.loadborder && setup.loadborder.length) {
-					/*
-					if (setup.sector && setup.sector.length){
-						setup.loadborder = setup.loadborder.hasClass('sui-view') || setup.loadborder.hasClass('sui-views-container') ? setup.sector : setup.loadborder;
-						$('#suiTabsSector').find('[data-sector="'+setup.sector.data('sector')+'"]').addClass('ajax-courtain');
+						setup.target.html(setup.response.parsedJQ);
 					}
 					*/
-					if (setup.fromcache) return;
+				}
+				else if (setup.field && setup.field.length && setup.response.parsedHTML) {
+					setup.response.parsedJQ = setup.response.parsedJQ || $(setup.response.parsedHTML);
+					var $wrap = setup.response.parsedJQ.wrap('<div/>');
+					var $topper = setup.widget || setup.view || setup.sector || $(document);
+					$.each(setup.field, function (k, f) {
+						var $field = (typeof f == 'object') ? f : (f.indexOf('#') === 0 ? $topper.find(f) : $topper.find('.sui-field[data-name="' + f + '"]'));
+						if ($field.length) {
+							var fid = $field.attr('id');
+							var selector = (fid) ? '#' + fid : '[' + ($field.data('name') ? 'data-name="' + $field.data('name') + '"' : '') + ']';
+							var $rend = $wrap.find(selector);
+							if ($rend.length) {
+								$field.replaceWith($rend);
+							}
+						}
+					});
+				}
+				else if (setup.placement == 'close-self-view') {
+					if (setup.view.length) {
+						// ###########################################################
+						// não testar aqui o fechamento aqui.
+						// testar no close da sui.interface.js (555)
+						// ###########################################################
+						var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
+						$nextAll.each(function () {
+							$(this).trigger('view:close');
+						});
+						setup.view.trigger('view:close');
+					}
+				}
+				// JS ========================
+				if (setup.response.parsedJS) {
+					var $js = $(setup.response.parsedJS);
+					$js.appendTo($('#suiHead')).remove();
+				}
+				// ===========================
+			};
+			this.loading = {
+				/*
+				---------------------------
+				Ajax.loading.start()
+				---------------------------
+				Método utilizado para acionar a animação no momento em que a requisição é efetuada.
+					@setup - object - required - objeto de setup da requisição
+				---------------------------
+				*/
+				start: function () {
+					if (setup.command == 'reload' && Device.ismobile)
+						return;
+					if (!setup.loadborder) {
+						if (!setup.target) {
+							if (setup.element && setup.element.length)
+								setup.loadborder = setup.element.closest('.sui-views-container, form');
+						}
+						else {
+							setup.loadborder = setup.target;
+						}
+					}
+					if (!setup.iscache && setup.loadborder && setup.loadborder.length) {
+						/*
+						if (setup.sector && setup.sector.length){
+							setup.loadborder = setup.loadborder.hasClass('sui-view') || setup.loadborder.hasClass('sui-views-container') ? setup.sector : setup.loadborder;
+							$('#suiTabsSector').find('[data-sector="'+setup.sector.data('sector')+'"]').addClass('ajax-courtain');
+						}
+						*/
+						if (setup.fromcache)
+							return;
+						if (setup.field && setup.field.length) {
+							setup.field.each(function () {
+								var $f = $(this);
+								$f.data('wasDisable', $f.isDisable()).disable();
+								if ($f.hasClass('input'))
+									$f = $f.closest('.table');
+								else if ($f.hasClass('sui-field'))
+									$f = $f.find('.wrap');
+								$f.addClass('ajax-courtain');
+							});
+						}
+						else if (setup.element && setup.element.length) {
+							if (setup.element.hasClass('input'))
+								setup.element.closest('.table').addClass('ajax-courtain');
+							else
+								setup.element.addClass('ajax-courtain');
+						}
+						if (setup.element && setup.element.hasClass('sui-field'))
+							return; // se for campo, não tem spinner
+						var $spinner = $(Template.get('spinner'));
+						$spinner.find('.container').on('click', function () {
+							Ajax.abort();
+						});
+						setup.loadborder.addClass('sui-ajax').prepend($spinner);
+						setup.preloadTimeout = setTimeout(function () {
+							setup.loadborder.addClass('loading');
+						}, 250); // a animação só será acionada em x milissegundos após o inicio da requisição.
+					}
+				},
+				/*
+				---------------------------
+				Ajax.loading.stop()
+				---------------------------
+				Método utilizado para parar a animação no momento em que o parser conclui a analise da resposta processada.
+					@setup - object - required - objeto de setup da requisição
+				---------------------------
+				*/
+				stop: function () {
+					//if (setup.preloadTimeout) clearTimeout(setup.preloadTimeout); // cancela o timeout da animação se ela ainda não foi acionada.
+					/*
+					if (setup.sector && setup.sector.length){
+						$('#suiTabsSector').find('[data-sector="'+setup.sector.data('sector')+'"]').removeClass('ajax-courtain');
+					}
+					*/
+					if (setup.command == 'reload' && Device.ismobile)
+						return;
+					if (setup.fromcache)
+						return;
 					if (setup.field && setup.field.length) {
 						setup.field.each(function () {
 							var $f = $(this);
-							$f.data('wasDisable', $f.isDisable()).disable();
-							if ($f.hasClass('input')) $f = $f.closest('.table');
-							else if ($f.hasClass('sui-field')) $f = $f.find('.wrap');
-							$f.addClass('ajax-courtain');
+							if (!$f.data('wasDisable'))
+								$f.enable();
+							if ($f.hasClass('input'))
+								$f = $f.closest('.table');
+							else if ($f.hasClass('sui-field'))
+								$f = $f.find('.wrap');
+							$f.removeClass('ajax-courtain');
+							$f.removeData('wasDisable');
 						});
-					} else if (setup.element && setup.element.length) {
-						if (setup.element.hasClass('input')) setup.element.closest('.table').addClass('ajax-courtain');
-						else setup.element.addClass('ajax-courtain');
 					}
-					if (setup.element && setup.element.hasClass('sui-field')) return; // se for campo, não tem spinner
-					var $spinner = $(Template.get('spinner'));
-					$spinner.find('.container').on('click', function () {
-						Ajax.abort();
-					});
-					setup.loadborder.addClass('sui-ajax').prepend($spinner);
-					setup.preloadTimeout = setTimeout(function () {
-						setup.loadborder.addClass('loading');
-					}, 250); // a animação só será acionada em x milissegundos após o inicio da requisição.
-				}
-			},
-			/*
-			---------------------------
-			Ajax.loading.stop()
-			---------------------------
-			Método utilizado para parar a animação no momento em que o parser conclui a analise da resposta processada.
-				@setup - object - required - objeto de setup da requisição
-			---------------------------
-			*/
-			stop: function () {
-				//if (setup.preloadTimeout) clearTimeout(setup.preloadTimeout); // cancela o timeout da animação se ela ainda não foi acionada.
+					else if (setup.element && setup.element.length) {
+						if (setup.element.hasClass('input'))
+							setup.element.closest('.table').removeClass('ajax-courtain');
+						else
+							setup.element.removeClass('ajax-courtain');
+					}
+					if (setup.loadborder && setup.loadborder.hasClass('sui-ajax')) {
+						clearTimeout(setup.preloadTimeout);
+						var $spinner = setup.loadborder.removeClass('loading sui-ajax').children('.sui-spinner:eq(0)').remove();
+					}
+				},
 				/*
-				if (setup.sector && setup.sector.length){
-					$('#suiTabsSector').find('[data-sector="'+setup.sector.data('sector')+'"]').removeClass('ajax-courtain');
-				}
+				---------------------------
+				Ajax.loading.offline()
+				---------------------------
+				Método utilizado para preencher a area do target com uma camanda de informação offline.
+					@setup - object - required - objeto de setup da requisição
+				---------------------------
 				*/
-				if (setup.command == 'reload' && Device.ismobile) return;
-				if (setup.fromcache) return;
-				if (setup.field && setup.field.length) {
-					setup.field.each(function () {
-						var $f = $(this);
-						if (!$f.data('wasDisable')) $f.enable();
-						if ($f.hasClass('input')) $f = $f.closest('.table');
-						else if ($f.hasClass('sui-field')) $f = $f.find('.wrap');
-						$f.removeClass('ajax-courtain');
-						$f.removeData('wasDisable');
-					});
-				} else if (setup.element && setup.element.length) {
-					if (setup.element.hasClass('input')) setup.element.closest('.table').removeClass('ajax-courtain');
-					else setup.element.removeClass('ajax-courtain');
+				offline: function () {
+					if (!setup.target) {
+						if (setup.element && setup.element.length)
+							setup.loadborder = setup.element.closest('.sui-views-container, form');
+					}
+					else if (setup.target) {
+						setup.loadborder = setup.target.closest('.sui-views-container, form');
+					}
+					if (setup.loadborder) {
+						var $offline = $(Template.get('offline')).css('opacity', 0);
+						setup.loadborder.prepend($offline);
+						$offline.velocity({ opacity: [1, 0] }, 300);
+						$offline.find('.button').on('click', function () {
+							$offline.velocity({ opacity: [0, 1] }, 300, function () {
+								$offline.remove();
+							});
+						});
+					}
 				}
-				if (setup.loadborder && setup.loadborder.hasClass('sui-ajax')) {
-					clearTimeout(setup.preloadTimeout);
-					var $spinner = setup.loadborder.removeClass('loading sui-ajax').children('.sui-spinner:eq(0)').remove();
-				}
-			},
+			};
 			/*
 			---------------------------
-			Ajax.loading.offline()
+			Ajax.closePart()
 			---------------------------
-			Método utilizado para preencher a area do target com uma camanda de informação offline.
+			Método utilizado para fechar viewsa ou sectors.
+				@target - object,string,array,null - required - destino que precisa ser nivelado
+			---------------------------
+			*/
+			this.closePart = function () {
+				var close = setup.close;
+				var collection;
+				if ($.type(close) == 'object' && close instanceof jQuery)
+					collection = close;
+				else if ($.type(close) == 'string') {
+					if (close.indexOf('@') > -1) {
+						if (close == '@view-self') {
+							collection = (setup.view && setup.view.length) ? setup.view : (setup.element && setup.element.length) ? setup.element.closest('.sui-view') : null;
+						}
+						else if (close == '@view-caller') {
+							collection = (setup.view && setup.view.length) ? setup.view : (setup.element && setup.element.length) ? setup.element.closest('.sui-view') : null;
+						}
+						else if (close == '@view-next') {
+							collection = (setup.view && setup.view.next('.sui-view').length) ? setup.view.next('.sui-view') : (setup.element && setup.element.length) ? setup.element.closest('.sui-view').next('.sui-view') : null;
+						}
+						else if (close == '@view-prev') {
+							collection = (setup.view && setup.view.prev('.sui-view').length) ? setup.view.prev('.sui-view') : (setup.element && setup.element.length) ? setup.element.closest('.sui-view').prev('.sui-view') : null;
+						}
+						else if (close == '@sector-caller') {
+							collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector') : null;
+						}
+						else if (close == '@sector-self') {
+							collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector') : null;
+						}
+					}
+					else {
+						collection = $(close);
+					}
+				}
+				else if ($.type(close) == 'array')
+					collection = $(close).map(function () { return this.toArray(); });
+				return collection;
+			};
+			/*
+			---------------------------
+			Ajax.target()
+			---------------------------
+			Método utilizado para nivelar os destinos em um único objeto jquery para a requisição, se houverem.
+				@target - object,string,array,null - required - destino que precisa ser nivelado
+			---------------------------
+			*/
+			this.target = function () {
+				var target = setup.target;
+				var collection;
+				if ($.type(target) == 'object' && target instanceof jQuery)
+					collection = target;
+				else if ($.type(target) == 'string') {
+					if (target.indexOf('@') > -1) {
+						setup.targetstring = target;
+						if (target == '@sectors-container') {
+							collection = $('#suiSectorsContainer');
+							setup.placement = setup.placement || 'append';
+						}
+						else if (target == '@sector') {
+							collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector') : null;
+							setup.placement = setup.placement || 'append';
+						}
+						else if (target == '@views-container') {
+							collection = (setup.view && setup.view.length) ? setup.view.parent() : (setup.element && setup.element.length) ? setup.element.closest('.sui-views-container') : (setup.sector ? setup.sector.find('#suiViewsContainer') : null);
+							setup.placement = setup.placement || 'append';
+						}
+						else if (target == '@view-next') {
+							collection = (setup.view && setup.view.length) ? setup.view.parent() : (setup.element && setup.element.length) ? setup.element.closest('.sui-views-container') : (setup.sector ? setup.sector.find('#suiViewsContainer') : null);
+							setup.placement = setup.placement || '@close-next-view-and-append';
+						}
+						else if (target == '@view-prev') {
+							collection = (setup.view && setup.view.prev('.sui-view').length) ? setup.view.prev('.sui-view') : (setup.element && setup.element.length) ? setup.element.closest('.sui-view').prev('.sui-view') : null;
+							setup.placement = setup.placement || '@close-next-view-and-replace';
+						}
+						else if (target == '@view-self') {
+							collection = (setup.view && setup.view.length) ? setup.view : (setup.element && setup.element.length) ? setup.element.closest('.sui-view') : null;
+							setup.placement = setup.placement || 'replace';
+						}
+						else if (target == '@widget-area') {
+							collection = (setup.widget && setup.widget.length) ? setup.widget.find('.area') : (setup.element && setup.element.length) ? setup.element.closest('.sui-widget').find('.area') : null;
+							setup.placement = setup.placement || 'inner';
+						}
+						else if (target == '@widget-paginator') {
+							collection = (setup.widget && setup.widget.length) ? setup.widget.find('.paginator') : (setup.element && setup.element.length) ? setup.element.closest('.sui-widget').find('.paginator') : null;
+							setup.placement = setup.placement || 'replace';
+						}
+						else if (target == '@field-droplist') {
+							collection = (setup.field && setup.field.length) ? setup.field.find('.addons .sui-droplist') : (setup.element && setup.element.length) ? setup.element.closest('.sui-field').find('.addons .sui-droplist') : null;
+							setup.placement = setup.placement || 'update';
+						}
+						else if (target == '@sector-caller') {
+							collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector').data('floatcaller') : null;
+							collection = (collection) ? collection.data('floatcaller') : null;
+							collection = (collection) ? collection.closest('.sui-sector') : null;
+							setup.placement = setup.placement || 'replace';
+						}
+						else if (target == '@view-caller') {
+							collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector').data('floatcaller') : null;
+							collection = (collection) ? collection.data('floatcaller') : null;
+							collection = (collection) ? collection.closest('.sui-view') : null;
+							setup.placement = setup.placement || 'replace';
+						}
+						else if (target == '@widget-caller') {
+							collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector').data('floatcaller') : null;
+							collection = (collection) ? collection.data('floatcaller') : null;
+							collection = (collection) ? collection.closest('.sui-widget') : null;
+							setup.placement = setup.placement || 'replace';
+						}
+					}
+					else {
+						collection = $(target);
+						if (collection.length == 1) {
+							setup.widget = collection.closest('.sui-widget');
+							setup.view = collection.closest('.sui-view');
+							setup.sector = collection.closest('.sui-sector');
+						}
+					}
+				}
+				else if ($.type(target) == 'array')
+					collection = $(target).map(function () { return this.toArray(); });
+				if (collection && collection.length) {
+					if (!setup.targetSelector) {
+						collection.each(function () {
+							setup.targetSelector = setup.targetSelector || [];
+							setup.targetSelector.push($.getSelector(this));
+						});
+						setup.targetSelector = setup.targetSelector.length > 1 ? setup.targetSelector : setup.targetSelector[0];
+					}
+				}
+				if (collection && !collection.length && setup.target) {
+					Console.warn({
+						mode: 'jQuery',
+						title: 'Target defined in link:target attribute was not found.',
+						content: { target: setup.target, origin: setup.element }
+					});
+				}
+				return collection;
+			};
+			/*
+			---------------------------
+			Ajax.field()
+			---------------------------
+			Método utilizado para nivelar os destinos em um único objeto jquery para a requisição, se houverem.
+				@target - object,string,array,null - required - destino que precisa ser nivelado
+			---------------------------
+			*/
+			this.field = function () {
+				var field = setup.field;
+				var collection;
+				if ($.type(field) == 'object' && field instanceof jQuery) {
+					collection = field;
+				}
+				else if ($.type(field) == 'string') {
+					field = $.trim(field);
+					if (field == '@field-next') {
+						collection = (setup.element && setup.element.hasClass('sui-field')) ? setup.element.next() : (setup.view && setup.view.length) ? setup.view.find('.sui-field:focus:last').next() : null;
+						setup.placement = setup.placement || '@replace';
+					}
+					else if (field == '@field-prev') {
+						collection = (setup.element && setup.element.hasClass('sui-field')) ? setup.element.prev() : (setup.view && setup.view.length) ? setup.view.find('.sui-field:focus:last').prev() : null;
+						setup.placement = setup.placement || '@replace';
+					}
+					else if (field == '@field-self') {
+						collection = (setup.element && setup.element.hasClass('sui-field')) ? setup.element : (setup.view && setup.view.length) ? setup.view.find('.sui-field:focus:eq(0)') : null;
+						setup.placement = setup.placement || '@replace';
+					}
+					else if (field.indexOf(',') > -1) {
+						var coll = [];
+						$.each(field.split(',') || [], function (k, f) {
+							var collect = [];
+							f = $.trim(f);
+							collect = $.ache('field', f, [setup.view, setup.sector, $(document)]);
+							if (collect.length)
+								coll.push(collect);
+						});
+						collection = $(coll).map(function () { return this.toArray(); });
+					}
+					else {
+						collection = $.ache('field', field, [setup.view, setup.sector, $(document)]);
+						if (collection.length == 1) {
+							setup.widget = collection.closest('.sui-widget');
+							setup.view = collection.closest('.sui-view');
+							setup.sector = collection.closest('.sui-sector');
+						}
+					}
+				}
+				else if ($.type(field) == 'array') {
+					collection = $(field).map(function () { return this.toArray(); });
+				}
+				if (collection && collection.length) {
+					collection.each(function () {
+						setup.fieldSelector = setup.fieldSelector || [];
+						setup.fieldSelector.push($.getSelector(this));
+					});
+					setup.fieldSelector = setup.fieldSelector.length > 1 ? setup.fieldSelector : setup.fieldSelector[0];
+				}
+				return collection;
+			};
+			/*
+			---------------------------
+			Ajax.exec()
+			---------------------------
+			Método utilizado para executar requisições em um servidor.
 				@setup - object - required - objeto de setup da requisição
 			---------------------------
 			*/
-			offline: function () {
-				if (!setup.target) {
-					if (setup.element && setup.element.length) setup.loadborder = setup.element.closest('.sui-views-container, form');
-				} else if (setup.target) {
-					setup.loadborder = setup.target.closest('.sui-views-container, form');
-				}
-				if (setup.loadborder) {
-					var $offline = $(Template.get('offline')).css('opacity', 0);
-					setup.loadborder.prepend($offline);
-					$offline.velocity({ opacity: [1, 0] }, 300);
-					$offline.find('.button').on('click', function () {
-						$offline.velocity({ opacity: [0, 1] }, 300, function () {
-							$offline.remove();
-						});
-					});
-				}
-			}
-		};
-		/*
-		---------------------------
-		Ajax.closePart()
-		---------------------------
-		Método utilizado para fechar viewsa ou sectors.
-			@target - object,string,array,null - required - destino que precisa ser nivelado
-		---------------------------
-		*/
-		this.closePart = function () {
-			var close = setup.close;
-			var collection;
-			if ($.type(close) == 'object' && close instanceof jQuery) collection = close;
-			else if ($.type(close) == 'string') {
-				if (close.indexOf('@') > -1) {
-					if (close == '@view-self') {
-						collection = (setup.view && setup.view.length) ? setup.view : (setup.element && setup.element.length) ? setup.element.closest('.sui-view') : null;
-					} else if (close == '@view-caller') {
-						collection = (setup.view && setup.view.length) ? setup.view : (setup.element && setup.element.length) ? setup.element.closest('.sui-view') : null;
-					} else if (close == '@view-next') {
-						collection = (setup.view && setup.view.next('.sui-view').length) ? setup.view.next('.sui-view') : (setup.element && setup.element.length) ? setup.element.closest('.sui-view').next('.sui-view') : null;
-					} else if (close == '@view-prev') {
-						collection = (setup.view && setup.view.prev('.sui-view').length) ? setup.view.prev('.sui-view') : (setup.element && setup.element.length) ? setup.element.closest('.sui-view').prev('.sui-view') : null;
-					} else if (close == '@sector-caller') {
-						collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector') : null;
-					} else if (close == '@sector-self') {
-						collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector') : null;
-					}
-				} else {
-					collection = $(close);
-				}
-			} else if ($.type(close) == 'array') collection = $(close).map(function () { return this.toArray(); });
-			return collection;
-		};
-
-		/*
-		---------------------------
-		Ajax.target()
-		---------------------------
-		Método utilizado para nivelar os destinos em um único objeto jquery para a requisição, se houverem.
-			@target - object,string,array,null - required - destino que precisa ser nivelado
-		---------------------------
-		*/
-		this.target = function () {
-			var target = setup.target;
-			var collection;
-			if ($.type(target) == 'object' && target instanceof jQuery) collection = target;
-			else if ($.type(target) == 'string') {
-				if (target.indexOf('@') > -1) {
-					setup.targetstring = target;
-					if (target == '@sectors-container') {
-						collection = $('#suiSectorsContainer');
-						setup.placement = setup.placement || 'append';
-					} else if (target == '@sector') {
-						collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector') : null;
-						setup.placement = setup.placement || 'append';
-					} else if (target == '@views-container') {
-						collection = (setup.view && setup.view.length) ? setup.view.parent() : (setup.element && setup.element.length) ? setup.element.closest('.sui-views-container') : (setup.sector ? setup.sector.find('#suiViewsContainer') : null);
-						setup.placement = setup.placement || 'append';
-					} else if (target == '@view-next') {
-						collection = (setup.view && setup.view.length) ? setup.view.parent() : (setup.element && setup.element.length) ? setup.element.closest('.sui-views-container') : (setup.sector ? setup.sector.find('#suiViewsContainer') : null);
-						setup.placement = setup.placement || '@close-next-view-and-append';
-					} else if (target == '@view-prev') {
-						collection = (setup.view && setup.view.prev('.sui-view').length) ? setup.view.prev('.sui-view') : (setup.element && setup.element.length) ? setup.element.closest('.sui-view').prev('.sui-view') : null;
-						setup.placement = setup.placement || '@close-next-view-and-replace';
-					} else if (target == '@view-self') {
-						collection = (setup.view && setup.view.length) ? setup.view : (setup.element && setup.element.length) ? setup.element.closest('.sui-view') : null;
-						setup.placement = setup.placement || 'replace';
-					} else if (target == '@widget-area') {
-						collection = (setup.widget && setup.widget.length) ? setup.widget.find('.area') : (setup.element && setup.element.length) ? setup.element.closest('.sui-widget').find('.area') : null;
-						setup.placement = setup.placement || 'inner';
-					} else if (target == '@widget-paginator') {
-						collection = (setup.widget && setup.widget.length) ? setup.widget.find('.paginator') : (setup.element && setup.element.length) ? setup.element.closest('.sui-widget').find('.paginator') : null;
-						setup.placement = setup.placement || 'replace';
-					} else if (target == '@field-droplist') {
-						collection = (setup.field && setup.field.length) ? setup.field.find('.addons .sui-droplist') : (setup.element && setup.element.length) ? setup.element.closest('.sui-field').find('.addons .sui-droplist') : null;
-						setup.placement = setup.placement || 'update';
-					} else if (target == '@sector-caller') {
-						collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector').data('floatcaller') : null;
-						collection = (collection) ? collection.data('floatcaller') : null;
-						collection = (collection) ? collection.closest('.sui-sector') : null;
-						setup.placement = setup.placement || 'replace';
-					} else if (target == '@view-caller') {
-						collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector').data('floatcaller') : null;
-						collection = (collection) ? collection.data('floatcaller') : null;
-						collection = (collection) ? collection.closest('.sui-view') : null;
-						setup.placement = setup.placement || 'replace';
-					} else if (target == '@widget-caller') {
-						collection = (setup.sector && setup.sector.length) ? setup.sector : (setup.element && setup.element.length) ? setup.element.closest('.sui-sector').data('floatcaller') : null;
-						collection = (collection) ? collection.data('floatcaller') : null;
-						collection = (collection) ? collection.closest('.sui-widget') : null;
-						setup.placement = setup.placement || 'replace';
-					}
-				} else {
-					collection = $(target);
-					if (collection.length == 1) {
-						setup.widget = collection.closest('.sui-widget');
-						setup.view = collection.closest('.sui-view');
-						setup.sector = collection.closest('.sui-sector');
-					}
-				}
-			} else if ($.type(target) == 'array') collection = $(target).map(function () { return this.toArray(); });
-			if (collection && collection.length) {
-				if (!setup.targetSelector) {
-					collection.each(function () {
-						setup.targetSelector = setup.targetSelector || [];
-						setup.targetSelector.push($.getSelector(this));
-					});
-					setup.targetSelector = setup.targetSelector.length > 1 ? setup.targetSelector : setup.targetSelector[0];
-				}
-			}
-			if (collection && !collection.length && setup.target) {
-				Console.warn({
-					mode: 'jQuery',
-					title: 'Target defined in link:target attribute was not found.',
-					content: { target: setup.target, origin: setup.element }
-				});
-			}
-			return collection;
-		};
-		/*
-		---------------------------
-		Ajax.field()
-		---------------------------
-		Método utilizado para nivelar os destinos em um único objeto jquery para a requisição, se houverem.
-			@target - object,string,array,null - required - destino que precisa ser nivelado
-		---------------------------
-		*/
-		this.field = function () {
-			var field = setup.field;
-			var collection;
-			if ($.type(field) == 'object' && field instanceof jQuery) {
-				collection = field;
-			} else if ($.type(field) == 'string') {
-				field = $.trim(field);
-				if (field == '@field-next') {
-					collection = (setup.element && setup.element.hasClass('sui-field')) ? setup.element.next() : (setup.view && setup.view.length) ? setup.view.find('.sui-field:focus:last').next() : null;
-					setup.placement = setup.placement || '@replace';
-				} else if (field == '@field-prev') {
-					collection = (setup.element && setup.element.hasClass('sui-field')) ? setup.element.prev() : (setup.view && setup.view.length) ? setup.view.find('.sui-field:focus:last').prev() : null;
-					setup.placement = setup.placement || '@replace';
-				} else if (field == '@field-self') {
-					collection = (setup.element && setup.element.hasClass('sui-field')) ? setup.element : (setup.view && setup.view.length) ? setup.view.find('.sui-field:focus:eq(0)') : null;
-					setup.placement = setup.placement || '@replace';
-				} else if (field.indexOf(',') > -1) {
-					var coll = [];
-					$.each(field.split(',') || [], function (k, f) {
-						var collect = [];
-						f = $.trim(f);
-						collect = $.ache('field', f, [setup.view, setup.sector, $(document)]);
-						if (collect.length) coll.push(collect);
-					});
-					collection = $(coll).map(function () { return this.toArray(); });
-				} else {
-					collection = $.ache('field', field, [setup.view, setup.sector, $(document)]);
-					if (collection.length == 1) {
-						setup.widget = collection.closest('.sui-widget');
-						setup.view = collection.closest('.sui-view');
-						setup.sector = collection.closest('.sui-sector');
-					}
-				}
-			} else if ($.type(field) == 'array') {
-				collection = $(field).map(function () { return this.toArray(); });
-			}
-			if (collection && collection.length) {
-				collection.each(function () {
-					setup.fieldSelector = setup.fieldSelector || [];
-					setup.fieldSelector.push($.getSelector(this));
-				});
-				setup.fieldSelector = setup.fieldSelector.length > 1 ? setup.fieldSelector : setup.fieldSelector[0];
-			}
-			return collection;
-		};
-		/*
-		---------------------------
-		Ajax.exec()
-		---------------------------
-		Método utilizado para executar requisições em um servidor.
-			@setup - object - required - objeto de setup da requisição
-		---------------------------
-		*/
-		this.exec = function () {
-
-			var config = {};
-			setup.timestamp = Date.now();
-			setup.metric = new Metric();
-			setup.timeout = setup.timeout || 60000; // fetch do target
-			setup.target = Ajax.target(setup);
-			setup.field = Ajax.field(setup);
-			config.dataType = "text";
-			config.cache = (setup.cache === 'false' || setup.cache === false) ? false : true;
-			setup.cache = config.cache;
-			config.type = "POST";
-			config.data = setup.data;
-			config.url = Server.url + setup.sui;
-
-			//////////////////////////////////////////////
-			// CORS REQUEST
-			//////////////////////////////////////////////
-			if (Server.cors) {
-				config.crossDomain = true;
-				config.xhrFields = {
-					withCredentials: true
-				};
-			}
-			//////////////////////////////////////////////
-
-			config.xhr = function () { // personaliza o objeto xhr da requisição para capturar os eventos
-				var xhr = $.ajaxSettings.xhr();
-				xhr.addEventListener('readystatechange', function (event) {
-					if (xhr.readyState == 1) {
-						setup.metric.add('requestEndTime');
-						setup.metric.add('responseStartTime');
-					} else if (xhr.readyState == 4) {
-						setup.metric.add('responseEndTime');
-						setup.metric.add('processStartTime');
-					}
-				}, false);
-				xhr.addEventListener('progress', function (event) {
-					if (event.lengthComputable) {
-					}
-				}, false);
-				return xhr;
-			};
-			config.beforeSend = function (xhr) {
-				if (setup.key && !setup.key.length) delete setup.key;
-				setup.seed = setup.seed || 0;
-				if (setup.mergedseed) {
-					var seeds = $.extend({}, setup.mergedseed);
-					setup.mergedseed = {};
-					if (setup.sui) { setup.mergedseed.sui = {}; setup.mergedseed.sui[setup.sui] = seeds.sui[setup.sui]; }
-					if (setup.command) { setup.mergedseed.command = {}; setup.mergedseed.command[setup.command] = seeds.command[setup.command]; }
-					if (setup.process) { setup.mergedseed.process = {}; setup.mergedseed.process[setup.process] = seeds.process[setup.process]; }
-					if (setup.parentkey) { setup.mergedseed.parentkey = {}; setup.mergedseed.parentkey[setup.parentkey] = seeds.parentkey[setup.parentkey]; }
-					if (setup.key) {
-						setup.mergedseed.key = {};
-						if ($.isArray(setup.key)) {
-							$.each(setup.key, function (k, v) {
-								setup.mergedseed.key[v] = seeds.key[v];
-							});
-						} else setup.mergedseed.key[setup.key] = seeds.key[setup.key];
-					}
-
-				}
-				//////////////////////////////////////////////
-				// FILTER SORT
-				//////////////////////////////////////////////
-				if (setup.command == 'list') {
-					var globalname = 'request-filter-sort:' + setup.sui;
-					var globaldata = Device.Global.get(globalname) || null;
-					setup.filter = (setup.filter) ? $.extend(true, globaldata, setup.filter) : globaldata;
-					delete setup.filter.key;
-				}
-				//////////////////////////////////////////////
-
-				var headerData = {
-					seed: setup.seed,
-					origin: setup.origin,
-					sui: setup.sui,
-					action: setup.action,
-					command: setup.command,
-					process: setup.process,
-					parentkey: setup.parentkey,
-					key: setup.key,
-					name: setup.name,
-					stack: setup.stack,
-					code: setup.code,
-					date: setup.date,
-					str: setup.str,
-					seq: setup.seq,
-					num: setup.num,
-					json: setup.json,
-					group: setup.group,
-					session: Device.session.id(),
-					fingerprint: Device.fingerprint.get(),
-					target: setup.targetSelector,
-					field: setup.fieldSelector
-				};
-				var postData = {
-					modified: setup.modified,
-					validate: setup.validate
-				};
-				var requestKey = {
-					sui: setup.sui,
-					action: setup.action,
-					command: setup.command,
-					process: setup.process,
-					parentkey: setup.parentkey,
-					key: setup.key,
-					group: setup.group,
-					session: Device.session.id(),
-				};
-
-				// ==========================================================================
-				// AJAX REQUEST HEADER PAYLOAD
-				// ==========================================================================
-				setup.requestKey = $.md5(JSON.stringify(requestKey));
-				var requestHeaderPayload = {
-					key: setup.requestKey,
-					data: headerData,
-					post: postData,
-					local: Local.get(),
-					agent: Device.session.data(),
-				};
-				if (setup.mergedseed) requestHeaderPayload.seeds = setup.mergedseed;
-				if (setup.filter) requestHeaderPayload.filter = setup.filter;
-				if (setup.snippet) requestHeaderPayload.snippet = setup.snippet;
-				if (setup.geolocation) requestHeaderPayload.geolocation = setup.geolocation;
-				// ==========================================================================
-
-
-				//////////////////////////////////////////////
-				// CACHE GETTER
-				//////////////////////////////////////////////
-				if (Device.cache()) {
-					setup.hascache = false;
-					setup.fromcache = false;
-					var cache = Cache.get(setup);
-					if (cache) {
-						setup.hascache = true;
-						if (setup.cache !== false) {
-							setup.fromcache = cache.response.responseKey;
-							requestHeaderPayload.cache = setup.fromcache;
-							//xhr.setRequestHeader('X-Sui-Request-Cache', setup.fromcache);
-							cache.iscache = true;
-							Console.groupData('cache', true).log({
-								mode: 'Cache',
-								color: '#ADAAA9',
-								title: 'UI retrieved from CACHE (' + cache.response.responseKey + ')'
-							});
-							if (cache.target) {
-								if (Parser.load(cache)) {
-									Ajax.html();
-								}
-								setup.metric.calc();
-								cache.target.trigger('parse');
-								if (Dom.context) Dom.context.trigger('parseui', [cache]);
-								else Dom.body.trigger('parseui', [cache]);
-								if (!cache.response.error && setup.element && cache.response.parsedJQ) {
-									setup.element.trigger('ajax:cache', [setup.response.parsedJQ]);
-								}
-							}
-						} else {
-							Console.groupData('cache', false);
-						}
-					} else {
-						Console.groupData('cache', false);
-					}
-				} else {
-					Console.groupData('cache', false);
-				}
-				//////////////////////////////////////////////
-
-				//////////////////////////////////////////////
-				// HISTORY
-				//////////////////////////////////////////////
-				var historyPath = [], hist, hkey;
-				if (setup.sector && setup.sector.length) {
-					hist = setup.sector.attr('data-history');
-					if (hist) historyPath.push(hist);
-				}
-				if (setup.view && setup.view.length) {
-					hist = setup.view.attr('data-history');
-					if (hist) historyPath.push(hist);
-				}
-				if (setup.widget && setup.widget.length) {
-					hist = setup.widget.attr('data-history');
-					if (hist) historyPath.push(hist);
-				}
-				if (historyPath.length) {
-					if ((setup.command && setup.command != 'list') || setup.action) {
-						if (setup.key) {
-							hkey = ($.isArray(setup.key)) ? setup.key : [setup.key];
-							hkey = hkey.join(',');
-						}
-						if ((setup.targetstring == '@views-container' && setup.placement == 'close-next-views-and-append') ||
-							(setup.targetstring == '@view-next' && setup.placement == 'replace')) {
-							if (hkey) {
-								historyPath.push(setup.command + ':' + hkey);
-							}
-						}
-					}
-					setup.history = historyPath.join('/');
-					requestHeaderPayload.history = {
-						path: historyPath,
-						hash: setup.history
-					};
-					/*
-					xhr.setRequestHeader('X-Sui-Request-History', btoa(JSON.stringify({
-						path:historyPath,
-						hash:setup.history
-					})));
-					*/
-				}
-				//////////////////////////////////////////////
-
-
-				// AJAX REQUEST HEADER ASSIGNMENT ===========================================
-				xhr.setRequestHeader('X-Sui-Request-Engine', setup.engine || 'default');
-				xhr.setRequestHeader('X-Sui-Request-Payload', btoa(JSON.stringify(requestHeaderPayload)));
-				// ==========================================================================
-
-
-				if (setup.timeout <= 60000) {
-					setup.slowtimeout = setTimeout(function () {
-						Notify.open({
-							type: 'warn',
-							name: 'Poxa, está bem lento...',
-							label: setup.suiname,
-							message: 'Tentaremos concluir essa tarefa a tempo.<br/>Verifique a conexão de internet logo em seguida.',
-						});
-					}, 15000);
-				}
-				Ajax.loading.start();
-				setup.metric.add('requestStartTime');
-			};
-			setup.xhr = $.ajax(config)
-				.done(function (data, status, xhr) {
-					clearTimeout(setup.slowtimeout);
-					var timestamp = xhr.getResponseHeader('X-Sui-Response-Timestamp');
-					sourceui.timediff = timestamp ? Math.round((Date.now() / 1000) - timestamp) : sourceui.timediff;
-					Ajax.loading.stop();
-					////////////////////
-					// objeto de resposta do servidor
-					////////////////////
-					setup.response = $.extend(setup.response, {
-						error: false,
-						xhr: xhr,
-						key: setup.requestKey,
-						localData: xhr.getResponseHeader('X-Sui-Response-Local'),
-						responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
-						//mergedSeed : xhr.getResponseHeader('X-Sui-Response-Seeds'),
-						responseLength: data.length,
-						dataKey: null,
-						textData: data,
-						status: status,
-						parsedHTML: null,
-						parsedJQ: null,
-					});
-					var localData = xhr.getResponseHeader('X-Sui-Response-Local');
-					if (localData) {
-						localData = JSON.parse(localData);
-						if (localData.session) {
-							Local.set(localData);
-						} else {
-							Local.remove();
-						}
-					}
-					////////////////////
-					if (Device.cache() && setup.fromcache === setup.response.responseKey) {
-						setup.fromcache = false;
-						Parser.load(setup);
-						setup.metric.add('processEndTime');
-						setup.metric.add('bytesTotal', parseInt(setup.response.responseLength));
-						setup.metric.calc();
-						if (typeof setup.ondone == 'function') setup.ondone.call(Ajax, setup);
-					} else {
-						setup.metric.add('processEndTime');
-						setup.hasparsed = Parser.load(setup);
-						setup.exists = Ajax.exists();
-						if (setup.hasparsed) {
-							setup.iscache = false;
-							Ajax.html();
-						}
-						setup.metric.calc();
-						if (!setup.response.error) {
-							Dom.document.trigger('parseui', [setup]);
-							if (setup.followscroll && setup.view) {
-								var scrolltop = setup.view.data('scrollTop');
-								var $scrollers = setup.view.find('.sui-content.scroll-default');
-								$scrollers.each(function () {
-									var $scr = $(this);
-									if ($scr.scrollTop() < scrolltop) {
-										$scr.scrollTop(scrolltop);
-										var $paginator = $scr.find('.paginator:not(.clicked):last');
-										$paginator.attr('data-link-cache', 'false');
-										$paginator.attr('data-link-followscroll', 'true');
-										$paginator.trigger('click');
-									}
-								});
-							}
-							if (Device.cache()) {
-								if (((setup.target || setup.field) && setup.cache !== false) || setup.hascache) {
-									Cache.set(setup);
-									Console.log({
-										mode: 'Cache',
-										color: '#ADAAA9',
-										title: 'UI CACHE was saved in local database (' + setup.response.responseKey + ')',
-									});
-								}
-							}
-							if (typeof setup.ondone == 'function') setup.ondone.call(Ajax, setup);
-						} else {
-							if (typeof setup.onfail == 'function') setup.onfail.call(Ajax, xhr, status, error);
-							if (setup.element) setup.element.trigger('ajax:fail');
-							Console.error({
-								type: 'Response',
-								title: 'Connection error',
-								content: setup.response.error
-							});
-							Cache.remove(setup);
-							return false;
-						}
-					}
-
-					//////////////////////////////////////////////
-					// FILTER SORT
-					//////////////////////////////////////////////
-					if (setup.command == 'list') {
-						var globalname = 'request-filter-sort:' + setup.sui;
-						var globaldata = {};
-						if (setup.filter.sortBy) globaldata.sortBy = setup.filter.sortBy;
-						if (setup.filter.sortOrd) globaldata.sortOrd = setup.filter.sortOrd;
-						Device.Global.set(globalname, globaldata);
-					}
-					//////////////////////////////////////////////
-
-					if (!setup.response.error && setup.element && setup.response.parsedJQ) {
-						setup.element.trigger('ajax:done', [setup.response.parsedJQ]);
-					}
-					//////////////////////////////////////////////
-					// HISTORY
-					//////////////////////////////////////////////
-					var historyData = xhr.getResponseHeader('X-Sui-Response-History');
-					if (historyData == 'follow') {
-						if (Server.hash) {
-							if (!Dom.body.hasClass('sui-ajax')) Dom.body.addClass('sui-ajax').addClass('loading').prepend($(Template.get('spinner')));
-							Network.history.follow(Server.hash.split('/'), Dom.body);
-						} else {
-							Dom.document.trigger('panelready');
-						}
-					}
-					//////////////////////////////////////////////
-				})
-				.fail(function (xhr, status, error) {
-
-					clearTimeout(setup.slowtimeout);
-					Ajax.loading.stop();
-					setup.metric.add('processEndTime');
-					setup.metric.add('bytesTotal', 0);
-					setup.metric.calc();
-					if (Network.online) {
-						if (status == 'abort' || status == 'canceled') return;
-						setup.response = {
-							error: error,
-							status: status,
-							xhr: xhr,
-							key: setup.requestKey,
-							responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
-							textData: xhr.responseText,
-						};
-						Parser.load(setup);
-						if (!Console.has('bug') && !Console.has('error') && !Console.has('fatal') && !Console.has('fail')) {
-							Console.error({
-								mode: 'XHR',
-								title: 'Request failure',
-								content: error
-							});
-							Notify.open({
-								type: 'error',
-								name: 'Falha de Requisição',
-								label: setup.suiname,
-								message: error,
-							});
-						}
-						Cache.remove(setup);
-					} else {
-						if (!setup.fromcache) {
-							Ajax.loading.offline(setup);
-						}
-					}
-					if (typeof setup.onfail == 'function') setup.onfail.call(Ajax, xhr, status, error);
-					if (setup.element) setup.element.trigger('ajax:fail');
-				})
-				.always(function (data, status, xhr) {
-					delete ActiveRequests[setup.rid];
-					clearTimeout(setup.obtimeout);
-					clearTimeout(setup.slowtimeout);
-					Console.log({
-						mode: 'Ajax',
-						color: '#ADAAA9',
-						title: 'Async Connection (' + status + ')',
-						content: {
-							'Setup Object': setup,
-							'Metrics': setup.metric.result()
-						}
-					});
-					Console.trace();
-					if (typeof setup.onalways == 'function') setup.onalways.call(Ajax, setup, data, status, xhr);
-					if (setup.element && setup.response && setup.response.parsedJQ) setup.element.trigger('ajax:always', [setup.response.parsedJQ]);
-				});
-			setup.obtimeout = setTimeout(function () {
-				clearTimeout(setup.slowtimeout);
-				if (!setup.response) {
-					Ajax.abort();
-				}
-			}, setup.timeout);
-			if (setup.close) {
-				var $close = Ajax.closePart(setup);
-				$close.trigger('close');
-			}
-			return setup.xhr;
-		};
-	};
-
-	var Upload = function (setup) {
-
-		var Upload = this;
-		var Events = {};
-		var config = {};
-		var isvalid = true;
-		var formdata = [];
-		var fdx = 0;
-		var ajax;
-
-		if (setup.collection) {
-			setup.precheck = 'test';
-			setup.data = setup.collection;
-		}
-
-		setup.sui = setup.sui || setup.url;
-		setup.metric = new Metric();
-
-		//setup.suisrc = Server.name+setup.sui;
-		setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1) ? setup.sui : Server.name + setup.sui;
-		//setup.suisrc = (Server ? Server.replace(window.location.protocol+'//','') : window.location.hostname+window.location.pathname)+setup.sui;
-
-		if (setup.precheck == 'test') setup.suisrc += ' (PRECHECK)';
-		else if (setup.fdata) setup.suisrc += ' (' + (setup.fdata.name || setup.fdata.type) + ')';
-
-		var Console = Debug.get('Network', {
-			mode: (Server.cors ? 'CORS Upload' : '') + Server.protocol.toUpperCase(),
-			key: setup.suisrc
-		});
-
-		setup.state = 0;
-		setup.loaded = 0;
-
-		var Methods = {
-			readFile: function () {
-				var reader = new FileReader();
-				reader.onload = function (event) {
-					Methods.splitData(new Uint8Array(event.target.result));
-				};
-				reader.readAsArrayBuffer(setup.file);
-			},
-			splitData: function (dataArray) {
-				var fdata, blob;
-				var parts = 1;
-				var chunkSize = setup.chunk; //1*1000*1024;
-				setup.total = dataArray.length;
-				for (var i = 0; i < setup.total; i += chunkSize) {
-					blob = new Blob([dataArray.subarray(i, i + chunkSize)]);
-					fdata = new FormData();
-					if (setup.total >= chunkSize) {
-						//fdata.append('file', blob, setup.file.name + '.part' + (i/chunkSize));
-						fdata.append('file', blob, setup.file.name + '.part');
-					} else {
-						fdata.append('file', setup.file, setup.file.name);
-					}
-					formdata.push(fdata);
-				}
-				Upload.trigger('read', []);
-			},
-			send: function (fdata) {
+			this.exec = function () {
+				var config = {};
+				setup.timestamp = Date.now();
+				setup.metric = new Metric();
+				setup.timeout = setup.timeout || 60000; // fetch do target
+				setup.target = Ajax.target(setup);
+				setup.field = Ajax.field(setup);
+				config.dataType = "text";
+				config.cache = (setup.cache === 'false' || setup.cache === false) ? false : true;
+				setup.cache = config.cache;
+				config.type = "POST";
+				config.data = setup.data;
+				config.url = Server.url + setup.sui;
 				//////////////////////////////////////////////
 				// CORS REQUEST
 				//////////////////////////////////////////////
@@ -1438,55 +1037,93 @@ sourceui.Network = function () {
 					};
 				}
 				//////////////////////////////////////////////
-				config.url = setup.sui;
-				config.type = 'post';
-				config.cache = false;
-				if (fdata) {
-					config.processData = false;
-					config.contentType = false;
-					$.each(setup.data || [], function (k, v) { fdata.append(k, v); });
-					config.data = fdata;
-				} else {
-					config.data = setup.data;
-				}
-				config.xhr = function () { // personaliza o objeto xhr da requisição para capturar os eventos
+				config.xhr = function () {
 					var xhr = $.ajaxSettings.xhr();
 					xhr.addEventListener('readystatechange', function (event) {
 						if (xhr.readyState == 1) {
 							setup.metric.add('requestEndTime');
 							setup.metric.add('responseStartTime');
-						} else if (xhr.readyState == 4) {
+						}
+						else if (xhr.readyState == 4) {
 							setup.metric.add('responseEndTime');
 							setup.metric.add('processStartTime');
 						}
 					}, false);
-					xhr.upload.addEventListener('progress', function (event) {
+					xhr.addEventListener('progress', function (event) {
 						if (event.lengthComputable) {
-							Upload.trigger('progress', [event]);
 						}
 					}, false);
 					return xhr;
 				};
 				config.beforeSend = function (xhr) {
+					if (setup.key && !setup.key.length)
+						delete setup.key;
 					setup.seed = setup.seed || 0;
-					setup.hash = $.md5(setup.seed).substr(0, 26) + setup.seed.toString(16);
+					if (setup.mergedseed) {
+						var seeds = $.extend({}, setup.mergedseed);
+						setup.mergedseed = {};
+						if (setup.sui) {
+							setup.mergedseed.sui = {};
+							setup.mergedseed.sui[setup.sui] = seeds.sui[setup.sui];
+						}
+						if (setup.command) {
+							setup.mergedseed.command = {};
+							setup.mergedseed.command[setup.command] = seeds.command[setup.command];
+						}
+						if (setup.process) {
+							setup.mergedseed.process = {};
+							setup.mergedseed.process[setup.process] = seeds.process[setup.process];
+						}
+						if (setup.parentkey) {
+							setup.mergedseed.parentkey = {};
+							setup.mergedseed.parentkey[setup.parentkey] = seeds.parentkey[setup.parentkey];
+						}
+						if (setup.key) {
+							setup.mergedseed.key = {};
+							if ($.isArray(setup.key)) {
+								$.each(setup.key, function (k, v) {
+									setup.mergedseed.key[v] = seeds.key[v];
+								});
+							}
+							else
+								setup.mergedseed.key[setup.key] = seeds.key[setup.key];
+						}
+					}
+					//////////////////////////////////////////////
+					// FILTER SORT
+					//////////////////////////////////////////////
+					if (setup.command == 'list') {
+						var globalname = 'request-filter-sort:' + setup.sui;
+						var globaldata = Device.Global.get(globalname) || null;
+						setup.filter = (setup.filter) ? $.extend(true, globaldata, setup.filter) : globaldata;
+						delete setup.filter.key;
+					}
+					//////////////////////////////////////////////
 					var headerData = {
 						seed: setup.seed,
 						origin: setup.origin,
 						sui: setup.sui,
-						precheck: setup.precheck,
+						action: setup.action,
 						command: setup.command,
 						process: setup.process,
 						parentkey: setup.parentkey,
 						key: setup.key,
-						accept: setup.accept,
-						maxfilesize: setup.maxfilesize,
 						name: setup.name,
-						hash: setup.hash,
+						stack: setup.stack,
+						code: setup.code,
+						date: setup.date,
+						str: setup.str,
+						seq: setup.seq,
+						num: setup.num,
+						json: setup.json,
+						group: setup.group,
 						session: Device.session.id(),
 						fingerprint: Device.fingerprint.get(),
 						target: setup.targetSelector,
-						render: setup.render,
+						field: setup.fieldSelector
+					};
+					var postData = {
+						modified: setup.modified,
 						validate: setup.validate
 					};
 					var requestKey = {
@@ -1496,15 +1133,9 @@ sourceui.Network = function () {
 						process: setup.process,
 						parentkey: setup.parentkey,
 						key: setup.key,
-						precheck: setup.precheck,
-						accept: setup.accept,
-						maxfilesize: setup.maxfilesize,
+						group: setup.group,
 						session: Device.session.id(),
 					};
-
-					setup.metric = new Metric(); // criação das métricas
-					setup.metric.add('requestStartTime');
-
 					// ==========================================================================
 					// AJAX REQUEST HEADER PAYLOAD
 					// ==========================================================================
@@ -1512,208 +1143,687 @@ sourceui.Network = function () {
 					var requestHeaderPayload = {
 						key: setup.requestKey,
 						data: headerData,
+						post: postData,
 						local: Local.get(),
 						agent: Device.session.data(),
 					};
-					if (setup.filter) requestHeaderPayload.filter = setup.filter;
-					if (setup.fdata) requestHeaderPayload.file = setup.fdata;
-					if (setup.collection) requestHeaderPayload.collection = setup.collection;
-					if (setup.geolocation) requestHeaderPayload.geolocation = setup.geolocation;
+					if (setup.mergedseed)
+						requestHeaderPayload.seeds = setup.mergedseed;
+					if (setup.filter)
+						requestHeaderPayload.filter = setup.filter;
+					if (setup.snippet)
+						requestHeaderPayload.snippet = setup.snippet;
+					if (setup.geolocation)
+						requestHeaderPayload.geolocation = setup.geolocation;
 					// ==========================================================================
-
+					//////////////////////////////////////////////
+					// CACHE GETTER
+					//////////////////////////////////////////////
+					if (Device.cache()) {
+						setup.hascache = false;
+						setup.fromcache = false;
+						var cache = Cache.get(setup);
+						if (cache) {
+							setup.hascache = true;
+							if (setup.cache !== false) {
+								setup.fromcache = cache.response.responseKey;
+								requestHeaderPayload.cache = setup.fromcache;
+								//xhr.setRequestHeader('X-Sui-Request-Cache', setup.fromcache);
+								cache.iscache = true;
+								Console.groupData('cache', true).log({
+									mode: 'Cache',
+									color: '#ADAAA9',
+									title: 'UI retrieved from CACHE (' + cache.response.responseKey + ')'
+								});
+								if (cache.target) {
+									if (Parser.load(cache)) {
+										Ajax.html();
+									}
+									setup.metric.calc();
+									cache.target.trigger('parse');
+									if (Dom.context)
+										Dom.context.trigger('parseui', [cache]);
+									else
+										Dom.body.trigger('parseui', [cache]);
+									if (!cache.response.error && setup.element && cache.response.parsedJQ) {
+										setup.element.trigger('ajax:cache', [setup.response.parsedJQ]);
+									}
+								}
+							}
+							else {
+								Console.groupData('cache', false);
+							}
+						}
+						else {
+							Console.groupData('cache', false);
+						}
+					}
+					else {
+						Console.groupData('cache', false);
+					}
+					//////////////////////////////////////////////
+					//////////////////////////////////////////////
+					// HISTORY
+					//////////////////////////////////////////////
+					var historyPath = [], hist, hkey;
+					if (setup.sector && setup.sector.length) {
+						hist = setup.sector.attr('data-history');
+						if (hist)
+							historyPath.push(hist);
+					}
+					if (setup.view && setup.view.length) {
+						hist = setup.view.attr('data-history');
+						if (hist)
+							historyPath.push(hist);
+					}
+					if (setup.widget && setup.widget.length) {
+						hist = setup.widget.attr('data-history');
+						if (hist)
+							historyPath.push(hist);
+					}
+					if (historyPath.length) {
+						if ((setup.command && setup.command != 'list') || setup.action) {
+							if (setup.key) {
+								hkey = ($.isArray(setup.key)) ? setup.key : [setup.key];
+								hkey = hkey.join(',');
+							}
+							if ((setup.targetstring == '@views-container' && setup.placement == 'close-next-views-and-append') ||
+								(setup.targetstring == '@view-next' && setup.placement == 'replace')) {
+								if (hkey) {
+									historyPath.push(setup.command + ':' + hkey);
+								}
+							}
+						}
+						setup.history = historyPath.join('/');
+						requestHeaderPayload.history = {
+							path: historyPath,
+							hash: setup.history
+						};
+						/*
+						xhr.setRequestHeader('X-Sui-Request-History', btoa(JSON.stringify({
+							path:historyPath,
+							hash:setup.history
+						})));
+						*/
+					}
+					//////////////////////////////////////////////
 					// AJAX REQUEST HEADER ASSIGNMENT ===========================================
 					xhr.setRequestHeader('X-Sui-Request-Engine', setup.engine || 'default');
 					xhr.setRequestHeader('X-Sui-Request-Payload', btoa(JSON.stringify(requestHeaderPayload)));
 					// ==========================================================================
-
+					if (setup.timeout <= 60000) {
+						setup.slowtimeout = setTimeout(function () {
+							Notify.open({
+								type: 'warn',
+								name: 'Poxa, está bem lento...',
+								label: setup.suiname,
+								message: 'Tentaremos concluir essa tarefa a tempo.<br/>Verifique a conexão de internet logo em seguida.',
+							});
+						}, 15000);
+					}
+					Ajax.loading.start();
+					setup.metric.add('requestStartTime');
 				};
-				return $.ajax(config)
+				setup.xhr = $.ajax(config)
 					.done(function (data, status, xhr) {
-						setup.response = { // objeto de resposta do servidor
+						clearTimeout(setup.slowtimeout);
+						var timestamp = xhr.getResponseHeader('X-Sui-Response-Timestamp');
+						sourceui.timediff = timestamp ? Math.round((Date.now() / 1000) - timestamp) : sourceui.timediff;
+						Ajax.loading.stop();
+						////////////////////
+						// objeto de resposta do servidor
+						////////////////////
+						setup.response = $.extend(setup.response, {
 							error: false,
 							xhr: xhr,
 							key: setup.requestKey,
 							localData: xhr.getResponseHeader('X-Sui-Response-Local'),
 							responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
+							//mergedSeed : xhr.getResponseHeader('X-Sui-Response-Seeds'),
 							responseLength: data.length,
 							dataKey: null,
 							textData: data,
 							status: status,
 							parsedHTML: null,
 							parsedJQ: null,
-							traces: []
-						};
-						var localData = xhr.getResponseHeader('X-Sui-Response-Local');
+						});
+						//var localData = xhr.getResponseHeader('X-Sui-Response-Local');
+						var localData = setup.response.localData;
 						if (localData) {
 							localData = JSON.parse(localData);
 							if (localData.session) {
 								Local.set(localData);
-							} else {
-								Local.clear();
+							}
+							else {
+								Local.remove();
 							}
 						}
-						setup.metric.add('processEndTime');
-						setup.metric.add('parseStartTime');
-						Parser.load(setup);
-						setup.metric.add('parseEndTime');
-						setup.metric.add('bytesTotal', parseInt(setup.response.responseLength));
-						setup.metric.calc();
-						if (setup.response.error) {
-							Console.error({
-								type: 'XHR',
-								title: 'Request failure (' + setup.response.error + ')',
-								content: setup.response.error
-							});
+						////////////////////
+						if (Device.cache() && setup.fromcache === setup.response.responseKey) {
+							setup.fromcache = false;
+							Parser.load(setup);
+							setup.metric.add('processEndTime');
+							setup.metric.add('bytesTotal', parseInt(setup.response.responseLength));
+							setup.metric.calc();
+							if (typeof setup.ondone == 'function')
+								setup.ondone.call(Ajax, setup);
 						}
-						if (fdata || setup.precheck) Upload.trigger('done', [data, status, xhr]);
+						else {
+							setup.metric.add('processEndTime');
+							setup.hasparsed = Parser.load(setup);
+							setup.exists = Ajax.exists();
+							if (setup.hasparsed) {
+								setup.iscache = false;
+								Ajax.html();
+							}
+							setup.metric.calc();
+							if (!setup.response.error) {
+								Dom.document.trigger('parseui', [setup]);
+								if (setup.followscroll && setup.view) {
+									var scrolltop = setup.view.data('scrollTop');
+									var $scrollers = setup.view.find('.sui-content.scroll-default');
+									$scrollers.each(function () {
+										var $scr = $(this);
+										if ($scr.scrollTop() < scrolltop) {
+											$scr.scrollTop(scrolltop);
+											var $paginator = $scr.find('.paginator:not(.clicked):last');
+											$paginator.attr('data-link-cache', 'false');
+											$paginator.attr('data-link-followscroll', 'true');
+											$paginator.trigger('click');
+										}
+									});
+								}
+								if (Device.cache()) {
+									if (((setup.target || setup.field) && setup.cache !== false) || setup.hascache) {
+										Cache.set(setup);
+										Console.log({
+											mode: 'Cache',
+											color: '#ADAAA9',
+											title: 'UI CACHE was saved in local database (' + setup.response.responseKey + ')',
+										});
+									}
+								}
+								if (typeof setup.ondone == 'function')
+									setup.ondone.call(Ajax, setup);
+							}
+							else {
+								if (typeof setup.onfail == 'function')
+									setup.onfail.call(Ajax, xhr, status, error);
+								if (setup.element)
+									setup.element.trigger('ajax:fail');
+								Console.error({
+									type: 'Response',
+									title: 'Connection error',
+									content: setup.response.error
+								});
+								Cache.remove(setup);
+								return false;
+							}
+						}
+						//////////////////////////////////////////////
+						// FILTER SORT
+						//////////////////////////////////////////////
+						if (setup.command == 'list') {
+							var globalname = 'request-filter-sort:' + setup.sui;
+							var globaldata = {};
+							if (setup.filter.sortBy)
+								globaldata.sortBy = setup.filter.sortBy;
+							if (setup.filter.sortOrd)
+								globaldata.sortOrd = setup.filter.sortOrd;
+							Device.Global.set(globalname, globaldata);
+						}
+						//////////////////////////////////////////////
+						if (!setup.response.error && setup.element && setup.response.parsedJQ) {
+							setup.element.trigger('ajax:done', [setup.response.parsedJQ]);
+						}
+						//////////////////////////////////////////////
+						// HISTORY
+						//////////////////////////////////////////////
+						var historyData = xhr.getResponseHeader('X-Sui-Response-History');
+						if (historyData == 'follow') {
+							if (Server.hash) {
+								if (!Dom.body.hasClass('sui-ajax'))
+									Dom.body.addClass('sui-ajax').addClass('loading').prepend($(Template.get('spinner')));
+								Network.history.follow(Server.hash.split('/'), Dom.body);
+							}
+							else {
+								Dom.document.trigger('panelready');
+							}
+						}
+						//////////////////////////////////////////////
 					})
 					.fail(function (xhr, status, error) {
-						if (status == 'abort') {
-							Upload.trigger('abort', [xhr, status, error]);
-							Console.warn({
-								type: 'XHR',
-								title: 'Request aborted',
-							});
-							return;
-						} else if (status == 'canceled') {
-							Upload.trigger('canceled', [xhr, status, error]);
-							Console.warn({
-								type: 'XHR',
-								title: 'Request canceled',
-							});
-							return;
+						clearTimeout(setup.slowtimeout);
+						Ajax.loading.stop();
+						setup.metric.add('processEndTime');
+						setup.metric.add('bytesTotal', 0);
+						setup.metric.calc();
+						if (Network.online) {
+							if (status == 'abort' || status == 'canceled')
+								return;
+							setup.response = {
+								error: error,
+								status: status,
+								xhr: xhr,
+								key: setup.requestKey,
+								responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
+								textData: xhr.responseText,
+							};
+							Parser.load(setup);
+							if (!Console.has('bug') && !Console.has('error') && !Console.has('fatal') && !Console.has('fail')) {
+								Console.error({
+									mode: 'XHR',
+									title: 'Request failure',
+									content: error
+								});
+								Notify.open({
+									type: 'error',
+									name: 'Falha de Requisição',
+									label: setup.suiname,
+									message: error,
+								});
+							}
+							Cache.remove(setup);
 						}
-						setup.response = {
-							error: error,
-							status: status,
-							xhr: xhr,
-							key: setup.requestKey,
-							responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
-							textData: xhr.responseText,
-							traces: []
-						};
-						Parser.load(setup);
-						if (!Console.has('fatal') && !Console.has('fail')) {
-							Console.error({
-								type: 'XHR',
-								title: 'Upload failure (' + error + ')',
-								content: error
-							});
-							Notify.open({
-								type: 'error',
-								name: 'Falha de Requisição',
-								label: setup.suiname,
-								message: error,
-							});
+						else {
+							if (!setup.fromcache) {
+								Ajax.loading.offline(setup);
+							}
 						}
-						Upload.trigger('fail', [xhr, status, error]);
+						if (typeof setup.onfail == 'function')
+							setup.onfail.call(Ajax, xhr, status, error);
+						if (setup.element)
+							setup.element.trigger('ajax:fail');
 					})
 					.always(function (data, status, xhr) {
+						delete ActiveRequests[setup.rid];
+						clearTimeout(setup.obtimeout);
+						clearTimeout(setup.slowtimeout);
 						Console.log({
-							mode: 'Local',
+							mode: 'Ajax',
 							color: '#ADAAA9',
-							title: 'Setup Object (' + status + ')',
-							table: setup.metric.result(),
-							content: setup || 'NULL'
+							title: 'Async Connection (' + status + ')',
+							content: {
+								'Setup Object': setup,
+								'Metrics': setup.metric.result()
+							}
 						});
 						Console.trace();
-						if (typeof setup.onalways == 'function') setup.onalways.call(Ajax, data, status, xhr);
+						if (typeof setup.onalways == 'function')
+							setup.onalways.call(Ajax, setup, data, status, xhr);
+						if (setup.element && setup.response && setup.response.parsedJQ)
+							setup.element.trigger('ajax:always', [setup.response.parsedJQ]);
 					});
-			}
-		};
-
-		this.on = function (event, callback) {
-			Events[event] = Events[event] || [];
-			Events[event].push(callback);
-		};
-		this.trigger = function (event, args) {
-			$.each(Events[event] || [], function (k, v) {
-				if (typeof v == 'function') {
-					v.apply(null, args);
+				setup.obtimeout = setTimeout(function () {
+					clearTimeout(setup.slowtimeout);
+					if (!setup.response) {
+						Ajax.abort();
+					}
+				}, setup.timeout);
+				if (setup.close) {
+					var $close = Ajax.closePart(setup);
+					$close.trigger('close');
 				}
+				return setup.xhr;
+			};
+		}
+	}
+
+	class Upload {
+		constructor(setup) {
+			var Upload = this;
+			var Events = {};
+			var config = {};
+			var isvalid = true;
+			var formdata = [];
+			var fdx = 0;
+			var ajax;
+			if (setup.collection) {
+				setup.precheck = 'test';
+				setup.data = setup.collection;
+			}
+			setup.sui = setup.sui || setup.url;
+			setup.metric = new Metric();
+			//setup.suisrc = Server.name+setup.sui;
+			setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1) ? setup.sui : Server.name + setup.sui;
+			//setup.suisrc = (Server ? Server.replace(window.location.protocol+'//','') : window.location.hostname+window.location.pathname)+setup.sui;
+			if (setup.precheck == 'test')
+				setup.suisrc += ' (PRECHECK)';
+			else if (setup.fdata)
+				setup.suisrc += ' (' + (setup.fdata.name || setup.fdata.type) + ')';
+			var Console = Debug.get('Network', {
+				mode: (Server.cors ? 'CORS Upload' : '') + Server.protocol.toUpperCase(),
+				key: setup.suisrc
 			});
-		};
-		this.test = function () {
-			setup.process = 'upload';
-			setup.precheck = 'test';
-			setup.data = setup.collection || {};
-			Upload.resume();
-			Upload.on('done', function (data, status, xhr) {
-				setup.state = 2;
-				Upload.trigger('test:done', [data, status, xhr]);
-			});
-			Upload.on('fail', function (xhr, status, error) {
-				Upload.trigger('test:error', [error, status, xhr]);
-			});
-		};
-		this.start = function () {
-			setup.process = 'upload';
-			if (setup.chunk) {
-				Methods.readFile();
-				Upload.on('read', function () {
-					Upload.resume();
-				});
-				Upload.on('progress', function (event) {
-					Upload.trigger('uploading', [(setup.loaded + event.loaded) * 100 / setup.total, event.loaded, event.total]);
-				});
-				Upload.on('done', function () {
-					fdx++;
-					setup.tries = 1;
-					setup.loaded += setup.chunk;
-					if (formdata[fdx]) {
-						if (setup.state == 1) ajax = Methods.send(formdata[fdx]);
-					} else {
-						setup.state = 2;
-						setup.process = 'complete';
-						ajax = Methods.send();
-						Upload.trigger('complete', []);
+			setup.state = 0;
+			setup.loaded = 0;
+			var Methods = {
+				readFile: function () {
+					var reader = new FileReader();
+					reader.onload = function (event) {
+						Methods.splitData(new Uint8Array(event.target.result));
+					};
+					reader.readAsArrayBuffer(setup.file);
+				},
+				splitData: function (dataArray) {
+					var fdata, blob;
+					var parts = 1;
+					var chunkSize = setup.chunk; //1*1000*1024;
+					setup.total = dataArray.length;
+					for (var i = 0; i < setup.total; i += chunkSize) {
+						blob = new Blob([dataArray.subarray(i, i + chunkSize)]);
+						fdata = new FormData();
+						if (setup.total >= chunkSize) {
+							//fdata.append('file', blob, setup.file.name + '.part' + (i/chunkSize));
+							fdata.append('file', blob, setup.file.name + '.part');
+						}
+						else {
+							fdata.append('file', setup.file, setup.file.name);
+						}
+						formdata.push(fdata);
+					}
+					Upload.trigger('read', []);
+				},
+				send: function (fdata) {
+					//////////////////////////////////////////////
+					// CORS REQUEST
+					//////////////////////////////////////////////
+					if (Server.cors) {
+						config.crossDomain = true;
+						config.xhrFields = {
+							withCredentials: true
+						};
+					}
+					//////////////////////////////////////////////
+					config.url = setup.sui;
+					config.type = 'post';
+					config.cache = false;
+					if (fdata) {
+						config.processData = false;
+						config.contentType = false;
+						$.each(setup.data || [], function (k, v) { fdata.append(k, v); });
+						config.data = fdata;
+					}
+					else {
+						config.data = setup.data;
+					}
+					config.xhr = function () {
+						var xhr = $.ajaxSettings.xhr();
+						xhr.addEventListener('readystatechange', function (event) {
+							if (xhr.readyState == 1) {
+								setup.metric.add('requestEndTime');
+								setup.metric.add('responseStartTime');
+							}
+							else if (xhr.readyState == 4) {
+								setup.metric.add('responseEndTime');
+								setup.metric.add('processStartTime');
+							}
+						}, false);
+						xhr.upload.addEventListener('progress', function (event) {
+							if (event.lengthComputable) {
+								Upload.trigger('progress', [event]);
+							}
+						}, false);
+						return xhr;
+					};
+					config.beforeSend = function (xhr) {
+						setup.seed = setup.seed || 0;
+						setup.hash = $.md5(setup.seed).substr(0, 26) + setup.seed.toString(16);
+						var headerData = {
+							seed: setup.seed,
+							origin: setup.origin,
+							sui: setup.sui,
+							precheck: setup.precheck,
+							command: setup.command,
+							process: setup.process,
+							parentkey: setup.parentkey,
+							key: setup.key,
+							accept: setup.accept,
+							maxfilesize: setup.maxfilesize,
+							name: setup.name,
+							hash: setup.hash,
+							session: Device.session.id(),
+							fingerprint: Device.fingerprint.get(),
+							target: setup.targetSelector,
+							render: setup.render,
+							validate: setup.validate
+						};
+						var requestKey = {
+							sui: setup.sui,
+							action: setup.action,
+							command: setup.command,
+							process: setup.process,
+							parentkey: setup.parentkey,
+							key: setup.key,
+							precheck: setup.precheck,
+							accept: setup.accept,
+							maxfilesize: setup.maxfilesize,
+							session: Device.session.id(),
+						};
+						setup.metric = new Metric(); // criação das métricas
+						setup.metric.add('requestStartTime');
+						// ==========================================================================
+						// AJAX REQUEST HEADER PAYLOAD
+						// ==========================================================================
+						setup.requestKey = $.md5(JSON.stringify(requestKey));
+						var requestHeaderPayload = {
+							key: setup.requestKey,
+							data: headerData,
+							local: Local.get(),
+							agent: Device.session.data(),
+						};
+						if (setup.filter)
+							requestHeaderPayload.filter = setup.filter;
+						if (setup.fdata)
+							requestHeaderPayload.file = setup.fdata;
+						if (setup.collection)
+							requestHeaderPayload.collection = setup.collection;
+						if (setup.geolocation)
+							requestHeaderPayload.geolocation = setup.geolocation;
+						// ==========================================================================
+						// AJAX REQUEST HEADER ASSIGNMENT ===========================================
+						xhr.setRequestHeader('X-Sui-Request-Engine', setup.engine || 'default');
+						xhr.setRequestHeader('X-Sui-Request-Payload', btoa(JSON.stringify(requestHeaderPayload)));
+						// ==========================================================================
+					};
+					return $.ajax(config)
+						.done(function (data, status, xhr) {
+							setup.response = {
+								error: false,
+								xhr: xhr,
+								key: setup.requestKey,
+								localData: xhr.getResponseHeader('X-Sui-Response-Local'),
+								responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
+								responseLength: data.length,
+								dataKey: null,
+								textData: data,
+								status: status,
+								parsedHTML: null,
+								parsedJQ: null,
+								traces: []
+							};
+							//var localData = xhr.getResponseHeader('X-Sui-Response-Local');
+							var localData = setup.response.localData;
+							if (localData) {
+								localData = JSON.parse(localData);
+								if (localData.session) {
+									Local.set(localData);
+								}
+								else {
+									Local.clear();
+								}
+							}
+							setup.metric.add('processEndTime');
+							setup.metric.add('parseStartTime');
+							Parser.load(setup);
+							setup.metric.add('parseEndTime');
+							setup.metric.add('bytesTotal', parseInt(setup.response.responseLength));
+							setup.metric.calc();
+							if (setup.response.error) {
+								Console.error({
+									type: 'XHR',
+									title: 'Request failure (' + setup.response.error + ')',
+									content: setup.response.error
+								});
+							}
+							if (fdata || setup.precheck)
+								Upload.trigger('done', [data, status, xhr]);
+						})
+						.fail(function (xhr, status, error) {
+							if (status == 'abort') {
+								Upload.trigger('abort', [xhr, status, error]);
+								Console.warn({
+									type: 'XHR',
+									title: 'Request aborted',
+								});
+								return;
+							}
+							else if (status == 'canceled') {
+								Upload.trigger('canceled', [xhr, status, error]);
+								Console.warn({
+									type: 'XHR',
+									title: 'Request canceled',
+								});
+								return;
+							}
+							setup.response = {
+								error: error,
+								status: status,
+								xhr: xhr,
+								key: setup.requestKey,
+								responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
+								textData: xhr.responseText,
+								traces: []
+							};
+							Parser.load(setup);
+							if (!Console.has('fatal') && !Console.has('fail')) {
+								Console.error({
+									type: 'XHR',
+									title: 'Upload failure (' + error + ')',
+									content: error
+								});
+								Notify.open({
+									type: 'error',
+									name: 'Falha de Requisição',
+									label: setup.suiname,
+									message: error,
+								});
+							}
+							Upload.trigger('fail', [xhr, status, error]);
+						})
+						.always(function (data, status, xhr) {
+							Console.log({
+								mode: 'Local',
+								color: '#ADAAA9',
+								title: 'Setup Object (' + status + ')',
+								table: setup.metric.result(),
+								content: setup || 'NULL'
+							});
+							Console.trace();
+							if (typeof setup.onalways == 'function')
+								setup.onalways.call(Ajax, data, status, xhr);
+						});
+				}
+			};
+			this.on = function (event, callback) {
+				Events[event] = Events[event] || [];
+				Events[event].push(callback);
+			};
+			this.trigger = function (event, args) {
+				$.each(Events[event] || [], function (k, v) {
+					if (typeof v == 'function') {
+						v.apply(null, args);
 					}
 				});
-				Upload.on('fail', function (xhr, status, error) {
-					Upload.trigger('error', [xhr, status, error]);
-				});
-				Upload.on('canceled', function (xhr, status, error) {
-					setup.tries = setup.tries || 1;
-					setTimeout(function () {
-						if (setup.tries == 4) {
-							Upload.trigger('fail', [xhr, status, error]);
-						} else {
-							setup.tries++;
-							Upload.resume();
-						}
-					}, 5000);
-				});
-			} else {
-				var fdata = new FormData();
-				fdata.append('file', setup.file);
-				formdata.push(fdata);
+			};
+			this.test = function () {
+				setup.process = 'upload';
+				setup.precheck = 'test';
+				setup.data = setup.collection || {};
 				Upload.resume();
-				Upload.on('progress', function (event) {
-					setup.total = event.total;
-					Upload.trigger('uploading', [event.loaded * 100 / event.total, event.loaded || 0, event.total || 0]);
-				});
-				Upload.on('done', function () {
+				Upload.on('done', function (data, status, xhr) {
 					setup.state = 2;
-					Upload.trigger('complete', [setup.total]);
+					Upload.trigger('test:done', [data, status, xhr]);
 				});
 				Upload.on('fail', function (xhr, status, error) {
-					Upload.trigger('error', [error]);
+					Upload.trigger('test:error', [error, status, xhr]);
 				});
-			}
-		};
-		this.resume = function () {
-			setup.state = 1;
-			if (formdata[fdx] || setup.precheck) ajax = Methods.send(formdata[fdx]);
-			Upload.trigger('resume', []);
-		};
-		this.stop = function () {
-			if (ajax) ajax.abort();
-			setup.state = 0;
-		};
-		this.state = function () {
-			return setup.state;
-		};
-	};
+			};
+			this.start = function () {
+				setup.process = 'upload';
+				if (setup.chunk) {
+					Methods.readFile();
+					Upload.on('read', function () {
+						Upload.resume();
+					});
+					Upload.on('progress', function (event) {
+						Upload.trigger('uploading', [(setup.loaded + event.loaded) * 100 / setup.total, event.loaded, event.total]);
+					});
+					Upload.on('done', function () {
+						fdx++;
+						setup.tries = 1;
+						setup.loaded += setup.chunk;
+						if (formdata[fdx]) {
+							if (setup.state == 1)
+								ajax = Methods.send(formdata[fdx]);
+						}
+						else {
+							setup.state = 2;
+							setup.process = 'complete';
+							ajax = Methods.send();
+							Upload.trigger('complete', []);
+						}
+					});
+					Upload.on('fail', function (xhr, status, error) {
+						Upload.trigger('error', [xhr, status, error]);
+					});
+					Upload.on('canceled', function (xhr, status, error) {
+						setup.tries = setup.tries || 1;
+						setTimeout(function () {
+							if (setup.tries == 4) {
+								Upload.trigger('fail', [xhr, status, error]);
+							}
+							else {
+								setup.tries++;
+								Upload.resume();
+							}
+						}, 5000);
+					});
+				}
+				else {
+					var fdata = new FormData();
+					fdata.append('file', setup.file);
+					formdata.push(fdata);
+					Upload.resume();
+					Upload.on('progress', function (event) {
+						setup.total = event.total;
+						Upload.trigger('uploading', [event.loaded * 100 / event.total, event.loaded || 0, event.total || 0]);
+					});
+					Upload.on('done', function () {
+						setup.state = 2;
+						Upload.trigger('complete', [setup.total]);
+					});
+					Upload.on('fail', function (xhr, status, error) {
+						Upload.trigger('error', [error]);
+					});
+				}
+			};
+			this.resume = function () {
+				setup.state = 1;
+				if (formdata[fdx] || setup.precheck)
+					ajax = Methods.send(formdata[fdx]);
+				Upload.trigger('resume', []);
+			};
+			this.stop = function () {
+				if (ajax)
+					ajax.abort();
+				setup.state = 0;
+			};
+			this.state = function () {
+				return setup.state;
+			};
+		}
+	}
 
 
 	this.socket = function (s) {

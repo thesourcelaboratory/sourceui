@@ -5,7 +5,7 @@
  * Copyright 2006, 2015 Klaus Hartl & Fagner Brack
  * Released under the MIT license
  */
-;(function (factory) {
+; (function (factory) {
 	var registeredInModuleLoader;
 	if (typeof define === 'function' && define.amd) {
 		define(factory);
@@ -24,11 +24,11 @@
 		};
 	}
 }(function () {
-	function extend () {
+	function extend() {
 		var i = 0;
 		var result = {};
 		for (; i < arguments.length; i++) {
-			var attributes = arguments[ i ];
+			var attributes = arguments[i];
 			for (var key in attributes) {
 				result[key] = attributes[key];
 			}
@@ -36,8 +36,8 @@
 		return result;
 	}
 
-	function init (converter) {
-		function api (key, value, attributes) {
+	function init(converter) {
+		function api(key, value, attributes) {
 			if (typeof document === 'undefined') {
 				return;
 			}
@@ -61,7 +61,7 @@
 					if (/^[\{\[]/.test(result)) {
 						value = result;
 					}
-				} catch (e) {}
+				} catch (e) { }
 
 				value = converter.write ?
 					converter.write(value, key) :
@@ -122,7 +122,7 @@
 					if (this.json) {
 						try {
 							cookie = JSON.parse(cookie);
-						} catch (e) {}
+						} catch (e) { }
 					}
 
 					jar[name] = cookie;
@@ -130,7 +130,7 @@
 					if (key === name) {
 						break;
 					}
-				} catch (e) {}
+				} catch (e) { }
 			}
 
 			return key ? jar[key] : jar;
@@ -150,14 +150,29 @@
 				expires: -1
 			}));
 		};
-		api.clear = function (){
+		api.clear = function () {
 			var c = api.get();
 			for (i in c) {
 				api.remove(i);
-				api.remove(i,{ path:'' });
-				api.remove(i,{ path:'/' });
-				api.remove(i,{ path:'/'+window.location.pathname });
-				api.remove(i,{ domain:window.location.host });
+				api.remove(i, { path: '' });
+				api.remove(i, { path: '/' });
+				api.remove(i, { path: '/' + window.location.pathname });
+				api.remove(i, { path: '/' + window.location.pathname.substring(0, window.location.pathname.length - 1) });
+				api.remove(i, { path: window.location.pathname });
+				api.remove(i, { path: window.location.pathname.substring(0, window.location.pathname.length - 1) });
+				api.remove(i, { domain: window.location.host });
+				api.remove(i, { domain: '.' + window.location.host });
+				api.remove(i, { domain: '*' + window.location.host });
+				api.remove(i, { path: '', domain: window.location.host });
+				api.remove(i, { path: '/' + window.location.pathname, domain: window.location.host });
+				api.remove(i, { path: window.location.pathname, domain: window.location.host });
+				api.remove(i, { path: window.location.pathname.substring(0, window.location.pathname.length - 1), domain: window.location.host });
+				api.remove(i, { path: '/' + window.location.pathname, domain: '.' + window.location.host });
+				api.remove(i, { path: window.location.pathname, domain: '.' + window.location.host });
+				api.remove(i, { path: window.location.pathname.substring(0, window.location.pathname.length - 1), domain: '.' + window.location.host });
+				api.remove(i, { path: '/' + window.location.pathname, domain: '*' + window.location.host });
+				api.remove(i, { path: window.location.pathname, domain: '*' + window.location.host });
+				api.remove(i, { path: window.location.pathname.substring(0, window.location.pathname.length - 1), domain: '*' + window.location.host });
 			}
 		}
 
@@ -168,5 +183,5 @@
 		return api;
 	}
 
-	return init(function () {});
+	return init(function () { });
 }));
