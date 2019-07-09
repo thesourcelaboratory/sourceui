@@ -1073,7 +1073,6 @@ sourceui.Parser = function () {
 
 		full: function (sui) {
 			var str = '';
-			if (sui.attr('if:renderelement') === '') return str;
 			sui.findChild(function () {
 				var s = Components.get(this);
 				if (s && s.indexOf("@{child:content}") != -1) {
