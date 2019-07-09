@@ -195,7 +195,30 @@ body { background-size: 175% 100%; background-color:#FFF; }
 .sui-widget.finder > .finder > .sui-filterset.horizontal ul { margin: 5px 0 0 5px; }
 .sui-widget.finder > .finder > .sui-filterset.horizontal ul > li.empty { line-height:36px; font-size:12px; padding-left:10px; }
 .sui-widget.finder > .finder > .sui-filterset.horizontal ul > li .sui-filter strong { max-width:140px; }
+/* --------------------------------------------------- */
 
+
+/* TREEVIEW ------------------------------------------ */
+.sui-widget > .area > .treeview { padding:20px; }
+.sui-widget > .area > .treeview ul { margin:0; padding:0; padding-left:20px; list-style:none; }
+.sui-widget > .area > .treeview > ul { padding-left:0; position:relative; }
+.sui-widget > .area > .treeview ul li { position:relative; color:#444; white-space: nowrap;  }
+.sui-widget > .area > .treeview ul li:not(.fold) .trace { display:none; }
+.sui-widget > .area > .treeview ul li > .label { display:flex; position:relative; justify-content:flex-start; align-items:center; min-height:48px; margin-left: 4px; padding:4px 0; cursor:pointer; }
+.sui-widget > .area > .treeview ul li > .label:before { content:''; width:24px; height:2px; background:#eee; position:absolute; left:-20px; top:calc(50% - 1px); z-index:1; }
+.sui-widget > .area > .treeview ul li > .label .connector { position:relative; width:8px; height:8px; background-color:#FFF; border:#eee solid 2px; border-radius:50%; margin-right:8px; transition: all 200ms; z-index:2; }
+.sui-widget > .area > .treeview ul li > .label .icon:before { font-size:28px; padding-right:8px; }
+.sui-widget > .area > .treeview ul li > .label:hover .connector { border-color:transparent !important; background:var(--header-bar-color) !important; }
+.sui-widget > .area > .treeview ul li.fold > .trace { width:2px; height:100%; background:#eee; position:absolute; left:3px; transition: opacity 200ms; }
+.sui-widget > .area > .treeview ul li.fold > .label .connector { width:20px; height:20px; margin-left:-10px; border-color:transparent; background:#444; cursor:pointer; }
+.sui-widget > .area > .treeview ul li.fold > .label .connector:before { content:''; background-color:#FFF; width:8px; height:2px; position:absolute; left:calc(50% - 4px); top:calc(50% - 1px); transition: all 250ms; }
+.sui-widget > .area > .treeview ul li.fold > .label .connector:after { opacity:0; content:''; background-color:#FFF; height:8px; width:2px; position:absolute; left:calc(50% - 1px); top:calc(50% - 4px); transition: all 150ms; }
+.sui-widget > .area > .treeview ul li.fold.collapsed > .label .connector:before { transform:rotate(270deg); }
+.sui-widget > .area > .treeview ul li.fold.collapsed > .label .connector:after { opacity:1; transform:rotate(90deg); }
+.sui-widget > .area > .treeview ul li.fold.collapsed > ul { display:none; }
+.sui-widget > .area > .treeview > ul > li > .label:before { display:none; }
+.sui-widget > .area > .treeview ul li.selected  > .label .connector { border-color:transparent; background:#356fd9; }
+/* --------------------------------------------------- */
 
 .sui-widget.datagrid > .area .list { display:block; padding:0; }
 .sui-widget.datagrid > .area .list > .header { display:none; }

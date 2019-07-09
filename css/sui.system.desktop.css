@@ -190,7 +190,6 @@
 .sui-widget > .area > .treeview ul li.fold.collapsed > ul { display:none; }
 .sui-widget > .area > .treeview > ul > li > .label:before { display:none; }
 .sui-widget > .area > .treeview ul li.selected  > .label .connector { border-color:transparent; background:#356fd9; }
-
 /* --------------------------------------------------- */
 
 
