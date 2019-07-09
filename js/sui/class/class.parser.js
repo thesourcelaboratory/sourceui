@@ -83,7 +83,7 @@ sourceui.templates.interface = new sourceui.Template({
 	},
 	toolbar: {
 		container:
-			'<div class="toolbar @{class:prop}"@{data}>@{child:tools}</div>',
+			'<div class="toolbar @{class:prop}"@{data}@{style}><h3 class="title">@{label:title}</h3>@{child:tools}</div>',
 		tool:
 			'<div class="tools @{class:position} @{class:prop}"@{data}>@{child:groups}</div>',
 		group:
@@ -498,7 +498,7 @@ sourceui.templates.interface = new sourceui.Template({
 			linegroup:
 				'<div class="linegroup @{class:type}"><h3><span>@{label:count}</span>@{label:name}</h3><div class="lines @{class:type}"><div class="sizer"></div>@{child:lines}</div></div>',
 			list:
-				'<div class="list @{class:type} @{class:scroll}" data-action-pickline="@{action:pickline}" data-action-checklines="@{action:checklines}" data-paginator="@{default:paginator}"@{data}><div class="sizer"></div>@{child:content}</div>',
+				'<div class="list @{class:type} @{class:scroll} @{class:prop}" data-action-pickline="@{action:pickline}" data-action-checklines="@{action:checklines}" data-paginator="@{default:paginator}"@{data}><div class="sizer"></div>@{child:content}</div>',
 			header: {
 				container:
 					'<div class="sn header @{class:prop}"@{data}>' +
@@ -843,7 +843,7 @@ sourceui.templates.interface = new sourceui.Template({
 		},
 		map: {
 			map:
-				'<div class="noswipe map"@{attr}></div>',
+				'<div class="noswipe map"@{attr}@{style}></div>',
 		},
 		log: {
 			timeline:
@@ -881,6 +881,41 @@ sourceui.templates.interface = new sourceui.Template({
 					'<@{value:tag} data-index="@{value:index}" class="col @{class:type} @{class:order} @{class:is} @{class:icon} @{class:info}"@{style}@{async}><div class="fixflow">@{label:content}</div></@{value:tag}>',
 			},
 		},
+		timeline: {
+			timeline:
+				'<div class="timeline" @{style}>' +
+				'@{child:content}' +
+				'</div>',
+			post:
+				'<div class="post" @{style}>' +
+				'<div class="content">' +
+				'@{child:content}' +
+				'</div>' +
+				'</div>',
+			icon:
+				'<div class="icon @{name}"@{style}></div>',
+			abbr:
+				'<div class="abbr"@{style}>@{label}</div>',
+			avatar:
+				'<div class="avatar" @{style}></div>',
+			title:
+				'<div class="title">@{content}</div>',
+			moment:
+				'<div class="moment">@{content}</div>',
+			image:
+				'<div class="image"@{style}>' +
+				'<img src="@{src}"/>' +
+				'</div>',
+			opengraph:
+				'<a class="link"@{style} href="@{href}">' +
+				'<img src="@{src}"/>' +
+				'<span class="description">@{desc}</span>' +
+				'</a>',
+			description:
+				'<div class="description">@{content}</div>',
+
+
+		}
 	}
 });
 
@@ -947,7 +982,10 @@ sourceui.Parser = function () {
 					var id = this.attr('id');
 					var $field = setup.field.filter(selector ? selector : (name ? '[data-name="' + name + '"]' : '#' + id));
 					if ($field.length) {
-						$field.data('customField').snip(suiSnip);
+						var customfield = $field.data('customField');
+						if (customfield) {
+							customfield.snip(suiSnip);
+						}
 					}
 				} else if (target) {
 					var $t;
@@ -1162,7 +1200,7 @@ sourceui.Parser = function () {
 							} else if (data.target == '@viewtab-next') {
 								data.jq = $sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"]').next();
 							} else if (data.target == '@viewtab-nextall') {
-								data.jq = $sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"]').next();
+								data.jq = $sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"]').nextAll();
 							} else if (data.target == '@viewtab-first' || data.target == '@viewtab-1') {
 								data.jq = $sector.find('#suiTabsView > ol > li:first');
 							} else if (data.target == '@viewtab-second' || data.target == '@viewtab-2') {
@@ -1323,13 +1361,16 @@ sourceui.Parser = function () {
 					$.each(fds, function (k, v) {
 						if (v.indexOf('@') > -1) {
 							if (setup.view) $fd = setup.view.find('.sui-field[data-name="' + v.substring(1) + '"]');
-							else if (setup.sector) $fd = setup.sector.find('.sui-field[data-name="' + v.substring(1) + '"]');
+							if (!$fd.length && setup.sector) $fd = setup.sector.find('.sui-field[data-name="' + v.substring(1) + '"]:last');
+							if (!$fd.length && setup.element) $fd = setup.element.closest('.sui-view').find('.sui-field[data-name="' + v.substring(1) + '"]');
 						} else {
 							$fd = v.indexOf('#') > -1 ? $(v) : $('#' + v);
 						}
 						if ($fd.length) {
 							$fd.trigger('field:error', ['remote', $e.content()]);
 							haserror = true;
+						} else {
+							console.warn('Not possible to find element "' + v.substring(1) + '" to notify filed error');
 						}
 					});
 				});
@@ -1343,15 +1384,17 @@ sourceui.Parser = function () {
 				}
 
 			},
+			confirmg: function (sui) {
+				var cfg = sui.attr() || {};
+				if (!cfg.title) sui.findChild('title', function () { cfg.title = this.content(); });
+				if (!cfg.desc) sui.findChild('desc', function () { cfg.desc = this.content(); });
+				if (!cfg.desc) sui.findChild('description', function () { cfg.desc = this.content(); });
+				if (!cfg.hilite) sui.findChild('hilite', function () { cfg.hilite = this.content(); });
+				if (!cfg.pattern) sui.findChild('pattern', function () { cfg.pattern = this.content(); });
+				return cfg;
+			},
 			confirm: function (sui) {
-				var cfg = {
-					type: sui.attr('type'),
-					icon: sui.attr('icon')
-				};
-				sui.findChild('title', function () { cfg.title = this.content(); });
-				sui.findChild('desc', function () { cfg.desc = this.content(); });
-				sui.findChild('hilite', function () { cfg.hilite = this.content(); });
-				sui.findChild('pattern', function () { cfg.pattern = this.content(); });
+				var cfg = Components.libs.confirmg(sui);
 				if (cfg.pattern == 'session-invalid') {
 					cfg.type = cfg.type || 'alert';
 					cfg.title = cfg.title || 'Sessão inválida';
@@ -1707,7 +1750,8 @@ sourceui.Parser = function () {
 							});
 						} else {
 							suiButton.findChild('confirm', function () {
-								jConfirm = this.attr();
+								jConfirm = Components.libs.confirmg(this);
+								//jConfirm = this.attr();
 								this.findChild('button', function () {
 									jConfirm.button = jConfirm.button || [];
 									var lk = {}, at = {};
@@ -2719,6 +2763,49 @@ sourceui.Parser = function () {
 								else if (this.nodeName == 'chart') htmlHtml += Components.libs.chart(this);
 							});
 							htmlArea = Template.replace(htmlArea, { child: { area: htmlHtml } });
+						});
+						return Template.replace(htmlWidget, { child: { area: htmlArea } });
+					}
+				},
+				timeline: {
+					timeline: function (sui) {
+						var suiTimeline = sui;
+						var htmlContent = '';
+						suiTimeline.findChild(function () {
+							if (this.nodeName == 'post') htmlContent += Components.libs.widget.timeline.post(this);
+						});
+						return sui.toHTML('wg', 'timeline', 'timeline', { child: { content: htmlContent } }, Template.get);
+					},
+					post: function (sui) {
+						var suiPost = sui;
+						var htmlContent = '';
+						suiPost.findChild(function () {
+							if (this.nodeName == 'icon') htmlContent += this.toHTML('wg', 'timeline', 'icon', Template.get);
+							else if (this.nodeName == 'abbr') htmlContent += this.toHTML('wg', 'timeline', 'abbr', { label: this.attr('label') || this.content() }, Template.get);
+							else if (this.nodeName == 'avatar') htmlContent += this.toHTML('wg', 'timeline', 'avatar', Template.get);
+							else if (this.nodeName == 'title') htmlContent += this.toHTML('wg', 'timeline', 'title', { content: this.attr('label') || this.content() }, Template.get);
+							else if (this.nodeName == 'moment') htmlContent += this.toHTML('wg', 'timeline', 'moment', { content: this.attr('label') || this.content() }, Template.get);
+							else if (this.nodeName == 'image') htmlContent += this.toHTML('wg', 'timeline', 'image', { src: this.attr('style:background') || this.attr('style:background-image') || this.content() }, Template.get);
+							else if (this.nodeName == 'opengraph') htmlContent += this.toHTML('wg', 'opengraph', 'image', {
+								src: this.attr('src') || this.attr('style:background') || this.attr('style:background-image'),
+								href: this.attr('href') || this.attr('link:href'),
+								desc: this.attr('desc') || this.content()
+							}, Template.get);
+							else if (this.nodeName == 'description') htmlContent += this.toHTML('wg', 'timeline', 'description', { content: this.attr('label') || this.content() }, Template.get);
+						});
+						return sui.toHTML('wg', 'timeline', 'post', { child: { content: htmlContent } }, Template.get);
+					},
+					full: function (sui) {
+						var htmlWidget = Components.libs.common.widget(sui),
+							htmlArea = '';
+						sui.findChild('area', function () {
+							var suiArea = this;
+							htmlArea += suiArea.toHTML('widget', 'area', Template.get);
+							var htmlTimeline = '';
+							suiArea.findChild(function () {
+								if (this.nodeName == 'timeline') htmlTimeline += Components.libs.widget.timeline.timeline(this);
+							});
+							htmlArea = Template.replace(htmlArea, { child: { area: htmlTimeline } });
 						});
 						return Template.replace(htmlWidget, { child: { area: htmlArea } });
 					}

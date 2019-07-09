@@ -447,7 +447,7 @@ sourceui.interface.view = function ($view, setup) {
 		}
 	}
 	if (Device.ismobile && View.element.hasClass('covered')) {
-		View.scrdata.tbcolor = View.toolbar.css('background-color').substring(5).replace(/\s/g, '');
+		View.scrdata.tbcolor = (View.toolbar.css('background-color') || '').substring(5).replace(/\s/g, '');
 		View.scrdata.tbcolor = View.scrdata.tbcolor.substring(0, View.scrdata.tbcolor.length - 1).split(',').map(function (v) { return Number(v); });
 	}
 	View.scrolls.on('scrollstop', { latency: 200 }, function (event) {

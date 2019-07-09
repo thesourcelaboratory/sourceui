@@ -294,7 +294,7 @@ sourceui.Activity = function () {
 						else if ($focus.is('.sui-field')) {
 							if ($closest.is('form')) $closest.find('.sui-button .submit').trigger('click');
 							else if (!$focus.is('.drop, .search') && $closest.is('.filter')) $closest.closest('.sui-view').children('.toolbar').find('.filter a').trigger('click');
-							else if (!$hover.length && !$focus.is('.textarea, .editor')) $focus.firstFound('.cell.button').trigger('click');
+							else if (!$hover.length && !$focus.is('.textarea, .editor') && !$focus.is('[data-link-process="validate"]')) $focus.firstFound('.cell.button').trigger('click');
 							else if ($hover.is('li, a')) $hover.trigger('click');
 						}
 						else if ($focus.is('.sui-floatsector-container')) Dom.document.trigger('activity:focus', [$focus.children('.sui-sector')]);

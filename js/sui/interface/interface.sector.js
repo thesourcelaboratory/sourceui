@@ -32,15 +32,16 @@ sourceui.interface.sector = function () {
 	var Interface = sourceui.interface;
 	var Dom = Interface.dom;
 
+	var $bodymain = Dom.main || Dom.body;
 
-	Dom.main.on('swipeleft', '.sui-tabs-view > ol > li', function (event) {
+	$bodymain.on('swipeleft', '.sui-tabs-view > ol > li', function (event) {
 		if (Device.ismobile) {
 			var $this = $(this);
 			$this.next('li').trigger('click', ['next']);
 			event.stopPropagation();
 		}
 	});
-	Dom.main.on('swiperight', '.sui-tabs-view > ol > li', function (event) {
+	$bodymain.on('swiperight', '.sui-tabs-view > ol > li', function (event) {
 		if (Device.ismobile) {
 			var $this = $(this);
 			$this.prev('li').trigger('click', ['prev']);

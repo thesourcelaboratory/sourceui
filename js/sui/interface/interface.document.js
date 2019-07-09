@@ -47,7 +47,7 @@ sourceui.interface.document = function () {
 		var $abbr = $scope ? $scope.find('abbr.timeago') : $('abbr.timeago');
 		$abbr.each(function () {
 			var $this = $(this);
-			var stamp = parseInt(moment($this.data('stamp')).unix());
+			var stamp = parseInt(moment($this.data('stamp') * 1000).unix());
 			if (stamp) {
 				var timeago = $.timeago(stamp);
 				$this.html('<span>' + timeago + '</span>');
@@ -270,6 +270,8 @@ sourceui.interface.document = function () {
 				title: data.title === false ? { text: "" } : data.title,
 				subTitle: data.title === false ? { text: "" } : data.subTitle,
 				credits: data.title === false ? { enabled: false } : data.credits,
+				lang: { noData: "Não ha dados para serem vistos no gráfico" },
+				noData: { style: { fontWeight: "500", fontSize: "11px", color: "#DDD" }}
 			});
 			if (data.chart.height) $this.closest('.column, .line, .area').css('minHeight', data.chart.height);
 			setTimeout(function () {

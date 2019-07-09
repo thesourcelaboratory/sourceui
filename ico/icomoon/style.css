@@ -1,16 +1,25 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?jdxh3y');
-  src:  url('fonts/icomoon.eot?jdxh3y#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?jdxh3y') format('truetype'),
-    url('fonts/icomoon.woff?jdxh3y') format('woff'),
-    url('fonts/icomoon.svg?jdxh3y#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?2o8ns');
+  src:  url('fonts/icomoon.eot?2o8ns#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?2o8ns') format('truetype'),
+    url('fonts/icomoon.woff?2o8ns') format('woff'),
+    url('fonts/icomoon.svg?2o8ns#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
 }
 
 [class^="icon-"], [class*=" icon-"] {
-
+  /* use !important to prevent issues with browser extensions that change fonts */
+  /*
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  */
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,9 +70,6 @@
 .icon-half-moon:before {
   content: "\e9bd";
 }
-.icon-eye4:before {
-  content: "\ea6e";
-}
 .icon-binoculars:before {
   content: "\ea6f";
 }
@@ -96,6 +102,12 @@
 }
 .icon-tree-nodes:before {
   content: "\e9fc";
+}
+.icon-node-circle:before {
+  content: "\e9c9";
+}
+.icon-node-hz:before {
+  content: "\ea6e";
 }
 .icon-group-circle:before {
   content: "\e9fd";
@@ -601,6 +613,12 @@
 .icon-deskbell:before {
   content: "\eb4b";
 }
+.icon-cursor1:before {
+  content: "\eae3";
+}
+.icon-picker-grid:before {
+  content: "\eb0b";
+}
 .icon-cycle-arrows:before {
   content: "\e93b";
 }
@@ -642,6 +660,9 @@
 }
 .icon-text-in:before {
   content: "\eb1a";
+}
+.icon-perform:before {
+  content: "\eb13";
 }
 .icon-text-on:before {
   content: "\eb28";
@@ -747,9 +768,6 @@
 }
 .icon-right-quote:before {
   content: "\e9c8";
-}
-.icon-ruby:before {
-  content: "\e9c9";
 }
 .icon-lens:before {
   content: "\ea6b";
@@ -1186,6 +1204,12 @@
 .icon-adobe2:before {
   content: "\eab5";
 }
+.icon-excel:before {
+  content: "\eb58";
+}
+.icon-ms-excel:before {
+  content: "\eb5d";
+}
 .icon-google:before {
   content: "\eaa0";
 }
@@ -1555,6 +1579,9 @@
 .icon-stopwatch2:before {
   content: "\eb36";
 }
+.icon-picker-gd:before {
+  content: "\eb14";
+}
 .icon-arrows:before {
   content: "\ec6e";
 }
@@ -1794,6 +1821,9 @@
 }
 .icon-sort-amount-desc:before {
   content: "\eb8c";
+}
+.icon-menu3:before {
+  content: "\e9a4";
 }
 .icon-left-quote:before {
   content: "\eb8d";
@@ -2433,9 +2463,6 @@
 }
 .icon-dehaze:before {
   content: "\e9a3";
-}
-.icon-menu3:before {
-  content: "\e9a4";
 }
 .icon-more-horiz:before {
   content: "\e9a5";

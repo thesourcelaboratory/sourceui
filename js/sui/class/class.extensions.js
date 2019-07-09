@@ -296,6 +296,9 @@ propriedade data-link de um dado elemento.
 							if (dk == 'key') {
 								data.key = data.key || [];
 								if (v !== null && v !== '') data.key.push(v);
+							} else if (dk == 'owner') {
+								data.owner = data.owner || [];
+								if (v !== null && v !== '') data.owner.push(v);
 							} else if (dk == 'parentkey') {
 								if (v !== null && v !== '' && !data.parentkey) data.parentkey = v;
 							} else if (dk == 'seed') {
@@ -1036,13 +1039,13 @@ $.colorfy = function (value, color) {
 			else return '#cccccc';
 		}
 		var c = {
-			'#4F8DDA': /^\d?$/gi,	// newblue
-			'#253a6f': /^nov|^new/gi,	// black
+			'#4F8DDA': /^presen|^realiz|^\d?$/gi,	// newblue
+			'#224488': /^nov|^new/gi,	// darkblue
 			'#e24040': /exclu|delet|remov|ignor|invali|inváli|negativ|^reprov|^revogad|^não |^no |^n$|^-?\d?$/gi,	// red
-			'#5a5a5a': /^ativ|^activ|^sim|^s$|^yes|^y$|^\d$/gi, // blue
-			'#F18D25': /ando$|endo$|indo$|^enviad|^em /gi,	// orange
-			'#BBBBBB': /^inativ|^inactiv|^cancelad/gi,	// gray
-			'#37a74a': /ado$|edo$|ido$|ído$|^true$/gi,	// green
+			'#5a5a5a': /^ativ|^activ|^sim|^s$|^yes|^y$|^\d$/gi, // dark
+			'#F18D25': /ando$|endo$|indo$|^enviad|^ausen|^em /gi,	// orange
+			'#BBBBBB': /^inativ|^inactiv|^cancel/gi,	// gray
+			'#37a74a': /ado$|edo$|ido$|ído$|^inscri|^true$/gi,	// green
 
             /*
             '#4F8DDA' : /^nov|^new|^\d?$/gi,	// newblue
@@ -1346,6 +1349,19 @@ $.cloneCanvas = function (oldCanvas) {
 	context.drawImage(oldCanvas, 0, 0);
 	return newCanvas;
 };
+
+$.nonull = function (obj){
+	var propNames = Object.getOwnPropertyNames(obj);
+	for (var i = 0; i < propNames.length; i++) {
+		var propName = propNames[i];
+		if (obj[propName] === null || obj[propName] === '' || obj[propName] === undefined) {
+			delete obj[propName];
+		} else if (typeof obj[propName] == 'object'){
+			obj[propName] = $.nonull(obj[propName]);
+		}
+	}
+	return obj;
+}
 
 
 Math.randlist = {};

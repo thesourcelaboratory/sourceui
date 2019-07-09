@@ -397,10 +397,10 @@ sourceui.interface.plugins = function () {
 		add: function (html) {
 			var $li = $(html);
 			var $ol = $('#suiAsideLeft nav[data-alias="notifications"] .block ol');
-			$ol.prepend($li).closest('.nav').find('.empty').remove();
+			$ol.prepend($li);
+			$ol.closest('nav').find('.empty').remove();
 			Notification.badge();
 			if (window.location.href.indexOf($li.attr('id')) > -1) {
-				console.log($li);
 				$li.trigger('click');
 			}
 		},
@@ -784,7 +784,7 @@ sourceui.interface.plugins = function () {
 			$confirm.velocity({
 				opacity: [1, 0]
 			}, {
-					duration: 220,
+					duration: 200,
 					display: 'block',
 					complete: function () {
 						Dom.body.addClass('confirmed');
@@ -794,7 +794,7 @@ sourceui.interface.plugins = function () {
 				$content.velocity({
 					translateY: [0, 50]
 				}, {
-						duration: 220,
+						duration: 200,
 					}, 'easeOutQuad');
 			}
 			$.CURR.confirm = true;
@@ -809,7 +809,7 @@ sourceui.interface.plugins = function () {
 			} : {
 					opacity: [0, 1]
 				}, {
-					duration: 220,
+					duration: 200,
 					complete: function () {
 						$confirm.remove();
 					}
@@ -1276,8 +1276,8 @@ sourceui.interface.plugins = function () {
 			setup.link.sector = $sector;
 			setup.link.cancelnested = true;
 			$sector.data('floatcaller', setup.caller);
-			$container.velocity({ opacity: [1, 0] }, { display: 'block', duration: 250 });
-			$sector.velocity({ scale: [1, 0.95] }, { display: 'block', duration: 250 });
+			$container.velocity({ opacity: [1, 0] }, { display: 'block', duration: 200 });
+			$sector.velocity({ scale: [1, 0.95] }, { display: 'block', duration: 200 });
 			Network.link.call(null, setup.link);
 			$.each(setup.on || [], function (e, d) {
 				$sector.on(e, d.bind, function (event, a, b, c) {
@@ -1288,11 +1288,11 @@ sourceui.interface.plugins = function () {
 			$close.one('click', function (event) {
 				if ($sector.is('.unclosable')) return false;
 				$container.velocity({ opacity: [0, 1] }, {
-					display: 'none', duration: 250, complete: function () {
+					display: 'none', duration: 200, complete: function () {
 						$container.html('');
 					}
 				});
-				$sector.velocity({ scale: [0.95, 1] }, { display: 'none', duration: 250 });
+				$sector.velocity({ scale: [0.95, 1] }, { display: 'none', duration: 200 });
 				$.CURR.FloatSector = null;
 				Dom.document.trigger('activity:focusin', [setup.caller]);
 				event.stopPropagation();

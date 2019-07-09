@@ -696,8 +696,8 @@ sourceui.customField = function (element, setup) {
 													var $col = $(this);
 													if ($col.hasClass('visualidentifier')) {
 														if ($col.hasClass('fsimage')) val.fsimage = $col.find('img').attr('src') || $("<div/>").append($col.find('i').clone().switchClass('m', 'p')).html();
-														else if ($col.hasClass('image')) val.image = $col.css('background-image');
-														else if ($col.hasClass('icon')) val.icon = $col.attr('class');
+														else if ($col.hasClass('image')) val.image = $col.children('.img').css('background-image') || $col.css('background-image');
+														else if ($col.hasClass('icon')) val.icon = $col.children('.icon').attr('class') || $col.attr('class');
 													} else {
 														if ($col.hasClass('name')) val.name = $col.html();
 														else if ($col.hasClass('info') && $col.hasClass('important')) val.info = $col.html();
@@ -712,6 +712,7 @@ sourceui.customField = function (element, setup) {
 												val.name = $label.children('.name').html();
 											}
 											Field.val(val);
+											Element.find('.cell.value').velocity({ opacity: [1, 0.5], scale: [1, 1.2] }, { duration: 200 });
 										});
 										Element.trigger('field:change');
 									}
@@ -1488,7 +1489,7 @@ sourceui.customField = function (element, setup) {
 						if (val.length > 3 && max - min == 1) {
 							predicTimeout = setTimeout(function () {
 								Element.trigger('field:enter');
-							}, 1000);
+							}, 750);
 						}
 						lastInput = val;
 					});
@@ -1542,15 +1543,13 @@ sourceui.customField = function (element, setup) {
 						var data = $item.data('value');
 						if (!data.cep) {
 							Bind.common.locale.findCEPFromAddress(data, function (res) {
-								console.log(res);
-								$.extend(data, res);
-								Element.trigger('field:select', [data]);
+								var datares = $.extend({}, $.nonull(data), $.nonull(res));
+								Element.trigger('field:select', [datares]);
 							});
-						} else if (data.bairro == data.cidade) {
+						} else if (data.cep && data.bairro == data.cidade) {
 							Bind.common.locale.findAddressFromCEP(data.cep, function (res) {
-								console.log(res);
-								$.extend(data, res);
-								Element.trigger('field:select', [data]);
+								var datares = $.extend({},$.nonull(data), $.nonull(res));
+								Element.trigger('field:select', [datares]);
 							});
 						} else {
 							Element.trigger('field:select', [data]);
@@ -2466,14 +2465,16 @@ sourceui.customField = function (element, setup) {
 				var vdata = Element.data('validate') || {};
 				if (!vdata.remote) return true;
 				var value = val || Dom.input.val();
-				var d = {};
-				d.cache = false;
-				d.validate = {};
-				d.validate[Element.data('name')] = $.extend({ id: Element.attr('id') }, Element.data('validate'));
-				d.data = {};
-				d.data[Element.data('name')] = Element.val();
-				valueValid = null;
-				Network.link.call(Element, d);
+				if (value !== '' && value !== null){
+					var d = {};
+					d.cache = false;
+					d.validate = {};
+					d.validate[Element.data('name')] = $.extend({ id: Element.attr('id') }, Element.data('validate'));
+					d.data = {};
+					d.data[Element.data('name')] = Element.val();
+					valueValid = null;
+					Network.link.call(Element, d);
+				}
 				return valueValid;
 			},
 			all: function (val) {
@@ -2482,7 +2483,6 @@ sourceui.customField = function (element, setup) {
 				if (valueValid !== false) Validate.test.size(val);
 				if (valueValid !== false) Validate.test.same(val);
 				if (valueValid !== false) Validate.test.pattern(val);
-				//if (valueValid) Validate.test.remote(value);
 				return valueValid;
 			}
 		},
@@ -2542,6 +2542,7 @@ sourceui.customField = function (element, setup) {
 				var vdata = Element.data('validate') || {};
 				vdata[Data.mask] = true;
 				Element.data('validate', vdata);
+				Element.addClass('validations');
 			}
 			return Validate;
 		},
@@ -2553,6 +2554,7 @@ sourceui.customField = function (element, setup) {
 				var vdata = Element.data('validate') || {};
 				vdata.limit = { min: Data.min, max: Data.max };
 				Element.data('validate', vdata);
+				Element.addClass('validations');
 			}
 			return Validate;
 		},
@@ -2564,6 +2566,7 @@ sourceui.customField = function (element, setup) {
 				var vdata = Element.data('validate') || {};
 				vdata.size = { len: Data.len, minlen: Data.minlen, maxlen: Data.maxlen };
 				Element.data('validate', vdata);
+				Element.addClass('validations');
 			}
 			return Validate;
 		},
@@ -2576,18 +2579,20 @@ sourceui.customField = function (element, setup) {
 				var vdata = Group.element.data('validate') || {};
 				vdata.same = true;
 				Group.element.data('validate', vdata);
+				Group.element.addClass('validations');
 			}
 			return Validate;
 		},
 		remote: function () {
 			var data = Element.link();
 			if (data.sui && data.process == 'validate') {
-				Element.on('field:enter', function () {
+				Element.on('field:enter', function (event) {
 					if (Validate.test.remote()) Field.notify.remove();
 				});
 				var vdata = Element.data('validate') || {};
 				vdata.remote = true;
 				Element.data('validate', vdata);
+				Element.addClass('validations');
 			}
 			return Validate;
 		},
@@ -2856,7 +2861,7 @@ sourceui.customField = function (element, setup) {
 					Dom.listoptions.mark(term);
 				}
 			};
-			return sourceui.instances.network.link.call($this, data);
+			return Network.link.call($this, data);
 		};
 		Element.children('code').each(function () {
 			var $v = $(this);
@@ -2877,8 +2882,10 @@ sourceui.customField = function (element, setup) {
 								if (!Device.ismobile && !Element.hasClass('droplisted')) Dom.droplist.trigger('droplist:open');
 								if (Dom.listoptions.hasClass('default') || $items.length === 0 || $items.length > 10) {
 									clearTimeout(mto);
-									if (xhr) xhr.abort();
-									mto = setTimeout(function () { xhr = _snippet($v, $this, value); }, 300);
+									if (xhr) Network.abort(xhr);
+									mto = setTimeout(function () {
+										xhr = _snippet($v, $this, value);
+									}, 300);
 								} else {
 									$items.hide();
 									$items.filter(':containsNC("' + value + '")').show();
@@ -3021,15 +3028,20 @@ sourceui.customField = function (element, setup) {
 			Element.on('field:error', function (event, type, message) {
 				valueValid = false;
 				Field.notify.add(message);
+				Element.removeClass('invalid valid').addClass('invalid');
 			});
 			Element.on('field:focus field:input', function (event) {
 				valueValid = null;
 				Field.notify.remove();
 			});
+			Element.on('field:change', function (event) {
+				Element.removeClass('invalid valid')
+			});
 			Element.on('field:valid', function (event, type, message) {
 				valueValid = true;
 				Field.notify.remove();
 				if (message) Field.notify.add('info', message);
+				Element.removeClass('invalid valid').addClass('valid');
 			});
 
 

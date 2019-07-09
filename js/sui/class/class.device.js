@@ -224,6 +224,12 @@ sourceui.Device = function (c) {
 		coords: {},
 		get: function (callback, options) {
 			if (navigator.geolocation) {
+				if (options.fromCache && !$.isEmptyObject(Geolocation.coords)) {
+					if (callback){
+						callback(Geolocation.coords);
+						callback = null;
+					}
+				}
 				navigator.geolocation.getCurrentPosition(function (pos) {
 					Geolocation.coords = {
 						lat: pos.coords.latitude,

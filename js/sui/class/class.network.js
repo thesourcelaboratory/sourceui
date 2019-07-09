@@ -998,11 +998,9 @@ sourceui.Network = function () {
 					collection = $(field).map(function () { return this.toArray(); });
 				}
 				if (collection && collection.length) {
-					collection.each(function () {
-						setup.fieldSelector = setup.fieldSelector || [];
-						setup.fieldSelector.push($.getSelector(this));
+					collection.filter(':last').each(function () {
+						setup.fieldSelector = $.getSelector(this);
 					});
-					setup.fieldSelector = setup.fieldSelector.length > 1 ? setup.fieldSelector : setup.fieldSelector[0];
 				}
 				return collection;
 			};
@@ -1019,8 +1017,8 @@ sourceui.Network = function () {
 				setup.timestamp = Date.now();
 				setup.metric = new Metric();
 				setup.timeout = setup.timeout || 60000; // fetch do target
-				setup.target = Ajax.target(setup);
-				setup.field = Ajax.field(setup);
+				setup.target = Ajax.target();
+				setup.field = Ajax.field();
 				config.dataType = "text";
 				config.cache = (setup.cache === 'false' || setup.cache === false) ? false : true;
 				setup.cache = config.cache;
@@ -1107,6 +1105,7 @@ sourceui.Network = function () {
 						command: setup.command,
 						process: setup.process,
 						parentkey: setup.parentkey,
+						owner: setup.owner,
 						key: setup.key,
 						name: setup.name,
 						stack: setup.stack,
@@ -1132,6 +1131,7 @@ sourceui.Network = function () {
 						command: setup.command,
 						process: setup.process,
 						parentkey: setup.parentkey,
+						owner: setup.owner,
 						key: setup.key,
 						group: setup.group,
 						session: Device.session.id(),
@@ -1399,8 +1399,7 @@ sourceui.Network = function () {
 						setup.metric.add('bytesTotal', 0);
 						setup.metric.calc();
 						if (Network.online) {
-							if (status == 'abort' || status == 'canceled')
-								return;
+							if (status == 'abort' || status == 'canceled') return;
 							setup.response = {
 								error: error,
 								status: status,
@@ -1577,6 +1576,7 @@ sourceui.Network = function () {
 							command: setup.command,
 							process: setup.process,
 							parentkey: setup.parentkey,
+							owner: setup.owner,
 							key: setup.key,
 							accept: setup.accept,
 							maxfilesize: setup.maxfilesize,
@@ -1594,6 +1594,7 @@ sourceui.Network = function () {
 							command: setup.command,
 							process: setup.process,
 							parentkey: setup.parentkey,
+							owner: setup.owner,
 							key: setup.key,
 							precheck: setup.precheck,
 							accept: setup.accept,
@@ -1926,7 +1927,7 @@ sourceui.Network = function () {
 		};
 		this.localNotification = function (payload) {
 			var data = payload.data;
-			if (!Socket.activewindow && Notification.permission == 'granted') {
+			if (data && !Socket.activewindow && Notification.permission == 'granted') {
 				var notification = new Notification(data.title, { body: $('<div>' + (data.description || data.label) + '</div>').text(), icon: data.image });
 				notification.onclick = function (event) {
 					window.focus();
@@ -2027,7 +2028,9 @@ sourceui.Network = function () {
 				data.link.placement = 'replace';
 				delete data.link['@clone'];
 			}
-
+			if (data.link.filter){
+				data.link.filter = (typeof data.link.filter != 'string') ? JSON.stringify(data.link.filter) : data.link.filter;
+			}
 			return Template.get('panel', 'aside', 'nav', 'item', {
 				attr: { id: data.id },
 				data: { status: data.status, link: data.link },
@@ -2064,7 +2067,19 @@ sourceui.Network = function () {
 	this.link = function (setup) {
 
 		setup = $.isPlainObject(setup) ? setup : {};
+
 		if (this instanceof jQuery) {
+
+			// triggerclick -------------
+			if (setup.triggerclick || this.data('link-triggerclick')) {
+				setup = $.extend(setup, this.link('_self')) || {};
+				var target = setup.triggerclick;
+				delete setup.triggerclick;
+				$(target).trigger('click', [setup]);
+				return true;
+			}
+			// --------------------------
+
 			setup.element = setup.element || this;
 			if (!setup.cancelnested) {
 				setup = this.link(setup);
@@ -2075,6 +2090,29 @@ sourceui.Network = function () {
 
 		setup.name = setup.name || setup.label || setup.title || setup.sui;
 
+		// geolocation --------------
+		if (setup.geolocation === true || setup.geolocation === 'true' || setup.geolocation === 'last') {
+			if (!setup.field) {
+				var ajx = new Ajax(setup);
+				setup.target = ajx.target();
+				setup.field = ajx.field();
+				ajx.loading.start();
+			}
+			Device.geolocation.get(function (pos) {
+				if (pos) setup.geolocation = pos;
+				else setup.geolocation = false;
+				if (ajx) ajx.loading.stop();
+				Network.link($.extend({},setup));
+			}, {
+				fromCache: (setup.geolocation === 'last'),
+				enableHighAccuracy: true,
+				timeout: 5000
+			});
+			return false;
+		}
+		// --------------------------
+
+		/*
 		// geolocation --------------
 		if (setup.geolocation === true) {
 			var ajx = new Ajax(setup);
@@ -2094,6 +2132,7 @@ sourceui.Network = function () {
 			setup.geolocation = Device.geolocation.last();
 		}
 		// --------------------------
+		*/
 
 		// download -----------------
 		if (setup.download) {
@@ -2253,6 +2292,20 @@ sourceui.Network = function () {
 
 		setup.sui = setup.sui || setup.url;
 
+		// chave para identificar a conexão
+		setup.rid = $.md5(JSON.stringify({
+			sui: setup.sui,
+			action: setup.action,
+			command: setup.command,
+			process: setup.process,
+			parentkey: setup.parentkey,
+			owner: setup.owner,
+			key: setup.key,
+			stack: setup.stack,
+			str: setup.str,
+		}));
+		////////////////////////////////////
+
 		if (setup.sui) {
 			////////////////////////////////////
 			// PROMISE DE indexDB
@@ -2279,16 +2332,6 @@ sourceui.Network = function () {
 			};
 			////////////////////////////////////
 			promiseDB().then(function (r) {
-				setup.rid = JSON.stringify({
-					sui: setup.sui,
-					action: setup.action,
-					command: setup.command,
-					process: setup.process,
-					parentkey: setup.parentkey,
-					key: setup.key,
-					stack: setup.stack,
-					str: setup.str,
-				});
 				if (ActiveRequests[setup.rid]) {
 					ActiveRequests[setup.rid].abort(true);
 				}
@@ -2298,7 +2341,20 @@ sourceui.Network = function () {
 		} else {
 			console.warn('There is no file to link');
 		}
+		return setup.rid;
 	};
+
+	this.abort = function (rid) {
+		if (rid) {
+			if (ActiveRequests[rid]) {
+				ActiveRequests[rid].abort(true);
+			}
+		} else {
+			$.each(ActiveRequests || [], function (ajax) {
+				ajax.abort(true);
+			});
+		}
+	}
 
 	this.service = function (server) {
 		var Console = Debug.get('Service');
@@ -2359,6 +2415,12 @@ sourceui.Network = function () {
 		last: '',
 		stack: {},
 		following: false,
+		_follow: function(){
+			var args = arguments;
+			setTimeout(function(){
+				Network.history.exec.apply(Network.history,args);
+			},200);
+		},
 		follow: function (path, $elem) {
 			if (!path.length) {
 				Dom.document.trigger('panelready');
@@ -2368,22 +2430,25 @@ sourceui.Network = function () {
 			var current = path.shift();
 			var spath, klist, filter = {};
 			var ksel = [];
-			var $k, $c, $mb;
+			var $k, $c=$(), $mb;
 			if (current.indexOf(':') > -1) {
 				spath = current.split(':');
 				if (spath[1]) {
-					klist = spath[1].split(',');
+					klist = spath[1].split('|'); // o pipe é o divisor de valores
 					for (var j = 0; j < klist.length; j++) {
-						if (klist[j]) ksel.push('[data-link-key="' + klist[j].replace(/\%2F/g, '/') + '"]:eq(0)');
+						if (klist[j]) ksel.push('[data-link-key="' + klist[j] + '"]:eq(0)');
 					}
 					$k = $elem.find(ksel.join(','));
 					if ($k && $k.length) {
 						$k.each(function () {
 							var $this = $(this);
 							$this.addClass('select selected');
+							if ($this.data('link-command') == spath[0]) $c = $this;
 						});
-						$c = $elem.find('.toolbar [data-link-command="' + spath[0] + '"]:eq(0)');
+						if (!$c.length) $c = $k.data('link-command') == spath[0] ? $k : $k.find('.swiper [data-link-command="' + spath[0] + '"]:eq(0)');
 						if (!$c.length) $c = $k.find('.swiper [data-link-command="' + spath[0] + '"]:eq(0)');
+						if (!$c.length) $c = $k.closest('.sui-widget').find('.toolbar [data-link-command="' + spath[0] + '"]:eq(0)');
+						if (!$c.length) $c = $elem.find('.toolbar [data-alias="' + spath[0] + '"]:eq(0)');
 					} else {
 						Dom.document.trigger('panelready');
 						return;

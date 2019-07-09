@@ -38,9 +38,10 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     Handson.valid = true;
     Handson.common = new Interface.widget.common($widget, setup);
     Handson.widget = $widget;
+    Handson.area = Handson.widget.children('.area');
     Handson.sheet = Handson.widget.find('.sheet');
     Handson.refresh = function () {
-        var sh = Handson.sheet.find('.wtSpreader').outerHeight();
+        var sh = Handson.widget.is('.maximized') ? Handson.area.outerHeight() : Handson.sheet.find('.wtSpreader').outerHeight();
         Handson.sheet.height(sh);
         Handson.sheet.css('opacity', 1);
         if (Handson.hot) Handson.hot.refreshDimensions();
@@ -74,7 +75,9 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
 
     Handson.draw = function (cfg) {
         if (Handson.hot) Handson.hot.destroy();
+        var sh = Handson.widget.is('.maximized') ? Handson.area.outerHeight() : null;
         var hot = Handson.hot = new Handsontable(Handson.sheet.get(0), $.extend(cfg, {
+            height: sh,
             afterChange: function (changes, source) {
                 if (source != 'loadData') {
                     Handson.widget.trigger('field:input');

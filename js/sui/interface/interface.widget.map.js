@@ -95,7 +95,7 @@ sourceui.interface.widget.map = function($widget,setup){
 				if (stf == 1){
 					Map.setView(stuffvals[0].getLatLng(), Leaflet.cfg.zoom || 15);
 				} else {
-					Map.fitBounds(L.featureGroup(stuffvals).getBounds());
+					Map.fitBounds(L.featureGroup(stuffvals).getBounds(), {padding: [20,20]});
 				}
 			}
 		});
@@ -113,7 +113,7 @@ sourceui.interface.widget.map = function($widget,setup){
 		if (Leaflet.cfg.heatmap){
 			Heatmap = Leaf.heatmap(Leaflet.cfg.heatmap);
 		}
-		
+
 		if (Leaflet.cfg.fitStuffs) Leaflet.widget.trigger('map:fitstuffs');
 		if (Leaflet.cfg.grayScale) Leaflet.widget.addClass('grayscale');
 

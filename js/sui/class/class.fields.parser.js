@@ -45,11 +45,11 @@ sourceui.templates.fields = new sourceui.Template({
 	label:
 		//'<label class="label">@{label}@{reqflag}<small class="notify"></small></label>',
 		'<label class="label">@{label}@{reqflag}<br /><small class="notify"></small></label>',
-	help: 
+	help:
 		'<mark class="help">?</mark>',
 	wrap: {
 		simple:
-			'<div class="wrap" style="@{style:background}@{style:color}@{style:bold}@{style:size}@{style:width}@{style:height}">' +
+			'<div class="wrap" style="@{style:background}@{style:color}@{style:bold}@{style:size}@{style:width}@{style:max-width}@{style:height}">' +
 			'@{child:table}' +
 			'@{child:box}' +
 			'@{child:addon}' +
@@ -71,11 +71,11 @@ sourceui.templates.fields = new sourceui.Template({
 			'</div>',
 		daterange:
 			'<div class="table">' +
-			'<div class="cell value" data-placeholder="@{placeholder}" style="@{style:width}@{style:height}@{style:background}">' +
+			'<div class="cell value" data-placeholder="@{placeholder}" style="@{style:width}@{style:max-width}@{style:height}@{style:background}">' +
 			'<input class="input date ini" name="from" type="text" lang="pt-br" placeholder="99/99/9999" value="@{value:from}" />' +
 			'</div>' +
 			'<div class="cell prefix">até</div>' +
-			'<div class="cell value" data-placeholder="@{placeholder}" style="@{style:width}@{style:height}@{style:background}">' +
+			'<div class="cell value" data-placeholder="@{placeholder}" style="@{style:width}@{style:max-width}@{style:height}@{style:background}">' +
 			'<input class="input date end" name="to" type="text" lang="pt-br" placeholder="99/99/9999" value="@{value:to}" />' +
 			'</div>' +
 			'@{child:buttonafter}' +
@@ -168,7 +168,7 @@ sourceui.templates.fields = new sourceui.Template({
 	cell: {
 		button: {
 			simple:
-				'<div class="cell button @{icon}" data-alias="@{alias}">@{value}@{label}@{child:droplist}</div>',
+				'<div class="cell button @{icon} @{type}" data-alias="@{alias}">@{value}@{label}@{child:droplist}</div>',
 			complexdrop:
 				'<div class="cell button complex list @{icon}" data-alias="droplist"><div class="icon-chevron-down"></div>@{label}@{child:droplist}</div>',
 			complextime:
@@ -185,11 +185,11 @@ sourceui.templates.fields = new sourceui.Template({
 		sufix:
 			'<div class="cell sufix @{icon}"" style="@{style:bold}@{style:size}@{style:case}">@{label}</div>',
 		value:
-			'<div class="cell value @{icon}" style="@{style:width}@{style:height}@{style:background}@{style:color}">' +
+			'<div class="cell value @{icon}" style="@{style:width}@{style:max-width}@{style:height}@{style:background}@{style:color}">' +
 			'@{child:input}' +
 			'</div>',
 		options:
-			'<div class="cell value @{icon}" style="@{style:width}@{style:height}@{style:background}@{style:color}">' +
+			'<div class="cell value @{icon}" style="@{style:width}@{style:max-width}@{style:height}@{style:background}@{style:color}">' +
 			'<div class="placeholder">@{placeholder}</div>' +
 			'<div class="area @{inscroll}">' +
 			'<div class="options">' +
@@ -198,11 +198,11 @@ sourceui.templates.fields = new sourceui.Template({
 			'</div>' +
 			'</div>',
 		search:
-			'<div class="cell search" style="@{style:width}@{style:height}@{style:background}@{style:color}">' +
+			'<div class="cell search" style="@{style:width}@{style:max-width}@{style:height}@{style:background}@{style:color}">' +
 			'<input class="search" type="search" placeholder="@{placeholder}" />' +
 			'</div>',
 		multisearch:
-			'<div class="cell value @{icon}" style="@{style:width}@{style:height}@{style:background}@{style:color}">' +
+			'<div class="cell value @{icon}" style="@{style:width}@{style:max-width}@{style:height}@{style:background}@{style:color}">' +
 			'<div class="area @{inscroll}">' +
 			'<div class="options">' +
 			'@{child:input}' +
@@ -234,7 +234,7 @@ sourceui.templates.fields = new sourceui.Template({
 			'@{child:files}' +
 			'</div>',
 		map:
-			'<div class="cell value" style="@{style:width}@{style:height}@{style:background}@{style:color}">' +
+			'<div class="cell value" style="@{style:width}@{style:max-width}@{style:height}@{style:background}@{style:color}">' +
 			'<div class="map"@{data}></div>' +
 			'</div>',
 
@@ -272,7 +272,7 @@ sourceui.templates.fields = new sourceui.Template({
 	},
 	box: {
 		simple:
-			'<div class="box" style="@{style:width}@{style:height}@{style:background}">@{child:cell}</div>',
+			'<div class="box" style="@{style:width}@{style:max-width}@{style:height}@{style:background}">@{child:cell}</div>',
 	},
 	addon: {
 		simple:
@@ -604,6 +604,7 @@ sourceui.parserField = function (element, setup) {
 						label: v.label,
 						value: v.value ? Template.get('input', 'hidden', { value: v.value }) : '',
 						color: v.color || '',
+						type: v.type || (v.options.length ? 'hasdrop' : ''),
 						child: {
 							droplist: (v.options.length) ? Template.get('droplist', 'list', 'simple', {
 								type: 'single',
@@ -912,6 +913,7 @@ sourceui.parserField = function (element, setup) {
 						var value = '';
 						html.visual += (v.fsimage) ? (v.fsimage.indexOf('<') == -1 ? '<div class="image"><img src="' + v.fsimage + '"/></div>' : '<div class="icon">' + v.fsimage + '</div>') : '';
 						html.visual += (v.image) ? '<div class="image"><img src="' + (v.image.replace('url(', '').replace(')', '').replace(/\"/gi, "")) + '"/></div>' : '';
+						html.visual += (v.avatar) ? '<div class="image"><img src="' + (v.avatar.replace('url(', '').replace(')', '').replace(/\"/gi, "")) + '"/></div>' : '';
 						html.visual += (v.icon) ? '<div class="icon ' + (v.icon.indexOf('icon-') > -1 ? v.icon : 'icon-' + v.icon) + '"></div>' : '';
 						html.info += (v.name) ? '<div class="name">' + v.name + '</div>' : '';
 						html.info += (v.info) ? '<div class="info">' + v.info + '</div>' : '';
@@ -1299,7 +1301,7 @@ sourceui.parserField = function (element, setup) {
 				Field.setup.getval = 'caller';
 				Field.setup.placeholder = Field.setup.placeholder || 'Clique para escolher';
 				Field.setup.class += Field.setup.valuelist && Field.setup.valuelist.length ? ' selected' : '';
-				Field.setup.buttons.after = [{ icon: 'icon-touch', alias: 'browse', options: [] }];
+				Field.setup.buttons.after = [{ icon: 'icon-picker-gd', alias: 'browse', options: [] }];
 				return HTML.common.field({ cell: 'options', input: 'picker' });
 			},
 		},
