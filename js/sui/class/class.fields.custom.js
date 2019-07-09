@@ -1579,7 +1579,8 @@ sourceui.customField = function (element, setup) {
 					Dom.map.data('_leafletcoord', coord);
 
 					var map, setup = {
-						tile: 'cartodb',
+						tile: 'mapbox',
+						layerid: 'mapbox.light',
 						zoom: 15,
 						gestureHandling: true
 					};
