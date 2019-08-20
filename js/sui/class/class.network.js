@@ -63,11 +63,13 @@ sourceui.Network = function () {
 	});
 
 	if (this.online) {
+		$('#suiBody').removeClass('offline');
 		Debug.get('Network').notice({
 			mode: 'Status',
 			title: 'Network is online and idle',
 		});
 	} else {
+		$('#suiBody').addClass('offline');
 		Debug.get('Network').error({
 			mode: 'Status',
 			title: 'Network is offline',
@@ -76,7 +78,7 @@ sourceui.Network = function () {
 	Debug.get('Network').trace();
 
 	window.addEventListener("offline", function () {
-		Dom.body.addClass('offline');
+		$('#suiBody').addClass('offline');
 		Network.online = false;
 		Debug.get('Network').error({
 			mode: 'Status',
@@ -84,7 +86,7 @@ sourceui.Network = function () {
 		}).trace();
 	}, false);
 	window.addEventListener("online", function () {
-		Dom.body.removeClass('offline');
+		$('#suiBody').removeClass('offline');
 		Network.online = true;
 		Debug.get('Network').notice({
 			mode: 'Status',
@@ -297,17 +299,14 @@ sourceui.Network = function () {
 					Console.trace();
 			};
 			this.set = function (data, callback, failback) {
-				if (!data.session)
-					return;
+				if (!data.session) return;
 				data.apppath = window.location.host + window.location.pathname;
-				if (data.apppath !== localdata.apppath || data.session !== localdata.session) {
-					//Local.remove();
-					localdata = data;
-					if (DB)
-						DB.put(localdata, callback, failback || this.failback);
-					else if (callback)
-						callback(localdata.id);
-				}
+				//Local.remove();
+				localdata = data;
+				if (DB)
+					DB.put(localdata, callback, failback || this.failback);
+				else if (callback)
+					callback(localdata.id);
 			};
 			this.get = function (key) {
 				return localdata || {};
@@ -1101,6 +1100,7 @@ sourceui.Network = function () {
 						seed: setup.seed,
 						origin: setup.origin,
 						sui: setup.sui,
+						entity: setup.entity,
 						action: setup.action,
 						command: setup.command,
 						process: setup.process,
@@ -1127,6 +1127,7 @@ sourceui.Network = function () {
 					};
 					var requestKey = {
 						sui: setup.sui,
+						entity: setup.entity,
 						action: setup.action,
 						command: setup.command,
 						process: setup.process,
@@ -1572,6 +1573,7 @@ sourceui.Network = function () {
 							seed: setup.seed,
 							origin: setup.origin,
 							sui: setup.sui,
+							entity: setup.entity,
 							precheck: setup.precheck,
 							command: setup.command,
 							process: setup.process,
@@ -1590,6 +1592,7 @@ sourceui.Network = function () {
 						};
 						var requestKey = {
 							sui: setup.sui,
+							entity: setup.entity,
 							action: setup.action,
 							command: setup.command,
 							process: setup.process,
@@ -1871,6 +1874,11 @@ sourceui.Network = function () {
 		// ------------------------------------
 		if ("firebase" in window && Server.protocol == 'https') {
 			Socket.firebaseMessaging = firebase.messaging();
+			/*
+			Socket.worker = navigator.serviceWorker.register('./worker.js').then((registration) => {
+				Socket.firebaseMessaging.useServiceWorker(registration);
+			});
+			*/
 		} else if ("Notification" in window) {
 			Socket.browserMessaging = true;
 		} else {
@@ -1893,17 +1901,18 @@ sourceui.Network = function () {
 					})
 					.then(function (fbtoken) {
 						if (fbtoken) {
+							$block.prevAll('.name').addClass('icon-firebase');
 							if (fbtoken !== localdata.fbtoken) {
 								localdata.fbtoken = fbtoken;
 								Local.set(localdata);
 								Socket.emit('firebase:token', $.extend(localdata, {
 									fbtoken: fbtoken
 								}));
-								$block.prev('.sui-tip').remove();
-							}
-							Debug.get('Socket', { mode: 'Permission', title: 'Notification permission', color: '#FF4400' })
+								$block.prev('.sui-tip:not(.empty)').remove();
+								Debug.get('Socket', { mode: 'Permission', title: 'Notification permission', color: '#FF4400' })
 								.valid({ mode: 'FBToken', type: 'Status', title: 'The notification permission was granted by the user. Firebase token sent to server.', content: fbtoken })
 								.trace();
+							}
 						} else if (Notification.permission === 'default' || !Notification.permission) {
 							Plugin.notification.permitip();
 						}
@@ -1911,9 +1920,10 @@ sourceui.Network = function () {
 					.catch(function (err) {
 						Plugin.notification.permitip();
 						Debug.get('Socket', { mode: 'Permission', title: 'Notification permission' })
-							.warn({ type: 'Status', title: 'Unable to get permission to notify.\n' + err })
+							.warn({ type: 'Status', title: 'Unable to get permission to notification.\n' + err })
 							.trace();
 					});
+
 			} else if (Socket.browserMessaging) {
 				if (Notification.permission !== 'denied') {
 					Notification.requestPermission(function (permission) {
@@ -1926,9 +1936,16 @@ sourceui.Network = function () {
 			}
 		};
 		this.localNotification = function (payload) {
-			var data = payload.data;
+			var data = payload.data
 			if (data && !Socket.activewindow && Notification.permission == 'granted') {
-				var notification = new Notification(data.title, { body: $('<div>' + (data.description || data.label) + '</div>').text(), icon: data.image });
+				var icon = typeof data.icon != 'string' ? (data.genericon ? data.genericon : null) : data.icon;
+				var notification = new Notification(data.title, {
+					renotify: data.unify ? true : false,
+					tag: data.id,
+					body: $('<div>' + (data.description || data.label) + '</div>').text(),
+					icon: icon,
+					image: data.image
+				});
 				notification.onclick = function (event) {
 					window.focus();
 					$('#' + data.id).trigger('click');
@@ -1998,8 +2015,10 @@ sourceui.Network = function () {
 					if (data.category == 'notification') {
 						Object.keys(data.messages).reverse().reduce((r, k) => (r[k] = data.messages[k], r), {});
 						Plugin.notification.clear();
-						$.each(data.messages, function () {
-							Socket.localNotification(this);
+						$.each(data.messages, function (k,v) {
+							if (this.status == 'new'){
+								Socket.localNotification({data:v});
+							}
 							Plugin.notification.add(Socket.html(this));
 						});
 					}
@@ -2023,14 +2042,17 @@ sourceui.Network = function () {
 			if (data.description) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'description', content: data.description });
 			if (data.sendtime) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'datetime', content: $.timeagoHTML(data.sendtime) });
 
-			if (data.link['@clone']) {
-				data.link = $(data.link['@clone']).link(data.link);
-				data.link.placement = 'replace';
-				delete data.link['@clone'];
+			if (data.link){
+				if (data.link['@clone']) {
+					data.link = $(data.link['@clone']).link(data.link);
+					data.link.placement = 'replace';
+					delete data.link['@clone'];
+				}
+				if (data.link.filter){
+					data.link.filter = (typeof data.link.filter != 'string') ? JSON.stringify(data.link.filter) : data.link.filter;
+				}
 			}
-			if (data.link.filter){
-				data.link.filter = (typeof data.link.filter != 'string') ? JSON.stringify(data.link.filter) : data.link.filter;
-			}
+
 			return Template.get('panel', 'aside', 'nav', 'item', {
 				attr: { id: data.id },
 				data: { status: data.status, link: data.link },
@@ -2189,7 +2211,10 @@ sourceui.Network = function () {
 			if ($sector.length) {
 				if (setup.tab && $tab.length) {
 					$tab.trigger('click');
-					if (!setup.placement || setup.placement.indexOf('replace') === -1) return false;
+					if (!setup.placement || setup.placement.indexOf('replace') === -1){
+						$sector.find('#suiTabsView ol li:first').trigger('click');
+						return false;
+					}
 				}
 			}
 
@@ -2291,10 +2316,12 @@ sourceui.Network = function () {
 		}
 
 		setup.sui = setup.sui || setup.url;
+		setup.entity = Dom.body.data('entity');
 
 		// chave para identificar a conexão
 		setup.rid = $.md5(JSON.stringify({
 			sui: setup.sui,
+			entity: setup.entity,
 			action: setup.action,
 			command: setup.command,
 			process: setup.process,
@@ -2360,6 +2387,7 @@ sourceui.Network = function () {
 		var Console = Debug.get('Service');
 		Server = {};
 		if (server) {
+			Server.url = server;
 			if (window.location.href) {
 				if (server.indexOf('//*.') === -1) {
 					if (window.location.href.indexOf(server) === -1) {
@@ -2377,7 +2405,7 @@ sourceui.Network = function () {
 						Console.trace();
 					}
 				}
-				if (!Server.url) Server.url = window.location.href;
+				//if (!Server.url) Server.url = window.location.href;
 			}
 		}
 		if (window.location.href) Server.href = window.location.href;

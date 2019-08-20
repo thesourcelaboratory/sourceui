@@ -87,7 +87,7 @@ sourceui.interface.panel = function () {
 			$this.parent().children().removeClass('selected');
 			$this.addClass('selected');
 			$navs.removeClass('selected');
-			$nav.addClass('selected').qrcode();
+			$nav.addClass('selected');
 			if ($this.data('notification') && !$this.hasClass('has-clicked')) {
 				$this.addClass('has-clicked');
 				Socket.permission();
@@ -98,9 +98,12 @@ sourceui.interface.panel = function () {
 			var $qru = $nav.find('.qrcode-url').html('');
 			if ($qru.length) {
 				$qru.qrcode({
+					render: 'div',
+					version: 40,
+					ecLevel: 'M',
 					text: window.location.href,
-					fill: '#403d3c',
-					size: 200,
+					fill: '#2d2d2d',
+					size: 130,
 				});
 			}
 		}

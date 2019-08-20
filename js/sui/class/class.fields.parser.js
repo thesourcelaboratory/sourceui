@@ -244,23 +244,23 @@ sourceui.templates.fields = new sourceui.Template({
 		html:
 			'<div class="input" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" @{prop}>@{value}</div>',
 		hidden:
-			'<input class="input hidden" type="hidden" lang="@{lang}" value="@{value}"@{prop}/>',
+			'<input class="input hidden @{size}" type="hidden" lang="@{lang}" value="@{value}"@{prop}/>',
 		text:
-			'<input class="input text" type="text" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" pattern="@{pattern}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
+			'<input class="input text @{size}" type="text" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" pattern="@{pattern}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
 		search:
-			'<input class="input search" type="search" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}"@{prop}/>',
+			'<input class="input search @{size}" type="search" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}"@{prop}/>',
 		url:
-			'<input class="input url" type="url" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
+			'<input class="input url @{size}" type="url" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
 		email:
-			'<input class="input email" type="email" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
+			'<input class="input email @{size}" type="email" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
 		tel:
-			'<input class="input tel" type="tel" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}"@{prop}/>',
+			'<input class="input tel @{size}" type="tel" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}"@{prop}/>',
 		textarea:
-			'<textarea class="input text" lang="@{lang}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" spellcheck="@{spellcheck}" autocorrect="@{autocorrect}" autocomplete="@{autocomplete}" autocapitalize="@{autocapitalize}"@{prop}>@{value}</textarea>',
+			'<textarea class="input text @{size}" lang="@{lang}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" spellcheck="@{spellcheck}" autocorrect="@{autocorrect}" autocomplete="@{autocomplete}" autocapitalize="@{autocapitalize}"@{prop}>@{value}</textarea>',
 		password:
-			'<input class="input password" type="text" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
+			'<input class="input password @{size}" type="text" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
 		number:
-			'<input class="input number" type="number" lang="@{lang}" lang="pt-br" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" pattern="@{pattern}"@{prop}/>',
+			'<input class="input number @{size}" type="number" lang="@{lang}" lang="pt-br" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" pattern="@{pattern}"@{prop}/>',
 		option:
 			'<div class="option @{icon}"><input class="input hidden" type="hidden" value="@{value}"@{prop}/>@{label}<span class="remove icon-cancel-circle"></span></div>',
 		picker:
@@ -960,6 +960,7 @@ sourceui.parserField = function (element, setup) {
 						placeholder: setup.placeholder,
 						pattern: setup.pattern,
 						style: setup.style,
+						size: setup.size,
 						lang: setup.lang,
 						spellcheck: setup.spellcheck || 'true',
 						autocorrect: setup.autocorrect || 'on',

@@ -472,7 +472,8 @@ sourceui.Template = function(lib){
 		var groups = {}
 		$.each(data||[],function(ka,va){
 			if (typeof va != 'object' && typeof va != 'undefined' && va !== null && str.indexOf('@{'+ka+'}')){
-				va = (va && typeof va == 'string' && va[va.length-1] == '$') ? va.replace(/\$/g,'&dollar;') : va;
+				if (ka == 'style' && va && typeof va == 'string') va = ' style="'+va+'"';
+				if (va && typeof va == 'string' && va[va.length-1] == '$') va = va.replace(/\$/g,'&dollar;');
 				var rp = "@\{"+ka+"\}";
 				var regex = new RegExp(rp,'g');
 				str = str.replace(regex,va);

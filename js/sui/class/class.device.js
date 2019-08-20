@@ -14,6 +14,8 @@
 
 sourceui.Device = function (c) {
 
+	if (sourceui.instances.device) return {};
+
 	var Device = this;
 
 	var IDBGlobal = function () {
@@ -328,6 +330,37 @@ sourceui.Device = function (c) {
 			return Geolocation.last();
 		}
 	};
+	this.pwaworker = function(sw){
+		Device.Debug.create('PWA', {
+			mode: 'Worker',
+			title: 'PWA service worker register state'
+		});
+		if ("serviceWorker" in navigator) {
+			if (navigator.serviceWorker.controller) {
+				Device.Debug.get('PWA').log({
+					mode: 'Status',
+					title: 'Active service worker found, no need to register',
+				}).trace();
+			} else {
+				// Register the service worker
+				navigator.serviceWorker
+				.register("pwa.worker.js", {
+					scope: "./"
+				})
+				.then(function (reg) {
+					Device.Debug.get('PWA').notice({
+						mode: 'Status',
+						title: 'Service worker has been registered for scope: ' + reg.scope,
+					}).trace();
+				});
+			}
+		} else {
+			Device.Debug.get('PWA').notice({
+				mode: 'Compatibility',
+				title: 'Service worker is not supported for the browser',
+			}).trace();
+		}
+	}
 
 	var Debug = function () {
 
@@ -339,7 +372,31 @@ sourceui.Device = function (c) {
 		else console.log('SourceUI Debugger v.1.0.44');
 
 		debug.profile = function (id, data) {
-
+		/*
+		.sui-notify-container .sui-notify.info { background:#475b88f2 }
+		.sui-notify-container .sui-notify.alarm { background:#dd7119f2; }
+		.sui-notify-container .sui-notify.valid { background:#1d52b4f2; }
+		.sui-notify-container .sui-notify.warn { background:#dd7119f2; }
+		.sui-notify-container .sui-notify.error { background:#c52c33f2; }
+		.sui-notify-container .sui-notify.fail { background:#b9173af2; }
+		.sui-notify-container .sui-notify.fatal { background:#b9173af2; }
+		.sui-notify-container .sui-notify.bug { background:#8e34a5f2; }
+		*/
+		var c = {
+			'dump': '#009AA2',
+			'error': '#c52c33',
+			'fatal': '#b9173a',
+			'fail': '#b9173a',
+			'info': '#0066ff',
+			'warn': '#dd7119',
+			'valid': '#0055BB',
+			'notice': '#0C8446',
+			'log': '#444444',
+			'local': '#AAAAAA',
+			'cache': '#AAAAAA',
+			'bug': '#8e34a5'
+		};
+		/*
 			var c = {
 				'dump': '#009AA2',
 				'error': '#bb0000',
@@ -354,6 +411,7 @@ sourceui.Device = function (c) {
 				'cache': '#AAAAAA',
 				'bug': '#9D0277'
 			};
+			*/
 
 			var g = {
 				'dump': 'group',

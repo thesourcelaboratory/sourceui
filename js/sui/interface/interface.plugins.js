@@ -389,7 +389,7 @@ sourceui.interface.plugins = function () {
 			var $notif = $('#suiAsideLeft nav[data-alias="notifications"] .notif');
 			$notif.prevAll('.empty').remove();
 			$notif.before(
-				'<div class="sui-tip empty icon-info">' +
+				'<div class="sui-tip empty icon-info" style="background-color:#FFFFFF20">' +
 				'<strong>Tudo em Ordem</strong><br />Não ha notificações aqui para você.' +
 				'</div>'
 			);
@@ -407,7 +407,7 @@ sourceui.interface.plugins = function () {
 		badge: function () {
 			var $navtool = $('#suiAsideLeft .navtools > .notifications');
 			var number = $('#suiAsideLeft nav[data-alias="notifications"] .block ol li.new').length;
-			if (!$navtool.is('.selected')) {
+			//if (!$navtool.is('.selected')) {
 				var $mark = $navtool.find('mark');
 				if (number > 0) {
 					var $leftcollapser = $('#suiMain > .sui-tabs [data-alias="leftcollapser"]');
@@ -415,7 +415,7 @@ sourceui.interface.plugins = function () {
 					$navtool.addClass('notified');
 					$mark.text(number);
 				}
-			}
+			//}
 		},
 		permitip: function () {
 			var Socket = sourceui.instances.socket;

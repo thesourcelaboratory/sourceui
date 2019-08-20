@@ -36,7 +36,7 @@ sourceui.templates.interface = new sourceui.Template({
 	spinner:
 		'<div class="sui-spinner">' +
 		'<svg class="container" width="12%" viewBox="0 0 52 52">' +
-		'<circle class="path" cx="26px" cy="26px" r="20px" fill="none" stroke-dasharray="31" stroke-width="5px"/>' +
+		'<circle class="path" cx="26px" cy="26px" r="20px" fill="none" stroke-dasharray="31" stroke-width="6px"/>' +
 		'</svg>' +
 		'</div>',
 	offline:
@@ -136,7 +136,7 @@ sourceui.templates.interface = new sourceui.Template({
 		container:
 			'<div class="container" id="suiAuthContainer">' +
 			'<div class="modal">' +
-			'<div class="logo" @{style}></div>' +
+			'@{child:logo}'+
 			'@{child:forms}' +
 			'</div>' +
 			'<div class="footer">' +
@@ -147,6 +147,12 @@ sourceui.templates.interface = new sourceui.Template({
 			'@{child:footright}' +
 			'</ul>' +
 			'</div>' +
+			'</div>',
+		logo:
+			'<div class="logo @{class}" style="@{image}">'+
+			'<div class="avatar" style="@{avatar}"></div>'+
+			'<div class="abbr" style="background-color:@{color}">@{abbr}</div>'+
+			'<div class="name" style="@{size}">@{name}</div>'+
 			'</div>',
 		form:
 			'<form class="form @{class:type} @{class:selected}">' +
@@ -182,7 +188,11 @@ sourceui.templates.interface = new sourceui.Template({
 			top:
 				'<div class="sui-header-top"></div>',
 			logo:
-				'<div class="logo" data-tip="Inicio" style="background-image:@{style:background-image};background-color:@{style:background-color};"></div>',
+				'<div data-tip="Inicio" class="logo @{class}" style="@{image}">'+
+				'<div class="avatar" style="@{avatar}"></div>'+
+				'<div class="abbr" style="background-color:@{color}">@{abbr}</div>'+
+				'<div class="name" style="@{size}">@{name}</div>'+
+				'</div>',
 			main:
 				'<header class="header" style="color:@{style:color};background-color:@{style:background-color};">' +
 				'<div class="table">' +
@@ -277,7 +287,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'@{child:labels}' +
 					'</li>',
 				label:
-					'<div class="@{class}" style="@{style}">@{content}</div>',
+					'<div class="@{class}" @{style}>@{content}</div>',
 				/*
 				label :
 					'<div class="image" style="background-image:url(@{image})"></div>'+
@@ -856,7 +866,7 @@ sourceui.templates.interface = new sourceui.Template({
 		},
 		wizard: {
 			stack:
-				'<div class="stack"@{data}@{attr}>' +
+				'<div class="stack"@{data}@{attr}@{style}>' +
 				'@{child:content}' +
 				'</div>',
 			title:
@@ -1483,13 +1493,30 @@ sourceui.Parser = function () {
 				});
 				return sui.toHTML('floatbox', 'container', { child: { items: htmlItem } }, Template.get);
 			},
+			logo : function(sui){
+				var attr = sui.attr(), fsize, lsize,msize, htmlLogo = '';
+				sui.findChild('logo', function () {
+					attr = $.extend(attr,this.attr());
+				});
+				attr.image = attr['image:logo'] || attr.image;
+				fsize = attr.name ? sui.nodeName == 'auth' ? (4.5 - (attr.name.length/12)) : (2.6 - (attr.name.length/14))  : null;
+				lsize = attr.name ? (0.1 - (attr.name.length/600)) : null;
+				msize = sui.nodeName == 'auth' ? 2 : 1;
+				htmlLogo = sui.toHTML('auth', 'logo', $.extend(attr,{
+					class: attr.avatar || attr.abbr || attr.name ? 'dynamic' : 'static',
+					image: attr.image ? 'background-image: url(' + attr.image + ');' : '',
+					avatar: attr.avatar ? 'background-image: url(' + attr.avatar + ');' : '',
+					size: attr.size ? 'font-size:'+attr.size+';' : 'font-size:'+(fsize ? fsize > msize ? fsize+'em' : msize+'em' : 'inherith')+';letter-spacing:'+(lsize ? lsize > 0.01 ? '-'+lsize+'em' : '-0.01em' : 'inherith')+';'
+				}), Template.get);
+				return htmlLogo || '';
+			},
 			auth: function (sui) {
 				if (sui.nodeName != 'auth') return '';
 				setup.target = setup.target || $('#suiAuth'); // força o target
 				var attr = sui.attr(),
-					data = { style: attr.logo ? { 'background-image': 'url(' + attr.logo + ');' } : '' },
-					htmlAuth = sui.toHTML('auth', 'container', data, Template.get),
-					htmlForm = '';
+				htmlLogo = Components.libs.logo(sui);
+				var htmlAuth = sui.toHTML('auth', 'container', attr, Template.get);
+				var htmlForm = '';
 				sui.findChild('form', function () {
 					var suiForm = this,
 						attr = suiForm.attr(),
@@ -1531,7 +1558,7 @@ sourceui.Parser = function () {
 						});
 					});
 				});
-				htmlAuth = Template.replace(htmlAuth, { child: { forms: htmlForm, footleft: htmlFoot.left, footright: htmlFoot.right } });
+				htmlAuth = Template.replace(htmlAuth, { child: { logo: htmlLogo, forms: htmlForm, footleft: htmlFoot.left, footright: htmlFoot.right } });
 				return htmlAuth;
 			},
 			panel: {
@@ -1563,7 +1590,7 @@ sourceui.Parser = function () {
 					html.main = Template.get('panel', 'main', 'container');
 					if (ui.header) {
 						html.header = {};
-						var data = { child: { logo: ui.header.toHTML('panel', 'header', 'logo', Template.get) } };
+						var data = { child: { logo: Components.libs.logo(ui.header) } };
 						html.header.container = ui.header.toHTML('panel', 'header', 'main', data, Template.get);
 						html.header.tools = '';
 						ui.header.findChild('tools', function () {
@@ -1604,7 +1631,7 @@ sourceui.Parser = function () {
 					var aui = ui.aside[aside];
 					var ahtml = html.aside[aside];
 					ahtml.content = aui.toHTML('panel', 'aside', 'left', Template.get);
-					if (aside == 'left') ahtml.logo = ui.header.toHTML('panel', 'header', 'logo', Template.get);
+					if (aside == 'left') ahtml.logo = Components.libs.logo(ui.header);
 					ahtml.navs = '';
 					ahtml.navtoolsitems = '';
 					ahtml.navlistitems = '';
@@ -1871,6 +1898,10 @@ sourceui.Parser = function () {
 					sui.findChild('tip', function () {
 						var suiTip = this;
 						htmlChild += Components.libs.tip(suiTip);
+					});
+					sui.findChild('html', function () {
+						var suiTip = this;
+						htmlChild += Components.libs.html(suiTip);
 					});
 					htmlChild += '@{child:area}';
 					/*
@@ -2294,6 +2325,7 @@ sourceui.Parser = function () {
 							htmlArea += this.toHTML('widget', 'area', Template.get);
 							this.findChild(function () {
 								if (this.nodeName == 'tip') htmlContent += Components.libs.tip(this);
+								else if (this.nodeName == 'html') htmlContent += Components.libs.html(this);
 								else if (this.nodeName == 'dragzone') htmlContent += Components.libs.widget.upload.dragzone(this);
 								else if (this.nodeName == 'dashboard') htmlContent += Components.libs.widget.upload.dashboard(this);
 								else if (this.nodeName == 'filelist') htmlContent += Components.libs.widget.upload.filelist(this);
@@ -2375,7 +2407,8 @@ sourceui.Parser = function () {
 							var suiArea = this;
 							var htmlList = '';
 							suiArea.findChild(function () {
-								if (this.nodeName == 'counter') htmlList += Components.libs.widget.summary.counter(this);
+								if (this.nodeName == 'html') htmlList += Components.libs.html(this);
+								else if (this.nodeName == 'counter') htmlList += Components.libs.widget.summary.counter(this);
 								else if (this.nodeName == 'eventgroup') htmlList += Components.libs.widget.events.group(this);
 								else if (this.nodeName == 'finances') htmlList += Components.libs.widget.summary.finance(this);
 								else if (this.nodeName == 'information') htmlList += Components.libs.widget.summary.info(this);
@@ -2455,7 +2488,8 @@ sourceui.Parser = function () {
 								htmlArea += this.toHTML('widget', 'area', Template.get);
 								var htmlChild = '';
 								this.findChild(function () {
-									if (this.nodeName == 'list') htmlChild += Components.libs.widget.schedule.list(this);
+									if (this.nodeName == 'html') htmlChild += Components.libs.html(this);
+									else if (this.nodeName == 'list') htmlChild += Components.libs.widget.schedule.list(this);
 								});
 								htmlArea = Template.replace(htmlArea, { child: { area: htmlChild } });
 							} else if (this.nodeName == 'sidenav') {
@@ -2481,7 +2515,8 @@ sourceui.Parser = function () {
 							var htmlList = '';
 							suiArea.findChild(function () {
 								var suiChild = this;
-								if (suiChild.nodeName == 'calendar') {
+								if (this.nodeName == 'html') htmlList += Components.libs.html(this);
+								else if (suiChild.nodeName == 'calendar') {
 									var json = '';
 									suiChild.findChild('schedules', function () {
 										json = this.content();
@@ -2523,7 +2558,8 @@ sourceui.Parser = function () {
 							var suiArea = this;
 							var htmlList = '';
 							suiArea.findChild(function () {
-								if (this.nodeName == 'title') htmlList += Components.libs.widget.events.title(this);
+								if (this.nodeName == 'html') htmlList += Components.libs.html(this);
+								else if (this.nodeName == 'title') htmlList += Components.libs.widget.events.title(this);
 								else if (this.nodeName == 'eventgroup') htmlList += Components.libs.widget.events.group(this);
 								else if (this.nodeName == 'empty') htmlList += this.toHTML('empty', { child: { html: this.content() || 'Não há agendamentos' } }, Template.get);
 								else if (this.nodeName == 'fieldset') htmlList += Components.libs.widget.form.fieldset(this);
@@ -2582,7 +2618,8 @@ sourceui.Parser = function () {
 							var suiArea = this;
 							var htmlList = '';
 							suiArea.findChild(function () {
-								if (this.nodeName == 'fieldset') htmlList += Components.libs.widget.form.fieldset(this);
+								if (this.nodeName == 'html') htmlList += Components.libs.html(this);
+								else if (this.nodeName == 'fieldset') htmlList += Components.libs.widget.form.fieldset(this);
 								else if (this.nodeName == 'field') htmlList += Components.libs.widget.form.field(this);
 								else if (this.nodeName == 'fieldgroup') htmlList += Components.libs.widget.form.field(this);
 								else if (this.nodeName == 'buttonset') htmlList += Components.libs.widget.form.buttonset(this);
@@ -2640,12 +2677,16 @@ sourceui.Parser = function () {
 							htmlArea += this.toHTML('widget', 'area', Template.get);
 							var suiArea = this;
 							var htmlStack = '';
+							suiArea.findChild('html', function () {
+								htmlStack += Components.libs.html(this);
+							});
 							suiArea.findChild('stack', function () {
 								htmlStack += this.toHTML('wg', 'wizard', 'stack', Template.get);
 								var suiStack = this;
 								var htmlList = '';
 								suiStack.findChild(function () {
-									if (this.nodeName == 'fieldset') htmlList += Components.libs.widget.form.fieldset(this);
+									if (this.nodeName == 'html') htmlList += Components.libs.html(this);
+									else if (this.nodeName == 'fieldset') htmlList += Components.libs.widget.form.fieldset(this);
 									else if (this.nodeName == 'field') htmlList += Components.libs.widget.form.field(this);
 									else if (this.nodeName == 'fieldgroup') htmlList += Components.libs.widget.form.field(this);
 									else if (this.nodeName == 'buttonset') htmlList += Components.libs.widget.form.buttonset(this);
@@ -2686,7 +2727,8 @@ sourceui.Parser = function () {
 							htmlArea += suiArea.toHTML('widget', 'area', Template.get);
 							var htmlHtml = '';
 							suiArea.findChild(function () {
-								if (this.nodeName == 'identifier') htmlHtml += Components.libs.widget.profile.identifier(this);
+								if (this.nodeName == 'html') htmlHtml += Components.libs.html(this);
+								else if (this.nodeName == 'identifier') htmlHtml += Components.libs.widget.profile.identifier(this);
 								else if (this.nodeName == 'line') htmlHtml += Components.libs.widget.custom.line(this);
 								else if (this.nodeName == 'html') htmlHtml += Components.libs.html(this);
 							});
