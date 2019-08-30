@@ -414,6 +414,7 @@ sourceui.interface.plugins = function () {
 					$leftcollapser.addClass('notified');
 					$navtool.addClass('notified');
 					$mark.text(number);
+					$('head link[data-notified]').each(function(){ var $e=$(this); $e.attr('href',$e.data('notified')); });
 				}
 			//}
 		},
@@ -438,6 +439,7 @@ sourceui.interface.plugins = function () {
 			var Socket = sourceui.instances.socket;
 			$('#suiAsideLeft .navtools > .notifications').removeClass('notified').find('mark').text('');
 			$('#suiMain > .sui-tabs [data-alias="leftcollapser"]').removeClass('notified');
+			$('head link[data-notified]').each(function(){ var $e=$(this); $e.attr('href',$e.data('original')); });
 			if (Socket) Socket.emit('list:shown', 'notification');
 		},
 		readed: function ($li) {
@@ -1276,9 +1278,10 @@ sourceui.interface.plugins = function () {
 			setup.link.sector = $sector;
 			setup.link.cancelnested = true;
 			$sector.data('floatcaller', setup.caller);
-			$container.velocity({ opacity: [1, 0] }, { display: 'block', duration: 200 });
-			$sector.velocity({ scale: [1, 0.95] }, { display: 'block', duration: 200 });
-			Network.link.call(null, setup.link);
+			$container.velocity({ opacity: [1, 0] }, { display: 'block', duration: 180 });
+			$sector.velocity({ scale: [1, 0.97] }, { display: 'block', duration: 180, complete: function () {
+				Network.link.call(null, setup.link);
+			}});
 			$.each(setup.on || [], function (e, d) {
 				$sector.on(e, d.bind, function (event, a, b, c) {
 					d.fn(a, b, c);

@@ -62,8 +62,6 @@
 .sui-userguide > .guides > .guide.bubble.no-pointer:before { display:none; }
 
 
-
-
 .sui-draggable { position:absolute; right:-3px; top:0; bottom:0; background:transparent; width:6px; cursor:col-resize; z-index:100; transition: background-color 300ms; }
 .sui-draggable.is-dragging { background-color:rgba(128,128,128,0.585) !important; }
 .sui-draggable:not(.is-dragging):hover { background-color:rgba(128,128,128,0.2); }
@@ -72,9 +70,9 @@
 .sui-aside.left  .sui-draggable { top:86px; }
 
 .sui-aside.left > .logo { background-position:-20px center; cursor:pointer; }
-.sui-aside.left > .logo.dynamic { display:flex; flex-wrap:nowrap; justify-content:left; background-image:none !important; padding:6px 0 0 30px; }
-.sui-aside.left > .logo.dynamic > .abbr { width:40px; height:40px; line-height:40px; text-align:center; background-color:var(--brand-color); color:#FFF; font-weight:normal; font-size:13.33px; border-radius:20px; margin-right:8px; letter-spacing:-1px; }
-.sui-aside.left > .logo.dynamic > .name { height:38px; line-height:38px; font-family:var(--font-special); font-size:2.3em; color:#AAAAAA; letter-spacing:-0.08em; font-weight:bold; }
+.sui-aside.left > .logo.dynamic { display:flex; flex-wrap:nowrap; justify-content:left; background-image:none !important; padding:8px 0 0 30px; }
+.sui-aside.left > .logo.dynamic > .abbr { width:36px; height:36px; line-height:36px; text-align:center; background-color:var(--brand-color); color:#FFF; font-weight:normal; font-size:13.33px; border-radius:20px; margin-right:12px; letter-spacing:-1px; }
+.sui-aside.left > .logo.dynamic > .name { height:34px; line-height:34px; font-family:var(--font-special); font-size:2.3em; color:#727272; letter-spacing:-0.08em; font-weight:bold; }
 
 .sui-aside.left > .navtools > li.navigation { text-align:left; color:#FFF; }
 .sui-aside.left > .navtools > li.navigation:before { margin-top:0; opacity:0.8; width:48px; border-radius:0; text-align:center; line-height:36px; background:rgba(0,0,0,0.2); }

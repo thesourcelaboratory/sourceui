@@ -166,7 +166,7 @@ $(function () {
                 clearTimeout(timeout);
                 $tipster.trigger('tip:hide', [true]);
             });
-            $container.on('click', function () {
+            $container.off().on('click', function () {
                 $tipster.trigger('tip:hide');
             });
         },

@@ -1124,6 +1124,48 @@ $.rgb2hex = function (r, g, b) {
 	h.push(hex.length == 1 ? "0" + hex : hex);
 	return '#' + h.join('');
 };
+
+$.circleFavicon = function (link,size,text,color,font){
+
+    var canvas = document.createElement("CANVAS");
+    canvas.width  = size;
+    canvas.height = size;
+    var half = Math.round(size/2);
+    var mins = Math.round(size/8);
+    var fsize = size == 16 ? 6.5 : mins * 3;
+    var context = canvas.getContext("2d");
+
+    context.beginPath();
+    context.fillStyle = color || "";
+    context.arc(half, half, half, 0, 2 * Math.PI, false);
+    context.fill();
+    context.beginPath();
+    context.font = fsize+"px "+(font || "maven, tahoma, arial");
+    context.textAlign="center";
+    context.fillStyle = "white";
+    context.fillText(text, half, half+mins);
+    context.fill();
+
+	var original = canvas.toDataURL("image/png");
+
+	context.beginPath();
+	context.fillStyle = "#222";
+	context.strokeStyle = "#eeeeee";
+	context.lineWidth = 1;
+    context.arc(size-(half/3.5), (half/3.5), half/3.5, 0, 2 * Math.PI, false);
+	context.fill();
+	context.stroke();
+
+	var notified = canvas.toDataURL("image/png");
+
+	var $link = $(link);
+	$link.attr("href",original)
+	$link.attr("data-original",original);
+	$link.attr("data-notified",notified);
+
+    $("head").append($link);
+}
+
 var Color = function (value) {
 
 	var c;

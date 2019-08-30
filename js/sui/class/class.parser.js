@@ -283,7 +283,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'</ol>' +
 					'</div>',
 				item:
-					'<li @{attr}class="sn menu sui-link item @{hasicon} @{hassubicon} @{hasavatar} @{hasimage} @{class:icon} @{link:icon} @{class:status} @{prop:disable}"@{data}>' +
+					'<li @{attr}class="sn menu sui-link item @{hasicon} @{hasabbr} @{hassubicon} @{hasavatar} @{hasimage} @{class:icon} @{link:icon} @{class:status} @{prop:disable}"@{data}>' +
 					'@{child:labels}' +
 					'</li>',
 				label:
@@ -1694,17 +1694,22 @@ sourceui.Parser = function () {
 				navitem: function (sui) {
 					var htlmLabels = '';
 					var suiItem = sui;
+					var abbr = suiItem.attr('label:abbr');
 					var image = suiItem.attr('image:cover') || suiItem.attr('style:image');
 					var avatar = suiItem.attr('image:avatar') || suiItem.attr('image:logo');
 					var minicon = suiItem.attr('icon:small') || suiItem.attr('icon:minicon') || suiItem.attr('link:minicon');
 					var title = suiItem.attr('label:title') || suiItem.attr('link:name') || suiItem.attr('link:title');
 					var label = (suiItem.attr('time:ago')) ? suiItem.content() || suiItem.attr('label:label') || suiItem.attr('label:name') : '';
 					var desc = (suiItem.attr('time:ago')) ? $.timeagoHTML(suiItem.attr('time:ago')) : suiItem.attr('label:decription') || suiItem.attr('label:desc') || suiItem.content();
+					suiItem.attr('hasabbr', abbr ? 'has-abbr' : '');
 					suiItem.attr('hasimage', image ? 'has-image' : '');
 					suiItem.attr('hasavatar', avatar ? 'has-avatar' : '');
+					var bg = suiItem.attr('label:background') || suiItem.attr('label:bgcolor');
+					var cl = suiItem.attr('label:color');
+					if (abbr) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'abbr', content: abbr, style: (bg?'background-color:'+bg+';':'')+(cl?'color:'+cl+';':'') }, Template.get);
 					if (image) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'image', content: '', style: 'background-image:url(' + image + ');' }, Template.get);
 					if (avatar) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'avatar', content: '', style: 'background-image:url(' + avatar + ');' }, Template.get);
-					if (minicon) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'minicon ' + minicon, content: '' }, Template.get);
+					if (minicon) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'minicon ' + minicon, content: '', style: (bg?'background-color:'+bg+';':'')+(cl?'color:'+cl+';':'') }, Template.get);
 					if (title) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'title', content: title }, Template.get);
 					if (label) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'label', content: label }, Template.get);
 					if (desc) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'description', content: desc }, Template.get);

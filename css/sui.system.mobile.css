@@ -46,7 +46,7 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-notify-container > ol > li > div a { width:16px; height:3px; }
 .sui-notify-container > ol { width:100%; margin-top: -26px; }
 .sui-aside.left > .logo { width:100%; height:68px; margin-left:0; background-position:center; background-color:var(--header-top-color); background-size: 220px; }
-.sui-aside.left > .logo.dynamic { display:flex; flex-wrap:nowrap; justify-content:left; background-image:none !important; padding-top:15px; }
+.sui-aside.left > .logo.dynamic { display:flex; flex-wrap:nowrap; justify-content:left; background-image:none !important; padding: 15px 0 0 18px; }
 .sui-aside.left > .logo.dynamic > .abbr { width:38px; height:38px; line-height:38px; text-align:center; background-color:var(--brand-color); color:#FFF; font-weight:normal; font-size:13.333px; border-radius:20px; margin-right:24px; letter-spacing:-1px; transform:scale(1.2); }
 .sui-aside.left > .logo.dynamic > .name { height:38px; line-height:38px; font-family:var(--font-special); font-size:2.3em; color:#AAAAAA; letter-spacing:-0.08em; font-weight:bold; transform:scale(1.2); }
 .sui-aside.left > .navtools { margin:0; height:48px; background:var(--header-bar-color); width:100%; justify-content:flex-end; }
@@ -106,11 +106,9 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-floatsector-container.website .sui-sector > .sui-sector-title { border-radius:5px 5px 0 0; }
 .sui-floatsector-container.website .sui-sector > .label { display:block; height:45px; line-height:45px; font-size:32px; letter-spacing:-1px; color:#FFF; text-indent:-9999px; background-image:url(http://sourcelab.ddns.net/sourceui/core/img/logo-360-4x.png); background-repeat:no-repeat; background-position:center; background-size:64%; }
 .sui-floatsector-container.website .sui-sector-title:not(.hidden) ~ .sui-views-container { height:calc(100% - 84px) !important;  }
-@media (min-width: 411px){ .sui-floatsector-container { padding:10%; } .sui-main > .sui-tabs > .group.center ul li { font-size:16px; }}
-@media (max-width: 410px){ .sui-floatsector-container { padding:10%; } .sui-main > .sui-tabs > .group.center ul li { font-size:15px; }}
-@media (max-width: 320px){ .sui-floatsector-container { padding:12px } .sui-main > .sui-tabs > .group.center ul li { font-size:13px; }}
-
-
+@media (min-width: 421px){ .sui-floatsector-container { padding:5vh 8vw; } .sui-main > .sui-tabs > .group.center ul li { font-size:16px; }}
+@media (max-width: 420px){ .sui-floatsector-container { padding:3vh 5vw; } .sui-main > .sui-tabs > .group.center ul li { font-size:15px; }}
+@media (max-width: 320px){ .sui-floatsector-container { padding:8px } .sui-main > .sui-tabs > .group.center ul li { font-size:13px; }}
 
 .sui-sector-title { height:48px; } /* se der pau, colocar o .sui-main antes de tudo de volta */
 .sui-sector-title > .name { display:none; }

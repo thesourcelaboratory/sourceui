@@ -273,6 +273,7 @@ sourceui.Network = function () {
 			var expire = 2592000; // 30 dias
 			var localdata = {};
 			var Console = Debug.get('IndexDB');
+			var Basepath = $('head > base').attr('href') || window.location.protocol + '//' + window.location.host + window.location.pathname;
 			if (typeof IDBStore == 'function')
 				DB = new IDBStore({
 					dbVersion: 1,
@@ -300,7 +301,7 @@ sourceui.Network = function () {
 			};
 			this.set = function (data, callback, failback) {
 				if (!data.session) return;
-				data.apppath = window.location.host + window.location.pathname;
+				data.apppath = Basepath;
 				//Local.remove();
 				localdata = data;
 				if (DB)
@@ -315,7 +316,7 @@ sourceui.Network = function () {
 				if (DB)
 					DB.getAll(function (result) {
 						Ready = true;
-						var apppath = window.location.host + window.location.pathname;
+						var apppath = Basepath;
 						$.each(result, function (k, v) {
 							if (apppath === v.apppath) {
 								localdata = v;
@@ -325,7 +326,7 @@ sourceui.Network = function () {
 					}, failback || this.failback);
 			};
 			this.remove = function (setup, callback, failback) {
-				var apppath = window.location.host + window.location.pathname;
+				var apppath = Basepath;
 				localdata = {};
 				if (DB)
 					DB.remove(apppath, function (result) {
@@ -1100,7 +1101,7 @@ sourceui.Network = function () {
 						seed: setup.seed,
 						origin: setup.origin,
 						sui: setup.sui,
-						entity: setup.entity,
+						system: setup.system,
 						action: setup.action,
 						command: setup.command,
 						process: setup.process,
@@ -1127,7 +1128,7 @@ sourceui.Network = function () {
 					};
 					var requestKey = {
 						sui: setup.sui,
-						entity: setup.entity,
+						system: setup.system,
 						action: setup.action,
 						command: setup.command,
 						process: setup.process,
@@ -1573,7 +1574,7 @@ sourceui.Network = function () {
 							seed: setup.seed,
 							origin: setup.origin,
 							sui: setup.sui,
-							entity: setup.entity,
+							system: setup.system,
 							precheck: setup.precheck,
 							command: setup.command,
 							process: setup.process,
@@ -1592,7 +1593,7 @@ sourceui.Network = function () {
 						};
 						var requestKey = {
 							sui: setup.sui,
-							entity: setup.entity,
+							system: setup.system,
 							action: setup.action,
 							command: setup.command,
 							process: setup.process,
@@ -1923,7 +1924,6 @@ sourceui.Network = function () {
 							.warn({ type: 'Status', title: 'Unable to get permission to notification.\n' + err })
 							.trace();
 					});
-
 			} else if (Socket.browserMessaging) {
 				if (Notification.permission !== 'denied') {
 					Notification.requestPermission(function (permission) {
@@ -2037,6 +2037,7 @@ sourceui.Network = function () {
 			if (data.minicon) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'minicon ' + data.minicon, content: '' });
 			if (data.image) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'image', content: '', style: 'background-image:url(' + data.image + ');' });
 			if (data.avatar) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'avatar', content: '', style: 'background-image:url(' + data.avatar + ');' });
+			if (data.abbr) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'abbr', style: 'background-color:'+data.abbr[1]+';', content: data.abbr[0] });
 			if (data.title) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'title', content: data.title });
 			if (data.label) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'label', content: data.label });
 			if (data.description) htmlLabels += Template.get('panel', 'aside', 'nav', 'label', { class: 'description', content: data.description });
@@ -2058,6 +2059,7 @@ sourceui.Network = function () {
 				data: { status: data.status, link: data.link },
 				hasicon: data.icon ? 'has-icon' : '',
 				hassubicon: data.subicon ? 'has-subicon' : '',
+				hasabbr: data.abbr ? 'has-abbr' : '',
 				hasimage: data.image ? 'has-image' : '',
 				hasavatar: data.avatar ? 'has-avatar' : '',
 				class: { icon: data.icon, status: data.status },
@@ -2198,7 +2200,11 @@ sourceui.Network = function () {
 				}
 				window.open(setup.href, setup.id, setup.popup === true ? 'resizable,scrollbars,status' : setup.popup);
 			} else {
-				window.open(setup.href);
+				if (setup.target == '_self'){
+					window.location.href = setup.href;
+				} else {
+					window.open(setup.href);
+				}
 			}
 			return true;
 		}
@@ -2316,12 +2322,12 @@ sourceui.Network = function () {
 		}
 
 		setup.sui = setup.sui || setup.url;
-		setup.entity = Dom.body.data('entity');
+		setup.system = Dom.body.data('system');
 
 		// chave para identificar a conexão
 		setup.rid = $.md5(JSON.stringify({
 			sui: setup.sui,
-			entity: setup.entity,
+			system: setup.system,
 			action: setup.action,
 			command: setup.command,
 			process: setup.process,

@@ -116,51 +116,6 @@ sourceui.Device = function (c) {
 	if (c.debug) Config.debug(c.debug);
 	if (c.cache) Config.cache(c.cache);
 
-	var Fingerprint = {
-		hash: null,
-		lier: false,
-		get: function () {
-
-			if (window.Fingerprint2 && !Fingerprint.hash) {
-				Fingerprint2.get({
-					preprocessor: function (key, value) {
-						if (key == "userAgent" && $.ua) {
-							return $.ua.os.name + ' ' + $.ua.os.version + ' ' + $.ua.browser.name;
-						}
-						return value;
-					},
-					excludes: {
-						canvas: true,
-						webgl: true,
-						webglVendorAndRenderer: true,
-						enumerateDevices: true,
-						fontsFlash: true,
-						adBlock: true,
-						plugins: true,
-						audio: true,
-					},
-					screen: {
-						detectScreenOrientation: false
-					}
-				}, function (components) {
-					var values = components.map(function (component) { return component.value; });
-					Fingerprint.hash = Fingerprint2.x64hash128(values.join(''), 31);
-					Fingerprint.lier = values[18] || values[19] || values[20] || values[21];
-				});
-				/*
-				new Fingerprint2({
-					excludeScreenResolution : true,
-					excludeJsFonts : true,
-					excludeFlashFonts : true,
-				}).get(function(hash,comp){
-					Fingerprint.hash = hash;
-					Fingerprint.lier = comp[15].value || comp[16].value || comp[17].value || comp[18].value;
-				});
-				*/
-			}
-		}
-	};
-
 	var Agent = {
 		data: {
 			browser: {},
@@ -186,6 +141,63 @@ sourceui.Device = function (c) {
 			}
 			Agent.data.cpu = $.ua.cpu;
 			return $.ua;
+		}
+	};
+
+	var Fingerprint = {
+		hash: null,
+		lier: false,
+		ua: Agent.data,
+		get: function () {
+			if (window.Fingerprint2 && !Fingerprint.hash) {
+				Fingerprint2.get({
+					preprocessor: function (key, value) {
+						if (Fingerprint.ua){
+							if (key == "userAgent") {
+								return (Fingerprint.ua.isapp ? 'APP' : 'PWA') + ' ' + Fingerprint.ua.browser.name + ' ' + Fingerprint.ua.engine.name;
+							} else if (key == "platform") {
+								return $.trim(
+									value + ' ' +
+									Fingerprint.ua.os.name + ' ' +
+									Fingerprint.ua.os.version + ' ' +
+									(Fingerprint.ua.cpu.architecture || 'intel') + ' ' +
+									(Fingerprint.ua.device.type || '') + ' ' +
+									(Fingerprint.ua.device.vendor || '') + ' ' +
+									(Fingerprint.ua.device.model || Fingerprint.ua.device.name)
+								);
+							}
+						}
+						return value;
+					},
+					excludes: {
+						canvas: true,
+						webgl: true,
+						//webglVendorAndRenderer: true,
+						enumerateDevices: true,
+						fontsFlash: true,
+						adBlock: true,
+						plugins: true,
+						audio: true,
+					},
+					screen: {
+						detectScreenOrientation: false
+					}
+				}, function (components) {
+					var values = components.map(function (component) { return component.value; });
+					Fingerprint.hash = Fingerprint2.x64hash128(values.join(''), 31);
+					Fingerprint.lier = values[18] || values[19] || values[20] || values[21];
+				});
+				/*
+				new Fingerprint2({
+					excludeScreenResolution : true,
+					excludeJsFonts : true,
+					excludeFlashFonts : true,
+				}).get(function(hash,comp){
+					Fingerprint.hash = hash;
+					Fingerprint.lier = comp[15].value || comp[16].value || comp[17].value || comp[18].value;
+				});
+				*/
+			}
 		}
 	};
 
@@ -280,8 +292,8 @@ sourceui.Device = function (c) {
 		}
 	};
 
-	Fingerprint.get();
 	Agent.get();
+	Fingerprint.get();
 	Timezone.get();
 
 	this.isdebug = Config.get('debug');
