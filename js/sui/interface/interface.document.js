@@ -232,6 +232,9 @@ sourceui.interface.document = function () {
 			$this.text('');
 			eval('data = ' + data);
 			data = $.extend(true, {
+				tooltip: {
+					borderRadius: 0
+				},
 				chart: {
 					plotBackgroundColor: null,
 					plotBorderWidth: 0,
@@ -281,6 +284,10 @@ sourceui.interface.document = function () {
 		ui.find('a > code').each(function () {
 			var $a = $(this).parent();
 			$.suiBind($a);
+		});
+		ui.find('.sui-widget > code').each(function () {
+			var $wg = $(this).parent();
+			$.suiBind($wg);
 		});
 		ui.find('[data-link-clipboard]').each(function () {
 			var cb = new ClipboardJS(this, {

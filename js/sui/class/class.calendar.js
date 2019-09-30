@@ -48,6 +48,7 @@
 			modes: $('<div class="modes">' +
 				'<div class="date"></div>' +
 				'<div class="time"></div>' +
+				'<div class="details"></div>' +
 				'</div>'),
 		};
 
@@ -271,7 +272,8 @@
 						classes.push('sunday');
 					}
 					if (schedules) {
-						$scheds = $('<div class="schedules"/>');
+						$scheds = $('<div class="schedules scroll-custom"/>');
+						/* quando fomos colocar o calendario dentro de um widget em setembro de 2019, percebemos que esta condição não fazia sentido
 						if ($.isArray(schedules)) {
 							$.each(schedules || [], function (ka, va) {
 								if (va.holiday) classes.push('holiday');
@@ -285,6 +287,11 @@
 								});
 							});
 						}
+						*/
+						$.each(schedules || [], function (ka, va) {
+							if (va.holiday) classes.push('holiday');
+							$scheds.append(_jQSchedule(date, va));
+						});
 					}
 					var a = 'a';
 					if (!Data.setup.outMonthAllowed && $.inArray('in-month', classes) == -1) {
@@ -570,7 +577,8 @@
 					if ($.isDate(ka) && va) {
 						Data.setup.schedules[ka] = va;
 						$day = jQ.calendar.find('.days li[data-masked="' + ka + '"]').addClass('scheduled');
-						$s = $('<div class="schedules"/>');
+						$s = $('<div class="schedules scroll-custom"/>');
+						/* quando fomos colocar o calendario dentro de um widget em setembro de 2019, percebemos que esta condição não fazia sentido
 						if ($.isArray(va)) {
 							$.each(va || [], function (kb, vb) {
 								if (vb.holiday) $day.addClass('holiday');
@@ -584,12 +592,22 @@
 								});
 							});
 						}
+						*/
+						$.each(va || [], function (kb, vb) {
+							if (vb.holiday) $day.addClass('holiday');
+							$s.append(_jQSchedule(ka, vb));
+						});
 						$day.find('.schedules').remove();
 						$day.append($s);
 					}
 				});
 			}
 		};
+		this.unsetSchedules = function(){
+			Data.setup.schedules = {};
+			jQ.calendar.find('.days .schedules').remove();
+		};
+
 		// ---------------------------
 		this.format = function (format, date, time) {
 			if (date && date instanceof Date) {
@@ -717,10 +735,39 @@
 			Data.current = new Date(d && d instanceof Date ? d.getTime() : Data.now.getTime());
 		};
 		var _jQSchedule = function (date, info) {
-			return '<div class="schedule" data-date="' + date + '"' + (info.color ? ' style="background:' + info.color + ';"' : '') + '>' +
-				'<div class="title">' + info.title + '</div>' +
-				'<div class="info"><span class="time">' + info.time + '</span> <span class="calendar">' + info.calendar + '</span></div>' +
-				'</div>';
+			var attrlink = '';
+			$.each(info.link||[],function(k,v){
+				attrlink += ' data-link-'+k+'="'+v+'"';
+			});
+			var html = '<blockquote '+
+			'class="schedule" '+
+			'data-date="' + date + '"' +
+			(attrlink ? attrlink : '')+
+			(info.color ? ' style="background:' + info.color + ';"' : '')+
+			(info.tip ? ' title="'+info.tip+'"' : '')+
+			'>';
+			if (info.icon) html += '<div class="icon '+info.icon+'"></div>';
+			if (info.abbr){
+				if ($.isArray(info.abbr)){
+					$.each(info.abbr, function (ak, av) {
+						if ($.isArray(av)){
+							html += '<div class="abbr" style="background:'+av[1]+';">'+av[0]+'</div>';
+						} else {
+							html += '<div class="abbr">'+av+'</div>';
+						}
+					});
+				} else {
+					html += '<div class="abbr">'+info.abbr+'</div>';
+				}
+			}
+			if (info.title) html += '<div class="title">' + info.title + '</div>';
+			html += '<div class="info">'+
+				(info.description ? '<span class="description">' + info.description + '</span></div>' : '')+
+				(info.time ? '<span class="time">' + info.time + '</span> ' : '')+
+				(info.calendar ? '<span class="calendar">' + info.calendar + '</span></div>' : '')+
+			'</div>';
+			html += '</blockquote>';
+			return html;
 		};
 
 
@@ -843,6 +890,7 @@
 				} else if ($a.hasClass('year')) {
 					Build.years();
 				}
+				jQ.calendar.trigger('calendar:change');
 			});
 			jQ.calendar.on('click', '.navigate > li.arrow > a', function (event) {
 				var $a = $(this);
@@ -864,6 +912,7 @@
 					Data.current.setFullYear(Data.current.getFullYear() + (direction * 20));
 					Build.years();
 				}
+				jQ.calendar.trigger('calendar:change');
 				jQ.calendar.trigger('navigate', Data.current);
 			});
 			jQ.calendar.on('click', '.years > ol > li > a', function (event) {

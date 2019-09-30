@@ -257,7 +257,7 @@ sourceui.templates.interface = new sourceui.Template({
 				container:
 					'<nav class="sui-nav @{class:scroll} @{class:selected} @{data:alias}" data-label="@{label:name}" data-alias="@{data:alias}" id="@{data:id}">' +
 					'<div class="area">' +
-					'<ol class="blocklist">' +
+					'<ol class="blocklist @{class:qtblock}">' +
 					'@{child:blockitems}' +
 					'</ol>' +
 					'@{child:blocks}' +
@@ -488,7 +488,7 @@ sourceui.templates.interface = new sourceui.Template({
 		helper:
 			'<div class="helper">@{child:helper}<a class="close icon-close"></a></div>',
 		finder:
-			'<div class="finder"@{data}>@{child:finder}</div>',
+			'<form class="finder"@{data}>@{child:finder}</form>',
 		area:
 			'<section class="area @{scroll} @{paginator} @{class:type} @{class:selected} @{class:has}"@{data}@{style}>@{child:area}</section>',
 		tip:
@@ -533,7 +533,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'@{child:column}' +
 					'<div class="col sort icon-deslok"></div>' +
 					'<div class="col context icon-dots-small-vert">@{child:context}</div>' +
-					'<div class="col swiper icon-swipe-action sn">@{child:swiper}</div>' +
+					'<div class="col swiper icon-dots-small sn">@{child:swiper}</div>' +
 					'<div class="col pad"></div>' +
 					'</div>',
 				column:
@@ -828,9 +828,11 @@ sourceui.templates.interface = new sourceui.Template({
 				'</div>'
 		},
 		form: {
+			stage:
+				'<div class="sui-stage">@{child:sets}</div>',
 			filterset:
 				'<div class="sui-filterset @{class:orient} @{class:mode} @{class:align} @{prop:ignored}"@{data}>' +
-				'<ul><li class="empty">Não há filtros disponíveis</li>@{child:filters}</ul>' +
+				'<ul>@{child:filters}</ul>' +
 				'</div>',
 			filter:
 				'<li>' +
@@ -1025,7 +1027,9 @@ sourceui.Parser = function () {
 		parts: function (sui) {
 			var str = '',
 				render = setup.render;
-			if (render == '@datagrid-list') {
+			if (render == '@calendar-schedules') {
+				str = JSON.parse(sui.content() || '[]');
+			} else if (render == '@datagrid-list') {
 				sui.find('list', function () {
 					str = Components.libs.widget.datagrid.list(this);
 				});
@@ -1630,6 +1634,7 @@ sourceui.Parser = function () {
 				aside: function (aside, html, ui) {
 					var aui = ui.aside[aside];
 					var ahtml = html.aside[aside];
+					var qtblock = 0;
 					ahtml.content = aui.toHTML('panel', 'aside', 'left', Template.get);
 					if (aside == 'left') ahtml.logo = Components.libs.logo(ui.header);
 					ahtml.navs = '';
@@ -1639,13 +1644,13 @@ sourceui.Parser = function () {
 						var suiNav = this;
 						suiNav.attr('data:tip', suiNav.attr('data:tip') || suiNav.attr('label:name'));
 						ahtml.navtoolsitems += suiNav.toHTML('panel', 'aside', 'navtools', 'item', Template.get);
-						ahtml.nav = suiNav.toHTML('panel', 'aside', 'nav', 'container', Template.get);
 						ahtml.blockitems = '';
 						ahtml.blocks = '';
 						suiNav.findChild(function () {
 							ahtml.groups = '';
 							ahtml.items = '';
 							if (this.nodeName == 'block') {
+								qtblock++;
 								var suiBlock = this;
 								if (suiBlock.attr('class:icon')) {
 									suiBlock.attr('data:tip-name', suiBlock.attr('label:name'));
@@ -1679,6 +1684,8 @@ sourceui.Parser = function () {
 								ahtml.blocks += Components.libs.html(this);
 							}
 						});
+						if (qtblock === 1) suiNav.attr('class:qtblock','only-one');
+						ahtml.nav = suiNav.toHTML('panel', 'aside', 'nav', 'container', Template.get);
 						ahtml.navs += Template.replace(ahtml.nav, { child: { blocks: ahtml.blocks, blockitems: ahtml.blockitems } });
 					});
 					ahtml.navtools = Template.get('panel', 'aside', 'navtools', 'container', { child: { items: ahtml.navtoolsitems } });
@@ -1919,18 +1926,21 @@ sourceui.Parser = function () {
 						var suiBox = this;
 						htmlChild += Components.libs.floatbox(suiBox);
 					});
+					sui.findChild('on', function () {
+						var attr = this.attr();
+						htmlChild += sui.toHTML('code', { attr: { type:'event', on:'widget:'+attr.event}, value: this.content() }, Template.get);
+					});
 					return Template.replace(htmlWidget, { child: { content: htmlChild } });
 				},
 				finder: function (sui) {
-					var htmlChild = '';
+					var htmlSets = '';
+					var htmlBtn = '';
 					sui.findChild(function () {
-						if (this.nodeName == 'filterset') htmlChild += Components.libs.widget.form.filterset(this);
-						else if (this.nodeName == 'fieldset') htmlChild += Components.libs.widget.form.fieldset(this);
-						else if (this.nodeName == 'field') htmlChild += Components.libs.widget.form.field(this);
-						else if (this.nodeName == 'buttonset') htmlChild += Components.libs.widget.form.buttonset(this);
-						else if (this.nodeName == 'button') htmlChild += Components.libs.widget.form.button(this);
+							 if (this.nodeName == 'filterset') htmlSets += Components.libs.widget.form.filterset(this);
+						else if (this.nodeName == 'fieldset') htmlSets += Components.libs.widget.form.fieldset(this);
+						else if (this.nodeName == 'buttonset') htmlBtn += Components.libs.widget.form.buttonset(this);
 					});
-					return htmlChild;
+					return Template.replace(sui.toHTML('wg', 'form', 'stage', {child:{sets:htmlSets}} ,Template.get))+htmlBtn;
 				}
 			},
 			sector: {
@@ -2930,7 +2940,9 @@ sourceui.Parser = function () {
 				root = data.getElementsByTagName("interface")[0]; // se o xml é um arquivo de interface
 				if (root) {
 					if (setup.render) {
-						setup.response.parsedHTML = Render.parts(root); 	// testa se o parser vai processar uma parte específica do arquivo de interface
+						var part = Render.parts(root); // testa se o parser vai processar uma parte específica do arquivo de interface
+						if ($.isPlainObject(part)) setup.response.parsedJSON = part;
+						else setup.response.parsedHTML = part
 					} else if (setup.snippet) {
 						setup.response.parsedSNIP = Render.snippet(root); 	// testa se o parser vai processar de uma forma pré determinada o arquivo de interface
 					} else if (setup.file) {

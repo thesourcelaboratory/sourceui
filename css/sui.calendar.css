@@ -36,14 +36,14 @@
 .sui-calendar > .modes > .date.days > .days > ol.week > li > .day u { display:inline-block; vertical-align: middle; height:36px; line-height:36px; text-decoration:none; }
 .sui-calendar > .modes > .date.days > .days > ol.week > li > a.day { color:#777; cursor:pointer; }
 .sui-calendar > .modes > .date.days > .days > ol.week > li > span.day { color:#AAA; }
-.sui-calendar > .modes > .date.days > .days > ol.week > li.today > .day { background:rgba(0,0,0,0.085); }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.today > .day { background:#008cff26; color:#008cff; }
 
 .sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled { overflow:hidden; font-weight:bold; }
 .sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .day { color:#222; }
 .sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules { background:transparent; position:absolute; height:auto; width:100%; left:0; top:50%; margin:0; margin-top:6px; display:flex; flex-wrap:wrap; justify-content:center; }
 .sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule { display:inline-block; width:8px; height:3px; margin:0.5px; }
 .sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule > * { display:none; }
-.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled.disable > .schedules > .schedule { background:#CCC !important; }
+.sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled.disable > .schedules > .schedule { background:#CCC; cursor:default !important; }
 
 /*
 .sui-calendar > .modes > .date.days > .days > ol.week > li.scheduled > .day { font-weight: bold; color:#333; }
@@ -120,6 +120,21 @@
 .sui-calendar > .modes > .time.minutes > .clock > .minutes { display:block; }
 .sui-calendar > .modes > .time.seconds > .clock > .seconds { display:block; }
 /* --------------------------------------------------- */
+
+/* DETAILS ------------------------------------------- */
+.sui-calendar > .modes > .details:empty { display:none; }
+.sui-calendar > .modes > .details ol { margin:0; }
+.sui-calendar > .modes > .details h2 { text-align: center; color: #CCC; letter-spacing:-0.5px; font-size: 20px; margin:12px 0; }
+.sui-calendar > .modes > .details > .schedules { display:block; padding:8px 16px; }
+.sui-calendar > .modes > .details > .schedules > .schedule { position:relative; width:calc(100% - 4px); margin:0 2px 3px 2px; min-height:32px; height:32px; display:flex; background:#888; color:#FFF; overflow-x:hidden; cursor: pointer; font-weight:500; white-space:nowrap; letter-spacing: -0.4px; }
+.sui-calendar > .modes > .details > .schedules > .schedule:first-of-type { border-radius:4px 4px 0 0; }
+.sui-calendar > .modes > .details > .schedules > .schedule:last-of-type { border-radius:0 0 4px 4px; }
+.sui-calendar > .modes > .details > .schedules > .schedule:only-of-type { border-radius:4px; }
+.sui-calendar > .modes > .details > .schedules > .schedule > * { display:block; }
+.sui-calendar > .modes > .details > .schedules > .schedule .abbr { padding:0 6px; font-size:10px; line-height:32px; text-align:center; min-width:32px; }
+.sui-calendar > .modes > .details > .schedules > .schedule .title { padding:0 10px; font-size:12px; line-height:32px; }
+/* --------------------------------------------------- */
+
 
 
 @media screen and (max-width: 780px) {

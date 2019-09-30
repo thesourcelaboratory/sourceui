@@ -122,28 +122,29 @@ sourceui.interface.view = function ($view, setup) {
 							var htmlFilter = '';
 							if (data.target) {
 								var $target = $(data.target);
-								if ($target.length) {
-									var $ul = $target.find('.sui-filterset ul');
-									$ul.children('li:not(.empty)').remove();
-								} else {
+								if (!$target.length) {
 									console.warn('O target ' + data.target + ' não pode ser encontrado.');
 									return false;
 								}
-							}
-							$.each(wgdata.data, function (k, v) {
-								if ((v || v === 0) && wgdata.info[k]) {
-									if ($ul) {
-										$ul.append(Template.get('wg', 'form', 'filter', {
-											class: { selected: 'selected' },
-											label: { name: wgdata.info[k].label, value: wgdata.info[k].text || ($.isArray(v) ? v.join(',') : v), content: '' },
-											data: { name: k }
-										}));
-										$ul.find('[data-name="' + k + '"]').data('value', v);
+								var $ul = $target.find('.sui-filterset ul');
+								$.each(wgdata.data, function (k, v) {
+									if ($ul && wgdata.info[k]){
+										$ul.find('.sui-filter[data-name="'+k+'"]').remove();
 									}
-								}
-							});
-							$target.trigger('datagrid:filter');
-							$('#suiFloatSectorContainer').click();
+									if ((v || v === 0) && wgdata.info[k]) {
+										if ($ul) {
+											$ul.append(Template.get('wg', 'form', 'filter', {
+												class: { selected: 'selected' },
+												label: { name: wgdata.info[k].label, value: wgdata.info[k].text || ($.isArray(v) ? v.join(',') : v), content: '' },
+												data: { name: k }
+											}));
+											$ul.find('[data-name="' + k + '"]').data('value', v);
+										}
+									}
+								});
+								$target.trigger('widget:filter');
+								$('#suiFloatSectorContainer').click();
+							}
 						}
 					});
 				} else if (data.alias == 'wizard') {
@@ -175,6 +176,8 @@ sourceui.interface.view = function ($view, setup) {
 					View.element.trigger('view:close');
 				} else if (data.alias == 'minimize') {
 					View.element.find('.sui-widget.maximized:eq(0) .title a.maximize').trigger('click');
+				} else if (data.alias == 'upload') {
+					Plugin.gridupload(View.widgets, link);
 				} else if (link && link.sui) {
 					Network.link.call($a);
 				} else if (data.alias != 'droplist' && data.alias != 'action') {
@@ -349,6 +352,13 @@ sourceui.interface.view = function ($view, setup) {
 			var hot = $(this).data('hot');
 			if (typeof hot == 'object') {
 				hot.destroy();
+			}
+		});
+		View.element.find('.map').each(function () {
+			var map = $(this).data('map');
+			if (typeof map == 'object') {
+				map.off();
+				map.remove();
 			}
 		});
 		View.element.remove();

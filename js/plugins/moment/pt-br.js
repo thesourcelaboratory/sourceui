@@ -21,7 +21,8 @@
             L : 'DD/MM/YYYY',
             LL : 'D [de] MMMM [de] YYYY',
             LLL : 'D [de] MMMM [de] YYYY [às] HH:mm',
-            LLLL : 'dddd, D [de] MMMM [de] YYYY [às] HH:mm'
+            LLLL : 'dddd, D [de] MMMM [de] YYYY [às] HH:mm',
+            ll : 'D MMM YYYY',
         },
         calendar : {
             sameDay: '[Hoje às] LT',

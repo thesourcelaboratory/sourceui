@@ -753,25 +753,27 @@ $(function () {
 	$.fn.ignore = function (bool) {
 		var $this = $(this);
 		if (bool === false) return $this.consider();
-		$this.disable(); ///////////////
-		$this.addClass('ignored');
-		$this.find('hasAttr:data-link').addClass('ignored');
-		if ($this.hasClass('sui-widget')) {
-			$this.find('.title').ignore();
-			$this.find('.area').ignore();
-		} else if ($this.hasClass('title')) {
-			$this.find('.toolbar li').addClass('ignored');
-		} else if ($this.hasClass('area')) {
-			$this.find('.sui-fieldset').ignore();
-			$this.find('.sui-buttonset').ignore();
-		} else if ($this.hasClass('sui-fieldset')) {
-			$this.find('.sui-field').ignore();
-		} else if ($this.hasClass('sui-buttonset')) {
-			$this.find('.sui-button').ignore();
-		} else if ($this.hasClass('sui-field')) {
-			$buttons = $this.find('.button').addClass('ignored');
-			$links = $this.find('hasAttr:data-link').addClass('ignored');
-		}
+		$this.slideUp(200,function(){
+			$this.disable(); ///////////////
+			$this.addClass('ignored');
+			$this.find('hasAttr:data-link').addClass('ignored');
+			if ($this.hasClass('sui-widget')) {
+				$this.find('.title').ignore();
+				$this.find('.area').ignore();
+			} else if ($this.hasClass('title')) {
+				$this.find('.toolbar li').addClass('ignored');
+			} else if ($this.hasClass('area')) {
+				$this.find('.sui-fieldset').ignore();
+				$this.find('.sui-buttonset').ignore();
+			} else if ($this.hasClass('sui-fieldset')) {
+				$this.find('.sui-field').ignore();
+			} else if ($this.hasClass('sui-buttonset')) {
+				$this.find('.sui-button').ignore();
+			} else if ($this.hasClass('sui-field')) {
+				$buttons = $this.find('.button').addClass('ignored');
+				$links = $this.find('hasAttr:data-link').addClass('ignored');
+			}
+		});
 		$this.trigger($this.is('.sui-field') ? 'field:ignore' : 'ignore');
 		return this;
 	};
@@ -780,8 +782,8 @@ $(function () {
 	};
 	$.fn.consider = function () {
 		var $this = $(this);
-		$this.removeClass('ignored disable');
 		$this.find('.ignored').removeClass('ignored disable');
+		$this.removeClass('ignored disable').hide().slideDown(200);
 		$this.enable();
 		$this.find('.sui-field').trigger('field:consider');
 		$this.trigger($this.is('.sui-field') ? 'field:ignore' : 'ignore');
@@ -1159,11 +1161,24 @@ $.circleFavicon = function (link,size,text,color,font){
 	var notified = canvas.toDataURL("image/png");
 
 	var $link = $(link);
-	$link.attr("href",original)
-	$link.attr("data-original",original);
-	$link.attr("data-notified",notified);
+	var $exst = 'head > link';
 
-    $("head").append($link);
+	if ($link.attr('rel')) $exst += '[rel="'+$link.attr('rel')+'"]';
+	if ($link.attr('sizes')) $exst += '[sizes="'+$link.attr('sizes')+'"]';
+	if ($link.attr('type')) $exst += '[type="'+$link.attr('type')+'"]';
+
+	$exst = $($exst);
+
+	if ($exst.length){
+		$exst.attr("href",original)
+		$exst.attr("data-original",original);
+		$exst.attr("data-notified",notified);
+	} else {
+		$link.attr("href",original)
+		$link.attr("data-original",original);
+		$link.attr("data-notified",notified);
+		$("head").append($link);
+	}
 }
 
 var Color = function (value) {

@@ -1322,6 +1322,7 @@ sourceui.interface.plugins = function () {
 		var $list = $area.children('.list');
 		var $lines = $list.find('.lines:eq(0)');
 		var $input = $('<input class="input file" type="file" name="files" multiple/>');
+		var isexplorer = $widget.is('.explorer');
 		$input.attr('accept', Setup.accept);
 		$area.siblings('input').remove();
 		$widget.append($input);
@@ -1330,7 +1331,23 @@ sourceui.interface.plugins = function () {
 		$input.on('change', function (event) {
 			$widget.trigger('upload:queue', [this.files]);
 		});
+		if (!isexplorer){
+			var $list = $(''+
+			'<div class="sui-widgetupload">'+
+				'<div class="list">'+
+					'<div class="header"></div>'+
+				'</div>'+
+			'</div>').appendTo($area);
+		}
 		$widget.on('upload:queue', function (event, files) {
+			if (!$list.is(':visible')){
+				$list.velocity({
+					opacity: [1,0],
+				}, {
+					duration: 250,
+					display: "block"
+				});
+			}
 			$.each(files || [], function (k, v) {
 				$list.find('.line.progress.error').remove();
 				var id = $.md5(v.name);
@@ -1349,7 +1366,7 @@ sourceui.interface.plugins = function () {
 					'<div class="col pad"></div>' +
 					'<div class="col check icon-check"></div>' +
 					'<div data-index="0" class="col seq">X</div>' +
-					'<div data-index="1" class="col  fsimage visualidentifier important"><u class="sui-fs g ' + data.ext + '"><b>' + data.ext + '</b></u></div>' +
+					'<div data-index="1" class="col  fsimage visualidentifier important"><u class="sui-fs '+(isexplorer ? 'g' : 'm')+' ' + data.ext + '"><b>' + data.ext + '</b></u></div>' +
 					'<div data-index="2" class="col  name important">' + data.name + '</div>' +
 					'<mark data-index="3" class="col  rounded important  ext"><span>' + data.ext + '</span></mark>' +
 					'<div data-index="4" class="col  info   type">' + data.type + '</div>' +
@@ -1364,7 +1381,7 @@ sourceui.interface.plugins = function () {
 					$file.insertAfter($lines.length ? $lines.find('.header') : $list.find('.header'));
 					$list.find('.empty').remove();
 				}
-				if (data.type == 'image') {
+				if (isexplorer && data.type == 'image') {
 					$.imgResize({
 						image: v,
 						size: 256,
@@ -1475,12 +1492,24 @@ sourceui.interface.plugins = function () {
 				});
 		});
 		$widget.on('upload:done', function (event, $file) {
+			var $progress = $area.find('.sui-upload-progress');
+			$progress.velocity({
+				opaciti:[0,1]
+			},{
+				duration: 250,
+				complete:function(){
+					$progress.remove();
+				}
+			});
 			Notify.open({
 				type: 'valid',
 				name: 'Upload de arquivos',
 				message: 'O processo foi concluído com sucesso',
 			});
-			$widget.data('Interface').common.controller.find('[data-alias="refresh"]').trigger('click');
+			var $refresh = $widget.data('Interface').common.controller.find('[data-alias="refresh"]');
+			if (!$refresh.length) $refresh = $widget.closest('.sui-view').children('.toolbar').find('[data-alias="refresh"]');
+			if (!$refresh.length) $refresh = $widget.find('[data-alias="refresh"]');
+			$refresh.trigger('click');
 		});
 
 	};

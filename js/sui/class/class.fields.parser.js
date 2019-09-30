@@ -401,10 +401,22 @@ sourceui.parserField = function (element, setup) {
 					json = $.extend({}, json, json.link);
 					delete json.link;
 				}
+				suiJson.findChild('filter',function () {
+					var ca = this.attr();
+					json['filter'] = json['filter'] || {};
+					json['filter'][ca.name] = ca.value;
+					this.parentNode.removeChild(this);
+				});
+				suiJson.findChild('data',function () {
+					var ca = this.attr();
+					json['data'] = json['data'] || {};
+					json['data'][ca.name] = ca.value;
+					this.parentNode.removeChild(this);
+				});
 				suiJson.findChild(function () {
 					strJSON = JSONX.stringify($.extend(true, JSONX.parse(this.content() || '{}'), json)) || '';
-					if (nm) fd.json[nm][this.tagName.toLowerCase()] = strJSON;
-					else fd.json[this.tagName.toLowerCase()] = strJSON;
+						if (nm) fd.json[nm][this.tagName.toLowerCase()] = strJSON;
+						else fd.json[this.tagName.toLowerCase()] = strJSON;
 				}, function () {
 					strJSON = JSONX.stringify($.extend(true, JSONX.parse(suiJson.content() || '{}'), json)) || '';
 					if (nm) fd.json[nm] = strJSON;

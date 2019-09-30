@@ -64,6 +64,8 @@
 
         var Map = this.map = L.map(Setup.id, Setup);
 
+        Target.data('map',Map);
+
         this.icon = function (color) {
             //var iconurl = '../../../core/js/plugins/leaflet/markers/default-'+color+'.png';
             //var iconurl = 'https://cdn.jsdelivr.net/gh/thesourcelaboratory/sourceui/js/plugins/leaflet/markers/default-' + color + '.png';
@@ -148,11 +150,11 @@
         var r;
         this.each(function () {
             var $this = $(this);
-            l = $this.data('_leafletclass');
+            l = $this.data('leafletclass');
             if (typeof s == 'object') {
                 if (!l) {
                     l = new $.leaflet($this, setup);
-                    $this.data('_leafletclass', l);
+                    $this.data('leafletclass', l);
                 }
             } else if (typeof s == 'string') {
                 if (typeof l[s] == 'function') {

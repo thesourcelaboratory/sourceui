@@ -36,9 +36,15 @@ sourceui.interface.widget.common = function ($widget, setup) {
 
 	Common.widget = $widget;
 	Common.controller = Common.widget.data('controller');
+	Common.area = Common.widget.children('.area');
 	Common.buttons = this.widget.find('.sui-buttonset .sui-button');
 	Common.toolbar = this.widget.find('.title .toolbar');
-	Common.code = this.widget.children('code');
+	//Common.code = this.widget.children('code');
+	Common.finder = this.widget.children('.finder');
+
+	/*
+
+	// interface.document.js:288 (é redundante)
 
 	Common.code.each(function () {
 		var $code = $(this);
@@ -49,6 +55,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			});
 		}
 	});
+	*/
 
 
 	if (!this.controller) {
@@ -136,6 +143,10 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				Common.widget.addClass('codesourced');
 			}
 			Common.widget.trigger('widget:resize');
+		} else if ($this.data('alias') == 'upload') {
+			var link = $this.link();
+			console.log(link);
+			Plugin.gridupload(Common.widget, link);
 		}
 	});
 	Common.calcSort = function (axis, dragger, droppers) {
@@ -409,5 +420,180 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			data.cancelnested = true;
 			return $.extend(data, lata);
 		}
+	};
+
+
+	var Finder = {
+		timeout: null,
+		widget: Common.widget,
+		element: Common.widget.find('.finder'),
+		getFilters: function () {
+			var $filters = Common.widget.find('.sui-filter.selected');
+			var filt = '';
+			$filters.each(function () {
+				var $f = $(this);
+				filt = $.extend(true, filt, Finder.deparam($f.data('name'), $f.data('value')));
+			});
+			return filt ? $.deparam(filt) : {};
+		},
+		deparam: function (name, value) {
+			var data = {}, qs;
+			if (name.indexOf('[]') > -1) {
+				name = name.substring(0, name.length - 2);
+				if (value !== '' && value !== null) {
+					data[name] = data[name] || [];
+					data[name].push(value);
+				}
+			} else if (name.indexOf('[') > -1) {
+				qs = '';
+				if ($.isArray(value) || $.isPlainObject(value)) {
+					$.each(value, function (k, v) {
+						qs += '&' + name + '[' + k + ']=' + v;
+					});
+				} else {
+					qs += '&' + name + '=' + encodeURIComponent(value);
+				}
+				if (qs) data = $.deparam(qs);
+			} else {
+				if (name) data[name] = value;
+			}
+			return data;
+		},
+		clearEnable: function(enable){
+			if (enable === true || Finder.element.find('.sui-filter').length){
+				Finder.buttons.filter('.clear').parent().enable();
+			} else if (enable === false || !Finder.element.find('.sui-filter').length) {
+				Finder.buttons.filter('.clear').parent().disable();
+			}
+		},
+		init: function(){
+
+			Finder.filter = Finder.element.find('.sui-filter');
+			Finder.fields = Finder.element.find('.sui-field');
+			Finder.buttons = Finder.element.find('.sui-button a');
+
+			Finder.fields.customField();
+
+			Finder.fields.on('field:focus',function(){
+				Finder.element.addClass('focus');
+			});
+			Finder.fields.on('field:blur',function(){
+				Finder.element.removeClass('focus');
+			});
+
+			Finder.element.on('submit',function(event){
+				event.stopImmediatePropagation();
+				event.preventDefault();
+				if (Device.ismobile){
+					Finder.fields.filter('.search').find('.input').blur();
+					Finder.buttons.filter('.search').click();
+				} else {
+					Finder.buttons.filter('.search').trigger('click');
+					Finder.fields.filter('.search').find('.input').focus();
+				}
+			});
+
+			Finder.buttons.on('click', function (event) {
+				var $this = $(this);
+				if ($this.parent().isDisable()) return;
+				if ($this.hasClass('clear')) {
+					var $filt = Finder.element.find('.sui-filter');
+					var $issel = $filt.filter('.selected');
+					$filt.parent().remove();
+					Finder.fields.find('.input').val('');
+					if ($issel.length) Finder.widget.trigger('widget:filter');
+					Finder.clearEnable();
+				} else if ($this.hasClass('search')) {
+					Finder.widget.trigger('widget:search');
+				} else if ($this.hasClass('filter')) {
+					if ($this.data('link-sui')) Finder.widget.trigger('filter:floatform', [$this]);
+				}
+				event.stopImmediatePropagation();
+			});
+			Finder.element.on('click', '.sui-filter .close', function (event) {
+				var $this = $(this);
+				var $filt = $this.closest('.sui-filter');
+				var $li = $this.closest('li');
+				var $issel = $filt.filter('.selected');
+				$li.remove();
+				if ($issel.length) Finder.widget.trigger('widget:filter');
+				else Finder.widget.trigger('filter:change');
+				Finder.clearEnable();
+				event.stopImmediatePropagation();
+			});
+			Finder.element.on('click', '.sui-filter a', function (event, $lines) {
+				var $this = $(this);
+				var $parent = $this.parent();
+				$parent.closest('ul').find('[data-name="'+$parent.data('name')+'"]').not($parent).removeClass('selected');
+				$parent.toggleClass('selected');
+				Finder.widget.trigger('widget:filter');
+			});
+			Finder.widget.on('widget:filter', function (event) {
+				Finder.widget.trigger('remote:finder', [Finder.getFilters()]);
+				Finder.widget.trigger('filter:change');
+			});
+			Finder.widget.on('widget:search', function (event) {
+
+				var $ul = Finder.widget.find('.sui-filterset ul');
+				var $fd = Finder.element.find('.sui-field.search');
+				var value = $('<div>'+$fd.val()+'</div>').text();
+
+				if (value){
+					$fd.val('');
+					Finder.clearEnable(true);
+					$ul.find('[data-name="search"][data-value="'+value+'"]').closest('li').remove();
+					$(Template.get('wg', 'form', 'filter', {
+						label: { name: 'Pesquisa', value: value, content: '' },
+						data: { name: 'search', value: value }
+					})).appendTo($ul).find('a').trigger('click');
+				}
+
+			});
+			Finder.widget.on('remote:finder', function (event, filter) {
+				var filt = filter || Finder.getFilters() || {};
+				var setup = {};
+				if (Finder.widget.is('.datagrid')){
+					setup = {
+						target: '@widget-area',
+						render: '@datagrid-list',
+						placement: 'inner',
+						cache: false,
+						filter: filt,
+						ondone: function (setup) {
+							var $badge = Finder.widget.find('.badge.total span');
+							$badge.text(Common.area.find('.list').data('total') || Common.area.find('.line').length);
+						}
+					}
+				} else if (Finder.widget.is('.calendar')){
+					setup = {
+						render: '@calendar-schedules',
+						cache: false,
+						filter: filt,
+						ondone: function (setup) {
+							var $cal = Finder.widget.find('.cal');
+							$cal.calendar('unsetSchedules');
+							$cal.calendar('setSchedules',setup.response.parsedJSON||{});
+						}
+					}
+
+				}
+				Network.link.call(Finder.element, setup);
+			});
+			Finder.widget.on('filter:floatform', function (event, $el) {
+				var filt = Finder.getFilters();
+				var setup = {
+					cancelnested: true,
+					target: '@float-sector',
+					cache: false,
+					filter: filt
+				}
+				$.extend(setup, $el.link('_self'));
+				Network.link.call($el, setup);
+			});
+			Finder.clearEnable();
+		}
 	}
+
+	if (Common.finder.length) Finder.init();
+
 };

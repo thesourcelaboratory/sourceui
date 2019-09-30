@@ -30,7 +30,6 @@ sourceui.interface.panel = function () {
 	var Device = sourceui.instances.device;
 	var Debug = Device.Debug;
 	var Instances = sourceui.instances;
-	var Socket = Instances.socket;
 	var Interface = Instances.interface;
 	var Document = Interface.document;
 	var Dom = sourceui.interface.dom;
@@ -90,7 +89,7 @@ sourceui.interface.panel = function () {
 			$nav.addClass('selected');
 			if ($this.data('notification') && !$this.hasClass('has-clicked')) {
 				$this.addClass('has-clicked');
-				Socket.permission();
+				sourceui.instances.socket.permission();
 			}
 			if ($this.hasClass('notified')) {
 				Plugin.notification.shown();

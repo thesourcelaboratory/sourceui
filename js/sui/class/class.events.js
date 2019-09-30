@@ -301,7 +301,7 @@
 				var eventname = $v.attr('on');
 				var value;
 				if (off) Element.off(eventname);
-				Element.on(eventname, function (event, val) {
+				Element.on(eventname, function (event, val, a, b, c, d) {
 					var args = arguments;
 					var $this = $(this);
 					if ($v.attr('callback') === 'snippet') {

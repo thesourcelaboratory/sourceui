@@ -36,6 +36,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     var JSONX = JSON5 || JSON;
 
     Handson.valid = true;
+    Handson.invalid = {};
     Handson.common = new Interface.widget.common($widget, setup);
     Handson.widget = $widget;
     Handson.area = Handson.widget.children('.area');
@@ -46,6 +47,54 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
         Handson.sheet.css('opacity', 1);
         if (Handson.hot) Handson.hot.refreshDimensions();
     };
+
+    var validators = {};
+    validators['required'] = function(value, callback){
+        var bool = true;
+        if (value === '' || value === null) {
+            bool = false;
+        }
+        callback(bool);
+    };
+    Handsontable.validators.registerValidator('required', validators[name]);
+    $.each($.jMaskPatterns,function(name,pattern){
+        validators[name] = function(value, callback){
+            var bool = true;
+            if (value !== '' && value !== null) {
+                if (!pattern.test(value)) {
+                    bool = false;
+                }
+            }
+            callback(bool);
+        };
+        Handsontable.validators.registerValidator(name, validators[name]);
+        var namereq = name+'.required';
+        validators[namereq] = function(value, callback){
+            var bool = true;
+            if (value !== '' && value !== null) {
+                if (!pattern.test(value)) {
+                    bool = false;
+                }
+            } else {
+                bool = false;
+            }
+            callback(bool);
+        };
+        Handsontable.validators.registerValidator(namereq, validators[namereq]);
+    });
+    $.each($.jMaskValidates,function(name,fn){
+        validators[name] = function(value, callback){
+            var bool = true;
+            if (value) {
+                if (!fn(value)) {
+                    bool = false;
+                }
+            }
+            callback(bool);
+        }
+        Handsontable.validators.registerValidator(name, validators[name]);
+    });
+
 
     var Promises = {
         visible: function () {
@@ -67,6 +116,19 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     Promises.visible().then(function (r) {
         var code = Handson.sheet.children('code').text();
         var cfg = JSONX.parse(code);
+        if (cfg.columns && !cfg.colHeaders){
+            var hasinlineheader = false;
+            $.each(cfg.columns,function(k,v){
+                if (v.header) hasinlineheader = true;
+                if (v.required) cfg.columns[k].allowEmpty = false;
+                if (hasinlineheader){
+                    cfg.colHeaders = cfg.colHeaders || new Array(cfg.columns.length);
+                    cfg.colHeaders[k] =  v.header || '';
+                }
+                delete cfg.columns[k].header;
+                delete cfg.columns[k].required;
+            })
+        }
         cfg.afterInit = function () {
             Handson.refresh();
         }
@@ -84,10 +146,23 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                 }
             },
             afterValidate: function (isValid, value, row, prop, source) {
-                Handson.valid = isValid;
+                if (isValid){
+                    if (Handson.invalid[row]){
+                        delete Handson.invalid[row][prop];
+                    }
+                    if ($.isEmptyObject(Handson.invalid[row])){
+                        Handson.widget.trigger('widget:validrow',[hot, row]);
+                    }
+                } else {
+                    Handson.invalid[row] = Handson.invalid[row] || {};
+                    Handson.invalid[row][prop] = value;
+                    Handson.widget.trigger('widget:error',[hot, value, row, prop, source]);
+                }
+                Handson.valid = $.isEmptyObject(Handson.invalid);
             },
         }));
         Handson.sheet.data('hot', hot);
+        Handson.widget.trigger('widget:init',[hot]);
         return hot;
     }
 

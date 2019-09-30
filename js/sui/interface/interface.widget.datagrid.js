@@ -101,9 +101,6 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 			}
 			event.stopImmediatePropagation();
 			return;
-		} else if ($this.data('alias') == 'upload') {
-			var link = $this.link();
-			Plugin.gridupload(Datagrid.widget, link);
 		} else if ($this.data('alias') == 'pickself') {
 			var dval = $this.data('value');
 			Datagrid.view.trigger('alias:pickself', [dval]);
@@ -381,10 +378,12 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 	this.view.on('click', function () {
 		Datagrid.widget.find('.area > .list .line.selected, .area > .treeview .node.selected').trigger('uncheck');
 	});
-	var timeout = null;
+
 
 
 	// FINDER -----------------------------
+	/*
+	var timeout = null;
 	this.getFilters = function () {
 		var $filters = Datagrid.finder.find('.sui-filter.selected');
 		var ftr = '';
@@ -452,7 +451,9 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 	});
 	Datagrid.finder.on('click', '.sui-filter a', function (event, $lines) {
 		var $this = $(this);
-		$this.parent().toggleClass('selected');
+		var $parent = $this.parent();
+		$parent.closest('ul').find('[data-name="'+$parent.data('name')+'"]').not($parent).removeClass('selected');
+		$parent.toggleClass('selected');
 		Datagrid.widget.trigger('datagrid:filter');
 		event.stopImmediatePropagation();
 	});
@@ -550,6 +551,7 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		$.extend(setup, $el.link('_self'));
 		Network.link.call($el, setup);
 	});
+	*/
 	// ------------------------------------------
 
 	this.init = function () {

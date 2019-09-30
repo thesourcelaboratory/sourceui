@@ -493,17 +493,9 @@ sourceui.Network = function () {
 			---------------------------
 			*/
 			this.html = function (s) {
-				if (s)
+				if (s){
 					setup = s;
-				// CSS =======================
-				if (setup.response.parsedCSS) {
-					var $css = $(setup.response.parsedCSS);
-					var id = $css.attr('id');
-					if ($('#suiHead > #' + id).length == 0) {
-						$css.appendTo($('#suiHead'));
-					}
 				}
-				// ===========================
 				if (setup.target && setup.target.length && setup.response.parsedHTML) {
 					setup.response.parsedJQ = setup.response.parsedJQ || $(setup.response.parsedHTML);
 					var $viewsToClose;
@@ -560,83 +552,6 @@ sourceui.Network = function () {
 					else {
 						setup.target.html(setup.response.parsedJQ);
 					}
-					/*
-					if (setup.placement == 'append'){
-						setup.target.append(setup.response.parsedJQ);
-					} else if (setup.placement == 'prepend'){
-						setup.target.prepend(setup.response.parsedJQ);
-					} else if (setup.placement == 'replace'){
-						if (setup.exists){
-							if (!setup.target.attr('data-link-key') || setup.target.attr('data-link-key') === setup.response.parsedJQ.attr('data-link-key')){
-								setup.target.replaceWith(setup.response.parsedJQ
-									.data('scrollTop',setup.target.data('scrollTop'))
-									.attr('data-history',setup.target.attr('data-history'))
-									.mergeClass(setup.target)
-								);
-							} else {
-								setup.target.replaceWith(setup.response.parsedJQ
-									.mergeClass(setup.target,{ ignoreInTarget:['covered','ignored','removed'] })
-								);
-							}
-						}
-						else setup.target.replaceWith(setup.response.parsedJQ);
-					} else if (setup.placement == 'inner'){
-						setup.target.html(setup.response.parsedJQ);
-					} else if (setup.placement == 'close-next-views-and-append'){
-						if (setup.view.length){
-							 // ###########################################################
-							 // não testar aqui o fechamento aqui.
-							 // testar no close da sui.interface.js (555)
-							 // ###########################################################
-							var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
-							console.log($nextAll);
-							$nextAll.each(function(){
-								$(this).trigger('view:close');
-							});
-							setup.target.append(setup.response.parsedJQ);
-						}
-					} else if (setup.placement == 'close-next-views-and-replace'){
-						var $target = (setup.target.is('.sui-view')) ? setup.target : setup.view;
-						if ($target.length){
-							 // ###########################################################
-							 // não testar aqui o fechamento aqui.
-							 // testar no close da sui.interface.js (555)
-							 // ###########################################################
-							var $nextAll = Array.prototype.reverse.call($target.nextAll());
-							$nextAll.each(function(){
-								$(this).trigger('view:close');
-							});
-							setup.target.replaceWith(setup.response.parsedJQ);
-						}
-					} else if (setup.placement == 'close-self-view-and-replace'){
-						if (setup.view.length){
-							 // ###########################################################
-							 // não testar aqui o fechamento aqui.
-							 // testar no close da sui.interface.js (555)
-							 // ###########################################################
-							var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
-							$nextAll.each(function(){
-								$(this).trigger('view:close');
-							});
-							setup.view.trigger('view:close');
-							setup.target.replaceWith(setup.response.parsedJQ);
-						}
-					} else if (setup.placement == 'close-self-view'){
-						if (setup.view.length){
-							 // ###########################################################
-							 // não testar aqui o fechamento aqui.
-							 // testar no close da sui.interface.js (555)
-							 // ###########################################################
-							var $nextAll = Array.prototype.reverse.call(setup.view.nextAll());
-							$nextAll.each(function(){
-								$(this).trigger('view:close');
-							});
-							setup.view.trigger('view:close');
-						}
-					} else {
-						setup.target.html(setup.response.parsedJQ);
-					}
-					*/
 				}
 				else if (setup.field && setup.field.length && setup.response.parsedHTML) {
 					setup.response.parsedJQ = setup.response.parsedJQ || $(setup.response.parsedHTML);
@@ -667,12 +582,6 @@ sourceui.Network = function () {
 						setup.view.trigger('view:close');
 					}
 				}
-				// JS ========================
-				if (setup.response.parsedJS) {
-					var $js = $(setup.response.parsedJS);
-					$js.appendTo($('#suiHead')).remove();
-				}
-				// ===========================
 			};
 			this.loading = {
 				/*
@@ -1097,6 +1006,21 @@ sourceui.Network = function () {
 						delete setup.filter.key;
 					}
 					//////////////////////////////////////////////
+					$.each(setup.filter||[], function(k,v){
+						if (typeof v != 'string') return false;
+						var $t;
+						if (v.indexOf('#') > -1) {
+							$t = $(v);
+						} else if (v.indexOf('@') > -1) {
+							$t = $.ache('field', v, [(setup.view || setup.sector), $(document)]).val();
+						}
+						if ($t && $t.length){
+							if ($t.is('.sui-field')) setup.filter[k] = $t.val();
+							else if ($t.data('value'))  setup.filter[k] = $t.data('value');
+							else setup.filter[k] = $t.text();
+						}
+					});
+					//////////////////////////////////////////////
 					var headerData = {
 						seed: setup.seed,
 						origin: setup.origin,
@@ -1268,6 +1192,7 @@ sourceui.Network = function () {
 				};
 				setup.xhr = $.ajax(config)
 					.done(function (data, status, xhr) {
+
 						clearTimeout(setup.slowtimeout);
 						var timestamp = xhr.getResponseHeader('X-Sui-Response-Timestamp');
 						sourceui.timediff = timestamp ? Math.round((Date.now() / 1000) - timestamp) : sourceui.timediff;
@@ -1295,8 +1220,7 @@ sourceui.Network = function () {
 							localData = JSON.parse(localData);
 							if (localData.session) {
 								Local.set(localData);
-							}
-							else {
+							} else {
 								Local.remove();
 							}
 						}
@@ -1309,11 +1233,18 @@ sourceui.Network = function () {
 							setup.metric.calc();
 							if (typeof setup.ondone == 'function')
 								setup.ondone.call(Ajax, setup);
-						}
-						else {
+						} else {
 							setup.metric.add('processEndTime');
 							setup.hasparsed = Parser.load(setup);
 							setup.exists = Ajax.exists();
+							// CSS =======================
+							if (setup.response.parsedCSS) {
+								var $css = $(setup.response.parsedCSS);
+								var id = $css.attr('id');
+								$('#suiHead > #' + id).remove();
+								$css.appendTo($('#suiHead'));
+							}
+							// ===========================
 							if (setup.hasparsed) {
 								setup.iscache = false;
 								Ajax.html();
@@ -1345,10 +1276,10 @@ sourceui.Network = function () {
 										});
 									}
 								}
-								if (typeof setup.ondone == 'function')
+								if (typeof setup.ondone == 'function'){
 									setup.ondone.call(Ajax, setup);
-							}
-							else {
+								}
+							} else {
 								if (typeof setup.onfail == 'function')
 									setup.onfail.call(Ajax, xhr, status, error);
 								if (setup.element)
@@ -1361,6 +1292,12 @@ sourceui.Network = function () {
 								Cache.remove(setup);
 								return false;
 							}
+							// JS ========================
+							if (setup.response.parsedJS) {
+								var $js = $(setup.response.parsedJS);
+								$js.appendTo($('#suiHead')).remove();
+							}
+							// ===========================
 						}
 						//////////////////////////////////////////////
 						// FILTER SORT
@@ -2088,9 +2025,30 @@ sourceui.Network = function () {
 		return this;
 	};
 
+	this.restart = function(setup){
+		setup = $.isPlainObject(setup) ? setup : {};
+		setup = $.extend(Network.startnetworkcall,setup);
+		$('.sui-view:first-of-type, .sui-view:only-child').trigger('view:close');
+		$('.sui-header-top, .sui-header-bar, #suiAsideLeft, #suiMain').remove();
+		Dom.body.prepend('<div class="sui-auth" id="suiAuth"/>');
+		if (setup.system){
+			Network.history.system(setup.system);
+			Dom.body.attr('data-system',setup.system.key);
+			Dom.head.find('title').text(setup.system.name+' - '+Dom.head.find('title').attr('data-orig'));
+			$.circleFavicon('<link rel="shortcut icon" />', 16, setup.system.abbr, setup.system.color);
+			$.circleFavicon('<link rel="apple-touch-icon" sizes="180x180" />', 180, setup.system.abbr, setup.system.color);
+			$.circleFavicon('<link rel="icon" type="image/png" sizes="32x32" />', 32, setup.system.abbr, setup.system.color);
+			$.circleFavicon('<link rel="icon" type="image/png" sizes="16x16" />', 16, setup.system.abbr, setup.system.color);
+			delete setup.system;
+		}
+		Network.link(setup);
+	}
+
 	this.link = function (setup) {
 
 		setup = $.isPlainObject(setup) ? setup : {};
+
+		Network.startnetworkcall = Network.startnetworkcall || $.extend({},setup);
 
 		if (this instanceof jQuery) {
 
@@ -2113,6 +2071,17 @@ sourceui.Network = function () {
 		if (Dom.body.hasClass('ctrl-click')) setup.cache = false;
 
 		setup.name = setup.name || setup.label || setup.title || setup.sui;
+
+		// system link --------------
+		if (setup.system){
+			if (!Device.isapp){
+				return Network.restart({system:setup.system});
+			} else if (setup.system.uk) {
+				setup.href = "./"+setup.system.uk;
+				setup.target = "_self";
+			}
+		}
+		// --------------------------
 
 		// geolocation --------------
 		if (setup.geolocation === true || setup.geolocation === 'true' || setup.geolocation === 'last') {
@@ -2322,7 +2291,7 @@ sourceui.Network = function () {
 		}
 
 		setup.sui = setup.sui || setup.url;
-		setup.system = Dom.body.data('system');
+		setup.system = Dom.body.attr('data-system');
 
 		// chave para identificar a conexão
 		setup.rid = $.md5(JSON.stringify({
@@ -2633,6 +2602,10 @@ sourceui.Network = function () {
 			}
 			Network.history.push(hpath.join('/'));
 		},
+		system: function (system) {
+			if (Network.history.following) return;
+			window.history.pushState({}, '', './'+system.uk+'/');
+		},
 		home: function () {
 			if (Network.history.following) return;
 			window.history.pushState({}, '', './');
@@ -2669,7 +2642,7 @@ sourceui.Network = function () {
 		var hash = Network.history.getHash();
 		if (hash) Network.history.go(hash);
 		else $('#suiAsideLeft > .logo').trigger('click');
-		console.log('popstate', hash);
+		//console.log('popstate', hash);
 	});
 	$(window).on('hashchange', function () {
 		console.log('hashchange', location.hash);

@@ -674,7 +674,7 @@ sourceui.customField = function (element, setup) {
 			picker: {
 				single: function () {
 					Dom.buttons.all.filter('[data-alias="browse"]').on('click', function (event) {
-						var linkdata = $.extend({}, Data.vars, { filter: { picked: Element.val() } });
+						var linkdata = $.extend(true, {}, Data.vars, { filter: { picked: Element.val() } });
 						Plugin.sector.float({
 							caller: Element,
 							title: 'Seletor',
@@ -1184,6 +1184,9 @@ sourceui.customField = function (element, setup) {
 					}, Data.vars || {});
 					setTimeout(function () {
 						var editor = CodeMirror.fromTextArea(document.getElementById(id), data);
+						editor.on('paste',function(event){
+							console.log(event);
+						});
 						editor.on('change', function () {
 							Element.trigger('field:input').trigger('field:change');
 						});

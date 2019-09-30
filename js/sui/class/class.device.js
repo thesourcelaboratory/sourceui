@@ -172,7 +172,8 @@ sourceui.Device = function (c) {
 					excludes: {
 						canvas: true,
 						webgl: true,
-						//webglVendorAndRenderer: true,
+						pixelRatio:true,
+						availableScreenResolution:true,
 						enumerateDevices: true,
 						fontsFlash: true,
 						adBlock: true,
@@ -185,7 +186,8 @@ sourceui.Device = function (c) {
 				}, function (components) {
 					var values = components.map(function (component) { return component.value; });
 					Fingerprint.hash = Fingerprint2.x64hash128(values.join(''), 31);
-					Fingerprint.lier = values[18] || values[19] || values[20] || values[21];
+					Fingerprint.lier = values[17] || values[18] || values[19] || values[20];
+					Fingerprint.resolution = values[5];
 				});
 				/*
 				new Fingerprint2({
@@ -220,6 +222,8 @@ sourceui.Device = function (c) {
 				id: Session.id,
 				timezone: Timezone.name,
 				ismobile: Device.ismobile,
+				isapp: Device.isapp,
+				resolution: Fingerprint.resolution,
 				fingerprint: Fingerprint.hash,
 				lier: Fingerprint.lier,
 			}, Agent.data);
@@ -299,6 +303,7 @@ sourceui.Device = function (c) {
 	this.isdebug = Config.get('debug');
 	this.iscache = Config.get('cache');
 	this.ismobile = (Agent.data.device.type == 'computer') ? false : true;
+	this.isapp = Fingerprint.ua.isapp ? true : false;
 
 	if (this.ismobile) {
 		$('#suiBody').addClass('mobile leftcollapsed rightcollapsed');
