@@ -386,50 +386,22 @@ sourceui.Device = function (c) {
 		var isEnable = (Config.debug() && Agent.data.browser.name == 'Chrome');
 
 		if (isEnable) console.log('%cSourceUI Debugger %cv.1.0.44', 'font-size:19px;font-weight:bold;color:#999999', 'font-size:9px;color:#CCC;');
-		else console.log('SourceUI Debugger v.1.0.44');
 
 		debug.profile = function (id, data) {
-		/*
-		.sui-notify-container .sui-notify.info { background:#475b88f2 }
-		.sui-notify-container .sui-notify.alarm { background:#dd7119f2; }
-		.sui-notify-container .sui-notify.valid { background:#1d52b4f2; }
-		.sui-notify-container .sui-notify.warn { background:#dd7119f2; }
-		.sui-notify-container .sui-notify.error { background:#c52c33f2; }
-		.sui-notify-container .sui-notify.fail { background:#b9173af2; }
-		.sui-notify-container .sui-notify.fatal { background:#b9173af2; }
-		.sui-notify-container .sui-notify.bug { background:#8e34a5f2; }
-		*/
-		var c = {
-			'dump': '#009AA2',
-			'error': '#c52c33',
-			'fatal': '#b9173a',
-			'fail': '#b9173a',
-			'info': '#0066ff',
-			'warn': '#dd7119',
-			'valid': '#0055BB',
-			'notice': '#0C8446',
-			'log': '#444444',
-			'local': '#AAAAAA',
-			'cache': '#AAAAAA',
-			'bug': '#8e34a5'
-		};
-		/*
 			var c = {
 				'dump': '#009AA2',
-				'error': '#bb0000',
-				'fatal': '#ee1111',
-				'fail': '#ee1111',
+				'error': '#c52c33',
+				'fatal': '#b9173a',
+				'fail': '#b9173a',
 				'info': '#0066ff',
-				'warn': '#c17216',
+				'warn': '#dd7119',
 				'valid': '#0055BB',
-				'notice': '#008800',
+				'notice': '#0C8446',
 				'log': '#444444',
 				'local': '#AAAAAA',
 				'cache': '#AAAAAA',
-				'bug': '#9D0277'
+				'bug': '#8e34a5'
 			};
-			*/
-
 			var g = {
 				'dump': 'group',
 				'error': 'group',
@@ -497,6 +469,7 @@ sourceui.Device = function (c) {
 			};
 
 			profile.css = function (css) {
+				if (!isEnable) return '';
 				var s = '';
 				$.each(css || [], function (k, v) {
 					s += k + ':' + v + ';';
@@ -505,6 +478,7 @@ sourceui.Device = function (c) {
 			};
 
 			profile.group = function (data) {
+				if (!isEnable) return profile;
 				group.collapsed = group.collapsed || data.collapsed || true;
 				group.id = group.id || profile.id;
 				group.mode = data.mode || group.mode;
@@ -529,6 +503,7 @@ sourceui.Device = function (c) {
 			};
 
 			profile.item = function (item) {
+				if (!isEnable) return profile;
 				var content = '';
 				item.css = $.extend({}, css.item);
 				item.css['color'] = item.color || c[item.type] || '#333333';
@@ -575,7 +550,8 @@ sourceui.Device = function (c) {
 			};
 
 			profile.show = function () {
-
+				if (!isEnable) return profile;
+				/*
 				if (!isEnable) {
 					var csl;
 					console[group.collapsed ? 'groupCollapsed' : 'group']('[' + group.id + '] [' + group.mode + '] ' + group.title + ' ' + group.symbol.join(''));
@@ -623,6 +599,7 @@ sourceui.Device = function (c) {
 					console.groupEnd();
 					return profile;
 				}
+				*/
 
 				var title = [];
 				var mark = [];
@@ -705,6 +682,7 @@ sourceui.Device = function (c) {
 				return profile.reset();
 			};
 			profile.add = function (type, title, content) {
+				if (!isEnable) return profile;
 				var d = {};
 				if (title && !content) { content = title; title = null; }
 				if (typeof content == 'object' && (content.content || content.title || content.type)) {
