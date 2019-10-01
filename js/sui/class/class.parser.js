@@ -1881,7 +1881,7 @@ sourceui.Parser = function () {
 							htmlLabel += suiLabel.toHTML('widget', 'title', 'label', { label: { name: suiLabel.attr('name') || suiLabel.content() } }, Template.get);
 						}, function () {
 							var lanam = suiTitle.attr('label:name') || suiTitle.attr('label:title');
-							var lades = suiTitle.attr('label:description');
+							var lades = suiTitle.attr('label:description') || suiTitle.attr('label:desc') || suiTitle.attr('label:subname') || suiTitle.attr('label:subtitle');
 							if (lanam || lades) htmlLabel += suiTitle.toHTML('widget', 'title', 'label', { label: { name: lanam || '', description: lades || '' } }, Template.get);
 						});
 						tempTitle = Template.replace(tempTitle, {
