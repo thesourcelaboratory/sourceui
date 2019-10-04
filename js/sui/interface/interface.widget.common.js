@@ -511,21 +511,23 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				event.stopImmediatePropagation();
 			});
 			Finder.element.on('click', '.sui-filter .close', function (event) {
+				event.stopImmediatePropagation();
 				var $this = $(this);
 				var $filt = $this.closest('.sui-filter');
+				if ($filt.is('.unclosable')) return false;
 				var $li = $this.closest('li');
 				var $issel = $filt.filter('.selected');
 				$li.remove();
 				if ($issel.length) Finder.widget.trigger('widget:filter');
 				else Finder.widget.trigger('filter:change');
 				Finder.clearEnable();
-				event.stopImmediatePropagation();
 			});
 			Finder.element.on('click', '.sui-filter a', function (event, $lines) {
 				var $this = $(this);
-				var $parent = $this.parent();
-				$parent.closest('ul').find('[data-name="'+$parent.data('name')+'"]').not($parent).removeClass('selected');
-				$parent.toggleClass('selected');
+				var $filt = $this.parent();
+				if ($filt.is('.undeselectable')) return false;
+				$filt.closest('ul').find('[data-name="'+$filt.data('name')+'"]').not($filt).removeClass('selected');
+				$filt.toggleClass('selected');
 				Finder.widget.trigger('widget:filter');
 			});
 			Finder.widget.on('widget:filter', function (event) {

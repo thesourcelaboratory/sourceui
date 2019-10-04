@@ -331,7 +331,7 @@ a code { display:none !important }
 .sui-main > .sui-tabs > .group:not(.center) > ul > li.notified:after { animation: shakesmall 80s infinite cubic-bezier(.36,.07,.19,.97) both; opacity:1; -webkit-transform:scale(1); transform: scale(1); content:''; width:10px; height:10px; background:#ff3838; border:solid 2px var(--header-bar-color); border-radius:8px; position:absolute; right:8px; top:10px; }
 .sui-main > .sui-tabs > .group.center > ul > li > span:first-child::after { content:''; width:8px; height:8px; background:#ff3838; border-radius:8px; position:absolute; right:-12px; top:-4px; transition: opacity 200ms, transform 200px; opacity:0; -webkit-transform:scale(0.1); transform:scale(0.1); }
 .sui-main > .sui-tabs .sector { overflow:hidden; }
-.sui-main > .sui-tabs .sector li { padding:0 34px 0 16px; min-width:180px; max-width:180px; overflow:hidden !important; text-overflow: ellipsis; font-weight:normal; opacity:0.5 !important; }
+.sui-main > .sui-tabs .sector li { padding:0 34px 0 16px; min-width:180px; max-width:180px; overflow:hidden !important; text-overflow: ellipsis; font-weight:normal; opacity:0.625 !important; }
 .sui-main > .sui-tabs .sector li:before { margin:-2px 6px 0 -4px; width:16px; text-align:center; }
 .sui-main > .sui-tabs .sector li u { text-decoration:none; }
 .sui-main > .sui-tabs .sector li .close { display:block; position:absolute; top:8px; right:8px; line-height:18px; width:18px; height:18px; color:rgba(255,255,255,0.35); text-align:center; font-weight:normal; }
@@ -516,6 +516,7 @@ a code { display:none !important }
 .sui-widget { background:#FFF; min-height:44px; position:relative; border-bottom: #e4e4e4 solid 1px; /*box-shadow: 0 1px 1px #e4e4e4;*/ }
 .sui-widget:only-of-type,
 .sui-widget:last-of-type { border-bottom-color: #eaeaea; }
+.sui-widget > code { display:none !important; }
 .sui-widget > .title { height:40px; width:100.1%; display:flex; justify-content:space-between; align-items:center; padding:0 6px 0 14px; background:#dfdfdf; border-bottom:rgba(0,0,0,0.025) solid 1px; position:relative; color:#5a5757; white-space:nowrap; }
 .sui-widget > .title .icon { width:24px; position:relative; color:#888888; vertical-align:middle; }
 .sui-widget > .title .icon:before { margin-top:-4px; }
@@ -575,7 +576,6 @@ a code { display:none !important }
 
 /* CALENDAR ------------------------------------------ */
 .sui-widget.calendar { border-bottom-color: #e4e4e4; }
-.sui-widget.calendar > .area code { display:none; }
 .sui-widget.calendar > .area .cal { background:#FFF; min-height:222px; }
 .sui-widget.calendar > .area .ui-datepicker { width:100% !important; padding:0; display: none; font-size:13px; border-radius:4px 4px 0 0; overflow:hidden; }
 .sui-widget.calendar > .area .ui-datepicker .ui-datepicker-header { display:none; padding:0; background:#F2F2F2; border-bottom:rgba(0,0,0,0.055) solid 1px; color:#555;  }
@@ -931,7 +931,6 @@ a code { display:none !important }
 
 /* UPILLOW  ------------------------------------------ */
 .sui-widget.upillow { height: 100%; }
-.sui-widget.upillow > code,
 .sui-widget.upillow > .area > input { display:none !important; }
 .sui-widget.upillow > .area { height: 100%; }
 .sui-widget.upillow > .area .file-upillow { width: 100%; position: absolute; bottom: 0; top: 0; }
@@ -944,7 +943,6 @@ a code { display:none !important }
 
 /* UPLOAD -------------------------------------------- */
 .sui-widget.upload > .title .badge.queue { display:table-cell; }
-.sui-widget.upload > code { display:none !important; }
 .sui-widget.upload > .area { display:table; width:100%; height:100%; }
 .sui-widget.upload > .title ~ .area { height:calc(100% - 44px); }
 .sui-widget.upload > .area h3 { font-size:14px; color:#999; margin: 32px 0 16px 0; }
@@ -1072,7 +1070,6 @@ a code { display:none !important }
 
 /* SPREADSHEET -------------------------------------------- */
 .sui-widget.spreadsheet { border-bottom:none; }
-.sui-widget.spreadsheet code { display:none !important; }
 .sui-widget.spreadsheet .area { color:#444; }
 .sui-widget.spreadsheet .sheet { height:99999999px; overflow:hidden; opacity:0.01; margin-top:-1px; }
 .sui-widget.spreadsheet .handsontable th,
@@ -1269,6 +1266,9 @@ a code { display:none !important }
 .sui-widget.finder .finder > .sui-stage > .sui-filterset.horizontal ul > li .sui-filter.selected { background:#555; border-color:#555; color:#FFF; }
 .sui-widget.finder .finder > .sui-stage > .sui-filterset.horizontal ul > li .sui-filter .close { width:20px; height:20px; display:flex; align-items:center; justify-content: center; }
 .sui-widget.finder .finder > .sui-stage > .sui-filterset.horizontal ul > li .sui-filter .close:before { font-size:12px; }
+.sui-widget.finder .finder > .sui-stage > .sui-filterset.horizontal ul > li .sui-filter.unclosable .close { display:none !important; }
+.sui-widget.finder .finder > .sui-stage > .sui-filterset.horizontal ul > li .sui-filter.undeselectable { background:#888; border-color:#888; cursor:default !important; }
+.sui-widget.finder .finder > .sui-stage > .sui-filterset.horizontal ul > li .sui-filter.undeselectable a:hover { background:transparent !important; }
 .sui-widget.finder .finder > .sui-stage > .sui-fieldset { order: 1; }
 .sui-widget.finder .finder > .sui-stage > .sui-fieldset .sui-field.search > .wrap { background:transparent; }
 .sui-widget.finder .finder > .sui-stage > .sui-fieldset .sui-field.search > .wrap > .table > .cell .search { height:40px; }

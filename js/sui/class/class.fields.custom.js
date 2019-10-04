@@ -302,8 +302,13 @@ sourceui.customField = function (element, setup) {
 				});
 				Dom.input.on('change', function () {
 					Element.trigger('field:change');
+					if (Element.hasClass('keyboard')){
+						Element.trigger('field:keyboard');
+						Element.removeClass('keyboard');
+					}
 				});
 				Dom.input.on('keypress', function (event) {
+					Element.addClass('keyboard');
 					if (event.which === 8) Element.trigger('field:backspace');
 					else if (event.which === 9) Element.trigger('field:tab');
 					else if (event.which === 13) Element.trigger('field:enter');

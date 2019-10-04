@@ -836,7 +836,7 @@ sourceui.templates.interface = new sourceui.Template({
 				'</div>',
 			filter:
 				'<li>' +
-				'<div class="sui-filter @{class:selected}"@{style}@{data}>' +
+				'<div class="sui-filter @{class:selected} @{prop:selected}"@{style}@{data}>' +
 				'<a><label>@{label:name}</label><strong>@{label:value}</strong>@{label:content}</a>' +
 				'<span class="close icon-cross"></span>' +
 				'</div>' +

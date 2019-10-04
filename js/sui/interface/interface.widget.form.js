@@ -38,14 +38,25 @@ sourceui.interface.widget.form = function ($widget, setup) {
 	Form.common = new Interface.widget.common($widget, setup);
 	Form.fields = this.widget.find('.sui-field');
 	Form.fields.customField();
+
+	// MAIN WIDGET EVENTS ----------------------------------
 	Form.widget.on('field:input', function (event, $lines) {
 		var $field = $(event.target).addClass('modified');
 		Form.common.toggleTools('field:input');
+		Form.widget.trigger('widget:input',[$field]);
 	});
 	Form.widget.on('field:change', function (event, $lines) {
 		var $field = $(event.target).addClass('modified');
 		Form.common.toggleTools('field:change');
+		Form.widget.trigger('widget:change',[$field]);
 	});
+	Form.widget.on('field:keyboard', function (event, $lines) {
+		var $field = $(event.target).addClass('modified');
+		Form.common.toggleTools('field:keyboard');
+		Form.widget.trigger('widget:keyboard',[$field]);
+	});
+	// ------------------------------------------------------
+
 	Form.fdname = function (name) {
 		if (name.indexOf('[]') > -1) {
 			return name.substring(0, name.length - 2);
