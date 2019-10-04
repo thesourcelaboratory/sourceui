@@ -482,12 +482,13 @@ sourceui.interface.view = function ($view, setup) {
 				tbcolor = [View.scrdata.tbcolor[0], View.scrdata.tbcolor[1], View.scrdata.tbcolor[2], View.scrdata.tbcolor[3]];
 			} else {
 				var tbport = View.scrdata.scrolltop / (Dom.document.height() / 1.75);
+				if (tbport > 1) tbport = 1;
 				if (tbport <= 1) {
 					tbcolor = [
 						parseInt(View.scrdata.tbcolor[0] + View.scrdata.tbcolor[0] * tbport * 1.75),
 						parseInt(View.scrdata.tbcolor[0] + View.scrdata.tbcolor[0] * tbport * 1.75),
 						parseInt(View.scrdata.tbcolor[0] + View.scrdata.tbcolor[0] * tbport * 1.75),
-						View.scrdata.tbcolor[3] + ((0.9 - View.scrdata.tbcolor[3]) * tbport)
+						View.scrdata.tbcolor[3] + ((0.96 - View.scrdata.tbcolor[3]) * tbport)
 					];
 				}
 			}

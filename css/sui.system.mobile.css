@@ -129,7 +129,7 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-sector-title.hidden { display:none; }
 .sui-sector-title:not(.hidden) ~ .sui-views-container { height: calc(100% - 48px); }
 
-.sui-sector .toolbar { width:100%; height:48px; padding:0; background:rgba(242,242,242,0.95); transition: transform 200ms ease-in; }
+.sui-sector .toolbar { width:100%; height:48px; padding:0; background:rgba(242,242,242,0.95); transition: transform 200ms ease-in, box-shadow 200ms ease-out; }
 .sui-sector .toolbar > .title { display:none; }
 .sui-sector .toolbar > .tools ol { padding:0; margin:0; }
 .sui-sector .toolbar > .tools ol ~ u { display:none; }
