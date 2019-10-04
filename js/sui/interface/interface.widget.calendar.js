@@ -58,7 +58,7 @@ sourceui.interface.widget.calendar = function($widget,setup){
 			if (Device.ismobile){
 				Calendar.widget.on('seldate',function(event, $li){
 					var $scheds = $li.find('.schedules').clone();
-					if (!$scheds.length) $scheds += '<div class="empty">Não há apontamentos</div>'
+					if (!$scheds.length) $scheds = '<div class="empty">Não há apontamentos</div>'
 					Calendar.cal.find('.modes > .details').html($scheds).prepend('<h2>'+moment($li.data('masked')).format('ll')+'</h2>');
 				});
 			}

@@ -118,11 +118,11 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-sector-title > .viewnav.disable { color:#cccac9; background:transparent; }
 .sui-sector-title > .tabs { width:100%; }
 .sui-sector-title > .tabs > ol { width:100%; height: 48px; float:none; margin: 0 auto; }
-.sui-sector-title > .tabs > ol li { display:none; letter-spacing:-0.65px; font-size:14px; }
+.sui-sector-title > .tabs > ol li { display:none; letter-spacing:-0.65px; font-size:14.333px; }
 .sui-sector-title > .tabs > ol li.selected { display:table-cell; background:inherit; color:#464342; text-align:center; padding:0; vertical-align: middle; }
 .sui-sector-title > .tabs > ol li.selected > .label { max-width:none; font-weight:500; }
 .sui-sector-title > .tabs > ol li.selected > .label:before { display:none; }
-.sui-sector-title > .tabs > ol li.selected > .label > .text { letter-spacing:-0.125px; line-height: 16px; }
+.sui-sector-title > .tabs > ol li.selected > .label > .text { letter-spacing:-0.425px; line-height: 16px; }
 .sui-sector-title > .tabs > ol li.selected > .label > .text:only-child { text-align: center; }
 
 .sui-sector-title > .tabs > ol li.selected .close { display:none; /*position: absolute; top:4px; right:0; height:30px; width:30px; line-height:30px; color:rgba(48,45,44,0.3);*/ }
@@ -193,7 +193,7 @@ body { background-size: 175% 100%; font-size:15px; }
 	.sui-widget.check > .title .label { min-width:calc(100% - 227px); }
 }
 @media (max-width: 399px){
-	.sui-widget > .title .label { min-width:calc(100% - 179px); }
+	.sui-widget > .title .label { min-width:calc(100% - 192px); }
 	.sui-widget.check > .title .label { min-width:calc(100% - 227px); }
 }
 
@@ -224,6 +224,8 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-widget.finder .finder > .sui-buttonset.horizontal .sui-button a span { margin-left:8px; }
 .sui-widget.finder .finder > .sui-buttonset.horizontal .sui-button a span:empty { display:none; }
 .sui-widget.finder .finder > .sui-buttonset.horizontal > .group > li:nth-child(-n+2) { display:none !important; }
+@media (max-width: 414px){ .sui-widget.finder .finder > .sui-stage > .sui-fieldset.horizontal .sui-field > .wrap > .table > .cell .input { width:38vw; } }
+@media (min-width: 415px){ .sui-widget.finder .finder > .sui-stage > .sui-fieldset.horizontal .sui-field > .wrap > .table > .cell .input { width:44vw; } }
 /* --------------------------------------------------- */
 
 
@@ -492,7 +494,7 @@ body.debug .sui-bug-modal { width:100%; height:100%; left:0; bottom:0; right:0; 
 
 .sui-droplist-container { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(56,54,53,0.9); z-index:100; }
 .sui-droplist-container > .sui-droplist { position:absolute; left:0; bottom:0; width:100%; margin:0px; box-shadow:0 0 44px rgba(32,32,32,0.55); z-index:2; }
-.sui-droplist-container > .sui-droplist > .tail { position: absolute;top:-30px;left: 18px;color: #FFF;font-weight:500; }
+.sui-droplist-container > .sui-droplist > .tail { position: absolute;top:-34px; left:18px; color: #FFF;font-weight:500; font-size:16.5px; }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .tools.top { list-style:none; border-radius:0; display:table; overflow:hidden; width:100%; background:#FFF; border-bottom:#e6e6e6 solid 1px; margin:0; padding:0; height:44px; position:relative; z-index:2;  }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .tools.top > li { display:table-cell; min-width:44px; position:relative; }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .tools.top > li.search:before { position:absolute; top:50%; right:6px; margin-top:-6px; color:#DDD; }
@@ -501,7 +503,7 @@ body.debug .sui-bug-modal { width:100%; height:100%; left:0; bottom:0; right:0; 
 .sui-droplist-container > .sui-droplist:not(.plugin) > .options { list-style:none; margin:0; padding:0; height:240px; background:#FFF; position:relative; z-index:2; }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .options ul { margin:0; padding:12px 0 12px 0; list-style: none; border-bottom:#f2f2f2 solid 1px; }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .options ul:last-of-type { padding-bottom:120px; border:none; }
-.sui-droplist-container > .sui-droplist:not(.plugin) > .options ul > li { padding:12px 16px; text-align:left; cursor:pointer; border-left:transparent solid 3px; color:#444; font-size:13px; font-weight:500; }
+.sui-droplist-container > .sui-droplist:not(.plugin) > .options ul > li { padding:12px 16px; text-align:left; cursor:pointer; border-left:transparent solid 3px; color:#444; font-size:14.666px; font-weight:500; }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .options ul > li:before { margin:-2px 14px 0 0; }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .options ul > li.selected { background:rgba(0,0,0,0.05); border-left-color:#1B74E6; color:#222 !important; }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .options ul > li.disable { color:#d2d2d2 !important; }

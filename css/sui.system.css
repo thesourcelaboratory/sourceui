@@ -322,7 +322,7 @@ a code { display:none !important }
 .sui-main > .sui-tabs > .group > ul > li .ripple-effect { background-color:#CCCACA; }
 .sui-main > .sui-tabs > .group > ul > li.disable { opacity:.3; cursor:default; }
 .sui-main > .sui-tabs > .group > ul > li span { position:relative; }
-.sui-main > .sui-tabs > .group.center > ul > li .label:before { margin:-3px 6px 0 0; opacity:0.35; }
+.sui-main > .sui-tabs > .group.center > ul > li .label:before { margin:-4px 6px 0 0; opacity:0.35; }
 .sui-main > .sui-tabs > .group:not(.center) > ul > li { text-align:center; }
 .sui-main > .sui-tabs > .group:not(.center) > ul > li:before { margin-top:-2px; }
 .sui-main > .sui-tabs > .group:not(.center) > ul > li .badge { min-width:16px; height:16px; position:absolute; top:-4px; right:-1px; background:#484544; color:#FFF; text-align:center; font-size:8px; line-height:16px; font-weight:500; border-radius:20px; }

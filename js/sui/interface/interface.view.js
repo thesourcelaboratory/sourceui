@@ -38,6 +38,7 @@ sourceui.interface.view = function ($view, setup) {
 	View.sector = View.element.closest('.sui-sector');
 	View.scrolltabs = View.sector.find('#suiTabsView');
 	View.tabsview = View.sector.find('#suiTabsView ol');
+	View.cover = View.element.children('picture.sui-cover');
 	Dom.document.trigger('activity:focusin', [View.element]);
 	View.controller = View.element.children('[data-alias="controller"]');
 	View.toolbar = View.element.children('.toolbar');
@@ -239,7 +240,7 @@ sourceui.interface.view = function ($view, setup) {
 			$controled.data('controller', $ctrl);
 		}
 	}
-	View.element.children('.sui-cover').each(function () {
+	View.cover.each(function () {
 		var $cover = $(this);
 		var $code = $cover.children('code');
 		if ($code.length) {
@@ -497,7 +498,14 @@ sourceui.interface.view = function ($view, setup) {
 				View.scrdata.paginator.addClass('clicked').trigger('click');
 			}
 		}
-
+	});
+	View.element.on('view:open',function(){
+		if (View.cover.is(':first-child')){
+			var $profile = View.element.find('.sui-widget.profile:last');
+			var height = 0;
+			height = $profile.offset().top + $profile.height() - View.cover.offset().top;
+			if (height > 0) View.cover.height(height);
+		}
 	});
 	/*
 	View.scrolls.on("scrollstart", function(event) {
