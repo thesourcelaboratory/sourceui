@@ -81,6 +81,7 @@
 .sui-aside.left > .navtools > li:not(.navigation):before { font-size:20px; }
 .sui-aside.left > .navtools > li:not(.navigation):after { content:''; display:none; width:16px; height:16px; background:#424242; position:absolute; bottom:-20px; left:50%; margin-left:-8px; transform:rotate(45deg); }
 .sui-aside.left > .navtools > li:not(.navigation):not(.credentials).selected { background-color:rgba(255,255,255,0.075); }
+.sui-aside.left > .navtools > li:not(.navigation):not(.credentials).selected:before { opacity:1; }
 .sui-aside.left > .navtools > li:not(.navigation).selected:after { display:block; }
 .sui-aside.left > .navtools > li:not(.navigation):nth-last-child(6) { right:2740px; }
 .sui-aside.left > .navtools > li:not(.navigation):nth-last-child(5) { right:224px; }
@@ -322,6 +323,7 @@
 .sui-widget.datagrid.list > .area .list .line > .col.join > .joiner { display:flex; justify-content:center; box-shadow:none; }
 .sui-widget.datagrid.list > .area .list .line > .col.join > .joiner > div { width:42px; height:42px; border-radius:50%; margin-top:5px; margin-bottom:5px; position:relative; overflow:hidden; box-shadow: inset 0 0 0 1px #00000010; }
 .sui-widget.datagrid.list > .area .list .line > .col.join > .joiner > div.abbr { line-height:42px; }
+.sui-widget.datagrid.list > .area .list .line > .col.join > .joiner > div.abbr span {  padding:0; }
 .sui-widget.datagrid.list > .area .list .line > .col.join > .joiner > div.image { background-size:cover; background-repeat:no-repeat; }
 .sui-widget.datagrid.list > .area .list .line > .col.join > .joiner > div.icon:before { font-size:20px; margin-top: 10px; }
 .sui-widget.datagrid.list > .area .list .line > .col.join > .joiner > div:not(:first-of-type) { margin-left:-8px; }
@@ -494,6 +496,11 @@
 .sui-widget.upload.list.dash .filelist .button.stop { display:none !important; }
 /* --------------------------------------------------- */
 
+/* SHEET --------------------------------------------- */
+.sui-widget.spreadsheet .area { font-size:12px; }
+.sui-widget.spreadsheet .handsontable td, .handsontable th { line-height:20px; }
+/* --------------------------------------------------- */
+
 /* FORM ------------------------------------------ */
 .sui-widget.form > .area { background:#e6e6e6; padding:24px 0; }
 .sui-widget.form.editor > .title { border:none; }
@@ -654,8 +661,8 @@ main.sui-load-border .sui-spinner .container,
 .sui-widget .line.focus { background:rgba(0,0,0,0.035) !important; }
 .sui-widget .line.focus .pad:first-child::after { content:''; position:absolute; top:0; left:0; width:4px; height:100%; background:#fe691e !important; }
 .sui-widget .line.focus .col { border-color:rgba(0,0,0,0.025) !important; }
-.sui-widget .line.image.focus img {  }
 
+.sui-sector.transparent .toolbar { border:rgba(0,0,0,0.065) solid 1px; }
 .sui-sector.transparent .sui-widget { box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
 
 

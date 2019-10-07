@@ -577,7 +577,16 @@ sourceui.interface.widget.common = function ($widget, setup) {
 							$cal.calendar('setSchedules',setup.response.parsedJSON||{});
 						}
 					}
-
+				} else if (Finder.widget.is('.spreadsheet')){
+					setup = {
+						render: '@sheet-data',
+						cache: false,
+						filter: filt,
+						ondone: function (setup) {
+							var hot = Finder.widget.find('.sheet').data('hot');
+							hot.loadData(setup.response.parsedJSON);
+						}
+					}
 				}
 				Network.link.call(Finder.element, setup);
 			});

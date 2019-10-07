@@ -1031,6 +1031,7 @@ sourceui.Network = function () {
 						process: setup.process,
 						parentkey: setup.parentkey,
 						owner: setup.owner,
+						id: setup.id,
 						key: setup.key,
 						name: setup.name,
 						stack: setup.stack,
@@ -1044,6 +1045,7 @@ sourceui.Network = function () {
 						session: Device.session.id(),
 						fingerprint: Device.fingerprint.get(),
 						target: setup.targetSelector,
+						render: setup.render,
 						field: setup.fieldSelector
 					};
 					var postData = {
@@ -1059,6 +1061,7 @@ sourceui.Network = function () {
 						parentkey: setup.parentkey,
 						owner: setup.owner,
 						key: setup.key,
+						id: setup.id,
 						group: setup.group,
 						session: Device.session.id(),
 					};
@@ -2442,6 +2445,7 @@ sourceui.Network = function () {
 						if (klist[j]) ksel.push('[data-link-key="' + klist[j] + '"]:eq(0)');
 					}
 					$k = $elem.find(ksel.join(','));
+					console.log($k);
 					if ($k && $k.length) {
 						$k.each(function () {
 							var $this = $(this);
@@ -2471,7 +2475,7 @@ sourceui.Network = function () {
 				}
 			}
 			if ($c && $c.length) {
-				if ($c.is('a, .sui-link, .sui-button, li')) {
+				if ($c.is('a, .sui-link, .sui-button, li, .schedule')) {
 					$c.enable();
 					$c.closest('.disable').enable();
 					$c.trigger('click', [{ filter: filter }]);
@@ -2490,66 +2494,6 @@ sourceui.Network = function () {
 				Dom.document.trigger('panelready');
 			}
 		},
-		/*
-		follow: function(path,$elem){
-			if (!path.length){
-				Dom.document.trigger('panelready');
-				return;
-			}
-			Network.history.following = true;
-			var current = path.shift();
-			var spath,klist;
-			var ksel = [];
-			var $k, $c, $mb;
-			if (current.indexOf(':') > -1){
-				spath = current.split(':');
-				if (spath[1]){
-					klist = spath[1].split(',');
-					for (var j=0; j<klist.length; j++ ){
-						if (klist[j]) ksel.push('[data-link-key="'+klist[j].replace(/\%2F/g,'/')+'"]:eq(0)');
-					}
-					$k = $elem.find(ksel.join(','));
-					if ($k && $k.length){
-						$k.each(function(){
-							var $this = $(this);
-							$this.addClass('select selected');
-						});
-						$c = $elem.find('.toolbar [data-link-command="'+spath[0]+'"]:eq(0)');
-						if (!$c.length) $c = $k.find('.swiper [data-link-command="'+spath[0]+'"]:eq(0)');
-					} else {
-						Dom.document.trigger('panelready');
-						return;
-					}
-				}
-			} else {
-				$c = $elem.find('[data-history="'+current+'"]:eq(0)');
-				if (!$c.length)	$c = $elem.find('[data-link-pushstate="'+current+'"]:eq(0)');
-				if ($c.length){
-					$mb = $c.closest('.menu.block');
-					if ($mb.length) $mb.prevAll('.blocklist').children('li[data-id="'+$mb.data('id')+'"]').click();
-				}
-			}
-			if ($c && $c.length){
-				if ($c.is('a, .sui-link, .sui-button, li')){
-					$c.enable();
-					$c.closest('.disable').enable();
-					$c.trigger('click');
-					$c.one('ajax:done ajax:cache',function(event,$jq){
-						var $this = $(this);
-						Network.history.follow(path,$jq);
-						$c.off('ajax:done ajax:cache');
-					});
-					$c.one('ajax:fail',function(event,$jq){
-						Dom.document.trigger('panelready');
-					});
-				} else {
-					Network.history.follow(path,$c);
-				}
-			} else {
-				Dom.document.trigger('panelready');
-			}
-		},
-		*/
 		go: function (history) {
 			var $elem = $('#suiMain');
 			var $tabview, $tabsector;
@@ -2645,7 +2589,7 @@ sourceui.Network = function () {
 		//console.log('popstate', hash);
 	});
 	$(window).on('hashchange', function () {
-		console.log('hashchange', location.hash);
+		//console.log('hashchange', location.hash);
 	});
 
 	/*

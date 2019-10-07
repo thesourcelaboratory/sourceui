@@ -525,6 +525,9 @@ sourceui.interface.plugins = function () {
 			$div.append($notify);
 			var $li = $('<li data-id="' + notify.id + '"><div><a style="background:' + $notify.css('background') + ';"/></div></li>');
 			$ol.append($li);
+			$notify.on('swipedown',function(event){
+				$div.find('section:first .close').click();
+			});
 			$notify.find('.close').on('click', function (event) {
 				Notify.close($notify);
 			});

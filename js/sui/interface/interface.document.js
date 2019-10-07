@@ -317,6 +317,20 @@ sourceui.interface.document = function () {
 				}, 10);
 			});
 		}
+		var $cover = ui.find('picture.sui-cover');
+		if ($cover.length){
+			setTimeout(function(){
+				var $profile = ui.find('.sui-widget.profile:last, .sui-widget.overcover');
+				if ($profile.length){
+					var height = 0;
+					$profile.each(function(){
+						var $p = $(this);
+						height += $p.offset().top + $p.height() - $cover.offset().top;
+					});
+					if (height > 0) $cover.height(height + 16);
+				}
+			},100);
+		}
 		Document.timetick(ui);
 	});
 

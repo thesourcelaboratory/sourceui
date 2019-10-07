@@ -56,6 +56,28 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
         }
         callback(bool);
     };
+    // change the datepicker
+
+    class calendarEditor extends Handsontable.editors.TextEditor {
+        constructor(hotInstance) {
+            super(hotInstance);
+        }
+        prepare(row, col, prop, td, originalValue, cellProperties) {
+            // Invoke the original method...
+            super.prepare(row, col, prop, td, originalValue, cellProperties);
+            // ...and then do some stuff specific to your CustomEditor
+            this.customEditorSpecificProperty = 'foo';
+            console.log(row, col, prop, td, originalValue, cellProperties);
+        }
+        getValue() {
+            return calendar.getDate(); // returns currently selected date, for example "2013/09/15"
+        }
+
+        setValue() {
+            calendar.highlightDate(newValue); // highlights given date on calendar
+        }
+    }
+
     Handsontable.validators.registerValidator('required', validators[name]);
     $.each($.jMaskPatterns,function(name,pattern){
         validators[name] = function(value, callback){

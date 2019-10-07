@@ -602,6 +602,7 @@
 					}
 				});
 			}
+			jQ.calendar.find('li.selected').removeClass('selected').children('a').click();
 		};
 		this.unsetSchedules = function(){
 			Data.setup.schedules = {};

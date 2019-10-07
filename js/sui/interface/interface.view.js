@@ -290,6 +290,14 @@ sourceui.interface.view = function ($view, setup) {
 		setTimeout(function () {
 			View.scrolltabs.scrollLeft(9999).customScroll('update');
 		}, 10);
+	} else {
+		///////////////////////////////////////////////
+		// HISTORY
+		///////////////////////////////////////////////
+		if (View.sector.data('history')) {
+			Network.history.tab(View.sector);
+		}
+		///////////////////////////////////////////////
 	}
 	/*
 	var $viewtab = View.element.find('#suiTabToAppend');
@@ -498,14 +506,6 @@ sourceui.interface.view = function ($view, setup) {
 			if (View.scrdata.scrollmax && View.scrdata.scrollmax - View.scrdata.scrolltop < 250) {
 				View.scrdata.paginator.addClass('clicked').trigger('click');
 			}
-		}
-	});
-	View.element.on('view:open',function(){
-		if (View.cover.is(':first-child')){
-			var $profile = View.element.find('.sui-widget.profile:last');
-			var height = 0;
-			height = $profile.offset().top + $profile.height() - View.cover.offset().top;
-			if (height > 0) View.cover.height(height);
 		}
 	});
 	/*

@@ -61,6 +61,9 @@ sourceui.interface.widget.calendar = function($widget,setup){
 					if (!$scheds.length) $scheds = '<div class="empty">Não há apontamentos</div>'
 					Calendar.cal.find('.modes > .details').html($scheds).prepend('<h2>'+moment($li.data('masked')).format('ll')+'</h2>');
 				});
+				Calendar.widget.on('unseldate',function(event, $li){
+					Calendar.cal.find('.modes > .details').html('');
+				});
 			}
 		}
 	}
@@ -133,6 +136,55 @@ sourceui.interface.widget.calendar = function($widget,setup){
 		}
 	});
 
+	Calendar.common.controller.on('click', 'li a', function (event, force) {
+		var $this = $(this);
+		if (!force && $this.isDisable()) return;
+		var evtenable = $this.data('event-enable');
+		if (evtenable && (evtenable.has('pickline') || evtenable.has('checklines'))) {
+			var data = { key: [], seed: 0 };
+			var $lines = Calendar.widget.find('.area .modes > .details > .schedule.selected, .area .modes > .days .schedule.selected');
+			if ($lines.length) {
+				Calendar.widget.trigger('alias:' + $this.data('alias'), [$lines]);
+				if ($this.is(':attrHas("data-link")')) {
+					$lines.each(function () {
+						var $line = $(this);
+						var d = $line.link('_self');
+						if (d.sui) data.sui = d.sui;
+						if (d.command) data.command = d.command;
+						if (d.process) data.process = d.process;
+						if (d.target) data.target = d.target;
+						if (d.placement) data.placement = d.placement;
+						if (d.key) data.key.push(d.key[0]);
+						$.each(['stack', 'code', 'date', 'str', 'seq', 'num', 'json'], function (k, v) {
+							if (d[v]) {
+								data[v] = data[v] ? data[v] : [];
+								data[v].push(d[v]);
+							}
+						});
+						data.seed += d.seed || 0;
+					});
+					var t = $this.link();
+					t.seed += data.seed;
+					t.key = data.key;
+					$.extend(data, t);
+					data.cancelnested = true;
+					Network.link.call($this, data);
+					event.stopImmediatePropagation();
+					return;
+				}
+			} else {
+				Notify.open({
+					type: 'alert',
+					name: $this.text() || $this.attr('title') || $this.attr('alt') || 'Ação',
+					label: Datagrid.widget.find('.title h3 span').text(),
+					message: 'Selecione pelo menos um registro.'
+				});
+			}
+			event.stopImmediatePropagation();
+			return;
+		}
+	});
+
 	this.widget.on('click', '.area .sui-calendar .schedule', function (event) {
 		event.stopPropagation();
 		var $this = $(this);
@@ -166,176 +218,6 @@ sourceui.interface.widget.calendar = function($widget,setup){
 			$button.trigger('control',[$line]);
 		}
 	});
-
-
-	// FINDER -----------------------------
-	/*
-	var timeout = null;
-	this.getFilters = function () {
-		var $filters = Calendar.finder.find('.sui-filter.selected');
-		var ftr = '';
-		$filters.each(function () {
-			var $f = $(this);
-			ftr = $.extend(true, ftr, Calendar.deparam($f.data('name'), $f.data('value')));
-		});
-		return $.deparam(ftr);
-	};
-	this.deparam = function (name, value) {
-		var data = {}, qs;
-		if (name.indexOf('[]') > -1) {
-			name = name.substring(0, name.length - 2);
-			if (value !== '' && value !== null) {
-				data[name] = data[name] || [];
-				data[name].push(value);
-			}
-		} else if (name.indexOf('[') > -1) {
-			qs = '';
-			if ($.isArray(value) || $.isPlainObject(value)) {
-				$.each(value, function (k, v) {
-					qs += '&' + name + '[' + k + ']=' + v;
-				});
-			} else {
-				qs += '&' + name + '=' + encodeURIComponent(value);
-			}
-			if (qs) data = $.deparam(qs);
-		} else {
-			data[name] = value;
-		}
-		return data;
-	}
-	Calendar.buttons.on('click', function (event) {
-		var $this = $(this);
-		if ($this.parent().isDisable()) return;
-		if ($this.hasClass('clear')) {
-			if (Calendar.widget.hasClass('search')) {
-				Calendar.fields.find('.input').val('');
-				Calendar.buttons.filter('.clear').parent().disable();
-				Calendar.widget.trigger('calendar:search');
-			} else if (Calendar.widget.hasClass('filter')) {
-				Calendar.finder.find('.sui-filter').parent().remove();
-				Calendar.buttons.filter('.clear').parent().disable();
-				Calendar.widget.trigger('calendar:filter');
-			}
-		} else if ($this.hasClass('search')) {
-			Calendar.widget.removeClass('filter').addClass('search');
-			Calendar.finder.find('.sui-field.search .input').focus();
-		} else if ($this.hasClass('filter')) {
-			if ($this.data('link-sui')) Calendar.widget.trigger('filter:floatform', [$this]);
-			Calendar.widget.removeClass('search').addClass('filter');
-			if (Calendar.finder.find('.sui-filter').length) Calendar.buttons.filter('.clear').parent().enable();
-			else Calendar.buttons.filter('.clear').parent().disable();
-		}
-		event.stopImmediatePropagation();
-	});
-	Calendar.finder.on('click', '.sui-filter .close', function (event) {
-		var $this = $(this);
-		$this.closest('li').remove();
-		Calendar.widget.trigger('calendar:filter');
-		event.stopImmediatePropagation();
-	});
-	Calendar.finder.on('click', '.sui-filter a', function (event, $lines) {
-		var $this = $(this);
-		var $parent = $this.parent();
-		$parent.closest('ul').find('[data-name="'+$parent.data('name')+'"]').not($parent).removeClass('selected');
-		$parent.toggleClass('selected');
-		Calendar.widget.trigger('calendar:filter');
-		event.stopImmediatePropagation();
-	});
-	Calendar.finder.on('click', '.sui-filterset', function (event) {
-		Calendar.buttons.filter('.filter').click();
-	});
-	Calendar.fields.filter('.search').on('field:input', function (event, $lines) {
-		var $fd = $(this);
-		var strictsearch = Calendar.finder.data('strictsearch');
-		if (timeout) clearTimeout(timeout);
-		timeout = setTimeout(function () {
-			Calendar.widget.trigger('calendar:search');
-		}, strictsearch ? 100 : 500);
-		if ($fd.val() === '') {
-			Calendar.buttons.filter('.clear').parent().disable();
-		} else {
-			Calendar.buttons.filter('.clear').parent().enable();
-		}
-	});
-	Calendar.widget.on('calendar:filter', function (event) {
-		Calendar.widget.trigger('remote:finder', [Calendar.getFilters()]);
-	});
-	Calendar.widget.on('calendar:search', function (event) {
-		var $badge = Calendar.widget.find('.badge.total span');
-		var $fd = Calendar.finder.find('.sui-field.search');
-		var nm = $fd.data('name');
-		var ftr = ftr + '&' + nm + '=' + $fd.val();
-		var filt = $.deparam(ftr);
-		var srch = (filt[nm] || '').replace(/(<([^>]+)>)/ig, '');
-		var last = Calendar.finder.data('srch') || '';
-
-		var strictsearch = Calendar.finder.data('strictsearch');
-
-		Calendar.finder.data('srch', srch);
-		var listlen = Calendar.list.data('length');
-		var $show;
-		if (strictsearch || typeof listlen === 'undefined' || srch.length >= last.length) {
-			if (strictsearch || typeof listlen === 'undefined' || Calendar.line.length < listlen) {
-				if (strictsearch) {
-					$show = Calendar.line.find(strictsearch).filter(':containsNC("' + srch + '")');
-					$show = $show.closest('.line');
-				} else {
-					$show = Calendar.line.filter(':containsNC("' + srch + '")');
-				}
-				if ($show.length || strictsearch) {
-					if (srch) {
-						Calendar.line.hide();
-						$show.show();
-						$badge.text($show.length);
-					} else {
-						Calendar.line.show();
-						$badge.text(Calendar.list.data('total'));
-					}
-					if (strictsearch) {
-						Calendar.list.prevAll('.empty').remove();
-						if (!$show.length) Calendar.list.before('<div class="sn empty "><i class="icon-lens-blocked"></i>Não há Registros disponíveis contendo "<strong>' + srch + '</strong>".<br></div>');
-					}
-					return;
-				}
-			}
-		}
-		if (!strictsearch) Calendar.widget.trigger('remote:finder', [filt]);
-	});
-	Calendar.widget.on('remote:finder', function (event, filter) {
-		var filt = filter || Calendar.getFilters();
-		var $badge = Calendar.widget.find('.badge.total span');
-		var setup = {
-			render: '@calendar-schedules',
-			cache: false,
-			filter: filt,
-			ondone: function (setup) {
-				Calendar.cal.calendar('unsetSchedules');
-				Calendar.cal.calendar('setSchedules',setup.response.parsedJSON||{});
-				if (Calendar.widget.hasClass('filter')) {
-					if (Calendar.finder.find('.sui-filter').length) {
-						Calendar.buttons.filter('.clear').parent().enable();
-					} else {
-						Calendar.buttons.filter('.clear').parent().disable();
-					}
-				}
-
-			}
-		}
-		Network.link.call(Calendar.finder, setup);
-	});
-	Calendar.widget.on('filter:floatform', function (event, $el) {
-		var filt = Calendar.getFilters();
-		var setup = {
-			cancelnested: true,
-			target: '@float-sector',
-			cache: false,
-			filter: filt
-		}
-		$.extend(setup, $el.link('_self'));
-		Network.link.call($el, setup);
-	});
-	*/
-	// ------------------------------------------
 
 	this.init = function () {
 

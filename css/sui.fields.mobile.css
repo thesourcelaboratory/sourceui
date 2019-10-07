@@ -167,7 +167,7 @@
 
 /* STATIC */
 .sui-field.static { background:#f6f6f6; }
-.sui-field.static > .wrap > .table > .cell .input { padding-top:6px !important; font-weight:normal; }
+.sui-field.static > .wrap > .table > .cell .input { padding:6px 0 8px 0 !important; font-weight:normal; min-height:34px !important; height:auto !important; }
 
 /* PASSWORD */
 .sui-field.password > .wrap > .table > .cell .input.password { -webkit-text-security:square; -moz-text-security:square; -o-text-security:square; text-security:square; font-size:13px; letter-spacing:-1px; }

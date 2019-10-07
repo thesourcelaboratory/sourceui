@@ -1029,6 +1029,8 @@ sourceui.Parser = function () {
 				render = setup.render;
 			if (render == '@calendar-schedules') {
 				str = JSON.parse(sui.content() || '[]');
+			} else if (render == '@sheet-data') {
+				str = JSON.parse(sui.content() || '[]');
 			} else if (render == '@datagrid-list') {
 				sui.find('list', function () {
 					str = Components.libs.widget.datagrid.list(this);
@@ -2941,7 +2943,7 @@ sourceui.Parser = function () {
 				if (root) {
 					if (setup.render) {
 						var part = Render.parts(root); // testa se o parser vai processar uma parte específica do arquivo de interface
-						if ($.isPlainObject(part)) setup.response.parsedJSON = part;
+						if ($.isPlainObject(part) || $.isArray(part)) setup.response.parsedJSON = part;
 						else setup.response.parsedHTML = part
 					} else if (setup.snippet) {
 						setup.response.parsedSNIP = Render.snippet(root); 	// testa se o parser vai processar de uma forma pré determinada o arquivo de interface
