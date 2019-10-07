@@ -871,7 +871,6 @@ sourceui.interface.plugins = function () {
 		load: {
 			view: function () {
 				var editor = imgEditor;
-				console.log(editor.loaded);
 				if (editor.loaded.view) return;
 				var $edition = editor.dom.editions.filter('.view');
 				var $stage = $edition.children('.stage');

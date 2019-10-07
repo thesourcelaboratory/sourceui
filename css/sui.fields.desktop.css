@@ -537,7 +537,7 @@
 .sui-field.file > .wrap { display:inline-block; min-width:inherit; position:relative; background:transparent; }
 .sui-field.file > .wrap > .tools { border:none; border-radius:0; display:block; }
 .sui-field.file > .wrap > .tools > .cell.button { display:none; position:absolute; width:40px; height:40px; line-height:40px; color:rgba(0,0,0,0.5); border-radius:100%; z-index:11;  }
-.sui-field.file > .wrap > .tools > .cell.button:before { font-size:20px; margin-top:-4px; font-weight:normal; }
+.sui-field.file > .wrap > .tools > .cell.button:before { font-size:20px; margin-top:-10px; font-weight:normal; }
 .sui-field.file > .wrap > .tools > .cell.button.browse { color:#FFF; background:rgba(120,120,120,0.55); display:block; top:6px; left:6px; }
 .sui-field.file > .wrap > .tools > .cell.button.browse:hover { background:rgba(160,160,160,0.75) !important; }
 .sui-field.file > .wrap > .tools > .cell.button > span { display:none; }

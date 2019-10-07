@@ -94,16 +94,26 @@ sourceui.interface.panel = function () {
 			if ($this.hasClass('notified')) {
 				Plugin.notification.shown();
 			}
-			var $qru = $nav.find('.qrcode-url').html('');
+			var $qru = $nav.find('.qrcode-url .qrc');
 			if ($qru.length) {
-				$qru.qrcode({
-					render: 'div',
-					version: 40,
-					ecLevel: 'M',
-					text: window.location.href,
-					fill: '#2d2d2d',
-					size: 130,
-				});
+				var hist = $qru.data('url') || {};
+				if (hist[window.location.href]){
+					$qru.html(hist[window.location.href]);
+				} else {
+					$qru.html('');
+					setTimeout(function(){
+						$qru.qrcode({
+							render: 'div',
+							version: 40,
+							ecLevel: 'M',
+							text: window.location.href,
+							fill: '#2d2d2d',
+							size: 130,
+						});
+						hist[window.location.href] = $qru.html();
+						$qru.data('url',hist);
+					},50);
+				}
 			}
 		}
 		if (!Device.ismobile) $.CURR.navTool = $this;
