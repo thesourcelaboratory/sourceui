@@ -289,7 +289,7 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-widget.datagrid > .area .list .line > .col.description .fixflow { max-height: 3.65em; margin-right:0; }
 .sui-widget.datagrid > .area .list .line > .col.join { min-width:58px; top:10px !important; left:8px !important; box-shadow:none !important; background:none !important; }
 .sui-widget.datagrid > .area .list .line > .col.join > .joiner { display:flex; justify-content:center; box-shadow:none; }
-.sui-widget.datagrid > .area .list .line > .col.join > .joiner > div { width:30px; height:30px; border-radius:50%; background-color:#ccc; margin-top:5px; margin-bottom:5px; position:relative; overflow:hidden; }
+.sui-widget.datagrid > .area .list .line > .col.join > .joiner > div { width:30px; height:30px; line-height: 28px; border-radius:50%; background-color:#ccc; margin-top:5px; margin-bottom:5px; position:relative; overflow:hidden; }
 .sui-widget.datagrid > .area .list .line > .col.join > .joiner > div.abbr { line-height:29.4px; }
 .sui-widget.datagrid > .area .list .line > .col.join > .joiner > div.abbr span { padding:0; font-size:9px; }
 .sui-widget.datagrid > .area .list .line > .col.join > .joiner > div.image { background-size:cover; background-repeat:no-repeat; }
