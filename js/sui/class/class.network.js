@@ -2445,7 +2445,6 @@ sourceui.Network = function () {
 						if (klist[j]) ksel.push('[data-link-key="' + klist[j] + '"]:eq(0)');
 					}
 					$k = $elem.find(ksel.join(','));
-					console.log($k);
 					if ($k && $k.length) {
 						$k.each(function () {
 							var $this = $(this);
