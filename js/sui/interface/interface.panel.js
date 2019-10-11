@@ -40,6 +40,7 @@ sourceui.interface.panel = function () {
 	Dom.asideLeft = this.asideLeft = $('#suiAsideLeft');
 	Dom.navTools = this.navTools = this.asideLeft.find('.navtools');
 	Dom.navLeft = this.navLeft = this.asideLeft.children('.sui-nav');
+	Dom.blockList = this.blockList = Dom.navLeft.find('.area > .blocklist');
 	Dom.leftCollapser = this.leftCollapser = this.main.find('.sui-tabs [data-alias="leftcollapser"]');
 	Dom.asideRight = this.asideRight = $('#suiAsideRight');
 	Dom.navRight = this.navRight = this.asideRight.children('.sui-nav');
@@ -64,7 +65,6 @@ sourceui.interface.panel = function () {
 	});
 	Dom.main.on('swiperight', function (event) {
 		$('body').removeClass('leftcollapsed');
-		console.log(event);
 		event.stopPropagation();
 	});
 	Dom.asideLeft.on('click', '.logo', function (event) {
@@ -123,7 +123,7 @@ sourceui.interface.panel = function () {
 		var $this = $(this);
 		if ($this.isDisable()) return;
 		Network.link.call($this, data);
-		Panel.navLeft.find('.area > .blocklist > li.selected').trigger('click');
+		Panel.blockList.children('li.selected').trigger('click');
 		if ($.CURR.navTool) Dom.document.trigger('click');
 	});
 	Dom.navLeft.on('click', '.sui-link', function (event, data) { // :attrHas("data-link"):not(.selected)
@@ -156,18 +156,20 @@ sourceui.interface.panel = function () {
 			Dom.body.addClass('leftcollapsed');
 		}
 	});
-	Dom.navLeft.on('click', '.area > .blocklist > li', function (event) {
+	Dom.blockList.on('click', 'li', function (event) {
 		var $this = $(this);
 		var $nav = $this.closest('.sui-nav');
 		if ($('body').hasClass('leftcollapsed') && !Device.ismobile) {
 			if ($this.hasClass('selected')) {
 				$this.removeClass('selected');
 				$nav.find('.block#' + $this.data('id')).removeClass('selected');
+				$.CURR.navBlock = null;
 			} else {
 				$this.closest('.sui-nav').find('.block.selected').removeClass('selected');
 				$this.siblings('li.selected').removeClass('selected');
 				$this.addClass('selected');
 				$nav.find('.block#' + $this.data('id')).addClass('selected');
+				$.CURR.navBlock = $this;
 			}
 		} else {
 			$nav.find('.block.selected').removeClass('selected');
@@ -242,6 +244,7 @@ sourceui.interface.panel = function () {
 			Network.history.tab($sector);
 		}
 		///////////////////////////////////////////////
+		Dom.document.click();
 		event.stopPropagation();
 	});
 	Dom.sectorTabs.on('swipeleft', 'li', function (event) {
@@ -307,8 +310,8 @@ sourceui.interface.panel = function () {
 	$('#suiAuth').remove();
 	Dom.document.find('.scroll-custom').customScroll();
 
-	if (!Dom.navLeft.find('.area > .blocklist > li.selected').length) {
-		Dom.navLeft.find('.area > .blocklist > li:eq(0)').trigger('click');
+	if (!Dom.blockList.children('li.selected').length) {
+		Dom.blockList.find('li:eq(0)').trigger('click');
 	}
 
 	if (!Device.ismobile) {
@@ -325,11 +328,22 @@ sourceui.interface.panel = function () {
 		$draggable.on('move', function (event, x) {
 			var dw = $draggable.width();
 			x = x + dw / 2;
-			Dom.asideLeft.width(x);
-			Dom.main.css({
-				'left': x + 'px',
-				'width': 'calc(100% - ' + x + 'px)'
-			});
+			if (x < 180){
+				$('body').addClass('leftcollapsed');
+				Dom.blockList.children('li.selected').trigger('click');
+				x = Dom.asideLeft.width() - dw;
+				$draggable.css('left',x);
+			} else {
+				$('body').removeClass('leftcollapsed');
+				if (!Dom.blockList.children('li.selected').length) {
+					Dom.blockList.find('li:eq(0)').trigger('click');
+				}
+				Dom.asideLeft.width(x);
+				Dom.main.css({
+					'left': x + 'px',
+					'width': 'calc(100% - ' + x + 'px)'
+				});
+			}
 			Device.Global.set('drag-panel-position', {
 				position: x
 			});

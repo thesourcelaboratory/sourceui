@@ -83,6 +83,7 @@ sourceui.interface.document = function () {
 			} else {
 				$this.closest('.sui-sector-title').removeClass('covered');
 			}
+			Dom.document.click();
 		});
 		context.on('click', '#suiTabsView > ol > li:not(.selected)', function (event, fake) {
 			var $this = $(this);
@@ -359,6 +360,11 @@ sourceui.interface.document = function () {
 				if (!Device.ismobile && !$.CURR.confirm && $target.length && !$target.closest('.sui-nav').length) {
 					Dom.navTools.find('.navigation').trigger('click');
 					$.CURR.navTool = null;
+				}
+			}
+			if ($.CURR.navBlock) {
+				if (!Device.ismobile && !$.CURR.confirm && $target.length && !$target.closest('.sui-nav').length) {
+					$.CURR.navBlock.trigger('click');
 				}
 			}
 			if ($.CURR.confirm) {

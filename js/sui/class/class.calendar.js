@@ -272,7 +272,7 @@
 						classes.push('sunday');
 					}
 					if (schedules) {
-						$scheds = $('<div class="schedules scroll-custom"/>');
+						$scheds = $('<div class="schedules"/>');
 						/* quando fomos colocar o calendario dentro de um widget em setembro de 2019, percebemos que esta condição não fazia sentido
 						if ($.isArray(schedules)) {
 							$.each(schedules || [], function (ka, va) {
@@ -571,34 +571,37 @@
 			return Calendar;
 		};
 		this.setSchedules = function (s) {
-			var $day, $s;
+			var $day, $days = jQ.calendar.find('.days li'), $s;
 			if ($.isPlainObject(s)) {
 				$.each(s || [], function (ka, va) {
 					if ($.isDate(ka) && va) {
 						Data.setup.schedules[ka] = va;
-						$day = jQ.calendar.find('.days li[data-masked="' + ka + '"]').addClass('scheduled');
-						$s = $('<div class="schedules scroll-custom"/>');
-						/* quando fomos colocar o calendario dentro de um widget em setembro de 2019, percebemos que esta condição não fazia sentido
-						if ($.isArray(va)) {
+						$day = $days.filter('[data-masked="' + ka + '"]');
+						if ($day.length){
+							$day.addClass('scheduled');
+							$s = $('<div class="schedules"/>');
+							/* quando fomos colocar o calendario dentro de um widget em setembro de 2019, percebemos que esta condição não fazia sentido
+							if ($.isArray(va)) {
+								$.each(va || [], function (kb, vb) {
+									if (vb.holiday) $day.addClass('holiday');
+									$s.append(_jQSchedule(ka, vb));
+								});
+							} else if ($.isPlainObject(va)) {
+								$.each(va || [], function (kb, vb) {
+									$.each(vb || [], function (kc, vc) {
+										if (vc.holiday) $day.addClass('holiday');
+										$s.append(_jQSchedule(ka, vc));
+									});
+								});
+							}
+							*/
 							$.each(va || [], function (kb, vb) {
 								if (vb.holiday) $day.addClass('holiday');
 								$s.append(_jQSchedule(ka, vb));
 							});
-						} else if ($.isPlainObject(va)) {
-							$.each(va || [], function (kb, vb) {
-								$.each(vb || [], function (kc, vc) {
-									if (vc.holiday) $day.addClass('holiday');
-									$s.append(_jQSchedule(ka, vc));
-								});
-							});
+							$day.find('.schedules').remove();
+							$day.append($s);
 						}
-						*/
-						$.each(va || [], function (kb, vb) {
-							if (vb.holiday) $day.addClass('holiday');
-							$s.append(_jQSchedule(ka, vb));
-						});
-						$day.find('.schedules').remove();
-						$day.append($s);
 					}
 				});
 			}
@@ -994,6 +997,7 @@
 			});
 			jQ.calendar.on('seldate', function (event, $li) {
 				$li.addClass('selected');
+				jQ.calendar.addClass('dateselected');
 				var D = $li.data('Date');
 				if (Data.setup.mode === 'datetime' && Data.date) {
 					Data.date.setFullYear(D.getFullYear());
@@ -1005,6 +1009,7 @@
 			});
 			jQ.calendar.on('unseldate', function (event, $li) {
 				$li.removeClass('selected');
+				jQ.calendar.removeClass('dateselected');
 				var str = Calendar.getDate();
 				delete Data.date;
 				_modeTabLabel();

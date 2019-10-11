@@ -321,6 +321,11 @@ sourceui.Device = function (c) {
 		return (cfg) ? Config.cache(cfg) : Config.cache();
 	};
 
+	this.agent = {
+		get: function () {
+			return Agent.data;
+		},
+	};
 	this.fingerprint = {
 		get: function () {
 			Fingerprint.get();
@@ -383,9 +388,14 @@ sourceui.Device = function (c) {
 
 		var debug = this;
 		var profiles = {};
-		var isEnable = (Config.debug() && Agent.data.browser.name == 'Chrome');
+		var isEnable = Config.debug();
+		var isChrome = Agent.data.browser.name == 'Chrome';
 
-		if (isEnable) console.log('%cSourceUI Debugger %cv.1.0.44', 'font-size:19px;font-weight:bold;color:#999999', 'font-size:9px;color:#CCC;');
+		var version = '1.0.86';
+
+		if (isEnable)
+		if (isChrome) console.log('%cSourceUI Debugger %c'+version, 'font-size:19px;font-weight:bold;color:#999999', 'font-size:9px;color:#CCC;');
+		else console.log('SourceUI Debugger '+version);
 
 		debug.profile = function (id, data) {
 			var c = {
@@ -551,8 +561,7 @@ sourceui.Device = function (c) {
 
 			profile.show = function () {
 				if (!isEnable) return profile;
-				/*
-				if (!isEnable) {
+				if (!isChrome){
 					var csl;
 					console[group.collapsed ? 'groupCollapsed' : 'group']('[' + group.id + '] [' + group.mode + '] ' + group.title + ' ' + group.symbol.join(''));
 					$.each(group.items || [], function (k, v) {
@@ -599,7 +608,6 @@ sourceui.Device = function (c) {
 					console.groupEnd();
 					return profile;
 				}
-				*/
 
 				var title = [];
 				var mark = [];

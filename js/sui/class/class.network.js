@@ -187,8 +187,7 @@ sourceui.Network = function () {
 					Console.trace();
 			};
 			this.set = function (setup, callback, failback) {
-				if (!setup.requestKey || !setup.response || setup.error)
-					return;
+				if (!setup.requestKey || !setup.response || setup.error) return;
 				var key = setup.requestKey;
 				var s;
 				if (caches[key]) {
@@ -463,24 +462,24 @@ sourceui.Network = function () {
 						setup.response.parsedHTML = setup.response.parsedHTML.replace(/(?!\$\()\$/g, 'S');
 					}
 				}
-				if (setup.render)
-					return false;
-				if (s)
-					setup = s;
-				setup.response.parsedJQ = $(setup.response.parsedHTML);
-				var $exists;
-				var jqid = setup.response.parsedJQ.attr('id');
-				var tgid = setup.target ? setup.target.attr('id') : null;
-				if (jqid === tgid)
-					$exists = setup.target;
-				else
-					$exists = setup.target ? setup.target.find('#' + jqid) : $('#' + jqid);
-				if ($exists.length) {
-					setup.placement = setup.placement ? setup.placement.replace(/append|prepend/g, 'replace') : setup.placement;
-					//setup.placement = (setup.placement.indexOf('replace') > -1) ? setup.placement : 'replace';
-					//setup.placement = 'replace'; // priciso vir aqui depois pra olha se tem algum pau quando o replace funciona em uma view que já existe
-					setup.target = $exists;
-					return true;
+				if (setup.render) return false;
+				if (s) setup = s;
+				if (setup.response.parsedHTML){
+					setup.response.parsedJQ = $(setup.response.parsedHTML);
+					var $exists;
+					var jqid = setup.response.parsedJQ.attr('id');
+					var tgid = setup.target ? setup.target.attr('id') : null;
+					if (jqid === tgid)
+						$exists = setup.target;
+					else
+						$exists = setup.target ? setup.target.find('#' + jqid) : $('#' + jqid);
+					if ($exists.length) {
+						setup.placement = setup.placement ? setup.placement.replace(/append|prepend/g, 'replace') : setup.placement;
+						//setup.placement = (setup.placement.indexOf('replace') > -1) ? setup.placement : 'replace';
+						//setup.placement = 'replace'; // priciso vir aqui depois pra olha se tem algum pau quando o replace funciona em uma view que já existe
+						setup.target = $exists;
+						return true;
+					}
 				}
 				return false;
 			};
@@ -1647,12 +1646,14 @@ sourceui.Network = function () {
 									title: 'Upload failure (' + error + ')',
 									content: error
 								});
+								/*
 								Notify.open({
 									type: 'error',
 									name: 'Falha de Requisição',
 									label: setup.suiname,
 									message: error,
 								});
+								*/
 							}
 							Upload.trigger('fail', [xhr, status, error]);
 						})
@@ -2445,7 +2446,6 @@ sourceui.Network = function () {
 						if (klist[j]) ksel.push('[data-link-key="' + klist[j] + '"]:eq(0)');
 					}
 					$k = $elem.find(ksel.join(','));
-					console.log($k);
 					if ($k && $k.length) {
 						$k.each(function () {
 							var $this = $(this);

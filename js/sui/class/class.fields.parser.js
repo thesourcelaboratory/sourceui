@@ -548,6 +548,7 @@ sourceui.parserField = function (element, setup) {
 				} else if (typeof setup.json == 'string') {
 					vars += Template.get('vars', { type: 'json', value: setup.json });
 				}
+				if (!setup.label) setup.class += ' no-label';
 				return Template.get('field', tpl.field, {
 					id: setup.id,
 					class: setup.class + (setup.list && setup.list.selected && setup.list.selected.length > 0 ? ' selected' : ''),

@@ -753,27 +753,25 @@ $(function () {
 	$.fn.ignore = function (bool) {
 		var $this = $(this);
 		if (bool === false) return $this.consider();
-		$this.slideUp(200,function(){
-			$this.disable(); ///////////////
-			$this.addClass('ignored');
-			$this.find('hasAttr:data-link').addClass('ignored');
-			if ($this.hasClass('sui-widget')) {
-				$this.find('.title').ignore();
-				$this.find('.area').ignore();
-			} else if ($this.hasClass('title')) {
-				$this.find('.toolbar li').addClass('ignored');
-			} else if ($this.hasClass('area')) {
-				$this.find('.sui-fieldset').ignore();
-				$this.find('.sui-buttonset').ignore();
-			} else if ($this.hasClass('sui-fieldset')) {
-				$this.find('.sui-field').ignore();
-			} else if ($this.hasClass('sui-buttonset')) {
-				$this.find('.sui-button').ignore();
-			} else if ($this.hasClass('sui-field')) {
-				$buttons = $this.find('.button').addClass('ignored');
-				$links = $this.find('hasAttr:data-link').addClass('ignored');
-			}
-		});
+		$this.disable(); ///////////////
+		$this.addClass('ignored');
+		$this.find('hasAttr:data-link').addClass('ignored');
+		if ($this.hasClass('sui-widget')) {
+			$this.find('.title').ignore();
+			$this.find('.area').ignore();
+		} else if ($this.hasClass('title')) {
+			$this.find('.toolbar li').addClass('ignored');
+		} else if ($this.hasClass('area')) {
+			$this.find('.sui-fieldset').ignore();
+			$this.find('.sui-buttonset').ignore();
+		} else if ($this.hasClass('sui-fieldset')) {
+			$this.find('.sui-field').ignore();
+		} else if ($this.hasClass('sui-buttonset')) {
+			$this.find('.sui-button').ignore();
+		} else if ($this.hasClass('sui-field')) {
+			$buttons = $this.find('.button').addClass('ignored');
+			$links = $this.find('hasAttr:data-link').addClass('ignored');
+		}
 		$this.trigger($this.is('.sui-field') ? 'field:ignore' : 'ignore');
 		return this;
 	};
@@ -782,8 +780,10 @@ $(function () {
 	};
 	$.fn.consider = function () {
 		var $this = $(this);
+		$this.css('transform-origin','left top');
+		$this.velocity({scaleY:[1,0.5],opacity:[1,0]},{duration:150, easing:"easeOutCubic"});
 		$this.find('.ignored').removeClass('ignored disable');
-		$this.removeClass('ignored disable').hide().slideDown(200);
+		$this.removeClass('ignored disable');
 		$this.enable();
 		$this.find('.sui-field').trigger('field:consider');
 		$this.trigger($this.is('.sui-field') ? 'field:ignore' : 'ignore');
@@ -1041,12 +1041,12 @@ $.colorfy = function (value, color) {
 			else return '#cccccc';
 		}
 		var c = {
-			'#4F8DDA': /^presen|^realiz|^\d?$/gi,	// newblue
-			'#224488': /^nov|^new/gi,	// darkblue
+			'#64a6f7': /^presen|^realiz|^\d?$/gi,	// lightblue
+			'#2e519e': /^nov|^new/gi,	// darkblue
 			'#e24040': /exclu|delet|remov|ignor|invali|inváli|negativ|^reprov|^revogad|^não |^no |^n$|^-?\d?$/gi,	// red
-			'#5a5a5a': /^ativ|^activ|^sim|^s$|^yes|^y$|^\d$/gi, // dark
+			'#5a5a5a': /^ativ|^activ|^sim|^s$|^yes|^y$|^\d$/gi, // darkgray
 			'#F18D25': /ando$|endo$|indo$|^enviad|^ausen|^em /gi,	// orange
-			'#BBBBBB': /^inativ|^inactiv|^cancel/gi,	// gray
+			'#BBBBBB': /^inativ|^inactiv|^cancel/gi,	// litegray
 			'#37a74a': /ado$|edo$|ido$|ído$|^inscri|^true$/gi,	// green
 
             /*

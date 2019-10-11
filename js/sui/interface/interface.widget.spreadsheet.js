@@ -58,26 +58,6 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     };
     // change the datepicker
 
-    class calendarEditor extends Handsontable.editors.TextEditor {
-        constructor(hotInstance) {
-            super(hotInstance);
-        }
-        prepare(row, col, prop, td, originalValue, cellProperties) {
-            // Invoke the original method...
-            super.prepare(row, col, prop, td, originalValue, cellProperties);
-            // ...and then do some stuff specific to your CustomEditor
-            this.customEditorSpecificProperty = 'foo';
-            console.log(row, col, prop, td, originalValue, cellProperties);
-        }
-        getValue() {
-            return calendar.getDate(); // returns currently selected date, for example "2013/09/15"
-        }
-
-        setValue() {
-            calendar.highlightDate(newValue); // highlights given date on calendar
-        }
-    }
-
     Handsontable.validators.registerValidator('required', validators[name]);
     $.each($.jMaskPatterns,function(name,pattern){
         validators[name] = function(value, callback){
@@ -137,6 +117,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
 
     Promises.visible().then(function (r) {
         var code = Handson.sheet.children('code').text();
+        Handson.sheet.children('code').remove();
         var cfg = JSONX.parse(code);
         if (cfg.columns && !cfg.colHeaders){
             var hasinlineheader = false;
@@ -183,6 +164,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                 Handson.valid = $.isEmptyObject(Handson.invalid);
             },
         }));
+        setTimeout(hot.render,100);
         Handson.sheet.data('hot', hot);
         Handson.widget.trigger('widget:init',[hot]);
         return hot;

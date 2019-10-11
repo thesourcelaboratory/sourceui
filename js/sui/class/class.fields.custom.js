@@ -1190,7 +1190,7 @@ sourceui.customField = function (element, setup) {
 					setTimeout(function () {
 						var editor = CodeMirror.fromTextArea(document.getElementById(id), data);
 						editor.on('paste',function(event){
-							console.log(event);
+							//console.log(event);
 						});
 						editor.on('change', function () {
 							Element.trigger('field:input').trigger('field:change');

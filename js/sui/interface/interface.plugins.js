@@ -1328,11 +1328,7 @@ sourceui.interface.plugins = function () {
 		$input.attr('accept', Setup.accept);
 		$area.siblings('input').remove();
 		$widget.append($input);
-		$input.click();
-		$widget.off('upload:queue upload:prepare upload:start upload:filedone upload:error upload:fileerror upload:done');
-		$input.on('change', function (event) {
-			$widget.trigger('upload:queue', [this.files]);
-		});
+		$widget.off('upload:queue upload:added upload:prepare upload:start upload:filedone upload:error upload:fileerror upload:done');
 		if (!isexplorer){
 			var $list = $(''+
 			'<div class="sui-widgetupload">'+
@@ -1513,6 +1509,11 @@ sourceui.interface.plugins = function () {
 			if (!$refresh.length) $refresh = $widget.find('[data-alias="refresh"]');
 			$refresh.trigger('click');
 		});
+
+		$input.on('change', function (event) {
+			$widget.trigger('upload:queue', [this.files]);
+		});
+		$input.click();
 
 	};
 

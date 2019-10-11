@@ -145,7 +145,6 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			Common.widget.trigger('widget:resize');
 		} else if ($this.data('alias') == 'upload') {
 			var link = $this.link();
-			console.log(link);
 			Plugin.gridupload(Common.widget, link);
 		}
 	});
@@ -365,30 +364,60 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			var $swiper = $item.find('.swiper');
 			var $actions = $swiper.find('.actions');
 			if (!$actions.length) return;
-			var width = $actions.outerWidth();
-			if (!Device.ismobile) {
-				$actions.css('left', $swiper.outerWidth() + $swiper.next('.pad').outerWidth());
-			}
-			$item.velocity({
-				translateX: -width
-			}, {
+			var agent = Device.agent.get() || {};
+			if (agent.browser && (agent.browser.name||'').toLowerCase() == 'edge'){
+				var width = -$actions.width();
+				$actions.velocity({
+					opacity: [1,0],
+					left: [width,0]
+				},{
 					duration: 220,
 					easing: 'ease-out'
 				});
+			} else {
+				var width = $actions.outerWidth();
+				if (!Device.ismobile) {
+					$actions.css('left', $swiper.outerWidth() + $swiper.next('.pad').outerWidth());
+				}
+				$item.velocity({
+					translateX: -width
+				}, {
+						duration: 220,
+						easing: 'ease-out'
+				});
+			}
 			$item.trigger('checkswipe');
 		},
 		close: function ($item, options) {
 			if ($item.hasClass('sui-widget')) { $item = $item.find('.area > .list .line.swiped, .area > .list .file.swiped, .area > .list .folder.swiped'); }
 			if (!$item.length) { return; }
-			$item.velocity({
-				translateX: 0,
-			}, $.extend({
-				duration: 220,
-				complete: function () {
-					$item.removeClass('swiped');
-				},
-				easing: 'ease-in'
-			}, options));
+			var $swiper = $item.find('.swiper');
+			var $actions = $swiper.find('.actions');
+			if (!$actions.length) return;
+			var agent = Device.agent.get() || {};
+			if (agent.browser && (agent.browser.name||'').toLowerCase() == 'edge'){
+				var width = -$actions.width();
+				$actions.velocity({
+					opacity: 0,
+					left: 0
+				},$.extend({
+					duration: 220,
+					complete: function () {
+						$item.removeClass('swiped');
+					},
+					easing: 'ease-in'
+				}, options));
+			} else {
+				$item.velocity({
+					translateX: 0,
+				}, $.extend({
+					duration: 220,
+					complete: function () {
+						$item.removeClass('swiped');
+					},
+					easing: 'ease-in'
+				}, options));
+			}
 			$item.trigger('uncheckswipe');
 		}
 	};

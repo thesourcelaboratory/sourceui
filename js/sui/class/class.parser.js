@@ -288,12 +288,6 @@ sourceui.templates.interface = new sourceui.Template({
 					'</li>',
 				label:
 					'<div class="@{class}" @{style}>@{content}</div>',
-				/*
-				label :
-					'<div class="image" style="background-image:url(@{image})"></div>'+
-					'<strong class="title">@{title}</strong>'+
-					'<span class="label">@{label}</span>'+
-					'<small class="description">@{description}</small>',*/
 
 			}
 		},
@@ -309,7 +303,7 @@ sourceui.templates.interface = new sourceui.Template({
 			'<section class="sn sui-notify @{debug} @{type} @{level} @{position}" id="@{id}" style="@{color}">' +
 			'<div class="table">' +
 			'<div class="cell icon @{icon}"></div>' +
-			'<div class="cell image"><div style="background-image:url(@{image}); display:@{showimage}"></div></div>' +
+			'<div class="cell image"><div style="background-image:url(\'@{image}\'); display:@{showimage}"></div></div>' +
 			'<div class="cell text">' +
 			'<div class="name">@{name}</div>' +
 			'<div class="label">@{label}</div>' +
@@ -423,7 +417,7 @@ sourceui.templates.interface = new sourceui.Template({
 			'@{child:content}' +
 			'</section>',
 		cover:
-			'<picture class="sui-cover"@{style}><div class="image @{bg}" style="background-image:url(@{image});"></div>@{child:json}</picture>'
+			'<picture class="sui-cover"@{style}><div class="image @{bg}" style="background-image:url(\'@{image}\');"></div>@{child:json}</picture>'
 	},
 	/*
 	---------------------------
@@ -1001,8 +995,13 @@ sourceui.Parser = function () {
 					}
 				} else if (target) {
 					var $t;
+					var $jq = $();
+					var $keep;
 					if (target.indexOf('#') > -1) {
 						$t = $(target);
+						if ($t.is('.sui-fieldset')){
+							$keep = $t.find('h3.name');
+						}
 					} else if (target.indexOf('@') > -1) {
 						$t = $.ache('field', target, [(setup.view || setup.sector), $(document)]).val();
 					}
@@ -1013,7 +1012,12 @@ sourceui.Parser = function () {
 						} else if (setup.placement.indexOf('prepend') > -1) {
 							$t.prepend($jq);
 						} else if (setup.placement.indexOf('inner') > -1) {
-							$t.html($jq);
+							if ($keep){
+								$t.children().not($keep).remove();
+								$t.append($jq);
+							} else{
+								$t.html($jq);
+							}
 						} else if (setup.placement.indexOf('replace') > -1) {
 							$t.replaceWith($jq);
 						}
@@ -1028,7 +1032,10 @@ sourceui.Parser = function () {
 			var str = '',
 				render = setup.render;
 			if (render == '@calendar-schedules') {
-				str = JSON.parse(sui.content() || '[]');
+				//str = JSON.parse(sui.content() || '[]');
+				str = sui.content();
+				str = JSON.parse(str);
+				//str = '';
 			} else if (render == '@sheet-data') {
 				str = JSON.parse(sui.content() || '[]');
 			} else if (render == '@datagrid-list') {
@@ -1322,7 +1329,7 @@ sourceui.Parser = function () {
 						} else if ($async.is('.sui-field')) {
 							$async.val(data.value);
 						} else {
-							$async.css('background-image', 'url("' + data.value + '")');
+							$async.css('background-image', 'url("' + $.trim(data.value) + '")');
 						}
 					} else {
 						if ($async.is('.sui-field')) {
@@ -1510,8 +1517,8 @@ sourceui.Parser = function () {
 				msize = sui.nodeName == 'auth' ? 2 : 1;
 				htmlLogo = sui.toHTML('auth', 'logo', $.extend(attr,{
 					class: attr.avatar || attr.abbr || attr.name ? 'dynamic' : 'static',
-					image: attr.image ? 'background-image: url(' + attr.image + ');' : '',
-					avatar: attr.avatar ? 'background-image: url(' + attr.avatar + ');' : '',
+					image: attr.image ? 'background-image: url(\'' + $.trim(attr.image) + '\');' : '',
+					avatar: attr.avatar ? 'background-image: url(\'' + $.trim(attr.avatar) + '\');' : '',
 					size: attr.size ? 'font-size:'+attr.size+';' : 'font-size:'+(fsize ? fsize > msize ? fsize+'em' : msize+'em' : 'inherith')+';letter-spacing:'+(lsize ? lsize > 0.01 ? '-'+lsize+'em' : '-0.01em' : 'inherith')+';'
 				}), Template.get);
 				return htmlLogo || '';
@@ -1716,8 +1723,8 @@ sourceui.Parser = function () {
 					var bg = suiItem.attr('label:background') || suiItem.attr('label:bgcolor');
 					var cl = suiItem.attr('label:color');
 					if (abbr) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'abbr', content: abbr, style: (bg?'background-color:'+bg+';':'')+(cl?'color:'+cl+';':'') }, Template.get);
-					if (image) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'image', content: '', style: 'background-image:url(' + image + ');' }, Template.get);
-					if (avatar) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'avatar', content: '', style: 'background-image:url(' + avatar + ');' }, Template.get);
+					if (image) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'image', content: '', style: 'background-image:url(\'' + $.trim(image) + '\');' }, Template.get);
+					if (avatar) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'avatar', content: '', style: 'background-image:url(\'' + $.trim(avatar) + '\');' }, Template.get);
 					if (minicon) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'minicon ' + minicon, content: '', style: (bg?'background-color:'+bg+';':'')+(cl?'color:'+cl+';':'') }, Template.get);
 					if (title) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'title', content: title }, Template.get);
 					if (label) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'label', content: label }, Template.get);
@@ -2110,7 +2117,7 @@ sourceui.Parser = function () {
 										};
 									if (hd.class) {
 										if (hd.class.type == 'key') { data.label.content = '<small class="icon-key3">' + data.label.content + '</small>'; }
-										else if (hd.class.type == 'image') { data.style['background-image'] = 'url(' + data.label.content + ')'; data.label.content = ''; }
+										else if (hd.class.type == 'image') { data.style['background-image'] = 'url(\'' + $.trim(data.label.content) + '\')'; data.label.content = ''; }
 										else if (hd.class.type == 'icon') { data.class.icon = data.label.content; data.label.content = ''; if (data.prop.color) { data.style['background-color'] = data.style.color = data.prop.color; } }
 										else if (hd.class.type == 'abbr') { data.style['background-color'] = data.prop.color || '#00000088'; }
 										else if (hd.class.type == 'ordinary') { data.style['background-color'] = data.prop.color || '#FFF'; }
@@ -2144,7 +2151,7 @@ sourceui.Parser = function () {
 													jdata.content = jdata.label.content;
 													jast = { color: jdata.style['background-color'] };
 												} else if (this.nodeName == 'image') {
-													jdata.style['background-image'] = 'url(' + jdata.label.content + ')'; jdata.label.content = '';
+													jdata.style['background-image'] = 'url(\'' + $.trim(jdata.label.content) + '\')'; jdata.label.content = '';
 													jast = { image: jdata.style['background-image'] };
 												} else if (this.nodeName == 'icon') {
 													jdata.class.icon = jdata.label.content; jdata.label.content = '';
@@ -2471,7 +2478,7 @@ sourceui.Parser = function () {
 												prop: { color: suiColumn.attr('prop:color'), prefix: suiColumn.attr('prop:prefix'), original: suiColumn.attr('prop:original') }
 											};
 										if (attr.class) {
-											if (attr.class.type == 'image') { data.style['background-image'] = 'url(' + data.label.content + ')'; data.label.content = ''; }
+											if (attr.class.type == 'image') { data.style['background-image'] = 'url(\'' + $.trim(data.label.content) + '\')'; data.label.content = ''; }
 											else if (attr.class.type == 'icon') { data.class.icon = data.label.content; data.label.content = ''; if (data.prop.color) { data.style['background-color'] = data.style.color = data.prop.color; } }
 											else if (attr.class.type == 'abbr') { data.style['background-color'] = data.prop.color || '#898787'; }
 											else if (attr.class.type == 'rounded') { data.value.tag = 'mark'; data.label.content = '<span' + ((data.prop.color) ? ' style="background:' + $.colorfy(data.label.content, data.prop.color) + '"' : '') + '>' + data.label.content + '</span>'; }
@@ -2727,7 +2734,7 @@ sourceui.Parser = function () {
 
 							if (this.nodeName == 'avatar') {
 								var src = this.attr('src');
-								var data = src ? { style: { "background-image": 'url(\'' + src + '\')' } } : {};
+								var data = src ? { style: { "background-image": 'url(\'' + $.trim(src) + '\')' } } : {};
 								htmlChild += this.toHTML('wg', 'profile', 'avatar', data, Template.get);
 							}
 							else if (this.nodeName == 'label') htmlChild += this.toHTML('wg', 'profile', 'label', Template.get);
@@ -2943,8 +2950,11 @@ sourceui.Parser = function () {
 				if (root) {
 					if (setup.render) {
 						var part = Render.parts(root); // testa se o parser vai processar uma parte específica do arquivo de interface
-						if ($.isPlainObject(part) || $.isArray(part)) setup.response.parsedJSON = part;
-						else setup.response.parsedHTML = part
+						if ($.isPlainObject(part) || $.isArray(part)){
+							setup.response.parsedJSON = part;
+						} else {
+							setup.response.parsedHTML = part;
+						}
 					} else if (setup.snippet) {
 						setup.response.parsedSNIP = Render.snippet(root); 	// testa se o parser vai processar de uma forma pré determinada o arquivo de interface
 					} else if (setup.file) {
@@ -2952,7 +2962,9 @@ sourceui.Parser = function () {
 					} else {
 						setup.response.parsedHTML = Render.full(root); 		// ou se vai processar o arquivo todo
 					}
-					setup.response.parsedJQ = $(setup.response.parsedHTML);
+					if (setup.response.parsedHTML){
+						setup.response.parsedJQ = $(setup.response.parsedHTML);
+					}
 					root = data.getElementsByTagName("stylesheet")[0]; // se o xml é um arquivo de javascript
 					if (root) setup.response.parsedCSS = Render.css(root);
 					root = data.getElementsByTagName("javascript")[0]; // se o xml é um arquivo de javascript

@@ -203,7 +203,7 @@
 
 
 /* CALENDAR ------------------------------------------ */
-.sui-widget.calendar:only-child { height:100%; display:inline-block; }
+.sui-widget.calendar:only-child { height:100%; display:block; }
 .sui-widget.calendar:only-child > .area,
 .sui-widget.calendar:only-child .cal,
 .sui-widget.calendar:only-child .sui-calendar,
@@ -216,18 +216,20 @@
 .sui-widget.calendar:only-child .sui-calendar .modes > .date > ul.navigate > li.arrow { height:38px; width:44px; }
 .sui-widget.calendar:only-child .sui-calendar .modes > .date > ul.navigate > li.arrow:hover { background:#00000010; }
 .sui-widget.calendar:only-child .sui-calendar .modes > .date.days > ol.weekname { background:#f9f9f9; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li { border: 1px solid #f2f2f2; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li { border: 1px solid #f2f2f2; transition:none; height:unset; vertical-align:unset; }
 .sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.disable { background:#fcfcfc; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li > .day u { line-height:24px; height:24px; font-size:11px; font-weight:500; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled > .schedules { display:block; top:24px; height:calc(100% - 24px); z-index:111; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule { position:relative; width:calc(100% - 4px); margin:0 2px 1px 2px; min-height:20px; height:20px; display:flex; background:#888; color:#FFF; overflow-x:hidden; cursor: pointer; font-weight:500; white-space:nowrap; letter-spacing: -0.4px; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule:first-of-type { border-radius:4px 4px 0 0; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule:last-of-type { border-radius:0 0 4px 4px; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule:only-of-type { border-radius:4px; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.disable > .schedules > .schedule { opacity:0.425; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule > * { display:inherit; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule .abbr { padding:0 4px; font-size:9px; line-height:20px; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled > .schedules > .schedule .title { padding:0 4px; font-size:10px; line-height:20px; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li > .day { transition:none; position:absolute; top:0; left:0; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li > .day u { line-height:28px; height:28px; font-size:11px; font-weight:500; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected { overflow:visible; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules { display:block; top:28px; width: calc(100% + 1px); min-height: calc(100% - 28px); position: absolute; z-index: 9999; background: #585555; box-shadow: 0 2px 8px #585555; max-height:200px; padding:0 2px 2px 2px; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected.today > .schedules { background: #6D6a6a; box-shadow: 0 2px 8px #6D6a6a; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules > .schedule { position:relative; width:calc(100% - 4px); margin:0 2px 2px 2px; min-height:24px; height:24px; display:flex; background:#888; color:#FFF; overflow-x:hidden; cursor: pointer; font-weight:500; white-space:nowrap; letter-spacing: -0.4px; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules > .schedule > * { display:block; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules > .schedule .abbr { padding:0 4px; font-size:9px; line-height:24px; text-align:center; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules > .schedule .abbr:nth-child(1) { padding:0; min-width:26px; width:26px; max-width:26px; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules > .schedule .abbr:nth-child(2) { padding:0; min-width:22px; width:22px; max-width:22px; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules > .schedule .title { padding:0 4px; font-size:10px; line-height:24px; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.disable > .schedules > .schedule { opacity:0.285; filter:grayscale(50%); }
 .sui-widget.calendar:only-child .sui-calendar .modes .finder { border-color:#f3f3f3; }
 .sui-widget.calendar.finder:only-child .sui-calendar .modes > .date > .days { height: calc(100% - 104px); }
 /* --------------------------------------------------- */
@@ -662,7 +664,7 @@ main.sui-load-border .sui-spinner .container,
 .sui-widget .line.focus .pad:first-child::after { content:''; position:absolute; top:0; left:0; width:4px; height:100%; background:#fe691e !important; }
 .sui-widget .line.focus .col { border-color:rgba(0,0,0,0.025) !important; }
 
-.sui-sector.transparent .toolbar { border:rgba(0,0,0,0.065) solid 1px; }
+.sui-sector.transparent .toolbar { box-shadow:0 1px 0 rgba(0,0,0,0.035); }
 .sui-sector.transparent .sui-widget { box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
 
 
