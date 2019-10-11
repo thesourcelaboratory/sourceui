@@ -2059,9 +2059,15 @@ sourceui.Network = function () {
 			// triggerclick -------------
 			if (setup.triggerclick || this.data('link-triggerclick')) {
 				setup = $.extend(setup, this.link('_self')) || {};
-				var target = setup.triggerclick;
+				var $tgt = $(setup.triggerclick || this.data('link-triggerclick'));
 				delete setup.triggerclick;
-				$(target).trigger('click', [setup]);
+				$tgt.closest('.scroll-default').scrollTo($tgt,{
+					axis:'y',
+					duration:200,
+					onAfter:function(){
+						$tgt.click();
+					}
+				});
 				return true;
 			}
 			// --------------------------

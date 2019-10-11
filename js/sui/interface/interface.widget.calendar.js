@@ -45,11 +45,13 @@ sourceui.interface.widget.calendar = function($widget,setup){
 	Calendar.lines = Calendar.list.find('li');
 	Calendar.line = Calendar.list.find('.schedule');
 
+	/*
 	setTimeout(function(){
 		if (!Device.ismobile && Calendar.widget.height() < Calendar.widget.parent().height()-1){
 			Calendar.widget.height(Calendar.widget.parent().height()-1);
 		}
 	},1);
+	*/
 
 	var data = Calendar.cal.data();
 	var scheds = Calendar.cal.find('code').text();

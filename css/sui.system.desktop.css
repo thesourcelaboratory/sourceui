@@ -218,7 +218,7 @@
 .sui-widget.calendar:only-child .sui-calendar .modes > .date.days > ol.weekname { background:#f9f9f9; }
 .sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li { border: 1px solid #f2f2f2; transition:none; height:unset; vertical-align:unset; }
 .sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.disable { background:#fcfcfc; }
-.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li > .day { transition:none; position:absolute; top:0; left:0; }
+.sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li > .day { transition:none; }
 .sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li > .day u { line-height:28px; height:28px; font-size:11px; font-weight:500; }
 .sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected { overflow:visible; }
 .sui-widget.calendar:only-child .sui-calendar .modes > .date.days > .days > ol.week > li.scheduled.selected > .schedules { display:block; top:28px; width: calc(100% + 1px); min-height: calc(100% - 28px); position: absolute; z-index: 9999; background: #585555; box-shadow: 0 2px 8px #585555; max-height:200px; padding:0 2px 2px 2px; }
