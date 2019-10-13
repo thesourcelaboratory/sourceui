@@ -123,7 +123,7 @@ sourceui.interface.widget.form = function ($widget, setup) {
 				var fd = {
 					name: $field.data('name'),
 					value: $field.val(),
-					text: $field.find('.value .option').map(function () { return $(this).text(); }).get().join(', '),
+					text: $field.find('.value .option').map(function () { return $(this).text(); }).get().join(', ') || $field.filter('.date, .datetime').find('input').val(),
 					initval: $field.data('initval'),
 					inittxt: $field.data('inittxt'),
 					label: $field.children('.label').text().replace(' *', '') || $field.data('name'),

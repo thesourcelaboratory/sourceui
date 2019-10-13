@@ -119,32 +119,34 @@ sourceui.interface.view = function ($view, setup) {
 						var scope = $widget.data('Interface');
 						if (typeof scope == 'object' && typeof scope.widgetData == 'function') {
 							scope.widgetData();
-							wgdata = $.extend(true, wgdata, scope.wgdata);
-							var htmlFilter = '';
-							if (data.target) {
-								var $target = $(data.target);
-								if (!$target.length) {
-									console.warn('O target ' + data.target + ' não pode ser encontrado.');
-									return false;
-								}
-								var $ul = $target.find('.sui-filterset ul');
-								$.each(wgdata.data, function (k, v) {
-									if ($ul && wgdata.info[k]){
-										$ul.find('.sui-filter[data-name="'+k+'"]').remove();
+							if (scope.valid){
+								wgdata = $.extend(true, wgdata, scope.wgdata);
+								var htmlFilter = '';
+								if (data.target) {
+									var $target = $(data.target);
+									if (!$target.length) {
+										console.warn('O target ' + data.target + ' não pode ser encontrado.');
+										return false;
 									}
-									if ((v || v === 0) && wgdata.info[k]) {
-										if ($ul) {
-											$ul.append(Template.get('wg', 'form', 'filter', {
-												class: { selected: 'selected' },
-												label: { name: wgdata.info[k].label, value: wgdata.info[k].text || ($.isArray(v) ? v.join(',') : v), content: '' },
-												data: { name: k }
-											}));
-											$ul.find('[data-name="' + k + '"]').data('value', v);
+									var $ul = $target.find('.sui-filterset ul');
+									$.each(wgdata.data, function (k, v) {
+										if ($ul && wgdata.info[k]){
+											$ul.find('.sui-filter[data-name="'+k+'"]').remove();
 										}
-									}
-								});
-								$target.trigger('widget:filter');
-								$('#suiFloatSectorContainer').click();
+										if ((v || v === 0) && wgdata.info[k]) {
+											if ($ul) {
+												$ul.append(Template.get('wg', 'form', 'filter', {
+													class: { selected: 'selected' },
+													label: { name: wgdata.info[k].label, value: wgdata.info[k].text || ($.isArray(v) ? v.join(',') : v), content: '' },
+													data: { name: k }
+												}));
+												$ul.find('[data-name="' + k + '"]').data('value', v);
+											}
+										}
+									});
+									$target.trigger('widget:filter');
+									$('#suiFloatSectorContainer').click();
+								}
 							}
 						}
 					});

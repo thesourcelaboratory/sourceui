@@ -116,9 +116,16 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     };
 
     Promises.visible().then(function (r) {
-        var code = Handson.sheet.children('code').text();
+        var code = $.trim(Handson.sheet.children('code').text());
         Handson.sheet.children('code').remove();
-        var cfg = JSONX.parse(code);
+        //var cfg = JSONX.parse(code);
+        var cfg = eval('('+code+');');
+        if (cfg.renderers){
+            $.each(cfg.renderers,function(k,v){
+                Handsontable.renderers.registerRenderer(k, v);
+            });
+            delete cfg.renderers;
+        }
         if (cfg.columns && !cfg.colHeaders){
             var hasinlineheader = false;
             $.each(cfg.columns,function(k,v){
