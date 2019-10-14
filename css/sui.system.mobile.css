@@ -13,6 +13,10 @@
  * Copyright (c) 2006-2015 - SourceLab Tecnologia Ltda
  * --------------------------------------------------------- */
 
+:root {
+	--safe-area-inset-top: env(safe-area-inset-top);
+}
+
 body { background-size: 175% 100%; font-size:15px; }
 
 .sui-auth { display:block; }
@@ -95,6 +99,18 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-main > .sui-tabs .sector li .close { top: 0; right:0; line-height:48px; width:48px; height:48px; color:#FFFFFF !important; }
 .sui-main > .sui-tabs .sector li .close:before { margin-top:-1px; -webkit-transform:scale(1.3); transform:scale(1.3); }
 .sui-main > .sui-tabs > .group.center ul li { font-size:18px; letter-spacing:-0.5; }
+
+/* iOS StandAlone --------------------- */
+/*
+@supports (padding-top: env(safe-area-inset-top)) {
+  	.mobile .sui-main > .sui-tabs { padding-top: --safe-area-inset-top; height:auto; }
+	.mobile .sui-context { height: calc(100% + --safe-area-inset-top); }
+	.mobile .sui-aside.left > .logo { padding-top: --safe-area-inset-top; }
+}
+*/
+.ios.standalone .sui-main > .sui-tabs { padding-top: 22px; height:auto; }
+.ios.standalone .sui-context { height: calc(100% - 70px); }
+/* ------------------------------------ */
 
 .sui-floatsector-container .sui-sector:not(.unclosable) > .close { display:block; }
 .sui-floatsector-container .sui-sector:not(.unclosable) > .sui-sector-title:not(.hidden) ~ .sui-views-container { height: calc(100% - 88px); }
@@ -505,7 +521,7 @@ body.debug .sui-bug-modal { width:100%; height:100%; left:0; bottom:0; right:0; 
 }
 
 
-.sui-droplist-container { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(56,54,53,0.9); z-index:100; }
+.sui-droplist-container { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(56,54,53,0.9); z-index:333; }
 .sui-droplist-container > .sui-droplist { position:absolute; left:0; bottom:0; width:100%; margin:0px; box-shadow:0 0 44px rgba(32,32,32,0.55); z-index:2; }
 .sui-droplist-container > .sui-droplist > .tail { position: absolute;top:-34px; left:18px; color: #FFF;font-weight:500; font-size:16.5px; }
 .sui-droplist-container > .sui-droplist:not(.plugin) > .tools.top { list-style:none; border-radius:0; display:table; overflow:hidden; width:100%; background:#FFF; border-bottom:#e6e6e6 solid 1px; margin:0; padding:0; height:44px; position:relative; z-index:2;  }

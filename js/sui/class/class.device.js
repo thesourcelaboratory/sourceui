@@ -307,7 +307,7 @@ sourceui.Device = function (c) {
 
 	if (this.ismobile) {
 		$('#suiBody').addClass('mobile leftcollapsed rightcollapsed');
-		if (Agent.data.os.name == 'iOS') {
+		if (Agent.data.os.name == 'iOS' || Agent.data.os.name == 'ios') {
 			$('#suiBody').addClass('ios');
 			if (window.navigator.standalone) $('#suiBody').addClass('standalone');
 		}
