@@ -45,7 +45,7 @@
 .sui-field > .wrap > .table > .cell:first-of-type { border:none; }
 .sui-field > .wrap > .table > .cell input::-ms-clear { display:none; }
 .sui-field > .wrap > .table > .cell .input,
-.sui-field > .wrap > .table > .cell .search { display:block; border:none; width:100%; font-family:'Roboto', sans-serif, Arial, sans-serif; font-weight:500; height:43px !important; font-size:13px; margin:0; padding:0; border-radius:3px; color:#333; background:transparent; }
+.sui-field > .wrap > .table > .cell .search { display:block; border:none; width:100%; font-family:var(--font-field); font-weight:500; height:43px !important; font-size:13px; margin:0; padding:0; border-radius:3px; color:#333; background:transparent; }
 .sui-field > .wrap > .table > .cell .input.big,
 .sui-field > .wrap > .table > .cell .search.big { font-size:17px; min-height:36px; font-weight:bold; letter-spacing:-0.4px; }
 .sui-field > .wrap > .table > .cell .option { padding:10px 30px 8px 0px; position:relative; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

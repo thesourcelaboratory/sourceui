@@ -119,30 +119,42 @@ sourceui.interface.panel = function () {
 		if (!Device.ismobile) $.CURR.navTool = $this;
 		event.stopPropagation();
 	});
-	Dom.leftMainFloat.on('click', '.sui-link:not(.selected), .sui-link[data-link-tab="sector"][data-link-placement="replace"]', function (event, data) { // :attrHas("data-link"):not(.selected)
+	Dom.leftMainFloat.on('click', '[data-link]', function (event) { // :attrHas("data-link"):not(.selected)
 		var $this = $(this);
 		if ($this.isDisable()) return;
-		Network.link.call($this, data);
+		var data = $.extend({},$this.data('link'));
+		if ($.isPlainObject(data)){
+			data.ignorenested = true;
+			Network.link.call($this.parent(), data);
+		}
+	});
+	//Dom.leftMainFloat.on('click', '.sui-link:not(.selected), .sui-link[data-link-tab="sector"][data-link-placement="replace"]', function (event, data) {
+	Dom.leftMainFloat.on('click', '.sui-link', function (event, data) {
+		var $this = $(this);
+		if ($this.isDisable()) return;
+		Network.link.call($this, $.extend({},data));
 		Panel.blockList.children('li.selected').trigger('click');
 		if ($.CURR.navTool) Dom.document.trigger('click');
 	});
 	Dom.navLeft.on('click', '.sui-link', function (event, data) { // :attrHas("data-link"):not(.selected)
 		event.stopPropagation();
 	});
-	Dom.navLeft.on('click', '#authLogout', function (event, data) {
+	Dom.navLeft.on('click', '#authLogout, #authLogout2, #authLogout3', function (event) {
 		var $this = $(this);
-		Network.link.call($this, {
-			cache: false,
-			ondone: function (setup) {
-				Dom.body.find('.sui-header-top, .sui-header-bar, #suiAsideLeft, #suiMain').remove();
-				setTimeout(function () { window.location.reload(true); }, 250);
-			}
+		if (!$this.is('[data-link-sui]')){
+			Network.link.call($this, {
+				cache: false
+			});
+		}
+		$this.one('ajax:done',function(){
+			Dom.body.find('.sui-header-top, .sui-header-bar, #suiAsideLeft, #suiMain').remove();
+			setTimeout(function () { window.location.reload(true); }, 250);
 		});
 	});
 	Dom.navLeft.on('click', '.sui-link:not(.selected)', function () { // :attrHas("data-link"):not(.selected)
 		var $this = $(this);
 		if ($this.isDisable()) return;
-		if ($this.tag() == 'li') {
+		if ($this.tag() == 'li' && !$this.is('[data-link-confirm]')) {
 			Panel.navLeft.find('.sui-link.selected').removeClass('selected');
 			$this.addClass('selected');
 			if (Device.ismobile) {

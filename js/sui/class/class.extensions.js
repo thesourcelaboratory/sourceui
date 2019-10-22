@@ -1041,13 +1041,13 @@ $.colorfy = function (value, color) {
 			else return '#cccccc';
 		}
 		var c = {
-			'#64a6f7': /^presen|^realiz|^\d?$/gi,	// lightblue
+			'#64a6f7': /liberad|^inscri|^finalizad|^presen|^realiz|^\d?$/gi,	// lightblue
 			'#2e519e': /^nov|^new/gi,	// darkblue
 			'#e24040': /exclu|delet|remov|ignor|invali|inváli|negativ|^reprov|^revogad|^não |^no |^n$|^-?\d?$/gi,	// red
 			'#5a5a5a': /^ativ|^activ|^sim|^s$|^yes|^y$|^\d$/gi, // darkgray
 			'#F18D25': /ando$|endo$|indo$|^enviad|^ausen|^em /gi,	// orange
 			'#BBBBBB': /^inativ|^inactiv|^cancel/gi,	// litegray
-			'#37a74a': /ado$|edo$|ido$|ído$|^inscri|^true$/gi,	// green
+			'#37a74a': /ado$|edo$|ido$|ído$|ada$|eda$|ida$|ída$|^true$/gi,	// green
 
             /*
             '#4F8DDA' : /^nov|^new|^\d?$/gi,	// newblue

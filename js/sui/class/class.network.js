@@ -1278,14 +1278,11 @@ sourceui.Network = function () {
 										});
 									}
 								}
-								if (typeof setup.ondone == 'function'){
-									setup.ondone.call(Ajax, setup);
-								}
+								if (typeof setup.ondone == 'function') setup.ondone.call(Ajax, setup);
+								if (setup.element) setup.element.trigger('ajax:done');
 							} else {
-								if (typeof setup.onfail == 'function')
-									setup.onfail.call(Ajax, xhr, status, error);
-								if (setup.element)
-									setup.element.trigger('ajax:fail');
+								if (typeof setup.onfail == 'function') setup.onfail.call(Ajax, xhr, status, error);
+								if (setup.element) setup.element.trigger('ajax:fail');
 								Console.error({
 									type: 'Response',
 									title: 'Connection error',
@@ -2283,6 +2280,7 @@ sourceui.Network = function () {
 						title: setup.confirm.title,
 						desc: setup.confirm.desc || setup.confirm.description,
 						hilite: setup.confirm.hilite,
+						buttonscolor: setup.confirm.buttonscolor,
 						buttonlink: (!setup.confirm.button) ? setup.element : null,
 						button: setup.confirm.button
 					});
@@ -2438,6 +2436,9 @@ sourceui.Network = function () {
 			if (!path.length) {
 				Dom.document.trigger('panelready');
 				return;
+			}
+			if (!$elem || !$elem.length){ // atenção aqui
+				$elem = $('#suiSectorsContainer .sui-view.selected');
 			}
 			Network.history.following = true;
 			var current = path.shift();

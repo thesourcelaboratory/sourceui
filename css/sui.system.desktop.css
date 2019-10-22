@@ -78,7 +78,7 @@
 .sui-aside.left > .navtools > li.navigation *:empty { display:none; }
 .sui-aside.left > .navtools > li:not(.navigation) { position:fixed; width:50px; height:40px; line-height:40px; text-align:center; top:8px; }
 .sui-aside.left > .navtools > li:not(.navigation):before { font-size:20px; }
-.sui-aside.left > .navtools > li:not(.navigation):after { content:''; display:none; width:16px; height:16px; background:#424242; position:absolute; bottom:-20px; left:50%; margin-left:-8px; transform:rotate(45deg); }
+.sui-aside.left > .navtools > li:not(.navigation):after { content:''; display:none; width:16px; height:16px; background:var(--nav-bgcolor); position:absolute; bottom:-20px; left:50%; margin-left:-8px; transform:rotate(45deg); }
 .sui-aside.left > .navtools > li:not(.navigation):not(.credentials).selected { background-color:rgba(255,255,255,0.075); }
 .sui-aside.left > .navtools > li:not(.navigation):not(.credentials).selected:before { opacity:1; }
 .sui-aside.left > .navtools > li:not(.navigation).selected:after { display:block; }
@@ -312,7 +312,7 @@
 .sui-widget.datagrid.list > .area .list .line > .col.rounded { color:#FFF !important; font-weight:bold; text-align:center; white-space:nowrap; font-size:11px; text-align: center; }
 .sui-widget.datagrid.list > .area .list .line > .col.visualidentifier[style*="background-image"] { vertical-align:middle; text-align:center; border:none; }
 .sui-widget.datagrid.list > .area .list .line > .col.visualidentifier.rounded[style*="background-image"] { color:#FFF !important; }
-.sui-widget.datagrid.list > .area .list .line > .col.visualidentifier:not(.rounded) { background-color:transparent !important; }
+.sui-widget.datagrid.list > .area .list .line > .col.visualidentifier:not(.rounded) { background-color:transparent; }
 .sui-widget.datagrid.list > .area .list .line > .col.visualidentifier:before { font-size:30px; }
 .sui-widget.datagrid.list > .area .list .line > .col.visualidentifier + .visualidentifier:before { transform:scale(0.7) translateX(-10px); }
 .sui-widget.datagrid.list > .area .list .line > .col.visualidentifier.rounded > .img,
@@ -344,8 +344,8 @@
 .sui-widget.datagrid.list > .area .list .line > .col:not(.important) { color:#999; font-size:11px; }
 .sui-widget.datagrid.list > .area .list .line > .col.money { color:#2f8df1; text-align:right; white-space:nowrap; font-weight:500; }
 .sui-widget.datagrid.list > .area .list .line > .col.date { color:#00bbee; text-align:center; }
-.sui-widget.datagrid.list > .area .list .line:last-of-type > .col { border-bottom-color:transparent !important; }
-.sui-widget.datagrid.list > .area .list .line.selected:not(.disable) { background:rgba(0,0,0,0.035) !important; }
+.sui-widget.datagrid.list > .area .list .line:last-of-type > .col { border-bottom-color:transparent; }
+.sui-widget.datagrid.list > .area .list .line.selected:not(.disable) { background:rgba(0,0,0,0.035); }
 .sui-widget.datagrid.list > .area .list .line.selected:not(.disable) > .col { border-color:rgba(0,0,0,0.025); }
 .sui-widget.datagrid.list > .area .list .line.selected:not(.disable) >.pad:first-child::after { content:''; position:absolute; top:0; left:0; width:4px; height:calc(100% + 1px); background:#1B74E6; }
 .sui-widget.datagrid.list > .area .list.noseq .line > .col.pad { min-width:16px; width:16px; }

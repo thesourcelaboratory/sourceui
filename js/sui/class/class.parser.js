@@ -150,9 +150,12 @@ sourceui.templates.interface = new sourceui.Template({
 			'</div>',
 		logo:
 			'<div class="logo @{class}" style="@{image}">'+
-			'<div class="avatar" style="@{avatar}"></div>'+
-			'<div class="abbr" style="background-color:@{color}">@{abbr}</div>'+
-			'<div class="name" style="@{size}">@{name}</div>'+
+				'<div class="avatar" style="@{avatar}"></div>'+
+				'<div class="abbr" style="background-color:@{color}">@{abbr}</div>'+
+				'<div class="name" style="@{size}">'+
+					'<div class="trend" style="@{trend}">@{trendname}</div>'+
+					'<div class="text">@{name}</div>'+
+				'</div>'+
 			'</div>',
 		form:
 			'<form class="form @{class:type} @{class:selected}">' +
@@ -1517,6 +1520,8 @@ sourceui.Parser = function () {
 				msize = sui.nodeName == 'auth' ? 2 : 1;
 				htmlLogo = sui.toHTML('auth', 'logo', $.extend(attr,{
 					class: attr.avatar || attr.abbr || attr.name ? 'dynamic' : 'static',
+					trend: attr.trend || attr.image ? 'background-image: url(\'' + $.trim(attr.trend || attr.image) + '\');' : '',
+					trendname: attr.trendname,
 					image: attr.image ? 'background-image: url(\'' + $.trim(attr.image) + '\');' : '',
 					avatar: attr.avatar ? 'background-image: url(\'' + $.trim(attr.avatar) + '\');' : '',
 					size: attr.size ? 'font-size:'+attr.size+';' : 'font-size:'+(fsize ? fsize > msize ? fsize+'em' : msize+'em' : 'inherith')+';letter-spacing:'+(lsize ? lsize > 0.01 ? '-'+lsize+'em' : '-0.01em' : 'inherith')+';'

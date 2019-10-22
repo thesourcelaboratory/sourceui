@@ -322,11 +322,12 @@ sourceui.interface.document = function () {
 		if ($cover.length){
 			setTimeout(function(){
 				var $profile = ui.find('.sui-widget.profile:last, .sui-widget.overcover');
+				var $scroll = $cover.siblings('.scroll-default');
 				if ($profile.length){
 					var height = 0;
 					$profile.each(function(){
 						var $p = $(this);
-						height += $p.offset().top + $p.height() - $cover.offset().top;
+						height += $p.offset().top + $p.height() + $scroll.scrollTop() - $cover.offset().top;
 					});
 					if (height > 0) $cover.height(height + 16);
 				}

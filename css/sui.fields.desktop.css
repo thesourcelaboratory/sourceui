@@ -61,7 +61,7 @@
 .sui-field > .wrap > .table > .cell:first-of-type { border:none; }
 .sui-field > .wrap > .table > .cell input::-ms-clear { display:none; }
 .sui-field > .wrap > .table > .cell .input,
-.sui-field > .wrap > .table > .cell .search { display:block; border:none; width:100%; min-width:35px; font-family:'Roboto', sans-serif, Arial, sans-serif; font-weight:500; height:32px; font-size:12.5px; margin:0; padding:0 8px; border-radius:3px; color: #333; background:transparent; }
+.sui-field > .wrap > .table > .cell .search { display:block; border:none; width:100%; min-width:35px; font-family:var(--font-field); font-weight:500; height:32px; font-size:12.5px; margin:0; padding:0 8px; border-radius:3px; color: #333; background:transparent; }
 .sui-field > .wrap > .table > .cell .input.big,
 .sui-field > .wrap > .table > .cell .search.big { font-size:16.66px; height:38px; font-weight:bold; letter-spacing:-0.4px; }
 .sui-field > .wrap > .table > .cell .option { padding:8.5px 30px 8.5px 8px; position:relative; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -249,7 +249,7 @@
 .sui-field.static > .wrap a { color:#09F !important; text-decoration:none; }
 .sui-field.static > .wrap a:hover { color:#07D !important; }
 .sui-field.static > .wrap > .table > .cell.value { width:auto; }
-.sui-field.static > .wrap > .table > .cell .input { padding:8px; height:auto; font-weight:normal;}
+.sui-field.static > .wrap > .table > .cell .input { padding:8px 0; height:auto; font-weight:normal;}
 
 /* HIDDEN */
 .sui-field.hidden { display:none !important; }

@@ -14,7 +14,7 @@
  * --------------------------------------------------------- */
 
 :root {
-	--safe-area-inset-top: env(safe-area-inset-top);
+	--safe-area-inset-top: env(safe-area-inset-top, 20px);
 }
 
 body { background-size: 175% 100%; font-size:15px; }
@@ -101,15 +101,20 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-main > .sui-tabs > .group.center ul li { font-size:18px; letter-spacing:-0.5; }
 
 /* iOS StandAlone --------------------- */
-/*
 @supports (padding-top: env(safe-area-inset-top)) {
-  	.mobile .sui-main > .sui-tabs { padding-top: --safe-area-inset-top; height:auto; }
-	.mobile .sui-context { height: calc(100% + --safe-area-inset-top); }
-	.mobile .sui-aside.left > .logo { padding-top: --safe-area-inset-top; }
+	body { background:#f2f2f2  !important; }
+	.mobile .sui-main > .sui-tabs { padding-top: var(--safe-area-inset-top); height:auto; }
+	.mobile .sui-context { height: calc(100% - (48px + var(--safe-area-inset-top))); }
+
+	/*
+	.mobile .sui-context { height: calc(100% + var(--safe-area-inset-top)); }
+	.mobile .sui-aside.left > .logo { padding-top: var(--safe-area-inset-top); }
+	*/
 }
-*/
+/*
 .ios.standalone .sui-main > .sui-tabs { padding-top: 22px; height:auto; }
 .ios.standalone .sui-context { height: calc(100% - 70px); }
+*/
 /* ------------------------------------ */
 
 .sui-floatsector-container .sui-sector:not(.unclosable) > .close { display:block; }

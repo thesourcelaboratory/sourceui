@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?bc1u5');
-  src:  url('fonts/icomoon.eot?bc1u5#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?bc1u5') format('truetype'),
-    url('fonts/icomoon.woff?bc1u5') format('woff'),
-    url('fonts/icomoon.svg?bc1u5#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?hplmyc');
+  src:  url('fonts/icomoon.eot?hplmyc#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?hplmyc') format('truetype'),
+    url('fonts/icomoon.woff?hplmyc') format('woff'),
+    url('fonts/icomoon.svg?hplmyc#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -21,6 +21,7 @@
   text-transform: none;
   line-height: 1;
   */
+
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -166,6 +167,33 @@
 }
 .icon-foodtool:before {
   content: "\eca8";
+}
+.icon-building-comm2:before {
+  content: "\ecab";
+}
+.icon-condominiun:before {
+  content: "\ecac";
+}
+.icon-building-comm:before {
+  content: "\ecb3";
+}
+.icon-building-shop:before {
+  content: "\ecb1";
+}
+.icon-uid:before {
+  content: "\ecad";
+}
+.icon-hold-uid:before {
+  content: "\ecae";
+}
+.icon-uid2:before {
+  content: "\ecb0";
+}
+.icon-passthru:before {
+  content: "\ecaf";
+}
+.icon-entrance:before {
+  content: "\ecb2";
 }
 .icon-eraser:before {
   content: "\e9b3";
@@ -859,6 +887,15 @@
 }
 .icon-bomb:before {
   content: "\ea50";
+}
+.icon-passport:before {
+  content: "\ecb4";
+}
+.icon-capitain:before {
+  content: "\ecb5";
+}
+.icon-exitance:before {
+  content: "\ecb6";
 }
 .icon-mug:before {
   content: "\e9f6";

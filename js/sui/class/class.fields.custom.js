@@ -2497,7 +2497,7 @@ sourceui.customField = function (element, setup) {
 		},
 		required: function () {
 			if (Data.required) {
-				Element.on('field:enter', function (event, key) {
+				Element.on('field:enter field:change', function (event, key) {
 					if (Validate.test.required()) Field.notify.remove();
 				});
 				var vdata = Element.data('validate') || {};
@@ -2543,7 +2543,7 @@ sourceui.customField = function (element, setup) {
 		*/
 		mask: function () {
 			if (Data.mask) {
-				var validationevent = Element.data('validationevent') || 'field:enter';
+				var validationevent = Element.data('validationevent') || 'field:enter field:change';
 				Data.pattern = Data.mask;
 				Element.on(validationevent, function () {
 					if (Validate.test.pattern()) Field.notify.remove();
@@ -2581,7 +2581,7 @@ sourceui.customField = function (element, setup) {
 		},
 		same: function () {
 			if (Group.element.length) {
-				Group.fields.on('field:enter', function () {
+				Group.fields.on('field:enter field:change', function () {
 					var $this = $(this);
 					if (Validate.test.same()) Field.notify.remove();
 				});
@@ -2595,7 +2595,7 @@ sourceui.customField = function (element, setup) {
 		remote: function () {
 			var data = Element.link();
 			if (data.sui && data.process == 'validate') {
-				Element.on('field:enter', function (event) {
+				Element.on('field:enter field:change', function (event) {
 					if (Validate.test.remote()) Field.notify.remove();
 				});
 				var vdata = Element.data('validate') || {};

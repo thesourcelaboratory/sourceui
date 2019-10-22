@@ -510,40 +510,6 @@ sourceui.interface.view = function ($view, setup) {
 			}
 		}
 	});
-	/*
-	View.scrolls.on("scrollstart", function(event) {
-		var $scr = $(this);
-		var $toolbar = $scr.prev('.toolbar');
-		var maxheight = -($toolbar.outerHeight()-1);
-		if (event.direction == 'down' && !$toolbar.hasClass('scrollhide')){
-			$toolbar.addClass('scrollhide');
-		} else if (event.direction == 'up' && $toolbar.hasClass('scrollhide')){
-			$toolbar.removeClass('scrollhide');
-		}
-	});
-	*/
-	//View.scrolls.on("scroll", function(event) {
-	/*
-	var $scr = $(this);
-	var $toolbar = $scr.prev('.toolbar');
-	var scrollTop = $scr.scrollTop();
-	//var scrollMax =  $scr.prop("scrollHeight") - $scr.outerHeight();
-	if (View.element.is('.covered')){
-		if (scrollTop >= 100 && !$toolbar.hasClass('dark')){
-			$toolbar.addClass('dark');
-		} else if (scrollTop < 100 && $toolbar.hasClass('dark')){
-			$toolbar.removeClass('dark');
-		}
-	}
-	*/
-	/*
-	if (scrollTop >= scrollMax && !$toolbar.hasClass('scrollhide')){
-		$toolbar.addClass('scrollhide');
-	} else if (scrollTop <= 0 && $toolbar.hasClass('scrollhide')){
-		$toolbar.removeClass('scrollhide');
-	}
-	*/
-	//});
 	// ###########################################################
 
 	var Footer = {
