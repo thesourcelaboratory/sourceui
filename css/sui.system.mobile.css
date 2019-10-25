@@ -151,7 +151,7 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-sector-title:not(.hidden) ~ .sui-views-container { height: calc(100% - 48px); }
 
 .sui-sector .toolbar { width:100%; height:48px; padding:0; background:rgba(242,242,242,0.95); transition: transform 200ms ease-in, box-shadow 200ms ease-out; }
-.sui-sector .toolbar > .title { display:none; }
+.sui-sector .toolbar > .title { position: absolute; padding-left:16px; }
 .sui-sector .toolbar > .tools ol { padding:0; margin:0; }
 .sui-sector .toolbar > .tools ol ~ u { display:none; }
 .sui-sector .toolbar > .tools ol li { border-radius:0px !important; }
@@ -353,6 +353,46 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-widget.datagrid > .area .list[data-paginator] > .paginator:after { width:8% !important; top:24px !important; margin-left:-4% !important; margin-top:0 !important; }
 .sui-widget.datagrid > .area .list[data-paginator] > .paginator div { width:100%; position:absolute; bottom:14px; cursor:pointer; }
 .sui-widget.datagrid > .area .list .line.no-chevron:after { display:none; }
+/* --------------------------------------------------- */
+
+/* TABLE ------------------------------------------ */
+.sui-widget.datagrid.table > .area { overflow-x:auto; overflow-y:hidden; width: 100vw; }
+.sui-widget.datagrid.table > .area .list { display:table; width:100%; }
+.sui-widget.datagrid.table > .area .list > .header { background:#FFFFFF; display:table-row !important; }
+.sui-widget.datagrid.table > .area .list > .header > .col { border:#e4e4e4 solid 1px; border-top:none; border-left:none; padding:2px 6px; line-height:20px; text-align:left; white-space:nowrap; color:#333; font-size:11px; font-weight:bold; }
+.sui-widget.datagrid.table > .area .list > .header > .col.pad { display:none; }
+.sui-widget.datagrid.table > .area .list > .header > .col.key { text-align:center; }
+.sui-widget.datagrid.table > .area .list > .header > .col.check { display:none; }
+.sui-widget.datagrid.table > .area .list > .header > .col.image { display:none; }
+.sui-widget.datagrid.table > .area .list > .header > .col.icon { display:none; }
+.sui-widget.datagrid.table > .area .list > .header > .col.rounded { text-align:center; }
+.sui-widget.datagrid.table > .area .list > .header > .col.swiper { display:none !important; }
+.sui-widget.datagrid.table > .area .list > .header > .col.context { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line { position:relative; background:#FFFFFF; display:table-row; color:#555555; font-size:12px; }
+.sui-widget.datagrid.table > .area .list .line:nth-child(odd) { background:#F8F8F8; }
+.sui-widget.datagrid.table > .area .list .line > .col { display:table-cell; padding:4px 6px; vertical-align:middle; border:#e4e4e4 solid 1px; border-top:none; border-left:none; position:relative; max-width:500px; min-width:32px; cursor:default; }
+.sui-widget.datagrid.table > .area .list .line > .col.pad { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line > .col.check { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line > .col.seq { text-align:center; color:#AAA; font-size:10px; font-weight:bold; }
+.sui-widget.datagrid.table > .area .list .line > .col.key { width:64px; padding:0; text-align:center; white-space:nowrap; font-weight:bold; font-size:11px; background:rgba(102,97,96,.1); }
+.sui-widget.datagrid.table > .area .list .line > .col.key small { padding:0; color:inherit; background:none; }
+.sui-widget.datagrid.table > .area .list .line > .col.key small:before { display:none; }
+.sui-widget.datagrid.table > .area .list .line > .col.image { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line > .col.icon { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line > .col.name { white-space:nowrap; }
+.sui-widget.datagrid.table > .area .list .line > .col.rounded { width:64px; font-weight:bold; color:inherit; text-align:center; white-space:nowrap; background:none; font-size:11px }
+.sui-widget.datagrid.table > .area .list .line > .col.rounded span { background:none !important; }
+.sui-widget.datagrid.table > .area .list .line > .col.sort { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line > .col.swiper { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line > .col.context { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line > .col.order { background:rgba(0,0,0,.06); }
+.sui-widget.datagrid.table > .area .list .line .actions { display:none; }
+.sui-widget.datagrid.table > .area .list .line:before { display:none !important; }
+.sui-widget.datagrid.table > .area .list .line:after { display:none !important; }
+.sui-widget.datagrid.table > .area .list[data-paginator] > .paginator { position:absolute; width:100%; height:32px; text-align:center; font-size:12px; background-color:#F8F8F8; color:#BBB; cursor:pointer; }
+.sui-widget.datagrid.table > .area .list[data-paginator] > .paginator:before { font-size:24px; margin-top:-2px; }
+.sui-widget.datagrid.table > .area .list[data-paginator] > .paginator:after { width:2% !important; top:8px !important; margin-left:-1% !important; margin-top:0 !important; }
+.sui-widget.datagrid.table > .area .list[data-paginator] > .paginator div { width:100%; position:absolute; bottom:2px; cursor:pointer; }
 /* --------------------------------------------------- */
 
 

@@ -245,6 +245,7 @@
 .sui-field.readonly .cell .placeholder { cursor:default !important; background-color:transparent !important; border-color:transparent !important; }
 
 /* STATIC */
+.sui-field.static > .label { padding: 0 12px 0 0 !important;  }
 .sui-field.static > .wrap { background:transparent !important; border:none !important; }
 .sui-field.static > .wrap a { color:#09F !important; text-decoration:none; }
 .sui-field.static > .wrap a:hover { color:#07D !important; }

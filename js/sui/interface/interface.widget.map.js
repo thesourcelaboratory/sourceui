@@ -24,7 +24,7 @@ sourceui.interface.widget.map = function($widget,setup){
 
 	'use strict';
 
-	var Leaflet = this;
+	var Wap = this;
 	var Network = sourceui.instances.network;
 	var Template = sourceui.templates.interface;
 	var Device = sourceui.instances.device;
@@ -33,17 +33,17 @@ sourceui.interface.widget.map = function($widget,setup){
 	var Dom = Interface.dom;
 	var JSONX = JSON5 || JSON;
 
-	Leaflet.common = new Interface.widget.common($widget,setup);
-	Leaflet.widget = $widget;
-	Leaflet.code = Leaflet.widget.find('code[type="map"]').text();
-	Leaflet.cfg = JSONX.parse(Leaflet.code);
+	Wap.common = new Interface.widget.common($widget,setup);
+	Wap.widget = $widget;
+	Wap.code = Wap.widget.find('code[type="map"]').text();
+	Wap.cfg = JSONX.parse(Wap.code);
 
 	var Promises = {
 		visible : function(){
 			return new Promise(function(resolve, reject){
-				if (!Leaflet.widget.is(':visible')){
+				if (!Wap.widget.is(':visible')){
 					var readyinterval = setInterval(function(){
-						if (Leaflet.widget.is(':visible')){
+						if (Wap.widget.is(':visible')){
 							resolve(true);
 							clearInterval(readyinterval);
 						}
@@ -56,17 +56,57 @@ sourceui.interface.widget.map = function($widget,setup){
 	};
 
 	Promises.visible().then(function(r){
+		if (Wap.cfg.tile == 'google'){
+			if (google && typeof google.maps == 'object'){
+				Wap.cfg.api = 'google';
+				if (Wap.cfg.layerid == 'mapbox.light'){
+					Wap.cfg.mapstyle = 'lightgray';
+				}
+				delete Wap.cfg.layerid;
+			} else if (typeof $.leaflet == 'function'){
+				Wap.cfg.api = 'leaflet';
+				Wap.cfg.tile = 'mapbox';
+				Wap.cfg.layerid = 'mapbox.light';
+			}
+		} else {
+			if (typeof $.leaflet == 'function'){
+				Wap.cfg.api = 'leaflet';
+			} else if (google && typeof google.maps == 'object'){
+				Wap.cfg.api = 'google';
+				Wap.cfg.tile = 'google';
+				if (Wap.cfg.layerid == 'mapbox.light'){
+					Wap.cfg.mapstyle = 'lightgray';
+				}
+				delete Wap.cfg.layerid;
+			}
+		}
+		if (Wap.cfg.api == 'google') _initGoogleMaps();
+		else if (Wap.cfg.api == 'leaflet') _initLeaflet();
+		else console.error('No API loaded for maps widget');
+	});
 
-		var Leaf = Leaflet.widget.leaflet(Leaflet.cfg);
+	function _initGoogleMaps(){
+		var Google = Wap.widget.googlemaps(Wap.cfg);
+		var Map = Google.map;
+		var Toolbar, Heatmap, Stuffs = {};
+
+		if (Wap.cfg.heatmap){
+			Heatmap = Google.heatmap(Wap.cfg.heatmap);
+		}
+	}
+
+	function _initLeaflet(){
+
+		var Leaf = Wap.widget.leaflet(Wap.cfg);
 		var Map = Leaf.map;
 		var Toolbar, Heatmap, Stuffs = {};
 
-		$.each(Leaflet.cfg.toolbars || [], function(k,cfg){
+		$.each(Wap.cfg.toolbars || [], function(k,cfg){
             Toolbar = Leaf.toolbar(cfg);
         });
 
 
-		Leaflet.widget.on('marker:add',function(event,cfg){
+		Wap.widget.on('marker:add',function(event,cfg){
 			if (cfg.lat && cfg.lon){
 				cfg.lat = parseFloat(cfg.lat).toFixed(6);
 				cfg.lon = parseFloat(cfg.lon).toFixed(6);
@@ -80,42 +120,40 @@ sourceui.interface.widget.map = function($widget,setup){
 				Stuffs[id] = marker;
 			}
 		});
-		Leaflet.widget.on('marker:remove',function(event,marker){
+		Wap.widget.on('marker:remove',function(event,marker){
 			if (typeof marker != 'object' && marker !== null) marker = Stuffs[marker] || Stuffs['marker:'+marker];
 			if (marker){
 				Map.removeLayer(marker);
 				delete Stuffs[marker];
 			}
 		});
-		Leaflet.widget.on('map:fitstuffs',function(event){
+		Wap.widget.on('map:fitstuffs',function(event){
 			var stuffkeys = Object.keys(Stuffs);
 			var stuffvals = Object.values(Stuffs);
 			var stf = stuffkeys.length;
 			if (stf > 0){
 				if (stf == 1){
-					Map.setView(stuffvals[0].getLatLng(), Leaflet.cfg.zoom || 15);
+					Map.setView(stuffvals[0].getLatLng(), Wap.cfg.zoom || 15);
 				} else {
 					Map.fitBounds(L.featureGroup(stuffvals).getBounds(), {padding: [20,20]});
 				}
 			}
 		});
 
-		//console.log(Leaflet.cfg);
-
 		Toolbar.on('click','.center',function(){
-			Leaflet.widget.trigger('map:fitstuffs');
+			Wap.widget.trigger('map:fitstuffs');
 		});
 
-		$.each(Leaflet.cfg.markers || [], function(k,cfg){
-			Leaflet.widget.trigger('marker:add',[cfg]);
+		$.each(Wap.cfg.markers || [], function(k,cfg){
+			Wap.widget.trigger('marker:add',[cfg]);
         });
 
-		if (Leaflet.cfg.heatmap){
-			Heatmap = Leaf.heatmap(Leaflet.cfg.heatmap);
+		if (Wap.cfg.heatmap){
+			Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
 		}
 
-		if (Leaflet.cfg.fitStuffs) Leaflet.widget.trigger('map:fitstuffs');
-		if (Leaflet.cfg.grayScale) Leaflet.widget.addClass('grayscale');
+		if (Wap.cfg.fitStuffs) Wap.widget.trigger('map:fitstuffs');
+		if (Wap.cfg.grayScale) Wap.widget.addClass('grayscale');
 
-	});
+	}
 };

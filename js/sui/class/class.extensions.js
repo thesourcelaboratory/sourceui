@@ -1099,15 +1099,19 @@ $.colorfy = function (value, color) {
 };
 
 $.hex2rgb = function (hex, alpha, ret) {
-	var c, a = [];
-	if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+	var c, h = [];
+	if (/^#([A-Fa-f0-9]{3}){1,2}$|^#([A-Fa-f0-9]{8}){1}$/.test(hex)) {
 		c = hex.substring(1).split('');
 		if (c.length == 3) c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+		if (c.length == 8){
+			c = [c[0], c[1], c[2], c[3], c[4], c[5]];
+			alpha = +((parseInt([c[6],c[7]].join(''), 16) / 255).toFixed(2));
+		}
 		c = '0x' + c.join('');
-		a = [(c >> 16) & 255, (c >> 8) & 255, c & 255];
-		if (ret === true) return a;
-		if (alpha) a.push(alpha);
-		return alpha ? 'rgba(' + (a.join(',')) + ')' : 'rgb(' + (a.join(',')) + ')';
+		h = [(c >> 16) & 255, (c >> 8) & 255, c & 255];
+		if (alpha) h.push(alpha);
+		if (ret === true) return h;
+		return alpha ? 'rgba(' + (h.join(',')) + ')' : 'rgb(' + (h.join(',')) + ')';
 	}
 	throw new Error('Bad Hex');
 };
