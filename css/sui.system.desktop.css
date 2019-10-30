@@ -179,7 +179,7 @@
 /* --------------------------------------------------- */
 
 /* TREEVIEW ------------------------------------------ */
-.sui-widget > .area > .treeview { padding:20px; }
+.sui-widget > .area > .treeview { padding:20px 5vw; }
 .sui-widget > .area > .treeview ul { margin:0; padding:0; padding-left:5%; list-style:none; }
 .sui-widget > .area > .treeview > ul { padding-left:0; position:relative; }
 .sui-widget > .area > .treeview ul li { position:relative; color:#444; }

@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?mewgtl');
-  src:  url('fonts/icomoon.eot?mewgtl#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?mewgtl') format('truetype'),
-    url('fonts/icomoon.woff?mewgtl') format('woff'),
-    url('fonts/icomoon.svg?mewgtl#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?k0qf2a');
+  src:  url('fonts/icomoon.eot?k0qf2a#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?k0qf2a') format('truetype'),
+    url('fonts/icomoon.woff?k0qf2a') format('woff'),
+    url('fonts/icomoon.svg?k0qf2a#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -12,14 +12,15 @@
 
 [class^="icon-"], [class*=" icon-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
-  /*font-family: 'icomoon' !important;
+  /*
+  font-family: 'icomoon' !important;
   speak: none;
   font-style: normal;
   font-weight: normal;
   font-variant: normal;
   text-transform: none;
-  line-height: 1;*/
-
+  line-height: 1;
+  */
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -2155,11 +2156,11 @@
 .icon-cursor:before {
   content: "\ebbd";
 }
-.icon-sourcelab:before {
-  content: "\e9c1";
-}
 .icon-nuvole:before {
   content: "\ecaa";
+}
+.icon-sourcelab:before {
+  content: "\e9c1";
 }
 .icon-source360:before {
   content: "\ea79";
