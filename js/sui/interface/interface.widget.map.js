@@ -88,7 +88,7 @@ sourceui.interface.widget.map = function($widget,setup){
 	function _initGoogleMaps(){
 		var Google = Wap.widget.googlemaps(Wap.cfg);
 		var Map = Google.map;
-		var Toolbar, Heatmap, Stuffs = {};
+		var Heatmap, Stuffs = {};
 
 		if (Wap.cfg.heatmap){
 			Heatmap = Google.heatmap(Wap.cfg.heatmap);
@@ -104,7 +104,6 @@ sourceui.interface.widget.map = function($widget,setup){
 		$.each(Wap.cfg.toolbars || [], function(k,cfg){
             Toolbar = Leaf.toolbar(cfg);
         });
-
 
 		Wap.widget.on('marker:add',function(event,cfg){
 			if (cfg.lat && cfg.lon){
@@ -137,10 +136,15 @@ sourceui.interface.widget.map = function($widget,setup){
 				} else {
 					Map.fitBounds(L.featureGroup(stuffvals).getBounds(), {padding: [20,20]});
 				}
+			} else if (Wap.cfg.lat && Wap.cfg.lon){
+				Map.setView([Wap.cfg.lat, Wap.cfg.lon], Wap.cfg.zoom);
+			} else {
+				Toolbar.find('.center').addClass('disable');
 			}
 		});
 
-		Toolbar.on('click','.center',function(){
+		Toolbar.on('click','.center:not(.disable)',function(event){
+			event.stopPropagation();
 			Wap.widget.trigger('map:fitstuffs');
 		});
 

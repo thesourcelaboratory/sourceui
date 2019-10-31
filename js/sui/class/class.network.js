@@ -1805,23 +1805,22 @@ sourceui.Network = function () {
 		setup.port = setup.port ? setup.port : (setup.secure ? 3000 : 3001);
 		setup.url = setup.protocol + '://' + setup.host + ':' + setup.port;
 
+
 		var socketio;
 		var online = false;
 		var localdata = $.extend(Local.get(), { fingerprint: Device.fingerprint.get(), secure: setup.secure });
+		var devicedata = Device.session.data().device;
 		var $block = $('#suiAsideLeft nav[data-alias="notifications"] .block .notif');
 
+
 		// ------------------------------------
-		if ("firebase" in window && Server.protocol == 'https') {
+		if (devicedata && devicedata.vendor != 'Apple' && "firebase" in window && Server.protocol == 'https') {
 			Socket.firebaseMessaging = firebase.messaging();
-			/*
-			Socket.worker = navigator.serviceWorker.register('./worker.js').then((registration) => {
-				Socket.firebaseMessaging.useServiceWorker(registration);
-			});
-			*/
-		} else if ("Notification" in window) {
+		} else if ('Notification' in window) {
 			Socket.browserMessaging = true;
 		} else {
-			window.Notification = { permission: 'denied' };
+			Socket.browserMessaging = false;
+			$block.prevAll('.name').addClass('icon-forbidden2');
 			$block.before(
 				'<div class="sui-tip warning icon-alert">' +
 				'<strong>Não há suporte à notificações</strong><br/>Seu navegador não é compatível com esse recurso.' +
@@ -1857,19 +1856,24 @@ sourceui.Network = function () {
 						}
 					})
 					.catch(function (err) {
+						$block.prevAll('.name').addClass('icon-forbidden2');
+						$block.prev('.sui-tip:not(.empty)').remove();
 						Plugin.notification.permitip();
 						Debug.get('Socket', { mode: 'Permission', title: 'Notification permission' })
 							.warn({ type: 'Status', title: 'Unable to get permission to notification.\n' + err })
 							.trace();
 					});
-			} else if (Socket.browserMessaging) {
-				if (Notification.permission !== 'denied') {
+			} else {
+				if (Notification && Notification.permission !== 'denied') {
 					Notification.requestPermission(function (permission) {
 						// If the user accepts, let's create a notification
 						if (permission === "granted") {
-							//var notification = new Notification("Hi there!");
+							$block.prevAll('.name').addClass('icon-html53');
 						}
 					});
+				} else {
+					$block.prev('.sui-tip:not(.empty)').remove();
+					$block.prevAll('.name').addClass('icon-forbidden2');
 				}
 			}
 		};

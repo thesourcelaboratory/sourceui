@@ -1146,7 +1146,9 @@ a code { display:none !important }
 .sui-widget.map > .area > .map:after { background-color:#BBBBBBCC; }
 .sui-widget.map > .area > code { display:none; }
 .sui-widget.map .leaflet-container:after { font-size:17.3333px !important; }
+.sui-widget.map .leaflet-control-container > * { transform:translate3d(0,0,0); }
 .sui-widget.map .leaflet-control-attribution { margin-bottom:-100px;}
+.sui-widget.map .leaflet-touch .leaflet-bar a { width:35px; height:35px; line-height:35px; font-weight:normal; }
 .sui-widget.map.grayscale .leaflet-pane { filter: grayscale(1) }
 /* --------------------------------------------------- */
 

@@ -97,9 +97,9 @@
                         t.class = t.class || {};
                         var $t = $('<a class="leaflet-control-tool ' + t.class.type + ' ' + (t.class.icon || '') + '" id="' + t.attr.id + '" ' + data.join(" ") + ' />');
                         $t.css({
-                            width: t.width || '30px',
-                            height: t.height || '30px',
-                            lineHeight: t.height ? t.height - 2 : '28px',
+                            width: t.width || '35px',
+                            height: t.height || '35px',
+                            lineHeight: t.height ? t.height - 2 : '35px',
                             background: t.background,
                             color: t.color
                         })
@@ -114,6 +114,7 @@
             L.control.toolbar = function (opts) {
                 return new L.Control.Toolbar(opts);
             }
+            Map.zoomControl.setPosition('bottomright');
             L.control.toolbar($.extend({ position: 'bottomleft' }, cfg || {})).addTo(Map);
             return $toolbar;
         };
