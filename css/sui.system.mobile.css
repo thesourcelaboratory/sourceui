@@ -593,25 +593,27 @@ body.application.ios .sui-aside.left { top:22px; }
 .covered > .tabs > ol li.selected { background:transparent !important; }
 .covered > .toolbar { background-color:rgba(40,40,40,0.15); }
 
+body .env-develop { top:-13px; right:-53px; transform:rotate(45deg) scale(0.65); }
+
 @media (min-width: 410px) and (min-resolution: 2dppx){
 
 	body { font-size:16px; }
-	.sui-main > .sui-tabs { height:54px; }
-	.sui-main > .sui-tabs > .group > ul { height: 54px; }
-	.sui-main > .sui-tabs > .group > ul > li { min-width: 54px; line-height: 54px; font-size: 15.3333px; }
+	.sui-main > .sui-tabs { height:60px; }
+	.sui-main > .sui-tabs > .group > ul { height: 60px; }
+	.sui-main > .sui-tabs > .group > ul > li { min-width: 60px; line-height: 60px; font-size: 15.666px; }
 	.sui-main > .sui-tabs > .group > ul > li:before { font-size: 24px; }
-	.sui-main > .sui-tabs > .group.center ul li { padding-right:54px;}
+	.sui-main > .sui-tabs > .group.center ul li { padding-right:60px; font-size: 4.5vw; }
 	.sui-main > .sui-tabs > .group.center > ul > li .label:before { font-size:20px; margin: -5px 10px 0 0; }
 
-	.sui-aside.left > .navtools { height:54px; }
-	.sui-aside.left > .navtools > li { min-width:54px; height:54px; line-height:54px; }
+	.sui-aside.left > .navtools { height:60px; }
+	.sui-aside.left > .navtools > li { min-width:60px; height:60px; line-height:60px; }
 	.sui-aside.left > .navtools > li:before { font-size:22px; }
 	.sui-aside.left > .navtools > li.credentials > span { margin: 0 0 0 -19px; width: 38px; height: 38px; }
 
 	.sui-nav { top:122px; }
 
-	.sui-nav > .area > .blocklist { width:54px; }
-	.sui-nav > .area > .blocklist > li { width:54px; height:54px; line-height:54px; }
+	.sui-nav > .area > .blocklist { width:60px; }
+	.sui-nav > .area > .blocklist > li { width:60px; height:60px; line-height:60px; }
 	.sui-nav > .area > .blocklist > li:before { font-size:22px; }
 
 	.sui-nav > .area > .block > .wrap > .name { font-size:18px; }

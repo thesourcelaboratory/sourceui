@@ -130,6 +130,20 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			if (lastScroll) $scroll.scrollTop(lastScroll);
 			Common.widget.data('lastScroll', nowScroll || 0);
 			Common.widget.trigger('widget:resize');
+		} else if ($this.hasClass('fullscreen')) {
+			if (Dom.body.hasClass('fullscreen')){
+				var $ghost = $('#ghost'+Common.widget.attr('id'));
+				var $widget = Dom.fullscreenContainer.children('.sui-widget');
+				$ghost.replaceWith($widget);
+				Common.widget.trigger('widget:resize');
+				Dom.body.removeClass('fullscreen');
+			} else {
+				Dom.body.addClass('fullscreen');
+				$('<div id="ghost'+Common.widget.attr('id')+'" />').insertAfter(Common.widget);
+				Dom.fullscreenContainer.html('')
+				Dom.fullscreenContainer.append(Common.widget);
+				Common.widget.trigger('widget:resize');
+			}
 		} else if ($this.hasClass('sourcecode')) {
 			var $mce = Common.widget.find('.sui-field.mce');
 			var $cdm = Common.widget.find('.sui-field.code');

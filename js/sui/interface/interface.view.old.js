@@ -39,14 +39,11 @@ sourceui.interface.view = function ($view, setup) {
 	View.scrolltabs = View.sector.find('#suiTabsView');
 	View.tabsview = View.sector.find('#suiTabsView ol');
 	View.cover = View.element.children('picture.sui-cover');
+	Dom.document.trigger('activity:focusin', [View.element]);
 	View.controller = View.element.children('[data-alias="controller"]');
 	View.toolbar = View.element.children('.toolbar');
 	View.puller = View.element.prevAll('.puller');
 	View.pullerspin = View.puller.find('.spin');
-	View.widgets = View.element.find('.sui-widget');
-
-	Dom.document.trigger('activity:focusin', [View.element]);
-
 
 	if (View.controller.length) {
 
@@ -67,37 +64,25 @@ sourceui.interface.view = function ($view, setup) {
 					$a.data('droplist', $droplist);
 				}
 				$a.data('droplist').trigger('droplist:open');
-				event.stopPropagation();
-			} else if (data.alias == 'fullscreen') {
+            } else if (data.alias == 'fullscreen') {
 				if (Dom.body.hasClass('fullscreen')){
 					var $ghost = $('#ghost'+View.element.attr('id'));
-					var $view = Dom.fullscreenContainer.children('.sui-view');
-					$ghost.replaceWith($view);
+					$ghost.replaceWith(View.element);
 					View.widgets.trigger('widget:resize');
 					Dom.body.removeClass('fullscreen');
-					if (View.sector.is('.transparent')) Dom.fullscreenContainer.removeClass('transparent');
 				} else {
 					Dom.body.addClass('fullscreen');
 					$('<div id="ghost'+View.element.attr('id')+'" />').insertAfter(View.element);
-					if (View.sector.is('.transparent')) Dom.fullscreenContainer.addClass('transparent');
 					Dom.fullscreenContainer.html('')
 					Dom.fullscreenContainer.append(View.element);
 					View.widgets.trigger('widget:resize');
-				}
-			}
+                }
+            }
+            event.stopImmediatePropagation();
 		});
 
 		var ctdata = View.controller.data('controller');
-		if (ctdata == '@dashboard') {
-			View.controller.on('click', 'li a', function (event) {
-				var $a = $(this), data = $a.data(), link = $a.link();
-				if ($a.isDisable()) return;
-				if (data.alias == 'refresh') {
-					$a.data('linkCache', false);
-					Network.link.call($a, data);
-				}
-			});
-		} else if (ctdata == '@form') {
+		if (ctdata == '@form') {
 			View.widgets = View.element.find('.sui-widget');
 			View.widgets.on('field:input', function () {
 				var $widget = $(this);
@@ -159,7 +144,7 @@ sourceui.interface.view = function ($view, setup) {
 									var $ul = $target.find('.sui-filterset ul');
 									$.each(wgdata.data, function (k, v) {
 										if ($ul && wgdata.info[k]){
-											$ul.find('.sui-filter[data-name="'+k+'"]').parent().remove();
+											$ul.find('.sui-filter[data-name="'+k+'"]').remove();
 										}
 										if ((v || v === 0) && wgdata.info[k]) {
 											if ($ul) {
@@ -227,7 +212,8 @@ sourceui.interface.view = function ($view, setup) {
 				} else if (link && link.sui) {
 					Network.link.call($a);
 				}
-				event.stopImmediatePropagation();
+                event.stopImmediatePropagation();
+                return;
 			});
 		} else if (ctdata == '@upillow') {
 
@@ -248,7 +234,8 @@ sourceui.interface.view = function ($view, setup) {
 					if (typeof scope == 'object' && typeof scope.widgetData == 'function') {
 						View.widget.trigger('alias:pick', [scope.widgetData()]);
 					}
-				}
+                }
+                event.stopImmediatePropagation();
 				return;
 			});
 		} else if (ctdata == '@calendar') {

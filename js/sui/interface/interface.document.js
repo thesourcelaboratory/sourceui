@@ -38,6 +38,7 @@ sourceui.interface.document = function () {
 	Dom.body = this.body = $('#suiBody');
 	Dom.userguide = $('#suiUserguide');
 	Dom.notifyBadge = this.notifyBadge = $('#suiNotifyBadge');
+	Dom.fullscreenContainer = this.fullscreenContainer = $('#suiFullscreenContainer');
 	Dom.notifyContainer = this.notifyContainer = $('#suiNotifyContainer');
 	Dom.confirmContainer = this.confirmContainer = $('#suiConfirmContainer');
 	Dom.floatSectorContainer = this.floatSectorContainer = $('#suiFloatSectorContainer');

@@ -404,7 +404,7 @@ sourceui.Device = function (c) {
 				'fatal': '#b9173a',
 				'fail': '#b9173a',
 				'info': '#0066ff',
-				'warn': '#dd7119',
+				'warn': '#a4866e', //dd7119
 				'valid': '#0055BB',
 				'notice': '#0C8446',
 				'log': '#444444',

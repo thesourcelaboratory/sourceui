@@ -98,6 +98,17 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     });
 
 
+
+    Handson.widget.on('widget:emptyload',function(){
+        Handson.common.toggleTools.call(Handson.widget,'emptyload');
+    });
+    Handson.widget.on('widget:dataload',function(){
+        Handson.common.toggleTools.call(Handson.widget,'dataload');
+    });
+
+
+
+
     var Promises = {
         visible: function () {
             return new Promise(function (resolve, reject) {
@@ -170,13 +181,27 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                 }
                 Handson.valid = $.isEmptyObject(Handson.invalid);
             },
+            afterLoadData: function(initialLoad){
+                var data = this.getData();
+                Handson.area.children('.empty').remove();
+                if (!data.length){
+                    if (initialLoad){
+                        if (cfg.searchRequiredInfo) Handson.area.prepend('<div class="empty icon-lens-blocked">Você precisa realizar uma pesquisa para mostrar dados nessa grade.</info>');
+                        else if (cfg.filterRequiredInfo) Handson.area.prepend('<div class="empty icon-funnel-blocked">Você precisa realizar uma pesquisa ou filtrar dados para que sejam mostrados nessa grade.</info>');
+                    } else {
+                        Handson.area.prepend('<div class="empty icon-table-blocked">Não ha dados para serem exibidos nessa grade.</info>');
+                    }
+                    Handson.widget.trigger('widget:emptyload');
+                } else {
+                    Handson.widget.trigger('widget:dataload',[data]);
+                }
+            }
         }));
         setTimeout(hot.render,100);
         Handson.sheet.data('hot', hot);
         Handson.widget.trigger('widget:init',[hot]);
         return hot;
     }
-
 
     Handson.common.controller.on('click', 'li a', function (event, force) {
         var $this = $(this);

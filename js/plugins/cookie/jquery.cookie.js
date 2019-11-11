@@ -55,6 +55,8 @@
 
 				// We're using "expires" because "max-age" is not supported by IE
 				attributes.expires = attributes.expires ? attributes.expires.toUTCString() : '';
+				attributes.samesite = (attributes.samesite ? '; '+attributes.samesite : '; samesite=none');
+				attributes.path += attributes.samesite;
 
 				try {
 					var result = JSON.stringify(value);

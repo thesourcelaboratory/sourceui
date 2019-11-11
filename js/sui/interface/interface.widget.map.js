@@ -142,6 +142,11 @@ sourceui.interface.widget.map = function($widget,setup){
 				Toolbar.find('.center').addClass('disable');
 			}
 		});
+		Wap.widget.on('widget:resize',function(){
+			setInterval(function(){
+				Map.invalidateSize();
+			},200);
+		});
 
 		Toolbar.on('click','.center:not(.disable)',function(event){
 			event.stopPropagation();
@@ -153,7 +158,9 @@ sourceui.interface.widget.map = function($widget,setup){
         });
 
 		if (Wap.cfg.heatmap){
-			Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
+			setTimeout(function(){
+				Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
+			},200);
 		}
 
 		if (Wap.cfg.fitStuffs) Wap.widget.trigger('map:fitstuffs');

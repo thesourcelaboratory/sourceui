@@ -79,7 +79,7 @@
 .sui-field > .wrap > .table > .cell.prefix:before { display:block; text-align:left; font-size:14px; }
 .sui-field > .wrap > .table > .cell.prefix + .value { border:none; padding-left:0; }
 .sui-field > .wrap > .table > .cell.prefix + .value .input { padding-left:4px; }
-.sui-field > .wrap > .table > .cell.sufix { font-size:13px; width:32px; border:none; color:#AAA; text-align:center; padding:8px }
+.sui-field > .wrap > .table > .cell.sufix { font-size:12.5px; width:32px; border:none; color:#AAA; text-align:center; padding:8px }
 .sui-field > .wrap > .table > .cell.sufix:before { display:block; text-align:center; font-size:14px; }
 .sui-field > .wrap > .table > .cell.value { color:#333; font-weight:normal; }
 .sui-field > .wrap > .table > .cell.value span { font-weight:500; }
