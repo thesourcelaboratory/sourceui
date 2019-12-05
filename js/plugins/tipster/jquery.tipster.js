@@ -152,13 +152,13 @@ $(function () {
                     $tipster.velocity({
                         opacity: 0,
                     }, {
-                            duration: 150,
-                            display: 'none',
-                            complete: function () {
-                                $tipster.appendTo($parent);
-                                $parent.removeClass('tipstant');
-                            }
-                        });
+                        duration: 150,
+                        display: 'none',
+                        complete: function () {
+                            $tipster.appendTo($parent);
+                            $parent.removeClass('tipstant');
+                        }
+                    });
                 }
             });
 
@@ -214,4 +214,10 @@ $(function () {
             $.tipster.alt.call(this, options || {})
         });
     };
+
+    $(document).on('click',function(){
+        $('#suiTipster').children().each(function () {
+			$(this).trigger('tip:hide');
+		});
+    });
 });

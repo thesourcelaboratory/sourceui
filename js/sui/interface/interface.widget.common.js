@@ -205,7 +205,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 	Common.order = {
 		exec: function ($li, o) {
 			var $col = $(this);
-			var $list = $col.closest('.list');
+			var $list = $col.closest('.linegroup, .list');
 			var data = {
 				col: $col,
 				header: $col.parent(),
@@ -270,7 +270,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 					data.col.addClass('asc');
 				}
 			}
-			data.lines = data.area.find('.lines');
+			data.lines = data.list.find('.lines');
 			data.lines = (!data.lines.length) ? data.area.find('.list') : data.lines;
 			if (data.lines.length) {
 				data.lines.each(function () {
@@ -468,6 +468,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 
 	var Finder = {
 		timeout: null,
+		sector: Common.widget.closest('.sui-sector'),
 		widget: Common.widget,
 		element: Common.widget.find('.finder'),
 		getFilters: function () {
@@ -511,9 +512,12 @@ sourceui.interface.widget.common = function ($widget, setup) {
 		},
 		init: function(){
 
+			var globalname = 'widget-filters:' + Finder.widget.attr('id');
+
 			Finder.filter = Finder.element.find('.sui-filter');
 			Finder.fields = Finder.element.find('.sui-field');
 			Finder.buttons = Finder.element.find('.sui-button a');
+			Finder.ul = Finder.element.find('.sui-filterset ul');
 
 			Finder.fields.customField();
 
@@ -545,6 +549,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 					$filt.parent().remove();
 					Finder.fields.find('.input').val('');
 					if ($issel.length) Finder.widget.trigger('widget:filter');
+					else Finder.widget.trigger('filter:change');
 					Finder.clearEnable();
 				} else if ($this.hasClass('search')) {
 					Finder.widget.trigger('widget:search');
@@ -577,9 +582,21 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				Finder.widget.trigger('remote:finder', [Finder.getFilters()]);
 				Finder.widget.trigger('filter:change');
 			});
+			Finder.widget.on('filter:change', function (event) {
+				Device.Global.set(globalname, { html: Finder.ul.html() });
+				var fparam = $.param(Finder.getFilters());
+				var sparam = Finder.sector.attr('data-history');
+				var fhpath;
+				if (fparam){
+					fhpath = sparam.split('?')[0]+'?'+fparam;
+				} else {
+					fhpath = sparam.split('?')[0];
+				}
+				Finder.sector.attr('data-history',fhpath);
+				Network.history.replace(fhpath);
+			});
 			Finder.widget.on('widget:search', function (event) {
-
-				var $ul = Finder.widget.find('.sui-filterset ul');
+				var $ul = Finder.ul;
 				var $fd = Finder.element.find('.sui-field.search');
 				var value = $('<div>'+$fd.val()+'</div>').text();
 
@@ -644,6 +661,17 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				$.extend(setup, $el.link('_self'));
 				Network.link.call($el, setup);
 			});
+
+			var globaldata = Device.Global.get(globalname) || {};
+			if (globaldata.html){
+				Finder.ul.html(globaldata.html.replace(' selected"','"'));
+				/*
+				var sparam = Finder.sector.attr('data-history');
+				var fparam = $.deparam(sparam.split('?')[1]);
+				console.log(sparam);
+				*/
+			}
+
 			Finder.clearEnable();
 		}
 	}

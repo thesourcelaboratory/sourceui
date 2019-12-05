@@ -1187,7 +1187,7 @@ sourceui.Network = function () {
 								label: setup.suiname,
 								message: 'Tentaremos concluir essa tarefa a tempo.<br/>Verifique a conexão de internet logo em seguida.',
 							});
-						}, 15000);
+						}, 25000);
 					}
 					Ajax.loading.start();
 					setup.metric.add('requestStartTime');
@@ -1279,7 +1279,7 @@ sourceui.Network = function () {
 									}
 								}
 								if (typeof setup.ondone == 'function') setup.ondone.call(Ajax, setup);
-								if (setup.element) setup.element.trigger('ajax:done');
+								if (setup.element) setup.element.trigger('ajax:done',[setup.response.parsedJQ]);
 							} else {
 								if (typeof setup.onfail == 'function') setup.onfail.call(Ajax, xhr, status, error);
 								if (setup.element) setup.element.trigger('ajax:fail');
@@ -2478,8 +2478,8 @@ sourceui.Network = function () {
 					current = splcur[0];
 					filter = $.deparam(splcur[1]);
 				}
-				$c = $elem.find('[data-history="' + current + '"]:eq(0)');
-				if (!$c.length) $c = $elem.find('[data-link-pushstate="' + current + '"]:eq(0)');
+				$c = $elem.find('[data-history*="' + current + '"]:eq(0)');
+				if (!$c.length) $c = $elem.find('[data-link-pushstate*="' + current + '"]:eq(0)');
 				if ($c.length) {
 					$mb = $c.closest('.menu.block');
 					if ($mb.length) $mb.prevAll('.blocklist').children('li[data-id="' + $mb.data('id') + '"]').click();
@@ -2492,6 +2492,15 @@ sourceui.Network = function () {
 					$c.trigger('click', [{ filter: filter }]);
 					$c.one('ajax:done ajax:cache', function (event, $jq) {
 						var $this = $(this);
+						if (filter && $jq){
+							var $filterset = $jq.find('.sui-widget .sui-filterset');
+							var $filts = $filterset.find('.sui-filter');
+							var $widget = $filterset.closest('.sui-widget');
+							$.each(filter, function(k,v){
+								$filts.filter('[data-name="'+k+'"]').addClass('selected');
+							});
+							$widget.trigger('filter:change');
+						}
 						Network.history.follow(path, $jq);
 						$c.off('ajax:done ajax:cache');
 					});

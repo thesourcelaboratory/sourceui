@@ -65,7 +65,6 @@
 .sui-draggable { position:absolute; right:-3px; top:0; bottom:0; background-color:var(--header-bar-color); opacity:0; width:6px; cursor:col-resize; z-index:100; transition: opacity 300ms; }
 .sui-draggable.is-dragging { opacity:0.5 !important; }
 .sui-draggable:not(.is-dragging):hover { opacity:0.3; }
-.sui-draggable { top:86px; }
 
 .sui-aside.left { width:360px; }
 .sui-aside.left > .logo { background-position:-20px center; cursor:pointer; }
@@ -290,7 +289,7 @@
 /* --------------------------------------------------- */
 
 /* LIST ------------------------------------------- */
-.sui-widget.datagrid.list > .area .list { display:table; width:100%; }
+.sui-widget.datagrid.list > .area .list:not(.grouped) { display:table; width:100%; }
 .sui-widget.datagrid.list > .area .list .header > .col { white-space:nowrap; }
 .sui-widget.datagrid.list > .area .list .header > .col.money { text-align:right; }
 .sui-widget.datagrid.list > .area .list .header > .col.date { text-align:center; }
@@ -337,6 +336,8 @@
 .sui-widget.datagrid.list > .area .list .line > .col.swiper:empty:before { display:none; }
 .sui-widget.datagrid.list > .area .list .line > .col.swiper:before { color:#bfbfbf; }
 .sui-widget.datagrid.list > .area .list .line > .col.swiper > .actions { display:none; }
+.sui-widget.datagrid.list > .area .list .line.swiped .col:not(.swiper) { background-color:#dddddd !important; }
+.sui-widget.datagrid.list > .area .list .line.swiped .col.swiper { background:#f5f5f5 !important; }
 .sui-widget.datagrid.list > .area .list .line.swiped > .col.swiper > .actions { display:block; position:absolute; top:0; height:calc(100% + 1px); }
 .sui-widget.datagrid.list > .area .list .line.swiped > .col.swiper > .actions ul { display:flex; justify-content:center; align-items:center; table-layout:fixed; margin:0; padding:0; list-style: none; height:100%; }
 .sui-widget.datagrid.list > .area .list .line.swiped > .col.swiper > .actions ul li { display:flex; justify-content:center; flex-direction:column; text-align:center; color:#FFF; font-weight:bold; font-size:10px; vertical-align:middle; padding:8px 16px; min-width:60px; max-width:100px; height:100%; }
@@ -621,7 +622,7 @@ main.sui-load-border .sui-spinner .container,
 .sui-droplist-container.field > .sui-droplist:not(.plugin) > .options ul > li { padding:6px 12px 6px 6px; font-size:12.5px; }
 
 
-.navtools.focus { background:#ee5517 !important; }
+.navtools.focus { background:var(--focus-color) !important; }
 .navtools > li.focus { background:#ee5517 !important; }
 
 .blocklist.focus,

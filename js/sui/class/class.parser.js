@@ -505,7 +505,7 @@ sourceui.templates.interface = new sourceui.Template({
 			linegroup:
 				'<div class="linegroup @{class:type}"><h3><span>@{label:count}</span>@{label:name}</h3><div class="lines @{class:type}"><div class="sizer"></div>@{child:lines}</div></div>',
 			list:
-				'<div class="list @{class:type} @{class:scroll} @{class:prop}" data-action-pickline="@{action:pickline}" data-action-checklines="@{action:checklines}" data-paginator="@{default:paginator}"@{data}><div class="sizer"></div>@{child:content}</div>',
+				'<div class="list @{class:type} @{class:scroll} @{class:prop} @{class:grouped}" data-action-pickline="@{action:pickline}" data-action-checklines="@{action:checklines}" data-paginator="@{default:paginator}"@{data}><div class="sizer"></div>@{child:content}</div>',
 			header: {
 				container:
 					'<div class="sn header @{class:prop}"@{data}>' +
@@ -523,7 +523,7 @@ sourceui.templates.interface = new sourceui.Template({
 			},
 			line: {
 				container:
-					'<div class="line @{data:type} @{class:prop}"@{attr}@{data}>' +
+					'<div class="line @{data:type} @{class:prop}"@{attr}@{data}@{style}>' +
 					'<div class="col pad"></div>' +
 					'<div class="col check icon-check"></div>' +
 					'<div data-index="0" class="col seq">@{value:seq}</div>' +
@@ -1042,11 +1042,19 @@ sourceui.Parser = function () {
 			} else if (render == '@sheet-data') {
 				str = JSON.parse(sui.content() || '[]');
 			} else if (render == '@datagrid-list') {
-				sui.find('list', function () {
-					str = Components.libs.widget.datagrid.list(this);
+				sui.findChild(function () {
+					if (this.nodeName == 'list'){
+						str = Components.libs.widget.datagrid.list(this);
+					} else {
+						this.find('area',function(){
+							this.findChild('list',function(){
+								str = Components.libs.widget.datagrid.list(this);
+							});
+						});
+					}
 				});
 			} else if (render == '@datagrid-line') {
-				sui.find('list', function () {
+				sui.findChild('list', function () {
 					var suiList = this,
 						lineseq = setup.filter.limitStart,
 						headerData = {},
@@ -2260,8 +2268,7 @@ sourceui.Parser = function () {
 							},
 							headerData = {},
 							orderData = {},
-							lineseq = 0,
-							htmlList = suiList.toHTML('wg', 'datagrid', 'list', { 'default': { paginator: (suiList.attr('default:paginator') && limit.start + limit.len < limit.total ? suiList.attr('default:paginator') : '') } }, Template.get);
+							lineseq = 0;
 						var htmlHeader = '';
 						var htmlLine = '';
 						orderData.by = suiList.attr('data:by') || '';
@@ -2273,8 +2280,13 @@ sourceui.Parser = function () {
 								lineseq++;
 								htmlLine += Components.libs.widget.datagrid.line(this, lineseq, headerData);
 							} else if (this.nodeName == 'linegroup') {
+								suiList.attr('class:grouped','grouped');
 								var suiGroup = this,
 									htmlChild = '';
+								suiGroup.findChild('header', function () {
+									headerData = {};
+									htmlChild += Components.libs.widget.datagrid.header(this, headerData, orderData);
+								});
 								suiGroup.findChild('line', function () {
 									lineseq++;
 									htmlChild += Components.libs.widget.datagrid.line(this, lineseq, headerData);
@@ -2292,6 +2304,7 @@ sourceui.Parser = function () {
 						}, function () {
 							htmlLine += suiList.toHTML('empty', { child: { html: 'Lista em branco' } }, Template.get);
 						});
+						var htmlList = suiList.toHTML('wg', 'datagrid', 'list', { 'default': { paginator: (suiList.attr('default:paginator') && limit.start + limit.len < limit.total ? suiList.attr('default:paginator') : '') } }, Template.get);
 						var htmlPag = Components.libs.widget.datagrid.paginator(suiList);
 						return Template.replace(htmlList, { child: { content: htmlHeader + htmlLine + htmlPag } });
 					},

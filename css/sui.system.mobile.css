@@ -287,7 +287,7 @@ body { background-size: 175% 100%; font-size:15px; }
 
 
 .sui-widget.datagrid > .area .list { display:block; padding:0; }
-.sui-widget.datagrid > .area .list > .header { display:none; }
+.sui-widget.datagrid > .area .list .header { display:none; }
 .sui-widget.datagrid > .area .list .line { display:flex; flex-wrap:wrap; position:relative; width:100%; margin:0; padding:12px 28px 12px 16px; color:#7A7777; background:#fbfbfb; border-bottom:rgba(0,0,0,0.043) solid 1px; }
 .sui-widget.datagrid > .area .list .line:last-of-type { border-bottom:none; }
 .sui-widget.datagrid > .area .list .line:before { content:''; display:block; position:absolute; top:-1px; left:0; width:3px; height:calc(100% + 2px); background:transparent; transition:background-color 100ms; }
@@ -468,9 +468,11 @@ body { background-size: 175% 100%; font-size:15px; }
 /* PROFILE ------------------------------------------- */
 .sui-widget.profile > .area { padding:0; min-height:120px; flex-wrap:wrap; padding:12px 0; }
 .sui-widget.profile > .area > .identifier { width: 100%; flex-wrap:wrap; justify-content:center; text-align:center; }
+/*
 .sui-widget.profile > .area > .identifier > .icon { margin-right:0px; }
 .sui-widget.profile > .area > .identifier > .avatar,
 .sui-widget.profile > .area > .identifier > .abbr,
+*/
 .sui-widget.profile > .area > .identifier > .label { width:100%; padding:0; margin-top:8px; }
 .sui-widget.profile > .area > .identifier > .label .name { font-size: 18px; letter-spacing: -0.75px; }
 .sui-widget.profile > .area > .identifier > .label .description { margin:0; }

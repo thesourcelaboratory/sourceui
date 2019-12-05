@@ -484,7 +484,8 @@ sourceui.interface.view = function ($view, setup) {
 	View.scrolls = View.element.find('.sui-content.scroll-default');
 	View.scrdata = {
 		paginator: $(),
-		scrollmax: 0
+		scrollmax: 0,
+		windowheight: Dom.window.height()
 	};
 	if (setup.placement && setup.placement.indexOf('replace') > -1 && setup.target && setup.target.is('.sui-view')) {
 		var scrollTop = View.element.data('scrollTop');
@@ -533,7 +534,7 @@ sourceui.interface.view = function ($view, setup) {
 			if (tbcolor.length) View.toolbar.css('background-color', 'rgba(' + tbcolor[0] + ',' + tbcolor[1] + ',' + tbcolor[2] + ',' + tbcolor[3] + ')');
 		}
 		if (View.scrdata.paginator.length && !View.scrdata.paginator.hasClass('clicked')) {
-			if (View.scrdata.scrollmax && View.scrdata.scrollmax - View.scrdata.scrolltop < 250) {
+			if (View.scrdata.scrollmax && View.scrdata.scrollmax - View.scrdata.scrolltop < View.scrdata.windowheight) {
 				View.scrdata.paginator.addClass('clicked').trigger('click');
 			}
 		}
