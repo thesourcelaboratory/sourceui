@@ -23,7 +23,7 @@
     --content-padding: 40px;
     --content-width: 980px;
     --aside-width: 340px;
-    --footer-height: 150px;
+    --footer-height: 180px;
     --h1-color: #429fd6;
     --h2-color: #333333;
     --h3-color: #333333;
@@ -644,7 +644,7 @@ footer > .info > .social > a:hover { background:rgba(255,255,255,0.1); color:#FF
 	.sui-card-container { padding:16px 0; }
 	.sui-credit-card { margin:0 auto; }
 
-  footer { width:100%; padding:calc(var(--content-padding) / 2); font-size: 0.9em; text-align:center; }
+  footer { height:calc(var(--footer-height) * 1.5); width:100%; padding:calc(var(--content-padding) / 2); font-size: 0.9em; text-align:center; }
   footer > .info { width:100%; padding:0; flex-wrap:wrap; }
   footer > .info div { width:100%; padding:calc(var(--content-padding) / 3) 0; }
   footer > .info > .about span { display:none; }
