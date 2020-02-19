@@ -1066,14 +1066,14 @@ sourceui.parserField = function (element, setup) {
 				Field.setup.spellcheck = 'false';
 				Field.setup.autocorrect = 'off';
 				Field.setup.mask = Field.setup.mask || 'url';
-				Field.setup.buttons.after = [{ icon: 'icon-link', alias: 'href', options: [] }];
+				if (Field.setup.button !== false) if (Field.setup.button !== false) Field.setup.buttons.after = [{ icon: 'icon-link', alias: 'href', options: [] }];
 				return HTML.common.field({ input: 'url' });
 			},
 			email: function () {
 				Field.setup.spellcheck = 'false';
 				Field.setup.autocorrect = 'off';
 				Field.setup.mask = Field.setup.mask || 'email';
-				Field.setup.buttons.after = [{ icon: 'icon-draft', alias: 'mailto', options: [] }];
+				if (Field.setup.button !== false) Field.setup.buttons.after = [{ icon: 'icon-draft', alias: 'mailto', options: [] }];
 				return HTML.common.field({ input: 'email' });
 			},
 			textarea: function () {
@@ -1128,25 +1128,25 @@ sourceui.parserField = function (element, setup) {
 			phone: function () {
 				Field.setup.placeholder = Field.setup.placeholder || '0000-0000';
 				Field.setup.mask = Field.setup.mask || 'phone';
-				Field.setup.buttons.after = [{ icon: 'icon-phone-pad', alias: 'phone', options: [] }];
+				if (Field.setup.button !== false) Field.setup.buttons.after = [{ icon: 'icon-phone-pad', alias: 'phone', options: [] }];
 				return HTML.common.field({ input: 'tel' });
 			},
 			dddphone: function () {
 				Field.setup.placeholder = Field.setup.placeholder || '(00) 0000-0000';
 				Field.setup.mask = Field.setup.mask || 'ddd-phone';
-				Field.setup.buttons.after = [{ icon: 'icon-phone-pad', alias: 'phone', options: [] }];
+				if (Field.setup.button !== false) Field.setup.buttons.after = [{ icon: 'icon-phone-pad', alias: 'phone', options: [] }];
 				return HTML.common.field({ input: 'tel' });
 			},
 			cell: function () {
 				Field.setup.placeholder = Field.setup.placeholder || '00000-0000';
 				Field.setup.mask = Field.setup.mask || 'cell';
-				Field.setup.buttons.after = [{ icon: 'icon-phone-pad', alias: 'phone', options: [] }];
+				if (Field.setup.button !== false) Field.setup.buttons.after = [{ icon: 'icon-phone-pad', alias: 'phone', options: [] }];
 				return HTML.common.field({ input: 'tel' });
 			},
 			dddcell: function () {
 				Field.setup.placeholder = Field.setup.placeholder || '(00) 00000-0000';
 				Field.setup.mask = Field.setup.mask || 'ddd-cell';
-				Field.setup.buttons.after = [{ icon: 'icon-phone-pad', alias: 'phone', options: [] }];
+				if (Field.setup.button !== false) Field.setup.buttons.after = [{ icon: 'icon-phone-pad', alias: 'phone', options: [] }];
 				return HTML.common.field({ input: 'tel' });
 			},
 			cpf: function () {
@@ -1166,15 +1166,8 @@ sourceui.parserField = function (element, setup) {
 			},
 			cep: function () {
 				Field.setup.placeholder = Field.setup.placeholder || '00000-000';
-				Field.setup.buttons.after = [{ icon: 'icon-location3', alias: 'location', options: [] }];
+				if (Field.setup.button !== false) Field.setup.buttons.after = [{ icon: 'icon-location3', alias: 'location', options: [] }];
 				Field.setup.mask = Field.setup.mask || 'cep';
-				return HTML.common.field({ input: 'tel' });
-			},
-			boleto: function () {
-				Field.setup.placeholder = Field.setup.placeholder || 'Código de Barra ou Linha Digitável';
-				Field.setup.mask = Field.setup.mask || 'boleto';
-				Field.setup.minlen = Field.setup.minlen || 47;
-				Field.setup.validationevent = 'field:input';
 				return HTML.common.field({ input: 'tel' });
 			},
 			spin: function (data) {
@@ -1183,6 +1176,19 @@ sourceui.parserField = function (element, setup) {
 				Field.setup.buttons.before = [{ icon: ((Field.setup.value == Field.setup.min) ? 'disable ' : '') + 'icon-minus3', alias: 'minus', options: [] }];
 				Field.setup.buttons.after = [{ icon: ((Field.setup.value == Field.setup.max) ? 'disable ' : '') + 'icon-plus', alias: 'plus', options: [] }];
 				return HTML.common.field({ input: 'text' });
+			},
+			boleto: function () {
+				Field.setup.placeholder = Field.setup.placeholder || 'Código de Barra ou Linha Digitável';
+				Field.setup.mask = Field.setup.mask || 'boleto';
+				Field.setup.minlen = Field.setup.minlen || 47;
+				Field.setup.validationevent = 'field:input';
+				return HTML.common.field({ input: 'tel' });
+			},
+			creditcard: function () {
+				Field.setup.placeholder = Field.setup.placeholder || '0000 0000 0000 0000';
+				Field.setup.mask = Field.setup.mask || 'creditcard';
+				Field.setup.minlen = Field.setup.minlen || 19;
+				return HTML.common.field({ input: 'tel' });
 			},
 		},
 		drop: {

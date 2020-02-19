@@ -1,7 +1,7 @@
 /* FIELDSET ------------------------------------------- */
 
 .sui-widget .sui-fieldset { clear:both; padding:0; }
-.sui-widget .sui-fieldset > h3 { margin:8px 0; padding: 8px 16px 8px 220px; letter-spacing:-0.75px; font-size:14px; }
+.sui-widget .sui-fieldset > h3 { margin:24px 0 8px 0; padding: 8px 16px 8px 220px; letter-spacing:-0.75px; font-size:14px; }
 .sui-widget .sui-fieldset > h3:empty { display:none; }
 .sui-widget .sui-fieldset:after { content:""; display:block; clear:both; }
 .sui-widget .sui-fieldset:last-of-type { border-bottom:none; }
@@ -23,7 +23,7 @@
 .sui-fieldset.vertical .sui-field.no-label { padding:2px 16px 0 16px; }
 .sui-fieldset.vertical .sui-field.no-label:only-of-type { padding:0; border-radius:0; }
 .sui-fieldset.vertical .sui-field.switch { padding: 0 !important; }
-.sui-fieldset.vertical .sui-field > .label { min-width:220px; max-width:220px; font-size:11px; font-weight:500; color:#999; text-align:right;  padding: 3px 12px 0 0; margin:0;  }
+.sui-fieldset.vertical .sui-field > .label { min-width:220px; max-width:220px; font-size:11px; font-weight:500; color:#AAA; text-align:right;  padding: 3px 12px 0 0; margin:0;  }
 .sui-fieldset.vertical .sui-field > .wrap { display:block; }
 .sui-fieldset.vertical .sui-field > .wrap[style*="width"][style*="%"] .cell.value { width:100% !important; }
 .sui-fieldset.vertical .sui-field.no-label:only-of-type > .wrap { border:none; border-radius:0; padding:8px 16px; }
@@ -250,7 +250,9 @@
 .sui-field.static > .wrap a { color:#09F !important; text-decoration:none; }
 .sui-field.static > .wrap a:hover { color:#07D !important; }
 .sui-field.static > .wrap > .table > .cell.value { width:auto; }
-.sui-field.static > .wrap > .table > .cell .input { padding:8px 0; height:auto; font-weight:normal;}
+.sui-field.static > .wrap > .table > .cell .input { padding:8px 0; height:auto; font-weight:normal; color:#555; }
+.sui-field.static > .wrap > .table > .cell .input b { color:#333; }
+.sui-field.static > .wrap > .table > .cell .input strong { color:#222; }
 
 /* HIDDEN */
 .sui-field.hidden { display:none !important; }
@@ -509,6 +511,8 @@
 .sui-field.picker > .wrap > .table > .cell.value .option > .picked > .info > .name { color:#888; }
 .sui-field.picker > .wrap > .table > .cell.value .option > .picked > .info > .name strong { color:#333; }
 .sui-field.picker > .wrap > .table > .cell.value .option > .picked > .info > .info { color:#AAA; font-size:12px; }
+.sui-field.picker > .wrap > .table > .cell.value .option > .picked b.rounded { display:inline-block; color:#FFF; margin-top:2px; padding:2px 8px; border-radius:8px; font-size:10px; margin-right:5px; }
+
 .sui-field.picker.selected > .wrap > .table > .cell .placeholder { display:none; }
 .sui-field.picker:not(.selected) > .wrap > .table > .cell.value > .area { display:none; }
 
@@ -706,7 +710,7 @@
 .sui-field.box > .wrap > .table > .cell.button .check { display:block; margin-right:10px; position:relative; min-width:20px; width:20px; height:20px; border:2px solid #999; background:#FFF; border-radius:16px; transition:all 200ms; }
 .sui-field.box > .wrap > .table > .cell.button .check:before { content:""; display:block; width:10px; height:10px; border:solid 3px #fff; border-radius:16px; transform:scale(0.5); opacity:0; transition:all 200ms; }
 .sui-field.box > .wrap > .table > .cell.button .desc { display:block; margin:0; color:#555 !important; font-weight:normal; font-size:12.5px; }
-.sui-field.box > .wrap > .table > .cell.button .desc span { color:#888 !important; font-size:11.5px !important; font-weight:normal !important; padding:0 !important; background:none !important; }
+.sui-field.box > .wrap > .table > .cell.button .desc span { color:#888; font-size:11.5px !important; font-weight:normal; padding:0 !important; background:none !important; }
 .sui-field.box > .wrap > .table > .cell.button .desc b { color:#333; font-size:12.5px; }
 .sui-field.box > .wrap > .table > .cell.button .desc strong { color:#333; font-size:12.5px; }
 .sui-field.box > .wrap > .table > .cell.button input { display:none; }
@@ -777,13 +781,14 @@
 .sui-buttonset.large > .group > li > .sui-button a { border-radius:5px; padding:0 28px; line-height:42px; position:relative; }
 .sui-buttonset.large > .group > li > .sui-button a:before { margin-right:8px; margin-left:-8px; font-size:14px; }
 .sui-buttonset.large > .group > li > .sui-button a[data-link-confirm]:after { bottom:8px; }
-
 .sui-buttonset.horizontal.right > .group { float:right; }
 .sui-buttonset.horizontal.right:after { content:''; display:block; clear:both; width:100px; height:0; }
 .sui-buttonset.horizontal.center > .group { margin:0 auto; }
 .sui-buttonset.horizontal.formlabel { padding-left:0; }
 .sui-buttonset.horizontal.formlabel > .group { margin-left:220px; }
 .sui-buttonset > .group > li:only-child > .sui-button { margin:0; }
+.sui-buttonset > .group > li:first-child > .sui-button { margin-left:0; }
+.sui-buttonset > .group > li:last-child > .sui-button { margin-right:0; }
 
 .disable .sui-buttonset .sui-button,
 .sui-buttonset.disable .sui-button,

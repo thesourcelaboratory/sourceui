@@ -1216,27 +1216,23 @@ sourceui.Parser = function () {
 				var data = sui.attr();
 				if (data.target) {
 					if (data.target.indexOf('@') > -1) {
-						if (elem) {
-							if (elem.data('view')) {
-								if (data.target.indexOf('@tool-') > -1) {
-									data.jq = $('#' + elem.data('view') + ' [data-alias="' + data.target.substring(6) + '"]');
-								}
-							}
+						if (elem && elem.data('view') && data.target.indexOf('@tool-') > -1) {
+							data.jq = $('#' + elem.data('view') + ' [data-alias="' + data.target.substring(6) + '"]');
 						} else if (data.target == '@float-sector') {
 							data.jq = $('#suiFloatSectorContainer');
 						} else if (data.target.indexOf('@viewtab-') > -1) {
 							var $sector = setup.sector && setup.sector.lenght ? setup.sector : $('#suiSectorsContainer > .sui-sector.selected');
 							var $view = setup.view && setup.view.lenght ? setup.view : $sector.find('#suiViewsContainer > .sui-view.selected');
 							if (data.target == '@viewtab-prev') {
-								data.jq = $sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"]').prev();
+								data.jq = $sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]').prev();
 							} else if (data.target == '@viewtab-prevall') {
-								data.jq = $sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"]').prevAll();
+								data.jq = $sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]').prevAll();
 							} else if (data.target == '@viewtab-next') {
-								data.jq = $sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"]').next();
+								data.jq = $sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]').next();
 							} else if (data.target == '@viewtab-nextall') {
-								data.jq = $sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"]').nextAll();
+								data.jq = $sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]').nextAll();
 							} else if (data.target == '@viewtab-first' || data.target == '@viewtab-1') {
-								data.jq = $sector.find('#suiTabsView > ol > li:first');
+								data.jq = $sector.find('#suiTabsView > ol > li:eq(0)');
 							} else if (data.target == '@viewtab-second' || data.target == '@viewtab-2') {
 								data.jq = $sector.find('#suiTabsView > ol > li:eq(1)');
 							} else if (data.target == '@viewtab-third' || data.target == '@viewtab-3') {
@@ -1245,25 +1241,16 @@ sourceui.Parser = function () {
 								data.jq = $sector.find('#suiTabsView > ol > li:eq(3)');
 							}
 						}
-						/*
-						} else if (setup.view && setup.view.length){
-							if (data.target == '@viewtab-prev'){
-								data.jq = $('#suiTabsView [data-view="'+setup.view.attr('id')+'"]').prev();
-							} else if (data.target == '@viewtab-next'){
-								data.jq = $('#suiTabsView [data-view="'+setup.view.attr('id')+'"]').next();
-							} else if (data.target == '@viewtab-first'){
-								data.jq = $('#suiTabsView [data-view="'+setup.view.attr('id')+'"]').prev();
-							}
-
-						}
-						*/
 					} else {
-						data.jq = $($.toText(data.target));
+						if (elem && elem.data('view')){
+							data.jq = $('#' + elem.data('view')).find($.toText(data.target));
+						} else {
+							data.jq = $($.toText(data.target));
+						}
 					}
 				} else if (data.selector) {
 					data.jq = $($.toText(data.selector));
 				}
-
 				if (data.jq) {
 					data.jq.each(function () {
 						var $jq = $(this);

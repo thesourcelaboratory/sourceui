@@ -378,6 +378,7 @@
 .sui-field.picker > .wrap > .table > .cell.value .option.image .visual > .image { width:100%; }
 .sui-field.picker > .wrap > .table > .cell.value .option.image .info { display:none; }
 .sui-field.picker > .wrap > .table > .cell.value .option > .picked > .info > .info { color:#AAA; font-size:12px; }
+.sui-field.picker > .wrap > .table > .cell.value .option > .picked b.rounded { display:inline-block; color:#FFF; margin-top:2px; padding:2px 8px; border-radius:8px; font-size:10px; margin-right:5px; }
 .sui-field.picker.selected > .wrap > .table > .cell .placeholder { display:none; }
 .sui-field.picker:not(.selected) > .wrap > .table > .cell.value > .area { display:none; }
 

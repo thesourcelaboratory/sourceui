@@ -678,7 +678,19 @@ sourceui.customField = function (element, setup) {
 			},
 			picker: {
 				single: function () {
+					Validate.required();
 					Dom.buttons.all.filter('[data-alias="browse"]').on('click', function (event) {
+						/* ja existe essa parada
+						if (Data.vars){
+							$.each(Data.vars.filter||[],function(k,v){
+								var $fd;
+								if (v.indexOf('#')===0) $fd = Element.closest('.sui-sector').find(v);
+								else if (v.indexOf('@')===0) $fd = Element.closest('.sui-sector').find('[data-name="'+v.substring(1)+'"]');
+								console.log(k,v,$fd);
+								if ($fd && $fd.is('.sui-field')) Data.vars.filter[k] = $fd.val();
+							});
+						}
+						*/
 						var linkdata = $.extend(true, {}, Data.vars, { filter: { picked: Element.val() } });
 						Plugin.sector.float({
 							caller: Element,
@@ -1243,6 +1255,7 @@ sourceui.customField = function (element, setup) {
 			},
 			ace: {
 				editor: function () {
+					Validate.required();
 					Bind.common.label();
 					Data.vars = Data.vars.ace || Data.vars;
 					var id = 'ace' + $.md5(Math.rand() + '~' + Date.now()).substring(0, 16);
@@ -1580,7 +1593,7 @@ sourceui.customField = function (element, setup) {
 			},
 			map: {
 				coordinates: function () {
-
+					Validate.required();
 					Bind.common.label();
 					Dom.map = Dom.value.children('.map');
 					var coord = Dom.map.data('_leafletcoord') || { lat: Dom.map.data('lat'), lon: Dom.map.data('lon') };
@@ -1851,6 +1864,10 @@ sourceui.customField = function (element, setup) {
 				Bind.common.text();
 			},
 			boleto: function () {
+				Bind.common.buttons.simple();
+				Bind.common.text();
+			},
+			creditcard: function () {
 				Bind.common.buttons.simple();
 				Bind.common.text();
 			},
@@ -2666,6 +2683,7 @@ sourceui.customField = function (element, setup) {
 				}
 				if (value === '' || value === null) {
 					Element.removeClass('selected');
+					Dom.droplist.find('.options li.selected').removeClass('selected');
 					Dom.options.find('.option').remove();
 				} else if ($item && $item.length) {
 					Element.addClass('selected');

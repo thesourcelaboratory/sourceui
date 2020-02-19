@@ -459,7 +459,7 @@ sourceui.Network = function () {
 				if (setup.response.parsedHTML) {
 					var sdata = Device.session.data();
 					if (sdata.device.vendor == 'Apple') {
-						setup.response.parsedHTML = setup.response.parsedHTML.replace(/(?!\$\()\$/g, 'S');
+						setup.response.parsedHTML = setup.response.parsedHTML.replace(/(?!\$\(|\$\.|\$\d)\$/g, 'S');
 					}
 				}
 				if (setup.render) return false;
@@ -638,6 +638,7 @@ sourceui.Network = function () {
 						setup.loadborder.addClass('sui-ajax').prepend($spinner);
 						setup.preloadTimeout = setTimeout(function () {
 							setup.loadborder.addClass('loading');
+							$spinner.addClass('fade-in');
 						}, 250); // a animação só será acionada em x milissegundos após o inicio da requisição.
 					}
 				},

@@ -12,6 +12,8 @@
  * Copyright (c) 2006-2015 - SourceLab Tecnologia Ltda
  * --------------------------------------------------------- */
 
+if (!sourceui) var sourceui = { interface: { widget: {} }, instances: { interface: {} }, templates: {}, timediff: 0 };
+
 sourceui.Device = function (c) {
 
 	if (sourceui.instances.device) return {};
@@ -302,8 +304,15 @@ sourceui.Device = function (c) {
 
 	this.isdebug = Config.get('debug');
 	this.iscache = Config.get('cache');
-	this.ismobile = (Agent.data.device.type == 'computer') ? false : true;
 	this.isapp = Fingerprint.ua.isapp ? true : false;
+	//this.ismobile = (Agent.data.device.type == 'computer') ? false : true;
+	this.ismobile = ((
+		(Agent.data.device.type == 'computer' ? 0 : 1) +
+		(Agent.data.os.name.indexOf('Win') > -1 || Agent.data.os.name.indexOf('Mac') > -1 || Agent.data.os.name.indexOf('Linu') > -1 || Agent.data.os.name.indexOf('Ubun') > -1 ? 0 : 1) +
+		(window.innerWidth >= 800 ? 0 : 1) +
+		(window.innerHeight >= 600 ? 0 : 1)
+	) >= 3) ? true : false;
+
 
 	if (this.ismobile) {
 		$('#suiBody').addClass('mobile leftcollapsed rightcollapsed');
@@ -573,6 +582,7 @@ sourceui.Device = function (c) {
 						else if (v.type == 'bug') v.symbol = '🐞';
 						else if (v.type == 'warn') v.symbol = '⚠️';
 						else if (v.type == 'dump') v.symbol = '🔵';
+						else v.symbol = '';
 
 						if (v.message) {
 							console.log(v.message.replace(/\n/g, "\r\n"));

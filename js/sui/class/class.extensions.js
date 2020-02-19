@@ -173,14 +173,45 @@ Extensor do método de expressão de seltor de jquery que retorna todos os eleme
 			return;
 		}
 		var $this = $(this);
+		var hasval = args.length && (args[0] || args[0]  === '') ? true : false;
 		if ($this.hasClass('sui-field')) {
 			var customField = $this.data('customField');
 			if (typeof customField == 'object') return customField.val.apply(this, arguments);
+		} else if ($this.is('input[type="hidden"]')) {
+			var ret = old.apply(this, args);
+			if (hasval) return $this.trigger('change');
+			return ret;
+		} else if ($this.is('input[type="radio"], input[type="checkbox"]')) {
+			var type = $this.is('[type="radio"]') ? 'radio' : 'checkbox';
+			var $parent = $this.parent();
+			if (!$parent.is('label')) return old.apply(this, args); // if not website
+			var $form = $this.closest('form, section, main, body');
+			var $input = $form.find('input[type="'+type+'"][name="'+$this.attr('name')+'"]');
+			if (hasval){
+				var value = type == 'radio' ? [args[0]] : args[0];
+				$input.prop('checked', false);
+				$.each(value,function(k,v){
+					if (v !== '' || v !== null) {
+						$input.filter('[value="'+v+'"]').prop('checked', true);
+					}
+				});
+				return $input.trigger('change');
+			} else {
+				var value = []
+				$input.filter(':checked').each(function(){
+					var $i = $(this);
+					value.push($i.attr('value'));
+				});
+				return type == 'radio' ? value[0] : value;
+			}
 		} else {
 			return old.apply(this, args);
 		}
 	};
 })($.fn.val);
+
+
+
 (function () {
 	$.fn.caret = function (pos) {
 		this.each(function (index, elem) {
@@ -282,7 +313,7 @@ propriedade data-link de um dado elemento.
 					data.nasted[sel] = data.nasted[sel] || {};
 					if (data.nasted[sel][dk] !== v) {
 						data.nasted[sel][dk] = v;
-						if (dk == 'igonore') {
+						if (dk == 'ignore') {
 							data.ignore = data.ignore || {};
 							$.each(v.split(",") || [], function (x, y) {
 								data.ignore[y] = y;
@@ -750,12 +781,12 @@ $(function () {
 		return this;
 	};
 
-	$.fn.ignore = function (bool) {
+	$.fn.ignore = function (bool,only) {
 		var $this = $(this);
-		if (bool === false) return $this.consider();
+		if (bool === false) return $this.consider(true,only);
 		$this.disable(); ///////////////
 		$this.addClass('ignored');
-		$this.find('hasAttr:data-link').addClass('ignored');
+		if (!only) $this.find('hasAttr:data-link').addClass('ignored');
 		if ($this.hasClass('sui-widget')) {
 			$this.find('.title').ignore();
 			$this.find('.area').ignore();
@@ -766,27 +797,39 @@ $(function () {
 			$this.find('.sui-buttonset').ignore();
 		} else if ($this.hasClass('sui-fieldset')) {
 			$this.find('.sui-field').ignore();
+		} else if ($this.hasClass('sui-formgroup')) {
+			$this.find('.sui-field').ignore();
 		} else if ($this.hasClass('sui-buttonset')) {
 			$this.find('.sui-button').ignore();
 		} else if ($this.hasClass('sui-field')) {
+			$this.find(':input').addClass('ignored').prop('disabled',true);
 			$buttons = $this.find('.button').addClass('ignored');
 			$links = $this.find('hasAttr:data-link').addClass('ignored');
 		}
 		$this.trigger($this.is('.sui-field') ? 'field:ignore' : 'ignore');
 		return this;
 	};
+	$.fn.ignoreOnly = function (bool) {
+		$(this).ignore(bool,true);
+		return this;
+	};
 	$.fn.ignored = function (bool) {
 		return $.fn.ignore.apply(this, arguments);
 	};
-	$.fn.consider = function () {
+	$.fn.consider = function (bool,only) {
 		var $this = $(this);
+		if (bool === false) return $this.ignore(true,only);
 		$this.css('transform-origin','left top');
-		$this.velocity({scaleY:[1,0.5],opacity:[1,0]},{duration:150, easing:"easeOutCubic"});
-		$this.find('.ignored').removeClass('ignored disable');
+		$this.filter(':not(:visible)').velocity({scaleY:[1,0.5],opacity:[1,0]},{duration:150, easing:"easeOutCubic"});
+		if (!only) $this.find('.ignored').removeClass('ignored disable').filter(':disabled').prop('disabled',false);
 		$this.removeClass('ignored disable');
 		$this.enable();
-		$this.find('.sui-field').trigger('field:consider');
-		$this.trigger($this.is('.sui-field') ? 'field:ignore' : 'ignore');
+		if (!only) $this.find('.sui-field').trigger('field:consider');
+		$this.trigger($this.is('.sui-field') ? 'field:consider' : 'consider');
+		return this;
+	};
+	$.fn.considerOnly = function (bool) {
+		$(this).consider(bool,true);
 		return this;
 	};
 
