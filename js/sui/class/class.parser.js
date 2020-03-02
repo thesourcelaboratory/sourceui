@@ -137,6 +137,8 @@ sourceui.templates.interface = new sourceui.Template({
 			'<div class="container" id="suiAuthContainer">' +
 			'<div class="modal">' +
 			'@{child:logo}'+
+			'@{child:screen}'+
+			'@{child:system}'+
 			'@{child:forms}' +
 			'</div>' +
 			'<div class="footer">' +
@@ -156,6 +158,14 @@ sourceui.templates.interface = new sourceui.Template({
 					'<div class="trend" style="@{trend}">@{trendname}</div>'+
 					'<div class="text">@{name}</div>'+
 				'</div>'+
+			'</div>',
+		screen:
+			'<div class="screen"@{style}>'+
+				'@{child:screen}' +
+			'</div>',
+		system:
+			'<div class="system"@{style}>'+
+				'@{child:system}' +
 			'</div>',
 		form:
 			'<form class="form @{class:type} @{class:selected}">' +
@@ -1530,6 +1540,14 @@ sourceui.Parser = function () {
 				htmlLogo = Components.libs.logo(sui);
 				var htmlAuth = sui.toHTML('auth', 'container', attr, Template.get);
 				var htmlForm = '';
+				var htmlScreen = '';
+				var htmlSystem = '';
+				sui.findChild('screen', function () {
+					htmlScreen = this.toHTML('auth', 'screen', { child: { screen: this.content() } }, Template.get);
+				});
+				sui.findChild('system', function () {
+					htmlSystem = this.toHTML('auth', 'system', { child: { system: this.content() } }, Template.get);
+				});
 				sui.findChild('form', function () {
 					var suiForm = this,
 						attr = suiForm.attr(),
@@ -1571,7 +1589,9 @@ sourceui.Parser = function () {
 						});
 					});
 				});
-				htmlAuth = Template.replace(htmlAuth, { child: { logo: htmlLogo, forms: htmlForm, footleft: htmlFoot.left, footright: htmlFoot.right } });
+														console.log(htmlScreen);
+
+				htmlAuth = Template.replace(htmlAuth, { child: { logo: htmlLogo, screen: htmlScreen, system: htmlSystem, forms: htmlForm, footleft: htmlFoot.left, footright: htmlFoot.right } });
 				return htmlAuth;
 			},
 			panel: {

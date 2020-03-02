@@ -100,7 +100,7 @@ button:not(.hamburger), .sui-button, input[type="button"], input[type="submit"] 
 button:not(.hamburger):before, .sui-button:before, input[type="button"]:before, input[type="submit"]:before { padding-right:10px; opacity:0.75; font-weight:normal; }
 button:not(.hamburger):hover:not(:disabled), .sui-button:hover:not(:disabled), input[type="button"]:hover:not(:disabled), input[type="submit"]:hover:not(:disabled) { background-color:#444444; }
 button:not(.hamburger):disabled, .sui-button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled { background-color:#999999; color:#BBBBBB; }
-button.cancel, button.close, input[type="reset"] {  margin:0 10px;  background-color:#DDDDDD; color:#222222; border:none; }
+button.cancel, button.close, input[type="reset"] { margin:0 10px;  background-color:#DDDDDD; color:#222222; border:none; }
 button.cancel:hover:not(:disabled), button.close:hover:not(:disabled), input[type="reset"]:hover:not(:disabled) { background-color:#CCCCCC; }
 button.cancel:disabled, button.close:disabled, input[type="reset"]:disabled { background-color:#f2f2f2; color:#DDDDDD; }
 button.transparent, .sui-button.transparent, input.transparent[type="button"], input.transparent[type="submit"] { background:transparent !important; color:var(--text-color) !important; border:none !important; font-weight:bold; }
@@ -451,16 +451,16 @@ main section:last-of-type { border-bottom:none !important;}
 .sui-infobox .sui-buttonset:last-child input[type="button"],
 .sui-infobox .sui-buttonset:last-child input[type="submit"] { padding:10px 30px; }
 .sui-infobox form { padding-top:0 !important; }
-.sui-infobox form .sui-buttonset { padding-top:calc(var(--content-padding) / 2.5); !important; }
+.sui-infobox form .sui-buttonset { padding-top:calc(var(--content-padding) / 2.5) !important; }
 
 @import url('https://fonts.googleapis.com/css?family=Space+Mono:400,400i,700,700i');
 
 .sui-card-container { margin:10px; }
 .sui-credit-card { width: 300px; height: 192px; -webkit-perspective: 600px; -moz-perspective: 600px; perspective:600px; position:relative; font-family: 'Space Mono', monospace; }
-.sui-credit-card > .side { box-shadow: 1px 1px #44444499; top: 0; position: absolute; z-index: 1000; left: 0; display: inline-block; width: 300px; height: 192px; background-image: linear-gradient(to right bottom, #444444, #777777);  border-radius: 8px; -webkit-transition: all .5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition: all .5s cubic-bezier(0.175, 0.885, 0.32, 1.275); -webkit-transform-style: preserve-3d; -webkit-backface-visibility: hidden; }
-.sui-credit-card > .front { padding: 16px; -webkit-transform: rotateY(0); -moz-transform: rotateY(0); }
+.sui-credit-card > .side { box-shadow: 1px 1px #44444499; top: 0; position: absolute; z-index: 1000; left: 0; display: inline-block; width: 300px; height: 192px; background-image: linear-gradient(to right bottom, #444444, #777777);  border-radius: 8px; -webkit-transition: all .5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition: all .5s cubic-bezier(0.175, 0.885, 0.32, 1.275); -webkit-transform-style: preserve-3d; transform-style: preserve-3d; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.sui-credit-card > .front { padding: 16px; -webkit-transform: rotateY(0); -moz-transform: rotateY(0); transform: rotateY(0); }
 .sui-credit-card > .front:before { position: absolute; top: 22px; left: 64px; transform: rotate(45deg); color: #FFF; }
-.sui-credit-card > .back { padding: 16px 0; -webkit-transform: rotateY(-180deg); -moz-transform: rotateY(-180deg); }
+.sui-credit-card > .back { padding: 16px 0; -webkit-transform: rotateY(-180deg); -moz-transform: rotateY(-180deg); transform: rotateY(-180deg); }
 .sui-credit-card > .back > .tag { margin-top: 5px; height: 38px; background-color: #303030; }
 .sui-credit-card > .side > .side { display:none; }
 .sui-credit-card > .front .side { height: 60px; position:absolute; top:2px; right:6px; }

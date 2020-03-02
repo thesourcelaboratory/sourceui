@@ -89,6 +89,8 @@ a code { display:none !important }
 .sui-auth > .container > .modal > .logo.dynamic > .name { position:relative; height:72px; line-height:72px; font-family:var(--font-special); font-size:4.5em; color:#727272; text-shadow:0px 0px 1px #72727280; letter-spacing:-0.08em; font-weight:bold; }
 .sui-auth > .container > .modal > .logo.dynamic > .name > .trend { position:absolute; width:100px; height:30px; line-height:30px; font-size:14px; letter-spacing:-0.5px; color:#555; font-weight:bold; background:no-repeat left center; background-size:contain; filter:grayscale(100%); }
 .sui-auth > .container > .modal > .logo.dynamic > .name > .trend ~ .text { padding-top:8px; }
+.sui-auth > .container > .modal > .screen { text-align: center; font-family:var(--font-special); color: var(--header-text-color); font-size: 2em; font-weight: bold; letter-spacing: -1.8px; }
+.sui-auth > .container > .modal > .system { text-align: center; font-size: 1.5em; font-weight: 600; }
 .sui-auth > .container > .modal > .form { display:none; }
 .sui-auth > .container > .modal > .form > ul { width:100%; list-style:none; margin:0; padding:24px 32px; }
 .sui-auth > .container > .modal > .form > ul > li { padding:8px 16px; text-align:center; margin: 0 auto; }
