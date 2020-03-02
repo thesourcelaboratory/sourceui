@@ -1589,8 +1589,6 @@ sourceui.Parser = function () {
 						});
 					});
 				});
-														console.log(htmlScreen);
-
 				htmlAuth = Template.replace(htmlAuth, { child: { logo: htmlLogo, screen: htmlScreen, system: htmlSystem, forms: htmlForm, footleft: htmlFoot.left, footright: htmlFoot.right } });
 				return htmlAuth;
 			},
