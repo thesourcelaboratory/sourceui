@@ -1967,7 +1967,7 @@ sourceui.Parser = function () {
 								content += this.content();
 							}
 						},function(){
-							content += this.content();
+							content += suiOn.content();
 						});
 						htmlChild += sui.toHTML('code', { attr: { type:'event', on:'widget:'+attr.event}, value: content }, Template.get);
 					});
