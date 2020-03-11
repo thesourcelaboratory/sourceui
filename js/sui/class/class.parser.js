@@ -1458,8 +1458,9 @@ sourceui.Parser = function () {
 				delete a.type;
 				sui.findChild(function () {
 					var attr = this.getAttr() || {};
-					if (n) c[n][this.tagName.toLowerCase()] = this.content() || attr.value || '';
-					else c[this.tagName.toLowerCase()] = this.content() || attr.value || '';
+					var content = this.content() || attr.value || '';
+					if (n) c[n][this.tagName.toLowerCase()] = content;
+					else c[this.tagName.toLowerCase()] = content;
 				}, function () {
 					cn = sui.content();
 					if (n) c[n] = cn || ($.isEmptyObject(a) ? '' : a);
@@ -1954,8 +1955,21 @@ sourceui.Parser = function () {
 						htmlChild += Components.libs.floatbox(suiBox);
 					});
 					sui.findChild('on', function () {
-						var attr = this.attr();
-						htmlChild += sui.toHTML('code', { attr: { type:'event', on:'widget:'+attr.event}, value: this.content() }, Template.get);
+						var suiOn = this;
+						var attr = suiOn.attr();
+						var content = ''
+						suiOn.findChild(function () {
+							if (this.nodeName == 'linkdata'){
+								var linkdata = this.getAttr();
+								linkdata = linkdata.link || linkdata;
+								content += 'var linkdata = '+JSONX.stringify(linkdata)+";\n";
+							} else if (this.nodeName == 'script'){
+								content += this.content();
+							}
+						},function(){
+							content += this.content();
+						});
+						htmlChild += sui.toHTML('code', { attr: { type:'event', on:'widget:'+attr.event}, value: content }, Template.get);
 					});
 					return Template.replace(htmlWidget, { child: { content: htmlChild } });
 				},

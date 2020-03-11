@@ -162,7 +162,12 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 							var y = -1 * matrix[5];
 							obj.moveToUsingTransforms(x, y);
 							obj.$el.css({ position: 'relative' });
-							$list.trigger('reord');
+							var sequence = [];
+							$list.find('.line').each(function(){
+								var $this = $(this);
+								sequence.push($this.data('link-key'));
+							});
+							$list.trigger('widget:reord',[sequence]);
 						}
 						obj.$el.removeClass('dragger');
 					}
