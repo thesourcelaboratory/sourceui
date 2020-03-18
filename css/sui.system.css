@@ -1656,6 +1656,14 @@ body.debug.bugopened .sui-bug-modal > .container > p > span { display:block; }
 .leaflet-control .leaflet-control-attribution { opacity:0.001 !important; }
 /* ----------------------------------------------------- */
 
+/* REGULAR TABLES -------------------------------------- */
+table.sui-table,
+.sui-table table { background-color:rgba(255,255,255,0.8); border-collapse: collapse; }
+.sui-table tr:nth-child(even) { background-color: rgba(180,180,180,0.2); }
+.sui-table th { padding:2px 6px; font-weight:bold; color:#222; text-align:center; background-color:rgba(180,180,180,0.4); border:#bfbfbf solid 1px; min-width:40px; }
+.sui-table td { padding:2px 6px; border:#bfbfbf solid 1px; }
+.sui-table:not(table) { width:calc(100% - 0px); overflow-x: auto; }
+/* ----------------------------------------------------- */
 
 /* DISABLE --------------------------------------------- */
 .disable .toolbar > .tools ol li,
@@ -1748,6 +1756,18 @@ a.focus > .activity-focus { background:rgba(23,139,238,0.07) !important; border-
  }
  .scroll-all, .scroll-xy {
 	overflow-y: auto !important;
+    overflow-x: auto !important;
+	-webkit-overflow-scrolling: touch;
+	/*
+	-webkit-appearance: none;
+	-webkit-transform:translateZ(0);
+	-moz-transform:translateZ(0);
+	-o-transform:translateZ(0);
+	transform:translateZ(0);
+	*/
+ }
+ .scroll-x, .scroll-horizontal {
+	overflow-y: hidden !important;
     overflow-x: auto !important;
 	-webkit-overflow-scrolling: touch;
 	/*
