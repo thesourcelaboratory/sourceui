@@ -488,7 +488,7 @@ main section:last-of-type { border-bottom:none !important;}
 .sui-credit-card-list { display:flex; flex-wrap:wrap; margin:0; padding:0; list-style:none; }
 .sui-credit-card-list > li { width:50px; height:40px; margin:4px 4px 0 0; background-color:#FFF; background-size:96%; background-position:center; background-repeat:no-repeat; border:#f2f2f2 solid 1px; box-shadow:1px 1px 1px 0px rgba(0,0,0,0.1); border-radius:3px; }
 
-.cornerstripe { background: var(--color-info); color: #FFF; width: 300px; position: absolute; right: -106px; top: 12px; text-align: center; padding: 10px; transform: scale(0.75) rotate(45deg); }
+.cornerstripe { background: var(--color-info); color: #FFF !important; width: 300px; position: absolute; right: -106px; top: 12px; text-align: center; padding: 10px !important; transform: rotate(45deg); }
 
 footer { height:var(--footer-height); display:flex; flex-direction:column; justify-content:center; background:var(--header-text-color); color:#FFF; border-top:var(--link-color-hover) solid 6px; }
 footer > .info { display:flex; padding:var(--content-padding); width:100%; max-width:var(--header-width); margin:0 auto; justify-content:space-between; }
