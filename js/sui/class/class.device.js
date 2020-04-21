@@ -313,15 +313,24 @@ sourceui.Device = function (c) {
 		(window.innerHeight >= 600 ? 0 : 1)
 	) >= 3) ? true : false;
 
-
-	if (this.ismobile) {
-		$('#suiBody').addClass('mobile leftcollapsed rightcollapsed');
-		if (Agent.data.os.name == 'iOS' || Agent.data.os.name == 'ios') {
-			$('#suiBody').addClass('ios');
-			if (window.navigator.standalone) $('#suiBody').addClass('standalone');
-		}
+	this.orientation = function(){
+		if (window.innerHeight < window.innerWidth) return 'landscape';
+		else if(window.innerHeight > window.innerWidth) return 'portrait';
+		else false;
 	}
-	if (c.debug) $('#suiBody').addClass('debug');
+
+	var osname = Agent.data.os.name.toLowerCase();
+	var browsername = Agent.data.browser.name.toLowerCase();
+	var $body = $('#suiBody');
+	$body.addClass(osname+' '+browsername);
+	$body.attr('os',Agent.data.os.version);
+	$body.attr('maj',Agent.data.browser.major);
+	if (this.ismobile) {
+		$body.addClass('mobile leftcollapsed rightcollapsed');
+		window.navigator.standalone = window.navigator.standalone || (window.matchMedia('(display-mode: standalone)').matches);
+		if (window.navigator.standalone) $body.addClass('standalone');
+	}
+	if (c.debug) $body.addClass('debug');
 
 	this.debug = function (cfg) {
 		return (cfg) ? Config.debug(cfg) : Config.debug();

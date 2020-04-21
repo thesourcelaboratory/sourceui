@@ -450,10 +450,16 @@ sourceui.customField = function (element, setup) {
 					});
 					Dom.droplist.on('droplist:select', function (event, $item) {
 						var $droplist = $(this).unmark();
+						var $doument = $(document);
 						Value.seed('+', $item.data('seed'));
 						Field.val($item);
-						if (Data.mode == 'single') $(document).trigger('droplist:close');
-						if (Data.mode == 'multiple') Dom.badge.text(Dom.options.find('.option').length);
+						if (Data.mode == 'single') $doument.trigger('droplist:close');
+						if (Data.mode == 'multiple'){
+							Dom.badge.text(Dom.options.find('.option').length);
+							if ($item.siblings(':not(.selected)').length === 0){
+								$doument.trigger('droplist:close');
+							}
+						}
 						Element.trigger('field:change', [$item.data('value')]);
 					});
 					Dom.droplist.on('droplist:unselect', function (event, $item) {
@@ -654,8 +660,13 @@ sourceui.customField = function (element, setup) {
 						setTimeout(function () { $spectrum.spectrum('reflow'); }, 1);
 					});
 					Element.on('field:input', function () {
-						$spectrum.spectrum('set', Dom.input.val());
-						$picker.css('background-color', $spectrum.spectrum('get').toRgbString());
+						var val = Dom.input.val();
+						if (val){
+							$spectrum.spectrum('set', Dom.input.val());
+							$picker.css('background-color', $spectrum.spectrum('get').toRgbString());
+						} else {
+							$picker.css('background-color', 'transparent');
+						}
 					});
 					Element.trigger('field:loaded');
 				},
@@ -909,9 +920,9 @@ sourceui.customField = function (element, setup) {
 					});
 					Element.on('file:unlink', function (event, $file) {
 						var fda = $file.data();
-						var data = $.extend({}, Data.vars.unlink, {
+						var data = $.extend({}, {
 							process: 'unlink'
-						});
+						}, Data.vars.unlink);
 						data.fdata = fda.fdata ? fda.fdata : fda;
 						Element.disable(true);
 						Dom.wrap.addClass('ajax-courtain');
@@ -1108,15 +1119,22 @@ sourceui.customField = function (element, setup) {
 							var collection = { totalsize: fda.size, maxfilesize: Data.vars.upload.maxfilesize, accept: Data.vars.upload.accept, filelist: {} };
 							collection.filelist[fda.id] = fda;
 							var setup = $.extend({ collection: collection }, Data.vars.upload);
-							var netup = new Network.upload(setup);
-							netup.on('test:error', function (e) {
-								$file.trigger('upload:clear');
-								Element.trigger('field:error', ['uploadprepare', 'Upload inválido']);
-							});
-							netup.on('test:done', function (r) {
-								$file.trigger('upload:start');
-							});
-							netup.test();
+							if (!setup.sui){
+								setTimeout(function(){
+									$file.trigger('upload:clear');
+									Element.trigger('field:error',['suimissed', 'SUI não definido']);
+								},300);
+							} else {
+								var netup = new Network.upload(setup);
+								netup.on('test:error', function (e) {
+									$file.trigger('upload:clear');
+									Element.trigger('field:error', ['uploadprepare', 'Upload inválido']);
+								});
+								netup.on('test:done', function (r) {
+									$file.trigger('upload:start');
+								});
+								netup.test();
+							}
 						});
 						$file.on('click', '.cover', function () {
 							var netup = $file.data('netup');
@@ -1177,6 +1195,9 @@ sourceui.customField = function (element, setup) {
 						}
 					});
 					Element.trigger('field:loaded');
+					setTimeout(function(){
+						$filelist.find('.file.video video').trigger('videofit');
+					},300);
 				}
 			},
 			code: {
@@ -1199,7 +1220,7 @@ sourceui.customField = function (element, setup) {
 							}
 						}
 					}, Data.vars || {});
-					setTimeout(function () {
+					//setTimeout(function () {
 						var editor = CodeMirror.fromTextArea(document.getElementById(id), data);
 						editor.on('paste',function(event){
 							//console.log(event);
@@ -1250,7 +1271,7 @@ sourceui.customField = function (element, setup) {
 						});
 						Element.trigger('field:resize').data('editor', editor);
 						Element.trigger('field:loaded');
-					}, 100);
+					//}, 100);
 				}
 			},
 			ace: {
@@ -1335,6 +1356,7 @@ sourceui.customField = function (element, setup) {
 					var data = $.extend(true, {
 						selector: '#' + id,
 						branding: false,
+						entity_encoding : "raw",
 						skin: 'sourceui',
 						resize: false,
 						menubar: false,
@@ -1343,7 +1365,7 @@ sourceui.customField = function (element, setup) {
 						toolbar: tools.MD,
 						plugins: plugins.MD,
 						language: "pt_BR",
-						content_css: 'css/mce-default-content.css?4443',
+						content_css: 'css/mce-default-content.css?'+(Data.vars.cache || new Date().getTime()),
 						autoresize_min_height: 150,
 						table_class_list: [
 							{ title: 'Nenhum', value: '' },
@@ -2264,6 +2286,95 @@ sourceui.customField = function (element, setup) {
 			}
 		},
 		file: {
+			setValAsImage: function(data){
+				var file = this;
+				var $filelist = Dom.queue.children('.files');
+				var reader = new FileReader();
+				var temp = {}
+				reader.onload = function (event) {
+					temp.image = event.target.result;
+					loadImage(
+						temp.image,
+						function (canvas, meta) {
+							data.exif = meta.exif ? meta.exif.getAll() : null;
+							data.iptc = meta.iptc ? meta.iptc.getAll() : null;
+							temp.image = canvas.toDataURL(data.mime, 0.6);
+							temp.maxw = parseInt((Device.ismobile ? 2.8 : 1.4) * $filelist.find('.file, .instruction').width() || $filelist.width());
+							temp.maxh = parseInt((Device.ismobile ? 2.8 : 1.4) * $filelist.find('.file, .instruction').height() || $filelist.height());
+							temp.canvas = loadImage.scale(
+								canvas, {
+									maxWidth: temp.maxw,
+									maxHeight: temp.maxh,
+								}
+							);
+							temp.cover = canvas.toDataURL(data.mime, 0.6);
+							temp.replacers = {style:{bgimage:'background-image:url(\''+temp.cover+'\');'},source:{image:temp.image}};
+							temp.html = Parser.methods.getTemplate('row', 'file', $.extend(true,{},data,temp.replacers));
+							var $html = $(temp.html);
+							$html.data('file', file).hide();
+							$html.find('img')
+								.on('load', function () {
+									data.naturalWidth = this.naturalWidth;
+									data.naturalHeight = this.naturalHeight;
+									$html.data('data', data).addClass('queue');
+									Element.trigger('queue:add', [$html]);
+									$(this).data('loaded', true);
+								})
+								.on('error', function (error) {
+									console.error(error);
+									Element.trigger('field:error', ['imageload', 'Imagem não carregada', error]);
+								});
+							$filelist.append($html);
+						}, {
+							orientation: true,
+							maxWidth: data.maxw?data.maxw/2:1024,
+							maxHeight: data.maxh?data.maxh/2:1024,
+						}
+					);
+				}
+				reader.onerror = function (event) {
+					Element.trigger('field:error', ['filereader', 'Imagem não lida']);
+				};
+				reader.readAsDataURL(file);
+			},
+			setValAsVideo: function(data){
+				var file = this;
+				var temp = {}
+				var $filelist = Dom.queue.children('.files');
+				temp.video = URL.createObjectURL(file);
+				temp.replacers = {source:{video:temp.video}};
+				temp.html = Parser.methods.getTemplate('row', 'file', $.extend(true,{},data,temp.replacers));
+				var $html = $(temp.html);
+				var $video = $html.find('video');
+				var i = 0;
+				$video
+					.on('loadeddata', function(){
+						this.currentTime = this.duration ? parseInt(this.duration/4) : 5;
+					})
+					.on('seeked', function(){
+						var $this = $(this);
+						var video = $this.get(0);
+						var canvas = document.createElement('canvas');
+						canvas.height = video.videoHeight;
+						canvas.width = video.videoWidth;
+						var ctx = canvas.getContext('2d');
+						ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+						$html.find('.cover').css('background-image','url(\''+canvas.toDataURL()+'\')');
+						delete data.cover;
+						delete data.image;
+						data.naturalWidth = this.videoWidth;
+						data.naturalHeight = this.videoHeight;
+						$html.data('data', data).addClass('queue');
+						Element.trigger('queue:add', [$html]);
+						$(this).data('loaded', true);
+
+					})
+					.on('error', function (error) {
+						Element.trigger('field:error', ['imageload', 'Imagem não carregada', error]);
+					});
+				$html.data('file', file);
+				$filelist.append($html);
+			},
 			setval: function (v) {
 				var $filelist = Dom.queue.children('.files');
 				if (v instanceof File) {
@@ -2277,55 +2388,80 @@ sourceui.customField = function (element, setup) {
 						});
 						return false;
 					} else {
+						if (Data.type == 'image' || Data.mode == 'image') Data.fieldtype = 'image';
+						else if (Data.type == 'avatar' || Data.mode == 'avatar') Data.fieldtype = 'image';
+						else if (Data.type == 'video' || Data.mode == 'video') Data.fieldtype = 'video';
+						else if (Data.type == 'audio' || Data.mode == 'audio') Data.fieldtype = 'audio';
+						else if (Data.type == 'document' || Data.mode == 'document') Data.fieldtype = 'document';
+						else if (Data.type == 'multimedia' || Data.mode == 'multimedia') Data.fieldtype = v.type.split('/')[0];
+						else Data.fieldtype = 'file';
 						var id = $.md5(v.name + v.size);
 						var data = {
 							id: id,
 							file: v.name,
 							mime: v.type,
-							type: (Data.type == 'image') ? 'image' : 'file',
+							type: Data.fieldtype,
 							ext: v.name.split('.').pop().toLowerCase(),
 							local: v.local || 'local',
 							name: v.name,
 							size: v.size,
-							bytes: $.formatBytes(v.size)
+							bytes: $.formatBytes(v.size),
+							maxw: Data.vars.upload.maxwidth,
+							maxh: Data.vars.upload.maxheight,
 						};
 						var $hasfile = $filelist.find('#' + id);
 						if ($hasfile.length > 0) Element.trigger('field:fileunlink', [$hasfile]);
-						if (Data.type == 'image') {
-							var reader = new FileReader();
-							reader.onload = function (event) {
-								data.image = event.target.result;
-								$.imgResize({
-									image: data.image,
-									size: 256,
-									mime: data.mime,
-									quality: 1,
-									complete: function (src) {
-										data.cover = src;
-										var html = Parser.methods.getTemplate('row', 'file', data);
-										var $html = $(html);
-										$html.data('file', v).hide();
-										$filelist.append($html);
-										$html.find('img')
-											.on('load', function () {
-												delete data.cover;
-												delete data.image;
-												data.naturalWidth = this.naturalWidth;
-												data.naturalHeight = this.naturalHeight;
-												$html.data('data', data).addClass('queue');
-												Element.trigger('queue:add', [$html]);
-												$(this).data('loaded', true);
-											})
-											.on('error', function (error) {
-												Element.trigger('field:error', ['imageload', 'Imagem não carregada', error]);
-											});
-									}
-								});
-							};
-							reader.onerror = function (event) {
-								Element.trigger('field:error', ['filereader', 'Imagem não lida']);
-							};
-							reader.readAsDataURL(v);
+						if (Data.fieldtype.search(/image|video/g) > -1){
+							if (data.mime.indexOf('image') > -1){
+								Caller.file.setValAsImage.apply(v,[data]);
+							} else if (data.mime.indexOf('video') > -1){
+								Caller.file.setValAsVideo.apply(v,[data]);
+							} else {
+								Element.trigger('field:error', ['filereader', 'Tipo inesperado']);
+							}
+							/*
+							$.imgOrientation({
+								image:v,
+								complete: function(orientation){
+									data.orientation = orientation;
+									var reader = new FileReader();
+									reader.onload = function (event) {
+										data.image = event.target.result;
+										$.imgResize({
+											image: data.image,
+											size: 256,
+											mime: data.mime,
+											quality: 1,
+											orientation: data.orientation,
+											complete: function (src) {
+												data.cover = src;
+												var html = Parser.methods.getTemplate('row', 'file', data);
+												var $html = $(html);
+												$html.data('file', v).hide();
+												$filelist.append($html);
+												$html.find('img')
+													.on('load', function () {
+														delete data.cover;
+														delete data.image;
+														data.naturalWidth = this.naturalWidth;
+														data.naturalHeight = this.naturalHeight;
+														$html.data('data', data).addClass('queue');
+														Element.trigger('queue:add', [$html]);
+														$(this).data('loaded', true);
+													})
+													.on('error', function (error) {
+														Element.trigger('field:error', ['imageload', 'Imagem não carregada', error]);
+													});
+											}
+										});
+									};
+									reader.onerror = function (event) {
+										Element.trigger('field:error', ['filereader', 'Imagem não lida']);
+									};
+									reader.readAsDataURL(v);
+								}
+							});
+							*/
 						} else {
 							var html = Parser.methods.getTemplate('row', 'file', data);
 							var $html = $(html);
@@ -2341,7 +2477,7 @@ sourceui.customField = function (element, setup) {
 						$file;
 						var data = v.attr();
 						data.local = 'remote';
-						if (data.type == 'image') {
+						if (Data.fieldtype.indexOf('image') > -1) {
 							data.image = v.content() || v.image;
 						}
 						var html = Parser.methods.getTemplate('row', 'file', data);
@@ -2355,11 +2491,8 @@ sourceui.customField = function (element, setup) {
 			getval: function () {
 				var value = [];
 				Element.find('.files > .file').each(function () {
-					value.push($(this).data('fdata'));
+					value.push($(this).data());
 				});
-				if (Data.mode == 'multiple') {
-					return value;
-				}
 				return value[0] || {};
 			}
 		},
@@ -2419,7 +2552,15 @@ sourceui.customField = function (element, setup) {
 				var vdata = Element.data('validate') || {};
 				if (!vdata.required) return valueValid = true;
 				var value = val || Field.val();
-				if (Data.required && (typeof value == 'undefined' || String(value).length === 0)) Element.trigger('field:error', ['required', 'Campo obrigatório']);
+				if (Data.required && (
+					typeof value == 'undefined' ||
+					value === null ||
+					value === '' ||
+					($.isArray(value) && value.length === 0) ||
+					($.isPlainObject(value) && $.isEmptyObject(value))
+				)){
+					Element.trigger('field:error', ['required', 'Campo obrigatório']);
+				}
 				else Element.trigger('field:valid');
 				return valueValid;
 			},
@@ -2740,7 +2881,7 @@ sourceui.customField = function (element, setup) {
 			} else {
 				Element.trigger('field:error', ['setval', 'Método inválido']);
 			}
-		}
+		},
 	};
 
 	this.val = function () {

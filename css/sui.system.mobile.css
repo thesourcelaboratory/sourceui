@@ -200,7 +200,8 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-widget > .helper { font-size:12.777px; }
 .sui-widget > .helper > h2 { font-size:20px; }
 .sui-widget > .title { height:48px; padding: 0 0 0 16px; background:#E9E9E9; }
-.sui-widget > .title .label { line-height:47px; font-size:13.33px; width:auto; overflow: hidden; text-overflow: ellipsis; }
+.sui-widget > .title > .icon { display:none; }
+.sui-widget > .title .label { line-height:47px; font-size:13.33px; width:auto; overflow: hidden; text-overflow: ellipsis; padding-left:0 !important; margin: 0; }
 .sui-widget > .title .label:last-child { max-width:inherit !important; }
 .sui-widget > .title .label span { letter-spacing:-0.65px; }
 .sui-widget > .title > .toolbar { position:relative; height: 48px; min-width:calc(100% - 192px); }

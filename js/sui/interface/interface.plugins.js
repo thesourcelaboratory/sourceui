@@ -875,8 +875,19 @@ sourceui.interface.plugins = function () {
 				var $edition = editor.dom.editions.filter('.view');
 				var $stage = $edition.children('.stage');
 				var $buttons = $edition.find('.buttons > li > a');
-				var $image = editor.image.clone();
-				$image.on('load', function () {
+				if (editor.imagelite){
+					var $image = $('<img src="'+editor.imagelite+'"/>');
+					$image.one('load', function () {
+						$image.trigger('prepared');
+						$image.attr('src',editor.image.attr('src'));
+					});
+				} else {
+					var $image = editor.image.clone();
+					$image.on('load', function () {
+						$image.trigger('prepared');
+					});
+				}
+				$image.on('prepared', function () {
 					$image.appendTo($stage);
 					var stg = {
 						width: $stage.width(),
@@ -1080,6 +1091,8 @@ sourceui.interface.plugins = function () {
 				if (editor.source.hasClass('file')) {
 					editor.file = editor.source;
 					editor.image = editor.file.find('img');
+					editor.imagelite = editor.file.find('.cover').css('background-image');
+					editor.imagelite = editor.imagelite ? editor.imagelite.substring(5,editor.imagelite.length-3) : null;
 					if (!editor.image.length) {
 						console.error('Image source from field ' + editor.source.data('name') + ' is required for edition.');
 						return;

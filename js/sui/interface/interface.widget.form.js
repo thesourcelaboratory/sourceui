@@ -44,18 +44,34 @@ sourceui.interface.widget.form = function ($widget, setup) {
 		var $field = $(event.target).addClass('modified');
 		Form.common.toggleTools('field:input');
 		Form.widget.trigger('widget:input',[$field]);
+		Form.hasValue($field);
 	});
 	Form.widget.on('field:change', function (event, $lines) {
 		var $field = $(event.target).addClass('modified');
 		Form.common.toggleTools('field:change');
 		Form.widget.trigger('widget:change',[$field]);
+		Form.hasValue($field);
 	});
 	Form.widget.on('field:keyboard', function (event, $lines) {
 		var $field = $(event.target).addClass('modified');
 		Form.common.toggleTools('field:keyboard');
 		Form.widget.trigger('widget:keyboard',[$field]);
+		Form.hasValue($field);
 	});
 	// ------------------------------------------------------
+
+	Form.hasValue = function($field){
+		$field.each(function(){
+			var $this = $(this);
+			if ($this.is('.mce, .code')) return true;
+			var v = $this.val();
+			if (v === '' || v == null || (v && (v.length === 0 || $.isEmptyObject(v)))){
+				$this.removeClass('valued');
+			} else {
+				$this.addClass('valued');
+			}
+		});
+	}
 
 	Form.fdname = function (name) {
 		if (name.indexOf('[]') > -1) {
@@ -156,6 +172,5 @@ sourceui.interface.widget.form = function ($widget, setup) {
 		}
 		return Form.valid;
 	};
-
-
+	Form.hasValue(Form.fields);
 };

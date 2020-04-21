@@ -815,7 +815,7 @@ a code { display:none !important }
 .sui-widget.datagrid > .area .list .line > .col > table td { font-size:9px; padding:0; }
 .sui-widget.datagrid > .area .list .line > .col > table th { font-size:9px; padding:0; }
 .sui-widget.datagrid > .area .list .line > .col small ~ small:last-child { font-size:8.5px; opacity:0.75; }
-.sui-widget.datagrid > .area .list .line > .col b.rounded { display:inline-block; color:#FFF; margin-top:2px; padding:2px 8px; border-radius:8px; font-size:10px; margin-right:5px; }
+.sui-widget.datagrid > .area .list .line > .col b.rounded { display:inline-block; color:#FFF; margin-top:2px; padding:2px 8px; border-radius:8px; font-size:8.333px; margin-right:2px; }
 .sui-widget.datagrid > .area .list .line > .col u:not([class*="icon-"]) { text-decoration:none; border-bottom:dotted 1px rgba(0,0,0,0.185); }
 .sui-widget.datagrid .no-sequence .col.seq,
 .sui-widget.datagrid .no-sequence .col.seq,
@@ -847,7 +847,7 @@ a code { display:none !important }
 */
 
 .sui-widget.datagrid > .area .list .line.done { background:#fcfcfc; }
-.sui-widget.datagrid > .area .list .line.done .col:not(.swiper):not(.check) { opacity:0.6; filter:grayscale(35%); }
+.sui-widget.datagrid > .area .list .line.done .col:not(.swiper):not(.check) { opacity:0.5; filter:grayscale(40%); }
 
 .sui-widget.datagrid > .area .list .line.removed { background:#fafafa; }
 .sui-widget.datagrid > .area .list .line.removed .col:not(.swiper):not(.check) { opacity:0.4; filter:grayscale(95%); }

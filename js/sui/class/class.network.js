@@ -1046,7 +1046,8 @@ sourceui.Network = function () {
 						fingerprint: Device.fingerprint.get(),
 						target: setup.targetSelector,
 						render: setup.render,
-						field: setup.fieldSelector
+						field: setup.fieldSelector,
+						timeout: setup.timeout
 					};
 					var postData = {
 						modified: setup.modified,
@@ -1421,6 +1422,7 @@ sourceui.Network = function () {
 				setup.data = setup.collection;
 			}
 			setup.sui = setup.sui || setup.url;
+			setup.timeout = setup.timeout || 120000
 			setup.metric = new Metric();
 			//setup.suisrc = Server.name+setup.sui;
 			setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1) ? setup.sui : Server.name + setup.sui;
@@ -1481,8 +1483,7 @@ sourceui.Network = function () {
 						config.contentType = false;
 						$.each(setup.data || [], function (k, v) { fdata.append(k, v); });
 						config.data = fdata;
-					}
-					else {
+					} else {
 						config.data = setup.data;
 					}
 					config.xhr = function () {
@@ -1526,7 +1527,8 @@ sourceui.Network = function () {
 							fingerprint: Device.fingerprint.get(),
 							target: setup.targetSelector,
 							render: setup.render,
-							validate: setup.validate
+							validate: setup.validate,
+							timeout: setup.timeout
 						};
 						var requestKey = {
 							sui: setup.sui,
@@ -1568,7 +1570,8 @@ sourceui.Network = function () {
 						xhr.setRequestHeader('X-Sui-Request-Payload', btoa(JSON.stringify(requestHeaderPayload)));
 						// ==========================================================================
 					};
-					return $.ajax(config)
+					/////////////////////////////////////
+					var ajaxXHR = $.ajax(config)
 						.done(function (data, status, xhr) {
 							setup.response = {
 								error: false,
@@ -1656,6 +1659,7 @@ sourceui.Network = function () {
 							Upload.trigger('fail', [xhr, status, error]);
 						})
 						.always(function (data, status, xhr) {
+							clearTimeout(setup.obtimeout);
 							Console.log({
 								mode: 'Local',
 								color: '#ADAAA9',
@@ -1667,6 +1671,21 @@ sourceui.Network = function () {
 							if (typeof setup.onalways == 'function')
 								setup.onalways.call(Ajax, data, status, xhr);
 						});
+					/////////////////////////////////////
+					setup.obtimeout = setTimeout(function () {
+						if (!setup.response) {
+							Notify.open({
+								type: 'warn',
+								name: 'O upload não foi concluído',
+								label: setup.sui,
+								message: 'O tempo limite da conexão foi alcançado ('+setup.timeout+'ms).',
+							});
+							Upload.stop();
+						}
+					}, setup.timeout);
+					/////////////////////////////////////
+					return ajaxXHR;
+					/////////////////////////////////////
 				}
 			};
 			this.on = function (event, callback) {
@@ -1681,7 +1700,7 @@ sourceui.Network = function () {
 				});
 			};
 			this.test = function () {
-				setup.process = 'upload';
+				setup.process = setup.process || 'upload';
 				setup.precheck = 'test';
 				setup.data = setup.collection || {};
 				Upload.resume();
@@ -1694,7 +1713,7 @@ sourceui.Network = function () {
 				});
 			};
 			this.start = function () {
-				setup.process = 'upload';
+				setup.process = setup.process || 'upload';
 				if (setup.chunk) {
 					Methods.readFile();
 					Upload.on('read', function () {
@@ -1754,13 +1773,11 @@ sourceui.Network = function () {
 			};
 			this.resume = function () {
 				setup.state = 1;
-				if (formdata[fdx] || setup.precheck)
-					ajax = Methods.send(formdata[fdx]);
+				if (formdata[fdx] || setup.precheck) ajax = Methods.send(formdata[fdx]);
 				Upload.trigger('resume', []);
 			};
 			this.stop = function () {
-				if (ajax)
-					ajax.abort();
+				if (ajax) ajax.abort();
 				setup.state = 0;
 			};
 			this.state = function () {

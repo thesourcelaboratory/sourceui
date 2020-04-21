@@ -81,7 +81,7 @@ sourceui.templates.fields = new sourceui.Template({
 			'@{child:buttonafter}' +
 			'</div>',
 		rows:
-			'<div class="table @{class}">' +
+			'<div class="table @{class}"@{style}>' +
 			'@{child:rows}' +
 			'</div>',
 		filetools:
@@ -129,16 +129,16 @@ sourceui.templates.fields = new sourceui.Template({
 		simple:
 			'<div class="row @{name}">@{child:cell}</div>',
 		file:
-			'<div class="file @{extension} @{type} @{local} @{ext}" data-extension="@{extension}" data-id="@{id}" data-type="@{type}" data-bytes="@{bytes}" data-mime="@{mime}" data-file="@{file}" data-size="@{bites}" data-name="@{name}" data-href="@{href}" id="@{id}">' +
-			'<video controls preload="auto" width="100%" height="100%" poster="@{cover}">' +
-			'<source src="@{href}">' +
-			'</video>' +
-			'<img src="@{image}" crossorigin="@{crossorigin}" />' +
-			'<div class="cover" style="background-image:url(@{cover})">' +
+			'<div class="file @{extension} @{type} @{local} @{ext}" style="@{style:dimensions}" data-extension="@{extension}" data-id="@{id}" data-type="@{type}" data-bytes="@{bytes}" data-mime="@{mime}" data-orientation="@{orientation}" data-file="@{file}" data-size="@{bites}" data-name="@{name}" data-href="@{href}" id="@{id}">' +
+			'<video controls preload="none" style="@{style:dimensions}" poster="@{source:cover}"><source src="@{source:video}"></video>' +
+			'<audio controls><source src="@{source:audio}"></audio>' +
+			'<img src="@{source:image}" crossorigin="@{crossorigin}" />' +
+			'<div class="cover" style="@{style:bgimage}@{style:bgcolor}">' +
 			'<div class="circle">' +
 			'<svg class="knob" width="100%" height="100%" viewbox="0 0 100 100">' +
-			'<circle class="donut" cx="50" cy="50" r="45" fill="transparent" stroke-width="10" stroke="rgba(255,255,255,0.9)" stroke-dasharray="284.743" stroke-dashoffset="284.743"/>' +
-			'<circle class="prepare" cx="50" cy="50" r="45" fill="transparent" stroke-width="10" stroke="rgba(255,255,255,0.9)" stroke-dasharray="70" stroke-dashoffset="244"></circle>' +
+			'<circle class="baseline" cx="50" cy="50" r="45" fill="transparent" stroke-width="5" stroke="rgba(0,0,0,0.15)" stroke-dasharray="284.743" stroke-dashoffset="0"/>' +
+			'<circle class="donut" cx="50" cy="50" r="45" fill="transparent" stroke-width="5" stroke="rgba(255,255,255,0.9)" stroke-dasharray="284.743" stroke-dashoffset="284.743"/>' +
+			'<circle class="prepare" cx="50" cy="50" r="45" fill="transparent" stroke-width="5" stroke="rgba(255,255,255,0.9)" stroke-dasharray="70" stroke-dashoffset="244"></circle>' +
 			'</svg>' +
 			'</div>' +
 			'</div>' +
@@ -377,8 +377,13 @@ sourceui.parserField = function (element, setup) {
 				var suiFile = this;
 				var file = suiFile.getAttr();
 				file.value = file.value || suiFile.content();
-				file.cover = (file.type == 'image') ? file.cover || file.value || '' : '';
-				file.image = (file.type == 'image') ? file.value || file.cover || '' : '';
+				file.source = {};
+				file.source.poster = file.cover || file.poster || (file.mime.indexOf('image') > -1 ? file.value || file.src : '') || '';
+				file.source.cover = file.source.poster;
+				file.source[file.type] = file.value || file.source || file.cover || '';
+				file.style = file.style || {};
+				file.style.bgimage = (file.source.poster) ? 'background-image:url(\''+file.source.poster+'\');' : '';
+				file.style.bgcolor = (file.bgcolor) ? 'background-color:'+file.bgcolor+';' : '';
 				fd.filelist.push(file);
 			});
 		},
@@ -788,6 +793,7 @@ sourceui.parserField = function (element, setup) {
 						Template.get('table', 'filetools', { icon: setup.icon.icon, label: setup.icon.label }) +
 						Template.get('table', 'rows', {
 							class: 'queue',
+							style: setup.style ? (setup.style.width||'')+(setup.style.height||'') : '',
 							child: {
 								rows: HTML.common.cell(tpl),
 							}
@@ -846,6 +852,8 @@ sourceui.parserField = function (element, setup) {
 						cursoricon: setup.cursoricon || '',
 						child: {
 							files: (!setup.filelist) ? '' : Template.get('row', 'file', setup.filelist, function (k, v) {
+								v.style = v.style || {};
+								v.style.dimensions = setup.style ? (setup.style.width||'')+(setup.style.height||'') : '';
 								return {
 									id: v.id,
 									file: v.value,
@@ -855,7 +863,8 @@ sourceui.parserField = function (element, setup) {
 									extension: v.extension || v.ext,
 									local: v.local ? v.local : 'remote',
 									cover: v.cover,
-									image: v.image,
+									source: v.source,
+									style: v.style,
 									href: v.href,
 									name: v.name,
 									bytes: $.formatBytes(v.size),
@@ -1367,7 +1376,11 @@ sourceui.parserField = function (element, setup) {
 				var json = (typeof Field.setup.json == 'object') ? Field.setup.json : JSONX.parse(Field.setup.json || '{}');
 				Field.setup.setval = 'caller';
 				Field.setup.getval = 'caller';
-				Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-attachment3', label: 'Selecionar arquivo' }
+				if (Field.setup.mode == 'image') Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-circle', label: 'Selecionar imagem' }
+				else if (Field.setup.mode == 'avatar') Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-circle', label: 'Selecionar imagem' }
+				else if (Field.setup.mode == 'video') Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-attachment3', label: 'Selecionar vídeo' }
+				else if (Field.setup.mode == 'document') Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-attachment3', label: 'Selecionar documento' }
+				else Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-attachment3', label: 'Selecionar arquivo' }
 				Field.setup.instructionicon = (json.general) ? json.general.emptycover || 'icon-file' : '';
 				return HTML.common.field({ table: 'file', cell: 'files' });
 			},
@@ -1377,7 +1390,7 @@ sourceui.parserField = function (element, setup) {
 				var general = (Field.setup.json && typeof Field.setup.json.general == 'string') ? JSONX.parse(Field.setup.json.general || '{}') : Field.setup.json.general;
 				Field.setup.setval = 'caller';
 				Field.setup.getval = 'caller';
-				Field.setup.class += ' file';
+				Field.setup.class = Field.setup.class.replace(/simple|file/g,'file');
 				Field.setup.accept = Field.setup.accept || 'image/*';
 				Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-circle', label: 'Selecionar imagem' }
 				Field.setup.instructionicon = (general) ? general.emptycover || 'icon-image3' : '';
@@ -1387,9 +1400,21 @@ sourceui.parserField = function (element, setup) {
 				var general = (Field.setup.json && typeof Field.setup.json.general == 'string') ? JSONX.parse(Field.setup.json.general || '{}') : Field.setup.json.general;
 				Field.setup.setval = 'caller';
 				Field.setup.getval = 'caller';
-				Field.setup.class += ' file';
+				Field.setup.class = Field.setup.class.replace(/simple|file/g,'file');
 				Field.setup.accept = Field.setup.accept || '.jpg, .jpeg, .png';
 				Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-circle' }
+				Field.setup.instructionicon = (general) ? general.emptycover || 'icon-image3' : '';
+				return HTML.common.field({ table: 'file', cell: 'files' });
+			},
+		},
+		video: {
+			single: function () {
+				var general = (Field.setup.json && typeof Field.setup.json.general == 'string') ? JSONX.parse(Field.setup.json.general || '{}') : Field.setup.json.general;
+				Field.setup.setval = 'caller';
+				Field.setup.getval = 'caller';
+				Field.setup.class = Field.setup.class.replace(/simple|file/g,'file');
+				Field.setup.accept = Field.setup.accept || 'video/*';
+				Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-attachment3', label: 'Selecionar vídeo' }
 				Field.setup.instructionicon = (general) ? general.emptycover || 'icon-image3' : '';
 				return HTML.common.field({ table: 'file', cell: 'files' });
 			},
@@ -1529,6 +1554,7 @@ sourceui.parserField = function (element, setup) {
 				case 'slider': return setup.mode && HTML.slider[Field.setup.mode] ? HTML.slider[Field.setup.mode]() : HTML.slider.simple(); break;
 				case 'file': return setup.mode && HTML.file[Field.setup.mode] ? HTML.file[Field.setup.mode]() : HTML.file.single(); break;
 				case 'image': return setup.mode && HTML.image[Field.setup.mode] ? HTML.image[Field.setup.mode]() : HTML.image.single(); break;
+				case 'video': return setup.mode && HTML.video[Field.setup.mode] ? HTML.video[Field.setup.mode]() : HTML.video.single(); break;
 				case 'picker': return setup.mode && HTML.picker[Field.setup.mode] ? HTML.picker[Field.setup.mode]() : HTML.picker.single(); break;
 				case 'ace': return setup.mode && HTML.ace[Field.setup.mode] ? HTML.ace[Field.setup.mode]() : HTML.ace.editor(); break;
 				case 'code': return setup.mode && HTML.code[Field.setup.mode] ? HTML.code[Field.setup.mode]() : HTML.code.editor(); break;

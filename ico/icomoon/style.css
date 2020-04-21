@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?n5tk2t');
-  src:  url('fonts/icomoon.eot?n5tk2t#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?n5tk2t') format('truetype'),
-    url('fonts/icomoon.woff?n5tk2t') format('woff'),
-    url('fonts/icomoon.svg?n5tk2t#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?t3z0se');
+  src:  url('fonts/icomoon.eot?t3z0se#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?t3z0se') format('truetype'),
+    url('fonts/icomoon.woff?t3z0se') format('woff'),
+    url('fonts/icomoon.svg?t3z0se#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -20,13 +20,90 @@
   font-variant: normal;
   text-transform: none;
   line-height: 1;
-  */
-
+*/
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-letter-a:before {
+  content: "\ecbc";
+}
+.icon-letter-b:before {
+  content: "\ecbd";
+}
+.icon-letter-c:before {
+  content: "\ecbe";
+}
+.icon-letter-d:before {
+  content: "\ecbf";
+}
+.icon-letter-e:before {
+  content: "\ecc0";
+}
+.icon-letter-f:before {
+  content: "\ecc1";
+}
+.icon-letter-g:before {
+  content: "\ecc2";
+}
+.icon-letter-h:before {
+  content: "\ecc3";
+}
+.icon-letter-i:before {
+  content: "\ecc4";
+}
+.icon-letter-j:before {
+  content: "\ecc5";
+}
+.icon-letter-k:before {
+  content: "\ecc6";
+}
+.icon-letter-l:before {
+  content: "\ecc7";
+}
+.icon-letter-m:before {
+  content: "\ecc8";
+}
+.icon-letter-n:before {
+  content: "\ecc9";
+}
+.icon-letter-o:before {
+  content: "\ecca";
+}
+.icon-letter-p:before {
+  content: "\eccb";
+}
+.icon-letter-q:before {
+  content: "\eccc";
+}
+.icon-letter-r:before {
+  content: "\eccd";
+}
+.icon-letter-s:before {
+  content: "\ecce";
+}
+.icon-letter-t:before {
+  content: "\eccf";
+}
+.icon-letter-u:before {
+  content: "\ecd0";
+}
+.icon-letter-v:before {
+  content: "\ecd1";
+}
+.icon-letter-w:before {
+  content: "\ecd2";
+}
+.icon-letter-x:before {
+  content: "\ecd3";
+}
+.icon-letter-y:before {
+  content: "\ecd4";
+}
+.icon-letter-z:before {
+  content: "\ecd5";
+}
 .icon-burger:before {
   content: "\e921";
 }
@@ -168,7 +245,7 @@
 .icon-foodtool:before {
   content: "\eca8";
 }
-.icon-letter-m:before {
+.icon-eme:before {
   content: "\ecb8";
 }
 .icon-parking:before {
@@ -608,6 +685,9 @@
 }
 .icon-camera3:before {
   content: "\ec4b";
+}
+.icon-carousel:before {
+  content: "\ecd6";
 }
 .icon-store-3:before {
   content: "\ea08";
