@@ -637,7 +637,7 @@
 /* FILE AVATAR */
 .sui-field.file.avatar > .wrap { width:128px; height:auto !important; border-color:transparent !important; background-color:transparent !important; overflow-x:unset; }
 .sui-field.file.avatar > .wrap > .tools > .cell.button.browse { top:-2px; left:-8px; font-size:29px; }
-.sui-field.file.avatar > .wrap > .tools > .cell.button:before { margin-top:-10px; }
+.sui-field.file.avatar > .wrap > .tools > .cell.button:before { margin-top:-10px !important; }
 .sui-field.file.avatar > .wrap > .queue { height:128px; }
 .sui-field.file.avatar > .wrap > .queue > .files { border-radius:100%; width:128px; height:128px; }
 .sui-field.file.avatar > .wrap > .queue > .files > .instruction { background-image:url('../img/no-image.png'); left:50%; top:50%; margin:-64px 0 0 -64px; border-radius:100%;  }
@@ -685,8 +685,8 @@
 .sui-field.mce > label:not(:empty) ~ .wrap { width:calc(100% - 200px); }
 .sui-field.mce > .wrap > .table { width:100%; border-radius:0; }
 .sui-field.mce > .wrap > .table > .cell.value .input { display:none; }
-.sui-field.mce > label:empty ~ .wrap.mce-panel { border-color:rgba(0,0,0,0.1); }
-.sui-field.mce > label:not(:empty) ~ .wrap.mce-panel { border-color:#c6c6c6 }
+.sui-field.mce > label:empty ~ .mce-panel { border-color:rgba(0,0,0,0.1); }
+.sui-field.mce > label:not(:empty) ~ .mce-panel { border-color:#c6c6c6 }
 .sui-field.mce textarea { display:none; }
 .sui-field.mce .mce-edit-area { border-color: #e4e4e4; }
 .sui-field.mce .mce-toolbar-grp { padding:0; }
@@ -695,6 +695,8 @@
 .sui-field.mce .mce-ico { color:#666; }
 .sui-field.mce .mce-ico[class*="icon-"] { margin:-3px 0 0 -1px; }
 .sui-field.mce .mce-ico[class*="icon-"]:before { font-size:18px; }
+.sui-field.mce.no-label:only-of-type > .wrap { padding:0 !important; }
+.sui-field.mce.no-label:only-of-type > .wrap  .mce-panel  { border-color:rgba(0,0,0,0.1); }
 .mce-menu { padding:0 !important; }
 .mce-menu-item:hover, .mce-menu-item.mce-selected, .mce-menu-item:focus { background:#e6e6e6 !important; color:#333 !important; }
 .mce-menu-item:hover .mce-text, .mce-menu-item.mce-selected .mce-text, .mce-menu-item:focus .mce-text, .mce-menu-item .mce-ico, .mce-menu-item .mce-text { color:#333 !important; }

@@ -1390,7 +1390,7 @@ sourceui.parserField = function (element, setup) {
 				var general = (Field.setup.json && typeof Field.setup.json.general == 'string') ? JSONX.parse(Field.setup.json.general || '{}') : Field.setup.json.general;
 				Field.setup.setval = 'caller';
 				Field.setup.getval = 'caller';
-				Field.setup.class = Field.setup.class.replace(/simple|file/g,'file');
+				Field.setup.class = Field.setup.class.replace(/simple|file|image|avatar|\s+/g,'')+' file image';
 				Field.setup.accept = Field.setup.accept || 'image/*';
 				Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-circle', label: 'Selecionar imagem' }
 				Field.setup.instructionicon = (general) ? general.emptycover || 'icon-image3' : '';
@@ -1400,7 +1400,7 @@ sourceui.parserField = function (element, setup) {
 				var general = (Field.setup.json && typeof Field.setup.json.general == 'string') ? JSONX.parse(Field.setup.json.general || '{}') : Field.setup.json.general;
 				Field.setup.setval = 'caller';
 				Field.setup.getval = 'caller';
-				Field.setup.class = Field.setup.class.replace(/simple|file/g,'file');
+				Field.setup.class = Field.setup.class.replace(/simple|file|image|avatar|\s+/g,'')+' file image avatar';
 				Field.setup.accept = Field.setup.accept || '.jpg, .jpeg, .png';
 				Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-circle' }
 				Field.setup.instructionicon = (general) ? general.emptycover || 'icon-image3' : '';
@@ -1412,7 +1412,7 @@ sourceui.parserField = function (element, setup) {
 				var general = (Field.setup.json && typeof Field.setup.json.general == 'string') ? JSONX.parse(Field.setup.json.general || '{}') : Field.setup.json.general;
 				Field.setup.setval = 'caller';
 				Field.setup.getval = 'caller';
-				Field.setup.class = Field.setup.class.replace(/simple|file/g,'file');
+				Field.setup.class = Field.setup.class.replace(/simple|file|image|video|\s+/g,'')+' file video';
 				Field.setup.accept = Field.setup.accept || 'video/*';
 				Field.setup.icon = (Field.setup.icon) ? Field.setup.icon : { icon: 'icon-attachment3', label: 'Selecionar vídeo' }
 				Field.setup.instructionicon = (general) ? general.emptycover || 'icon-image3' : '';
