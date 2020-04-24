@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?enhiec');
-  src:  url('fonts/icomoon.eot?enhiec#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?enhiec') format('truetype'),
-    url('fonts/icomoon.woff?enhiec') format('woff'),
-    url('fonts/icomoon.svg?enhiec#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?xj13uo');
+  src:  url('fonts/icomoon.eot?xj13uo#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?xj13uo') format('truetype'),
+    url('fonts/icomoon.woff?xj13uo') format('woff'),
+    url('fonts/icomoon.svg?xj13uo#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -239,6 +239,12 @@
 }
 .icon-foodtool:before {
   content: "\eca8";
+}
+.icon-technologic-signal:before {
+  content: "\ecd8";
+}
+.icon-satellite:before {
+  content: "\ecd9";
 }
 .icon-tower-energy:before {
   content: "\eaad";
