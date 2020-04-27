@@ -119,6 +119,21 @@ sourceui.interface.widget.map = function($widget,setup){
 				Stuffs[id] = marker;
 			}
 		});
+		Wap.widget.on('polyline:add',function(event,cfg){
+			var points = []
+			if (cfg.pointgroup){
+				var id = 'polyline:'+(cfg.id || $.md5(Object.keys(Stuffs).length+','+points.length+','+cfg.pointgroup[0].lat+','+cfg.pointgroup[0].lon));
+				var polyline = new L.polyline(cfg.pointgroup,cfg).addTo(Map);
+				if (cfg.popup) polyline.bindPopup(decodeURIComponent(cfg.popup));
+				$.each(cfg.on || [], function(k,v){
+					polyline.on(k,v);
+				});
+				Stuffs[id] = polyline;
+			}
+		});
+
+
+
 		Wap.widget.on('marker:remove',function(event,marker){
 			if (typeof marker != 'object' && marker !== null) marker = Stuffs[marker] || Stuffs['marker:'+marker];
 			if (marker){
@@ -127,15 +142,12 @@ sourceui.interface.widget.map = function($widget,setup){
 			}
 		});
 		Wap.widget.on('map:fitstuffs',function(event){
+			var fitpad = Wap.cfg.fitPadding || 20;
 			var stuffkeys = Object.keys(Stuffs);
 			var stuffvals = Object.values(Stuffs);
 			var stf = stuffkeys.length;
 			if (stf > 0){
-				if (stf == 1){
-					Map.setView(stuffvals[0].getLatLng(), Wap.cfg.zoom || 15);
-				} else {
-					Map.fitBounds(L.featureGroup(stuffvals).getBounds(), {padding: [20,20]});
-				}
+				Map.fitBounds(L.featureGroup(stuffvals).getBounds(), {padding: [fitpad,fitpad], animate:false});
 			} else if (Wap.cfg.lat && Wap.cfg.lon){
 				Map.setView([Wap.cfg.lat, Wap.cfg.lon], Wap.cfg.zoom);
 			} else {
@@ -155,7 +167,11 @@ sourceui.interface.widget.map = function($widget,setup){
 
 		$.each(Wap.cfg.markers || [], function(k,cfg){
 			Wap.widget.trigger('marker:add',[cfg]);
-        });
+		});
+
+		$.each(Wap.cfg.polylines || [], function(k,cfg){
+			Wap.widget.trigger('polyline:add',[cfg]);
+		});
 
 		if (Wap.cfg.heatmap){
 			setTimeout(function(){

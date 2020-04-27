@@ -64,6 +64,15 @@
 
         var Map = this.map = L.map(Setup.id, Setup);
 
+        /*
+        var tempoints = []
+        Map.on('click', function(e) {
+            tempoints.push([e.latlng.lat,e.latlng.lng]);
+            console.log(JSON.stringify(tempoints));
+        });
+        */
+
+
         Target.data('map',Map);
 
         this.icon = function (color) {

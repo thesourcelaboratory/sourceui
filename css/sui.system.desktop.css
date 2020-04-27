@@ -400,23 +400,23 @@
 /* --------------------------------------------------- */
 
 /* FLEX ------------------------------------------- */
-.sui-widget.datagrid.flex > .area .list { display:block; padding:0; }
+.sui-widget.datagrid.flex > .area .list { display:flex; flex-wrap:wrap; padding:0; }
 .sui-widget.datagrid.flex > .area .list > .header { display:none; }
-.sui-widget.datagrid.flex > .area .list .line { display:block; position:relative; width:340px; min-height:100px; float:left; margin:0; padding:20px; color:#797575; }
-.sui-widget.datagrid.flex > .area .list .line > .col:not(.image) { display:block; padding:1px; margin-left:80px; text-align:left; font-size:11px; border:none; background:none; }
+.sui-widget.datagrid.flex > .area .list .line { display:block; position:relative; width:310px; min-height:88px; margin:0; padding:20px 15px; color:#797575; }
+.sui-widget.datagrid.flex > .area .list .line > .col:not(.image) { display:block; padding:1px; margin-left:44px; text-align:left; font-size:11px; border:none; background:none; }
 .sui-widget.datagrid.flex > .area .list .line > .col.pad { display:none; }
 .sui-widget.datagrid.flex > .area .list .line > .col.seq { display:none; }
 .sui-widget.datagrid.flex > .area .list .line > .col.check { display:none; width:24px; padding:0; text-align:center; color:#CCC; margin:0; position:absolute; left:-24px; top:50%; margin-top:-12px; z-index:10; }
 .sui-widget.datagrid.flex > .area .list .line > .col.check:before { font-size:20px; line-height:24px; opacity:.8; }
 .sui-widget.datagrid.flex > .area .list .line > .col.key { /*display:block;*/ display:none; margin:0; width:56px; position:absolute; top:20px; left:32px; z-index:10; text-align:center; font-size:10px !important; }
 .sui-widget.datagrid.flex > .area .list .line > .col.image { display:block; width:56px !important; min-width:56px !important; height:56px !important; position:absolute; top:20px; left:20px; opacity:1; background-size:cover; border-radius:56px !important; }
-.sui-widget.datagrid.flex > .area .list .line > .col.icon { display:block; width:56px !important; height:56px !important; padding:0; margin:0; text-align:center; position:absolute; top:22px; left:28px; color:#999; }
+.sui-widget.datagrid.flex > .area .list .line > .col.icon { display:block; width:56px !important; height:56px !important; padding:0; margin:0; text-align:center; position:absolute; top:20px; left:5px; color:#999; }
 .sui-widget.datagrid.flex > .area .list .line > .col.icon:before { font-size:56px; }
 .sui-widget.datagrid.flex > .area .list .line > .col.image + .icon { width:24px !important; height:24px !important; padding:0; margin:0; text-align:center; position:absolute; top:20px; left:84px; }
 .sui-widget.datagrid.flex > .area .list .line > .col.image + .icon:before { font-size:24px; color:#333; }
 .sui-widget.datagrid.flex > .area .list .line > .col.image + .icon + .name { margin-left:92px; min-height:24px; }
 .sui-widget.datagrid.flex > .area .list .line > .col.visualidentifier:not(.rounded) { background-color:transparent !important; }
-.sui-widget.datagrid.flex > .area .list .line > .col.name { font-size:12px; color:#888; }
+.sui-widget.datagrid.flex > .area .list .line > .col.name { font-size:12px; color:#888; overflow:hidden; }
 .sui-widget.datagrid.flex > .area .list .line > .col.name strong { color:#222; font-size:13.3333px; }
 .sui-widget.datagrid.flex > .area .list .line > .col.name b { color:#666; font-weight:500;}
 .sui-widget.datagrid.flex > .area .list .line > .col.rounded:last-of-type { padding:6px 0px 1px 0; margin-left:72px; display:block; width:auto !important; text-align:left; color:#FFF; }
@@ -529,6 +529,9 @@
 .marged .sui-widget.map > .area { border-radius: 0 0 7px 7px !important; }
 .marged .sui-widget.map > .area > .map { border-radius: 0 0 7px 7px !important; }
 .marged .sui-widget.map > .area > .map:after { border-radius: 0 0 7px 7px !important; }
+.marged .sui-layout.group .sui-widget.map > .area { border-radius:0 0 0 0 !important; }
+.marged .sui-layout.group .sui-widget.map > .area > .map { border-radius:0 0 0 0 !important; }
+.marged .sui-layout.group .sui-widget.map > .area > .map:after { border-radius:0 0 0 0 !important; }
 /* --------------------------------------------------- */
 
 /* LOG ----------------------------------------------- */
@@ -573,10 +576,13 @@
 .sui-layout.table.marged .cell:first-child, .sui-layout.cell.marged:first-child { padding-left:24px; }
 .sui-layout.table.marged .cell:last-child, .sui-layout.cell.marged:last-child { padding-right:24px; }
 .sui-layout.table.marged .cell:only-child, .sui-layout.cell.marged:only-child { padding:24px; }
-.sui-layout.table.marged .cell .sui-widget, .sui-layout.cell.marged .sui-widget { border: none; border-radius:7px; margin:0px; margin-bottom:24px; }
+.sui-layout.table.marged .cell .sui-widget, .sui-layout.cell.marged .sui-widget { border: none; border-radius:7px; margin:0px; margin-bottom:24px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 .sui-layout.table.marged .cell .sui-widget > :only-child, .sui-layout.cell.marged .sui-widget > :only-child { border-radius:7px; }
 .sui-layout.table.marged .cell .sui-widget > :last-child, .sui-layout.cell.marged .sui-widget > :last-child { border-radius:0 0 7px 7px; }
 .sui-layout.table.marged .cell .sui-widget > .title, .sui-layout.cell.marged .sui-widget > .title { border-radius: 8px 8px 0 0; }
+.sui-layout.marged .sui-layout.group > .sui-widget { border-radius:0px; margin-bottom:0; }
+.sui-layout.marged .sui-layout.group > .sui-widget:first-child { border-radius:7px 7px 0 0; }
+.sui-layout.marged .sui-layout.group > .sui-widget:last-child { border-radius:0 0 7px 7px; margin-bottom:24px; }
 
 .sui-layout.table.mansory { display:block !important; }
 .sui-layout.table.mansory .cell { display:block !important; column-count:2; column-gap:24px; }

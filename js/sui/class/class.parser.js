@@ -2805,6 +2805,7 @@ sourceui.Parser = function () {
 						suiMap.findChild(function () {
 							if (this.nodeName == 'toolbar') Components.libs.widget.map.toolbar(this, mdata);
 							else if (this.nodeName == 'marker') Components.libs.widget.map.marker(this, mdata);
+							else if (this.nodeName == 'polyline') Components.libs.widget.map.polyline(this, mdata);
 							else if (this.nodeName == 'heatmap') Components.libs.widget.map.heatmap(this, mdata);
 						});
 						var v = JSONX.stringify(mdata);
@@ -2824,9 +2825,20 @@ sourceui.Parser = function () {
 						mdata.markers = mdata.markers || [];
 						var marker = sui.getAttr().data || {};
 						sui.findChild('popup', function () {
-							marker.popup = $.trim(encodeURIComponent(sui.content()));
+							marker.popup = $.trim(encodeURIComponent(this.content()));
 						});
 						mdata.markers.push(marker);
+					},
+					polyline: function (sui, mdata) {
+						mdata.polylines = mdata.polylines || [];
+						var polyline = sui.getAttr().data || {};
+						sui.findChild('popup', function () {
+							polyline.popup = $.trim(encodeURIComponent(this.content()));
+						});
+						sui.findChild('pointgroup', function () {
+							polyline.pointgroup = JSONX.parse($.trim(this.content()));
+						});
+						mdata.polylines.push(polyline);
 					},
 					heatmap: function (sui, mdata) {
 						mdata.heatmap = { options: sui.getAttr().data };
