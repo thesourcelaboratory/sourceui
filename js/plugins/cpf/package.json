@@ -76,7 +76,7 @@
     "gulp.spritesmith": "6.2.1",
     "highlightjs": "9.8.0",
     "jasmine-core": "2.5.2",
-    "jquery": "3.2.1",
+    "jquery": "3.5.0",
     "jquery.maskedinput": "1.4.1",
     "karma": "1.4.1",
     "karma-coverage": "1.1.1",
