@@ -556,7 +556,7 @@ sourceui.parserField = function (element, setup) {
 				if (!setup.label) setup.class += ' no-label';
 				return Template.get('field', tpl.field, {
 					id: setup.id,
-					class: setup.class + (setup.list && setup.list.selected && setup.list.selected.length > 0 ? ' selected' : ''),
+					class: setup.class + (setup.list && setup.list.selected && setup.list.selected.length > 0 ? ' selected' : '') + (setup.help ? ' helped' : ''),
 					data: $.extend(setup.data || {}, {
 						name: setup.name,
 						type: setup.type,
@@ -1241,7 +1241,8 @@ sourceui.parserField = function (element, setup) {
 			},
 			suggest: function () {
 				Field.setup.list.class = 'single';
-				Field.setup.placeholder = Field.setup.placeholder || 'Pesquise...';
+				Field.setup.placeholder = Field.setup.placeholder || 'Digite e selecione...';
+				Field.setup.buttons.after = [{ icon: 'icon-text-on', alias: 'droplist', options: [] }];
 				return HTML.common.field({ input: 'text', addon: 'simple' });
 			}
 		},

@@ -511,6 +511,9 @@
 .sui-widget.form.editor > .area { padding:0; }
 .sui-widget.form.editor .sui-field { padding:0 !important; width:100%; }
 .sui-widget.form.editor .sui-field.ace .wrap { border-radius:0; border-color:#d4d4d4; }
+.sui-widget.form.static .sui-field.static { padding:0 16px 0 0 !important; }
+.sui-widget.form.static .sui-field.static > .wrap > .table > .cell { height:26px !important; }
+.sui-widget.form.static .sui-field.static > .wrap > .table > .cell .input { padding: 6px 0 !important; }
 /* --------------------------------------------------- */
 
 /* WIZARD ------------------------------------------ */

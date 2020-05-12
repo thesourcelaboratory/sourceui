@@ -125,7 +125,7 @@ sourceui.interface.widget.form = function ($widget, setup) {
 			rn = ro.difference(rn).textOverflow(100);
 			ro = rn.difference(ro).textOverflow(100);
 		}
-		return { label: fd.label, old: ro, new: rn };
+		return { label: encodeURIComponent(fd.label), old: encodeURIComponent(ro), new: encodeURIComponent(rn) };
 	}
 	Form.widgetData = function () {
 		Form.wgdata = { data: {}, modified: {}, validate: {}, info: {} };

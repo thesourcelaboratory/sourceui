@@ -90,8 +90,8 @@ p {
   margin-bottom: 1.5em;
 }
 .mal, .mhl {
-  margin-left: 1.5em;
-  margin-right: 1.5em;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
 }
 .mhmm {
   margin-left: 1em;
@@ -104,6 +104,8 @@ p {
 }
 .ptl {
   padding-top: 1.5em;
+  max-width: 1300px;
+  margin: 0 auto;
 }
 .pbs, .pvs {
   padding-bottom: .25em;

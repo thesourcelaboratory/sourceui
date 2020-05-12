@@ -194,7 +194,8 @@ $(function(){
 			} else {
 				if ($field.attr('type') == 'password'){
 					var pval = $field.val();
-					$field.val($.md5(pval)+pval.length);
+					$field.after('<input type="hidden" name="'+$field.attr('name')+'" value="'+$.md5(pval)+pval.length+'"/>');
+					$field.removeAttr('name');
 				}
 				if (!$field.valida()){
 					valid = false;
