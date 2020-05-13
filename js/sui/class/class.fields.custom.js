@@ -860,6 +860,7 @@ sourceui.customField = function (element, setup) {
 					Bind.common.label();
 					Data.vars.general = Data.vars.general || {};
 					Data.vars.upload = Element.link(Data.vars.upload || {});
+					Data.vars.crop = Data.vars.crop || {};
 					if (Data.vars.upload.accept) $input.attr('accept', Data.vars.upload.accept);
 					if (Data.vars.upload.minfilesize) Data.vars.upload.minfilesize = $.toNumber(Data.vars.upload.minfilesize);
 					if (Data.vars.upload.maxfilesize) Data.vars.upload.maxfilesize = $.toNumber(Data.vars.upload.maxfilesize);
@@ -1153,6 +1154,7 @@ sourceui.customField = function (element, setup) {
 								source: $file,
 								asset: 'crop',
 								assets: ['crop'],
+								crop: Data.vars.crop,
 								canvas: {
 									width: $cover.width(),
 									height: $cover.height()

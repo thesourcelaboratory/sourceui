@@ -857,6 +857,7 @@ sourceui.interface.plugins = function () {
 			editor.actions = setup.actions || $.imgEditor.actions;
 			editor.source = setup.source || $.imgEditor.source;
 			editor.image = setup.image || $.imgEditor.image;
+			editor.crop = setup.crop || $.imgEditor.crop;
 			editor.onopen = setup.onopen || $.imgEditor.onopen;
 			editor.onload = setup.onload || $.imgEditor.onload;
 			editor.ondone = setup.ondone || $.imgEditor.ondone;
@@ -967,10 +968,14 @@ sourceui.interface.plugins = function () {
 					'height': size.height + 'px'
 				});
 				$image.on('load', function () {
+					if (editor.crop && typeof editor.crop.aspectRatio == 'string'){
+						var aspr = editor.crop.aspectRatio.split('/');
+						editor.crop.aspectRatio = parseInt(aspr[0]) / parseInt(aspr[1]);
+					}
 					$image.appendTo($stage);
 					$image.cropper({
 						data: editor.data.crop,
-						aspectRatio: 1 / 1,
+						aspectRatio: editor.crop.aspectRatio || 1 / 1,
 						viewMode: 1,
 						dragMode: 'move',
 						autoCropArea: Device.ismobile ? 0.85 : 0.65,

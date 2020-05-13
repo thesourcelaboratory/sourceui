@@ -206,9 +206,12 @@ main > section .content:only-child { width:var(--content-width); }
 main > section .content:only-of-type:last-child:not(:only-child),
 main > section .content:only-of-type:first-child:not(:only-child) { width:calc(var(--content-width) - var(--aside-width)); }
 main > section .content:only-of-type:not(:only-child):not(:last-child):not(:first-child) { width:calc(var(--content-width) - 2 * var(--aside-width)); }
-main > section .content h1 { font-family:var(--font-title); font-size:2.2em; color: var(--h1-color); margin:0 0 var(--content-padding) 0; letter-spacing:-1px; display:flex; justify-content: start; align-content:center; flex-wrap:wrap; }
-main > section .content h2 { font-family:var(--font-title); font-size:1.7em; color: var(--h2-color); margin:0 0 var(--content-padding) 0; letter-spacing:-0.7px; display:flex; justify-content: start; align-content:center; flex-wrap:wrap; }
-main > section .content h3 { font-family:var(--font-title); font-size:1.4em; color: var(--h3-color); margin:0 0 var(--content-padding) 0; letter-spacing:-0.5px; display:flex; justify-content: start; align-content:center; flex-wrap:wrap; }
+main > section .content h1 { font-family:var(--font-title); font-size:2.2em; color: var(--h1-color); margin:0 0 var(--content-padding) 0; letter-spacing:-1px; display:flex; justify-content: start; align-content:center; flex-wrap:wrap; line-height: normal; }
+main > section .content h2 { font-family:var(--font-title); font-size:1.7em; color: var(--h2-color); margin:0 0 var(--content-padding) 0; letter-spacing:-0.7px; display:flex; justify-content: start; align-content:center; flex-wrap:wrap; line-height: normal; }
+main > section .content h3 { font-family:var(--font-title); font-size:1.4em; color: var(--h3-color); margin:0 0 var(--content-padding) 0; letter-spacing:-0.5px; display:flex; justify-content: start; align-content:center; flex-wrap:wrap; line-height: normal; }
+main > section .content h1 a,
+main > section .content h2 a,
+main > section .content h3 a { border:none !important; }
 main > section .content p { margin: var(--content-padding) 0px;}
 main > section .content p > b,
 main > section .content p > strong { color:var(--bold-color); }
@@ -219,6 +222,9 @@ main > section .content p img[style*="float:right"],
 main > section .content p img[style*="float: right"]  { margin:6px 0 20px 20px; }
 main > section .content .image-wrap { clear:both; }
 main > section .content .image-wrap img { width:100% !important; height:inherit !important; margin:30px 0; float:none; }
+main > section .content .sui-content-cover { margin:0 !important; position: relative; min-height:450px; background-size:cover; background-position: center center; }
+main > section .content .sui-content-cover img { width:100% !important; }
+main > section .content .sui-content-cover figcaption { position:absolute; text-align:center; left:0; bottom:0; width:100% !important; padding:calc(var(--content-padding) / 4); color:#FFF; font-size:0.8em; background:linear-gradient(180deg, rgba(8,70,129,0.5) 0%, rgba(48,70,129,0.9) 100%);  }
 main > section .content a.anchor { display: block; position: relative; top: -100px; visibility: hidden; }
 main > section .content .rounded { line-height:normal; display:inline-block; min-width:85px; text-align:center; font-size:0.75em; padding: 5px 18px; margin:0 4px 4px 0; border-radius: 16px; color: #FFF; font-weight: bold; cursor: default; }
 main > section .content .sitepath { display:flex; align-items:center; width: 100%; padding-top:5px; }
@@ -300,11 +306,12 @@ main .sui-list .item { display:flex; width:100%; padding:30px 0; border-top:rgba
 main .sui-list .item:first-child { border-top:none; }
 main .sui-list .item .thumb,
 main .sui-list .item .avatar,
-main .sui-list .item > [class*="icon-"] { display:block; width:160px; height:90px; margin-right:20px; border:none; background-size:cover; background-repeat:no-repeat; background-position:center center; opacity:0.8; transition: all 250ms; }
+main .sui-list .item > [class*="icon-"] { display:block; width:160px; height:90px; margin-right:20px; border:none; background-size:cover; background-repeat:no-repeat; background-position:center center; opacity:0.8; transition: all 250ms; border:none !important; }
 main .sui-list .item .avatar,
 main .sui-list .item > [class*="icon-"] { width:86px; min-width:86px; height:86px; min-height:86px; border-radius:50%; }
 main .sui-list .item .thumb.small {  width:120px; height:67px; }
-main .sui-list .item .avatar.small { width:56px; height:56px;}
+main .sui-list .item .avatar.small { width:56px; height:56px; }
+main .sui-list .item .thumb.cover { width:180px; height:90px; }
 main .sui-list .item .thumb:not(a),
 main .sui-list .item .avatar:not(a) { opacity:1; }
 main .sui-list .item a.thumb:hover,
@@ -653,6 +660,9 @@ body .env-develop mark:before { display:block; margin-bottom:-1px; font-size:13p
   main > section .content p { margin:calc(var(--content-padding) / 1.5) 0; }
   main > section .content p:last-child { margin-bottom:0; }
   main > section .content p img { float: none; width:100% !important; height:auto !important; margin: 20px 0; }
+  main > section .content .sui-content-cover { margin: 0 calc(var(--content-padding) / -1) !important; min-height:50vw; }
+  main > section .content .sui-content-cover img { width:100% !important; }
+  main > section .content .sui-content-cover figcaption { font-size:0.75em; }
   main > section .content a.anchor { top: -90px; }
   main > section .content .sitepath { display:none; }
   main > section .content .rounded { font-size:0.95em; }
@@ -690,6 +700,7 @@ body .env-develop mark:before { display:block; margin-bottom:-1px; font-size:13p
   main .sui-list .item { padding:calc(var(--content-padding) / 2) 0; display:block; font-size:0.9em; }
   main .sui-list .item i:not(.thumb) { width:100% !important; min-width:100% !important; text-align:center; }
   main .sui-list .item .thumb { margin-left:calc(50% - 60px) !important; }
+  main .sui-list .item .thumb.cover { width:100%; }
   main .sui-list .item:first-child { padding-top:0;}
   main .sui-list .item .thumb { width:100%; min-width: 200px; height:108px; min-height:108px; margin: 0 auto !important; margin-bottom:calc(var(--content-padding) / 4) !important; }
   main .sui-list .item .avatar { width:64px; min-width: 64px; height:64px; min-height:64px; margin: 0 auto !important; margin-bottom:calc(var(--content-padding) / 4) !important; }
