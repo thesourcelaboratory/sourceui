@@ -283,7 +283,7 @@ main .sui-fitfull.banner .displays li { display:none; position:absolute; left:0;
 main .sui-fitfull.banner .displays li h1 { color:#FFF; margin:0; font-size:4em; letter-spacing:-2px; text-shadow:3px 3px 0px rgba(0,0,0,0.15); line-height:normal; cursor: default; }
 main .sui-fitfull.banner .displays li p { color:#FFF; font-size:2em; letter-spacing:-1px; text-shadow:1px 1px 0px rgba(0,0,0,0.15); line-height:normal; cursor: default; }
 main .sui-fitfull.banner .displays li .sui-buttonset { display:flex; justify-content: center; }
-main .sui-fitfull.banner .displays li .sui-button { color:#FFF; background:rgba(0,0,0,0.1); font-weight:500; font-size:1.3em; letter-spacing:-0.5px; border:#FFF solid 3px; border-radius:6px; }
+main .sui-fitfull.banner .displays li .sui-button { color:#FFF; background:rgba(0,0,0,0.1); font-size:1.3em; letter-spacing:-0.5px; border:#FFF solid 3px; border-radius:6px; }
 main .sui-fitfull.banner .displays li .sui-button:hover { background:rgba(255,255,255,0.1); }
 main .sui-fitfull.banner .displays li.selected { display:flex; }
 main .sui-fitfull.banner .displays li.managed::after { margin-top:10px; }
