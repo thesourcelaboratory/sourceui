@@ -150,6 +150,7 @@ sourceui.templates.fields = new sourceui.Template({
 			'<div class="data">' +
 			'<div class="name">@{name}</div>' +
 			'<div class="size">@{bytes}</div>' +
+			'<div class="caption">@{caption}</div>' +
 			'</div>' +
 			'</div>',
 		radio:
@@ -862,6 +863,7 @@ sourceui.parserField = function (element, setup) {
 									ext: v.extension || v.ext,
 									extension: v.extension || v.ext,
 									local: v.local ? v.local : 'remote',
+									caption: v.caption,
 									cover: v.cover,
 									source: v.source,
 									style: v.style,

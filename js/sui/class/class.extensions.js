@@ -1090,7 +1090,7 @@ $.colorfy = function (value, color) {
 			'#5a5a5a': /^ativ|^activ|^sim|^s$|^yes|^y$|^\d$/gi, // darkgray
 			'#F18D25': /ando$|endo$|indo$|^enviad|^ausen|penden|pendên|^em /gi,	// orange
 			'#BBBBBB': /^inativ|^inactiv|^cancel|falecid/gi,	// litegray
-			'#37a74a': /ado$|edo$|ido$|ído$|ada$|eda$|ida$|ída$|^true$/gi,	// green
+			'#37a74a': /ado$|edo$|ido$|ído$|ada$|eda$|ida$|ída$|^true$|online/gi,	// green
 
             /*
             '#4F8DDA' : /^nov|^new|^\d?$/gi,	// newblue

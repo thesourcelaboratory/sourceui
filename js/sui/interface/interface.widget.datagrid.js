@@ -377,7 +377,9 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 			var linetype = $line.data('type');
 			if (linetype) $button = $button.filter('[data-type-enable*="' + linetype + '"]:eq(0)');
 			else $button = $button.filter(':eq(0)');
-			$button.trigger('click');
+			if (!$button.is('[data-event-autoclick="false"]')){
+				$button.trigger('click');
+			}
 		}
 	});
 	this.view.on('click', function () {

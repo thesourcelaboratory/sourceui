@@ -892,6 +892,11 @@ sourceui.customField = function (element, setup) {
 								source: $file,
 								asset: 'view',
 								assets: Data.vars.assets || (Data.mode == 'avatar' ? ['view', 'remove'] : null),
+								crop: Data.vars.crop,
+								caption: !!Data.vars.caption,
+								oncaption: function(caption){
+									Element.trigger('image:caption', [$file,caption]);
+								},
 								onremove: function (image) {
 									Element.trigger('file:unlink', [$file]);
 								}
@@ -935,6 +940,32 @@ sourceui.customField = function (element, setup) {
 						};
 						data.onfail = function () {
 							Element.trigger('field:error', ['remove', 'Erro ao remover']);
+							$file.trigger('tools:on');
+						};
+						data.onalways = function () {
+							Element.disable(false);
+							Dom.wrap.removeClass('ajax-courtain');
+						};
+						Network.link.call($file, data);
+						$file.trigger('tools:off');
+						return;
+					});
+					Element.on('image:caption', function (event, $file, caption) {
+						var fda = $file.data();
+						var data = $.extend({},
+							Data.vars.caption, {
+								str: caption
+							});
+						data.fdata = fda.fdata ? fda.fdata : fda;
+						Element.disable(true);
+						Dom.wrap.addClass('ajax-courtain');
+						data.ondone = function () {
+							Element.trigger('field:imagecaption', [$file]);
+							Element.trigger('field:change');
+							$file.find('.caption').text(caption);
+						};
+						data.onfail = function () {
+							Element.trigger('field:error', ['remove', 'Erro ao legendar']);
 							$file.trigger('tools:on');
 						};
 						data.onalways = function () {
@@ -1155,12 +1186,16 @@ sourceui.customField = function (element, setup) {
 								asset: 'crop',
 								assets: ['crop'],
 								crop: Data.vars.crop,
+								caption: Data.vars.caption,
 								canvas: {
 									width: $cover.width(),
 									height: $cover.height()
 								},
 								onopen: function () {
 									$file.addClass('crop');
+								},
+								oncaption: function(caption){
+									Element.trigger('image:caption', [$file,caption]);
 								},
 								oncrop: function (data, canvas) {
 									if (canvas) {
@@ -1310,11 +1345,12 @@ sourceui.customField = function (element, setup) {
 				}
 			},
 			mce: {
+				docroot:null,
 				editor: function () {
+					Dom.wrap.addClass('courtain');
 					Validate.required();
 					Bind.common.label();
 					Data.vars = Data.vars.mce || Data.vars;
-
 					if (Data.vars.browse) {
 						if (Data.vars.image) Data.vars.browse.image = Data.vars.image;
 					}
@@ -1341,20 +1377,21 @@ sourceui.customField = function (element, setup) {
 							'styleselect | ' +
 							'bold italic | ' +
 							'alignleft aligncenter alignright alignjustify | ' +
-							'bullist numlist | suiLink suiImage'
+							'bullist numlist | suiLink suiimage'
 						]
 					};
 					var plugins = {
 						MD: [
-							'table contextmenu paste link anchor textcolor lists colorpicker image imagetools suiimage autoresize'
+							'table contextmenu paste link anchor textcolor lists colorpicker image imagetools suiimage stickytoolbar autoresize'
 						],
 						SM: [
-							'table contextmenu paste imagetools'
+							'table contextmenu paste imagetools stickytoolbar autoresize'
 						],
 						XS: [
-							'table contextmenu paste imagetools'
+							'table contextmenu paste imagetools stickytoolbar autoresize'
 						]
 					};
+
 					var data = $.extend(true, {
 						selector: '#' + id,
 						branding: false,
@@ -1369,17 +1406,49 @@ sourceui.customField = function (element, setup) {
 						language: "pt_BR",
 						content_css: 'css/mce-default-content.css?'+(Data.vars.cache || new Date().getTime()),
 						autoresize_min_height: 150,
+						paste_data_images: true,
+						paste_as_text:true,
 						table_class_list: [
 							{ title: 'Nenhum', value: '' },
 							{ title: 'Container de Mídia', value: 'image-container' },
 							{ title: 'Grade de Dados', value: 'datagrid' }
 						],
+						textcolor_map: $.extend([
+							"000000", "Preto",
+							"808080", "Cinza",
+							"AFAFAF", "Prata",
+							"E04242", "Vermelho",
+							"F18D25", "Amarelo",
+							"37a74a", "Verde",
+							"418fda", "Azul",
+							"304681", "Marinho",
+						],Data.vars.colormap || []),
+						valid_children:
+						 	"body[p|ol|ul|div|table]" +
+							",div[p|img|video]" +
+							",p[a|span|b|strong|i|em|u|sup|sub|img|video|hr|#text]" +
+							",span[a|b|strong|i|em|u|sup|sub|#text]" +
+							",a[span|b|strong|i|em|u|sup|sub|img|#text]" +
+							",b[span|a|i|em|u|sup|sub|img|#text|label]" +
+							",strong[span|a|i|em|u|sup|sub|#text]" +
+							",i[span|a|b|u|sup|sub|#text]" +
+							",em[span|a|b|u|sup|sub|#text]" +
+							",sup[span|a|i|em|b|u|sub|#text]" +
+							",sub[span|a|i|em|b|u|sub|#text]" +
+							",table[tr]" +
+							",tr[th|td]" +
+							",th[#text]" +
+							",td[span|a|b|strong|i|u|sup|sub|img|#text]" +
+							",li[span|a|b|strong|i|u|sup|sub|img|ol|ul|#text]" +
+							",ol[li]" +
+							",ul[li]",
+						forced_root_block : 'p',
 						setup: function (editor) {
 							editor.on('init', function (event) {
-								Element.trigger('field:loaded');
+								Element.trigger('field:fix').trigger('field:loaded');
 							});
 							editor.on('change', function (event) {
-								Element.trigger('field:input').trigger('field:change');
+								Element.trigger('field:fix').trigger('field:input').trigger('field:change');
 							});
 							editor.on('click', function (event) {
 								Element.trigger('field:focus');
@@ -1404,7 +1473,30 @@ sourceui.customField = function (element, setup) {
 						},
 					}, Data.vars);
 					tinymce.init(data);
-				}
+					Bind.common.mce.docroot = $('#'+id).tinymce();
+					Element.on('field:loaded',function(){
+						Dom.wrap.removeClass('courtain');
+						Element.addClass('loaded');
+					});
+					Element.on('field:fix',function(event){
+						Bind.common.mce.sanitize();
+					});
+				},
+				sanitize: function(noempty){
+					var $el = Bind.common.mce.docroot.$('body > *');
+					$el.each(function(k,v){
+						var $e = $(this);
+						if ($e.is('.responsive-wrap')){
+							var $children = $e.find('p, img');
+							if (!$children.length){
+								$e.replaceWith('<p>'+$e.html()+'</p>')
+							}
+						}
+						if (noempty && !$e.is('.responsive-wrap') && $e.text() === ''){
+							$e.remove();
+						}
+					});
+				},
 			},
 			locale: {
 				api: null,
@@ -2110,6 +2202,7 @@ sourceui.customField = function (element, setup) {
 				return true;
 			},
 			getval: function () {
+				Bind.common.mce.sanitize(true);
 				var editor = tinyMCE.get(Dom.input.attr('id'));
 				return editor.getContent();
 			}

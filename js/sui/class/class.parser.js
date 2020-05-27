@@ -55,6 +55,7 @@ sourceui.templates.interface = new sourceui.Template({
 			'<div class="edition">' +
 			'@{child:edition}' +
 			'</div>' +
+			'@{child:caption}' +
 			'</div>',
 		asset:
 			'<li><a data-type="@{class:type}"@{class}></a></li>',
@@ -65,6 +66,8 @@ sourceui.templates.interface = new sourceui.Template({
 			'@{child:buttons}' +
 			'</ul>' +
 			'</div>',
+		caption:
+			'<div class="caption" contentEditable="true" data-placeholder="Insira uma descrição para a imagem">@{content}</div>',
 		button:
 			'<li class="@{class:cell}"><a class="button @{class:type} @{class:icon}">@{label:name}</a></li>'
 	},
@@ -1064,7 +1067,8 @@ sourceui.Parser = function () {
 					}
 				});
 			} else if (render == '@datagrid-line') {
-				sui.findChild('list', function () {
+				sui.find('list', function () {
+					if (!this.attr('default:paginator')) return false; //escapa todas as listas que não forem de datagrid
 					var suiList = this,
 						lineseq = setup.filter.limitStart,
 						headerData = {},

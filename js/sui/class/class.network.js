@@ -1049,6 +1049,7 @@ sourceui.Network = function () {
 						field: setup.fieldSelector,
 						timeout: setup.timeout
 					};
+					var getData = setup.gdata;
 					var postData = {
 						modified: setup.modified,
 						validate: setup.validate
@@ -1073,6 +1074,7 @@ sourceui.Network = function () {
 					var requestHeaderPayload = {
 						key: setup.requestKey,
 						data: headerData,
+						get: getData,
 						post: postData,
 						local: Local.get(),
 						agent: Device.session.data(),

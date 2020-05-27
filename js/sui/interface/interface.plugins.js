@@ -851,6 +851,7 @@ sourceui.interface.plugins = function () {
 			setup = setup || {};
 			editor.data = setup.data || $.imgEditor.data;
 			editor.editions = setup.editions || $.imgEditor.editions;
+			editor.caption = setup.caption || $.imgEditor.caption;
 			editor.canvas = setup.canvas || $.imgEditor.canvas;
 			editor.asset = setup.asset || $.imgEditor.asset;
 			editor.assets = setup.assets || $.imgEditor.assets;
@@ -866,6 +867,7 @@ sourceui.interface.plugins = function () {
 			editor.onrotate = setup.onrotate || $.imgEditor.onrotate;
 			editor.onfilter = setup.onfilter || $.imgEditor.onfilter;
 			editor.oncrop = setup.oncrop || $.imgEditor.oncrop;
+			editor.oncaption = setup.oncaption || $.imgEditor.oncaption;
 			editor.onremove = setup.onremove || $.imgEditor.onremove;
 			editor.loaded = setup.loaded || $.imgEditor.loaded;
 		},
@@ -970,12 +972,12 @@ sourceui.interface.plugins = function () {
 				$image.on('load', function () {
 					if (editor.crop && typeof editor.crop.aspectRatio == 'string'){
 						var aspr = editor.crop.aspectRatio.split('/');
-						editor.crop.aspectRatio = parseInt(aspr[0]) / parseInt(aspr[1]);
+						var aspectRatio = parseInt(aspr[0]) / parseInt(aspr[1]);
 					}
 					$image.appendTo($stage);
 					$image.cropper({
 						data: editor.data.crop,
-						aspectRatio: editor.crop.aspectRatio || 1 / 1,
+						aspectRatio: aspectRatio || 1 / 1,
 						viewMode: 1,
 						dragMode: 'move',
 						autoCropArea: Device.ismobile ? 0.85 : 0.65,
@@ -1121,8 +1123,6 @@ sourceui.interface.plugins = function () {
 				return;
 			}
 
-
-
 			editor.dom.element = $('#suiImgEditor');
 			editor.dom.element.data('crop', {});
 
@@ -1142,10 +1142,12 @@ sourceui.interface.plugins = function () {
 			}
 			var htmlAssets = '';
 			var htmlEdition = '';
+			var htmlCaption = ''
 			var htmlButtons = '';
 			var $assets = {};
 			if (editor.assets.view) {
-				htmlButtons = Template.get('imgeditor', 'button', { class: { type: 'cancel' }, label: { name: 'Fechar' } });
+				if (editor.caption) htmlButtons += Template.get('imgeditor', 'button', { class: { cell: 'iconed', type: 'done disable', icon: 'disk' }, alt: 'Salvar Legenda' });
+				htmlButtons += Template.get('imgeditor', 'button', { class: { type: 'cancel' }, label: { name: 'Fechar' } });
 				if (editor.actions.download) htmlButtons += Template.get('imgeditor', 'button', { class: { cell: 'iconed', type: 'download', icon: 'arrow-down2' }, alt: 'Fazer Download' });
 				if (editor.actions.resetpos) htmlButtons += Template.get('imgeditor', 'button', { class: { cell: 'iconed', type: 'reset', icon: 'arrows130' }, alt: 'Resetar Posição' });
 				if (editor.actions.remove) htmlButtons += Template.get('imgeditor', 'button', { class: { cell: 'iconed', type: 'remove', icon: 'garbage' }, alt: 'Remover Imagem' });
@@ -1170,13 +1172,18 @@ sourceui.interface.plugins = function () {
 				htmlAssets += Template.get('imgeditor', 'asset', { class: { type: 'crop', icon: 'icon-crop-rotate' }, alt: 'Recortar Imagem' });
 				htmlEdition += Template.get('imgeditor', 'edition', { class: { type: 'crop' }, child: { buttons: htmlButtons } });
 			}
+			if (editor.caption){
+				htmlCaption += Template.get('imgeditor', 'caption', { content: editor.file.find('.caption').text() } );
+			}
+
 			htmlAssets += Template.get('imgeditor', 'asset', { class: { type: 'close', icon: 'icon-close' } });
 
-			editor.dom.element.attr('class', 'sui-image-editor').html(Template.get('imgeditor', 'container', { child: { assets: htmlAssets, edition: htmlEdition } }));
+			editor.dom.element.attr('class', 'sui-image-editor').html(Template.get('imgeditor', 'container', { child: { assets: htmlAssets, edition: htmlEdition, caption: htmlCaption } }));
 			editor.dom.window = editor.dom.element.find('.window');
 			editor.dom.assets = editor.dom.element.find('.assets > li > a');
 			editor.dom.buttons = editor.dom.element.find('.buttons > li > a');
 			editor.dom.edition = editor.dom.element.find('.edition');
+			editor.dom.caption = editor.dom.element.find('.caption');
 			editor.dom.editions = editor.dom.edition.children('div');
 
 			var title = {
@@ -1213,6 +1220,31 @@ sourceui.interface.plugins = function () {
 				editor.oncancel.call(undefined, editor.image);
 				editor.close();
 			});
+			if (editor.caption){
+				editor.dom.caption.on('input', function(){
+					var ctext = editor.dom.caption.text();
+					editor.dom.caption.addClass('edited');
+					if (ctext == ''){
+						editor.dom.caption.removeClass('has-text');
+					} else {
+						editor.dom.caption.addClass('has-text');
+					}
+					editor.dom.buttons.filter('.done').enable();
+				});
+				editor.dom.buttons.filter('.done').on('click', function (event) {
+					var $this = $(this);
+					if ($this.is('disable')) return;
+					if (editor.dom.caption.hasClass('edited')){
+						editor.oncaption.call(undefined, $.trim(editor.dom.caption.text()));
+						editor.close();
+					}
+				});
+				if (editor.dom.caption.text() == ''){
+					editor.dom.caption.text(editor.dom.caption.attr('placeholder'));
+				} else {
+					editor.dom.caption.addClass('has-text');
+				}
+			}
 
 			editor.dom.element.velocity('stop').velocity({
 				opacity: [1, 0]
