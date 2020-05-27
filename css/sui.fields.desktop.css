@@ -715,7 +715,7 @@
 /* MCE EDITOR */
 .sui-field.mce { width:100%; }
 .sui-field.mce:before { display:none; }
-.sui-field.mce > .wrap { border:none; width:100%; min-height:200px; }
+.sui-field.mce > .wrap { border:none; width:100%; min-height:48px; }
 .sui-field.mce > label:not(:empty) ~ .wrap { width:calc(100% - 200px); }
 .sui-field.mce > .wrap > .table { width:100%; border-radius:0; }
 .sui-field.mce > .wrap > .table > .cell.value .input { display:none; }
