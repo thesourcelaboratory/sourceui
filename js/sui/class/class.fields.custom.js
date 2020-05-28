@@ -976,23 +976,6 @@ sourceui.customField = function (element, setup) {
 						$file.trigger('tools:off');
 						return;
 					});
-					Element.on('image:checkload', function () {
-						var $image = Element.find('.image > img:eq(0)');
-						if ($image.length) {
-							$('<img/>')
-								.on('load', function () {
-									if (Data.vars.trianglifycover) {
-										var $cover = Element.closest('.sui-view').children('.sui-cover');
-										$.imgCover($cover, Data.vars.trianglifycover, this);
-									}
-								})
-								.on('error', function () {
-
-								})
-								.attr('src', $image.attr('src'));
-						}
-					});
-					Element.trigger('image:checkload');
 					Element.on('queue:add', function (event, $file) {
 						var $upload = $file.find('.button.upload');
 						var $crop = $file.find('.button.crop');
@@ -1126,7 +1109,6 @@ sourceui.customField = function (element, setup) {
 						});
 						$file.on('upload:done', function () {
 							$browse.velocity({ opacity: [1, 0], scale: [1, 0.5] }, { duration: 250, display: 'block' });
-							Element.trigger('image:checkload');
 							$file.trigger('tools:on');
 							$oldfile.remove();
 							Element.trigger('field:fileupload');
@@ -2422,8 +2404,13 @@ sourceui.customField = function (element, setup) {
 							$filelist.append($html);
 						}, {
 							orientation: true,
+							/*
 							maxWidth: data.maxw?data.maxw/2:1024,
 							maxHeight: data.maxh?data.maxh/2:1024,
+							--------------------------
+							Essas linhas causam erro no posicionamento do crop
+							--------------------------
+							*/
 						}
 					);
 				}
@@ -2569,13 +2556,15 @@ sourceui.customField = function (element, setup) {
 				} else if ($.type(v) == 'object' && !$.isPlainObject(v)) {
 					if (v.attr && v.attr('id')) {
 						var $file = $filelist.find('#' + v.attr('id'));
-						$file;
 						var data = v.attr();
 						data.local = 'remote';
-						if (Data.fieldtype.indexOf('image') > -1) {
-							data.image = v.content() || v.image;
+						var replacers = {};
+						if (data.mime.indexOf('image') > -1){
+							replacers = {style:{bgimage:'background-image:url(\''+data.cover+'\');'},source:{image:v.content() || data.image}};
+						} else if (data.mime.indexOf('video') > -1){
+							replacers = {source:{video:v.content() || data.video}};
 						}
-						var html = Parser.methods.getTemplate('row', 'file', data);
+						var html = Parser.methods.getTemplate('row', 'file', $.extend(true,{},data,replacers));
 						$filelist.append(html);
 						$file.hide();
 						setTimeout(function () { $file.remove(); }, 100);
