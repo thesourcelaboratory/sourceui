@@ -1341,16 +1341,10 @@ sourceui.interface.plugins = function () {
 				});
 			});
 			$close.one('click', function (event) {
-				if ($sector.is('.unclosable')) return false;
-				$container.velocity({ opacity: [0, 1] }, {
-					display: 'none', duration: 200, complete: function () {
-						$container.html('');
-					}
-				});
-				$sector.velocity({ scale: [0.95, 1] }, { display: 'none', duration: 200 });
-				$.CURR.FloatSector = null;
-				Dom.document.trigger('activity:focusin', [setup.caller]);
 				event.stopPropagation();
+				if ($sector.is('.unclosable') || setup.unclosable === true) return false;
+				$container.trigger('sector:close');
+				Dom.document.trigger('activity:focusin', [setup.caller]);
 			});
 			$.CURR.FloatSector = $sector;
 		},

@@ -702,6 +702,7 @@ sourceui.customField = function (element, setup) {
 							});
 						}
 						*/
+						if (Validate.is.disable(event)) { event.stopImmediatePropagation(); return false; }
 						var linkdata = $.extend(true, {}, Data.vars, { filter: { picked: Element.val() } });
 						Plugin.sector.float({
 							caller: Element,
@@ -780,14 +781,11 @@ sourceui.customField = function (element, setup) {
 			switch: {
 				simple: function () {
 					Bind.common.label();
-					var $button = Dom.box.find('.cell.button');
-					var buttonWidth = $button.outerWidth() / 2;
-					var closureWidth = $button.parent().width() / 2;
-					var xMovement = false;
-					var $y = Dom.box.find('.yes');
-					var $n = Dom.box.find('.not');
 					Dom.box.on('click', function (event) {
-						if (Validate.is.disable(event)) { event.stopImmediatePropagation(); return false; }
+						var $button = Dom.box.find('.cell.button');
+						var $y = Dom.box.find('.yes');
+						var $n = Dom.box.find('.not');
+						if (Validate.is.disable(event) || $button.isDisable()) { event.stopImmediatePropagation(); return false; }
 						var $yn, $track = Dom.box.children('.track'), $button = Dom.box.children('.button');
 						Element.toggleClass('not');
 						if (Element.hasClass('not')) $yn = $n;
@@ -1428,6 +1426,7 @@ sourceui.customField = function (element, setup) {
 						setup: function (editor) {
 							editor.on('init', function (event) {
 								Element.trigger('field:fix').trigger('field:loaded');
+								if (Element.is('.readonly')) Element.trigger('field:readonly');
 							});
 							editor.on('change', function (event) {
 								Element.trigger('field:fix').trigger('field:input').trigger('field:change');
@@ -1462,6 +1461,12 @@ sourceui.customField = function (element, setup) {
 					});
 					Element.on('field:fix',function(event){
 						Bind.common.mce.sanitize();
+					});
+					Element.on('field:readonly',function(event){
+						tinymce.activeEditor.getBody().setAttribute('contenteditable', false);
+					});
+					Element.on('field:editable',function(event){
+						tinymce.activeEditor.getBody().setAttribute('contenteditable', true);
 					});
 				},
 				sanitize: function(noempty){
@@ -1544,7 +1549,7 @@ sourceui.customField = function (element, setup) {
 								Dom.wrap.removeClass('ajax-courtain');
 							},
 							onfail: function (data) {
-								Element.trigger('field:error', ['Serviço offline']);
+								Element.trigger('field:error', ['network','Serviço offline']);
 							},
 						});
 						return true;
@@ -1560,7 +1565,7 @@ sourceui.customField = function (element, setup) {
 							Dom.wrap.removeClass('ajax-courtain');
 						},
 						onfail: function (data) {
-							Element.trigger('field:error', ['Serviço offline']);
+							Element.trigger('field:error', ['network','Serviço offline']);
 						},
 					});
 				},
@@ -1584,7 +1589,7 @@ sourceui.customField = function (element, setup) {
 							Dom.wrap.removeClass('ajax-courtain');
 						},
 						onfail: function (data) {
-							Element.trigger('field:error', ['Serviço offline']);
+							Element.trigger('field:error', ['network','Serviço offline']);
 						},
 					});
 				},
@@ -1818,6 +1823,86 @@ sourceui.customField = function (element, setup) {
 							}
 						});
 						Element.trigger('field:loaded');
+					});
+				}
+			},
+			og: {
+				url: function(){
+					Bind.common.label();
+					Dom.opengraph = Dom.wrap.children('.opengraph');
+					Dom.input.on('input', function () {
+						Element.trigger('field:input');
+					});
+					Dom.input.on('change', function () {
+						Element.trigger('field:change');
+						Element.trigger('field:parse');
+					});
+					Dom.buttons.all.on('click', function (event) {
+						Element.trigger('field:parse');
+					});
+					Element.on('field:parse', function () {
+						var val = Dom.input.val();
+						if (val) {
+							if ($.valida(val,'url')){
+								if (Network.apikeys && Network.apikeys.opengraph) {
+									Element.trigger('field:getdata',[val]);
+								} else {
+									Element.trigger('field:clear');
+									Element.trigger('field:error', ['api','Chave API obrigatória']);
+								}
+							} else {
+								Element.trigger('field:clear');
+								Element.trigger('field:error', ['mask','URL inválida']);
+							}
+						} else {
+							Element.trigger('field:clear');
+						}
+					});
+					Element.on('field:getdata', function (event,val) {
+						Dom.wrap.addClass('ajax-courtain');
+						Network.getJSON('https://api.sourceui.com/og/1.0/'+ Network.apikeys.opengraph +'/?addr=' + encodeURIComponent(val), {
+							ondone: function (ogdata) {
+								console.log(ogdata);
+								if ($.isPlainObject(ogdata)){
+									if (ogdata.url) Dom.opengraph.find('.link').attr('href',ogdata.url);
+									if (ogdata.image) Dom.opengraph.find('.cover').data('src',ogdata.image).css('background-image','url(\''+ogdata.image+'\')');
+									if (ogdata.title) Dom.opengraph.find('.title').text(ogdata.title);
+									if (ogdata.description) Dom.opengraph.find('.desc').text(ogdata.description);
+									if (!Dom.opengraph.is(':visible')){
+										Dom.opengraph.velocity("slideDown",{
+											duration:150
+										});
+									}
+									if (!ogdata.image && !ogdata.description && !ogdata.title){
+										Element.trigger('field:clear');
+									}
+								} else {
+									Element.trigger('field:clear');
+								}
+								Dom.wrap.removeClass('ajax-courtain');
+							},
+							onfail: function (data) {
+								Element.trigger('field:clear');
+								Element.trigger('field:error', ['network','Serviço offline']);
+								Dom.wrap.removeClass('ajax-courtain');
+							},
+						});
+					});
+					Element.on('field:clear', function () {
+						var _complete = function(){
+							Dom.opengraph.find('.link').attr('href','');
+							Dom.opengraph.find('.cover').data('src',null).css('background-image','none');
+							Dom.opengraph.find('.title').text('');
+							Dom.opengraph.find('.desc').text('');
+						}
+						if (Dom.opengraph.is(':visible')){
+							Dom.opengraph.velocity("slideUp",{
+								duration:150,
+								complete:_complete
+							});
+						} else {
+							_complete();
+						}
 					});
 				}
 			},
@@ -2137,6 +2222,11 @@ sourceui.customField = function (element, setup) {
 			coordinates: function () {
 				Bind.common.map.coordinates();
 			}
+		},
+		og: {
+			url: function () {
+				Bind.common.og.url();
+			}
 		}
 	};
 
@@ -2303,6 +2393,19 @@ sourceui.customField = function (element, setup) {
 				} else if (Data.mode == 'full') {
 					return $.toDate(Dom.input.val(), 'Y-m-d H:i:s');
 				}
+			}
+		},
+		og: {
+			getval: function(){
+				var data = { url:Dom.input.val() };
+				if (data.url){
+					var $opengraph = Element.find('.opengraph');
+					data.image = encodeURIComponent($opengraph.find('.cover').data('src'));
+					data.title = $opengraph.find('.title').text();
+					data.description = $opengraph.find('.desc').text();
+					return data;
+				}
+				return null;
 			}
 		},
 		picker: {
@@ -2625,7 +2728,7 @@ sourceui.customField = function (element, setup) {
 		is: {
 			disable: function (event) {
 				var $target = (event && event.target) ? $(event.target) : Element;
-				return $target.isDisable('.sui-field');
+				return $target.isDisable('.sui-field') || $target.isReadonly('.sui-field');
 			},
 			valid: function () {
 				return valueValid;
@@ -2653,8 +2756,8 @@ sourceui.customField = function (element, setup) {
 				if (!vdata.limit) return true;
 				var value = val || Dom.input.val();
 				value = $.toNumber(value);
-				if (!isNaN(Data.min) && value !== null && value !== '' && value < Data.min) Element.trigger('field:error', ['min', Data.min + ' é o valor mínimo']);
-				else if (!isNaN(Data.max) && value !== null && value !== '' && value > Data.max) Element.trigger('field:error', ['max', Data.max + ' é o valor máximo']);
+				if (!isNaN(Data.min) && value !== null && value !== '' && value < Data.min) Element.trigger('field:error', ['length','min', Data.min + ' é o valor mínimo']);
+				else if (!isNaN(Data.max) && value !== null && value !== '' && value > Data.max) Element.trigger('field:error', ['length','max', Data.max + ' é o valor máximo']);
 				else {
 					Element.trigger('field:valid');
 					if (!isNaN(Data.min) && value !== null && value !== '' && value === Data.min) Element.trigger('field:min');
@@ -3319,6 +3422,7 @@ sourceui.customField = function (element, setup) {
 				case 'box': Data.mode && Bind.button[Data.mode] ? Bind.button[Data.mode]() : Bind.button.single(); break;
 				case 'locale': Data.mode && Bind.locale[Data.mode] ? Bind.locale[Data.mode]() : Bind.locale.search(); break;
 				case 'map': Data.mode && Bind.map[Data.mode] ? Bind.map[Data.mode]() : Bind.map.coordinates(); break;
+				case 'og': Data.mode && Bind.og[Data.mode] ? Bind.og[Data.mode]() : Bind.og.url(); break;
 				//case 'matrix': 	return Data.mode 	&& Bind.matrix[Data.mode] 	? Bind.matrix[Data.mode]() 		: Bind.matrix.security();		break;
 			}
 

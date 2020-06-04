@@ -265,7 +265,9 @@
 .sui-field.readonly .cell .input,
 .sui-field .cell .input.readonly,
 .readonly .sui-field .cell .placeholder,
-.sui-field.readonly .cell .placeholder { cursor:default !important; background-color:transparent !important; border-color:transparent !important; }
+.sui-field.readonly .cell .placeholder,
+.sui-field.readonly .cell.value .option,
+.readonly .sui-field .cell.value .option { cursor:default !important; background-color:transparent !important; border-color:transparent !important; }
 
 /* STATIC */
 .sui-field.static > .label { padding: 0 12px 0 0 !important;  }
@@ -332,6 +334,7 @@
 .sui-field.switch > .wrap > .help { position: absolute; right: -412px; top: 1px; min-width: 400px; color:#999 !important; background:none !important; font-size:11px; }
 .sui-field.switch > .wrap > .help:before { display:none; }
 .sui-field.switch.focus > .wrap > .help { color:#444 !important; }
+.readonly .sui-field.switch > .wrap > .box > .cell { color:#444 !important;}
 
 /* TOGGLE */
 .sui-field.toggle > .wrap { padding:0; }
@@ -444,10 +447,10 @@
 .sui-field.drop.multiple > .wrap > .table > .cell .area { display:none; max-height:186px; position:relative; }
 .sui-field.drop.multiple > .wrap > .table > .cell .placeholder { cursor:default; }
 .sui-field.drop.multiple > .wrap > .table > .cell .options { display:flex; flex-wrap:wrap; margin:2px 16px 0 2px; }
-.sui-field.drop.multiple > .wrap > .table > .cell .option { padding:7px 26px 7px 8px; position:relative; margin:0 2px 2px 0; font-size:11px; color:#FFF !important; background:#5a5858; border-radius:3px; cursor:pointer; }
+.sui-field.drop.multiple > .wrap > .table > .cell .option { padding:7px 26px 7px 8px; position:relative; margin:0 2px 2px 0; font-size:11px; color:#FFF !important; background:#5a5858 !important; border-radius:3px; cursor:pointer; }
 .sui-field.drop.multiple > .wrap > .table > .cell .option > span { color:#FFF !important; }
 .sui-field.drop.multiple > .wrap > .table > .cell .option > .remove { margin-top:-8px; color:rgba(255,255,255,0.5)  }
-.sui-field.drop.multiple > .wrap > .table > .cell .option.picked { background:#1B74E6; }
+.sui-field.drop.multiple > .wrap > .table > .cell .option.picked { background:#1B74E6 !important; }
 .sui-field.drop.multiple.selected > .wrap > .badge { display:block; }
 .sui-field.drop.multiple.selected > .wrap > .table > .cell .area { display:block; }
 .sui-field.drop.multiple.selected > .wrap > .table > .cell .placeholder { display:none; }
@@ -519,6 +522,16 @@
 .sui-droplist-container.field.time > .sui-droplist { width:260px; }
 .sui-droplist-container.field.time > .sui-droplist .sui-calendar > ul.modetabs > .time { display:block !important; background:#FFF; }
 .sui-droplist-container.field.time > .sui-droplist .sui-calendar > ul.modetabs > .time > a > b { font-size:17.333px; }
+
+/* OG URL */
+.sui-field.og.url > .wrap > .opengraph { display:none; }
+.sui-field.og.url > .wrap > .opengraph > .link { display:flex; justify-content:start; cursor:pointer; text-decoration:none; color:#828282; }
+.sui-field.og.url > .wrap > .opengraph > .link > .cover { width:160px; min-width: 160px; max-width: 160px; height:94px; min-height:94px; max-height:94px; background:#999 no-repeat; background-size:cover; margin:2px; border-radius:3px; }
+.sui-field.og.url > .wrap > .opengraph > .link > .text > .title { font-weight:bold; margin:2px 12px 12px 12px; }
+.sui-field.og.url > .wrap > .opengraph > .link > .text > .desc { font-size:11px; margin:12px 12px 2px 12px; }
+.sui-field.og.url > .wrap > .table > .cell.value { width:500px; }
+.sui-field.og.url.valued .opengraph { display:block; }
+
 
 /* PICKER SINGLE */
 .sui-field.picker > .wrap > .table > .cell.value { cursor:pointer; width:400px; }
@@ -740,6 +753,7 @@
 .mce-menu-item.mce-selected .mce-caret, .mce-menu-item:focus .mce-caret, .mce-menu-item:hover .mce-caret { color:#333 !important; border-left-color:#333 !important; }
 .mce-menu-item-preview { border-left:transparent solid 3px !important; }
 .mce-menu-item-preview.mce-active { border-left:#1B74E6 solid 3px !important; background-color:#f2f2f2 !important; }
+.disable .mce-toolbar-grp, .readonly .mce-toolbar-grp { display:none !important; }
 
 /* FROALA EDITOR */
 .sui-field.froala { width:100%; }

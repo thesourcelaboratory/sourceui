@@ -198,6 +198,7 @@ sourceui.interface.document = function () {
 		var ui = setup.response.parsedSNIP || setup.response.parsedJQ || $(setup.response.parsedHTML);
 		ui.find('.disable').disable();
 		ui.find('.ignored').ignored();
+		ui.find('.readonly').readonly(true);
 		if (ui.is('#suiAuthContainer')) {
 			if (sourceui.interface.auth) ui.data('Interface', new sourceui.interface.auth(ui, setup));
 		} else if (ui.filter('#suiMain').length == 1) {
@@ -568,6 +569,17 @@ sourceui.interface.document = function () {
 
 
 	Dom.floatSectorContainer.trigger('scope:context');
+	Dom.floatSectorContainer.on('sector:close', function (event,forced) {
+		var $container = Dom.floatSectorContainer;
+		var $sector = $container.children('.sui-sector');
+		$container.velocity({ opacity: [0, 1] }, {
+			display: 'none', duration: 200, complete: function () {
+				$container.html('');
+			}
+		});
+		$sector.velocity({ scale: [0.965, 1] }, { display: 'none', duration: 200 });
+		$.CURR.FloatSector = null;
+	});
 
 	setInterval(Document.timetick, 60000);
 

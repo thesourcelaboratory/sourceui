@@ -157,7 +157,7 @@ sourceui.interface.widget.map = function($widget,setup){
 		Wap.widget.on('widget:resize',function(){
 			setInterval(function(){
 				Map.invalidateSize();
-			},200);
+			},450);
 		});
 
 		Toolbar.on('click','.center:not(.disable)',function(event){

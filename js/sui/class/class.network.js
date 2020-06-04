@@ -1037,6 +1037,8 @@ sourceui.Network = function () {
 						stack: setup.stack,
 						code: setup.code,
 						date: setup.date,
+						email: setup.email,
+						addr: setup.addr,
 						str: setup.str,
 						seq: setup.seq,
 						num: setup.num,
@@ -1380,6 +1382,7 @@ sourceui.Network = function () {
 						delete ActiveRequests[setup.rid];
 						clearTimeout(setup.obtimeout);
 						clearTimeout(setup.slowtimeout);
+						Ajax.loading.stop();
 						Console.log({
 							mode: 'Ajax',
 							color: '#ADAAA9',
@@ -2178,6 +2181,7 @@ sourceui.Network = function () {
 				caller: setup.element || setup.widget || setup.view,
 				title: 'Seletor',
 				size: setup.sectorsize || 'large',
+				unclosable: setup.sectorclose === false || setup.sectorclose === 'false' || setup.unclosable === true || setup.unclosable === 'true' ? true : false,
 				link: setup
 			});
 			return true;

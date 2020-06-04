@@ -307,6 +307,7 @@
 .sui-widget.datagrid.list > .area .list .line > .col.abbr { padding:0; }
 .sui-widget.datagrid.list > .area .list .line > .col.name { color:#888; }
 .sui-widget.datagrid.list > .area .list .line > .col.name strong { color:#333; }
+.sui-widget.datagrid.list > .area .list .line > .col.name > i[class*="icon-"]:before { display:inline-block; margin-top: -4px; margin-right:4px; }
 .sui-widget.datagrid.list > .area .list .line > .col.filled { color:#FFF; font-weight:bold; text-align:center; white-space:nowrap; border-color:rgba(0,0,0,.1); }
 .sui-widget.datagrid.list > .area .list .line > .col.rounded { color:#FFF !important; font-weight:bold; text-align:center; white-space:nowrap; font-size:11px; text-align: center; }
 .sui-widget.datagrid.list > .area .list .line > .col.visualidentifier[style*="background-image"] { vertical-align:middle; text-align:center; border:none; }

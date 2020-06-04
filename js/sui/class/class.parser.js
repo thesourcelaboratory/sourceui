@@ -241,7 +241,7 @@ sourceui.templates.interface = new sourceui.Template({
 				'</ul>' +
 				'</div>',
 			item:
-				'<li class="@{class:icon}@{prop:disable}"@{data}></li>',
+				'<li class="@{class:icon} @{class:prop}"@{data}></li>',
 			bar:
 				'<div class="sui-header-bar"></div>'
 		},
@@ -264,7 +264,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'@{child:items}' +
 					'</ul>',
 				item:
-					'<li class="@{class:icon} @{class:selected} @{class:notified} @{prop:disable} @{data:alias}"@{data}@{attr}>' +
+					'<li class="@{class:icon} @{class:selected} @{class:notified} @{class:prop} @{data:alias}"@{data}@{attr}>' +
 					'<mark>@{label:badge}@{label:texticon}</mark>' +
 					'<span@{style}@{async}>@{label:name}</span>' +
 					'</li>',
@@ -299,7 +299,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'</ol>' +
 					'</div>',
 				item:
-					'<li @{attr}class="sn menu sui-link item @{hasicon} @{hasabbr} @{hassubicon} @{hasavatar} @{hasimage} @{class:icon} @{link:icon} @{class:status} @{prop:disable}"@{data}>' +
+					'<li @{attr}class="sn menu sui-link item @{hasicon} @{hasabbr} @{hassubicon} @{hasavatar} @{hasimage} @{class:icon} @{link:icon} @{class:status} @{class:prop}"@{data}>' +
 					'@{child:labels}' +
 					'</li>',
 				label:
@@ -442,7 +442,7 @@ sourceui.templates.interface = new sourceui.Template({
 	Template utilizado para criação do container de conteúdo (setor terciário), que vai dentro das views (setores secundários).
 	---------------------------
 	*/
-	content: '<div class="sui-content @{class:scroll}">@{child:content}</div>',
+	content: '<div class="sui-content @{class:scroll} @{class:prop}">@{child:content}</div>',
 	/*
 	---------------------------
 	Template.libw.content
@@ -452,7 +452,7 @@ sourceui.templates.interface = new sourceui.Template({
 	*/
 	layout: {
 		normal:
-			'<div class="sui-layout @{class:type} @{class:scroll}"@{style}@{data}>@{child:content}</div>',
+			'<div class="sui-layout @{class:type} @{class:scroll} @{class:prop}"@{style}@{data}>@{child:content}</div>',
 		footer:
 			'<div class="sui-layout footer"@{style}>' +
 			'<ul class="left">' +
@@ -479,7 +479,7 @@ sourceui.templates.interface = new sourceui.Template({
 	*/
 	widget: {
 		container:
-			'<div id="@{attr:id}" class="sui-widget @{class:type} @{class:mode} @{class:block}" data-type="@{class:type}"@{data}@{style}>@{child:content}</div>',
+			'<div id="@{attr:id}" class="sui-widget @{class:type} @{class:mode} @{class:block} @{class:prop}" data-type="@{class:type}"@{data}@{style}>@{child:content}</div>',
 		title: {
 			container:
 				'<div class="title @{class:prop}"@{style}>' +
@@ -502,7 +502,7 @@ sourceui.templates.interface = new sourceui.Template({
 		area:
 			'<section class="area @{scroll} @{paginator} @{class:type} @{class:selected} @{class:has}"@{data}@{style}>@{child:area}</section>',
 		tip:
-			'<div class="sui-tip @{class:icon} @{class:type} @{class:size} @{prop:ignored}"@{style}@{attr}>@{child:tip}</div>',
+			'<div class="sui-tip @{class:icon} @{class:type} @{class:size} @{class:prop}"@{style}@{attr}>@{child:tip}</div>',
 		footer:
 			'<div class="footer @{type} icon-dots-small"></div>'
 	},
@@ -608,7 +608,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'</div>',
 
 				node:
-					'<li class="node @{class:fold} @{class:collpased} @{class:selected} @{prop:disable}"@{style}@{data}>' +
+					'<li class="node @{class:fold} @{class:collpased} @{class:selected} @{class:prop}"@{style}@{data}>' +
 					'<div class="trace"></div>' +
 					'@{child:content}' +
 					'</li>'
@@ -788,7 +788,7 @@ sourceui.templates.interface = new sourceui.Template({
 				'</div>' +
 				'</div>',
 			column:
-				'<div class="column @{class:type} @{prop:disable}"@{style}@{data}>' +
+				'<div class="column @{class:type} @{class:prop}"@{style}@{data}>' +
 				'<div class="label @{class:icon}" style="text-align:@{label:align}">' +
 				'@{label:name}' +
 				'<div class="description">@{label:description}</div>' +
@@ -841,27 +841,27 @@ sourceui.templates.interface = new sourceui.Template({
 			stage:
 				'<div class="sui-stage">@{child:sets}</div>',
 			filterset:
-				'<div class="sui-filterset @{class:orient} @{class:mode} @{class:align} @{prop:ignored}"@{data}>' +
+				'<div class="sui-filterset @{class:orient} @{class:mode} @{class:align} @{class:prop}"@{data}>' +
 				'<ul>@{child:filters}</ul>' +
 				'</div>',
 			filter:
 				'<li>' +
-				'<div class="sui-filter @{class:selected} @{prop:selected}"@{style}@{data}>' +
+				'<div class="sui-filter @{class:selected} @{class:prop}"@{style}@{data}>' +
 				'<a><label>@{label:name}</label><strong>@{label:value}</strong>@{label:content}</a>' +
 				'<span class="close icon-cross"></span>' +
 				'</div>' +
 				'</li>',
 			fieldset:
-				'<div class="sui-fieldset @{class:orient} @{prop:ignored}"@{data}@{attr}>' +
+				'<div class="sui-fieldset @{class:orient} @{class:prop}"@{data}@{attr}>' +
 				'<h3 class="name">@{label:name}</h3>' +
 				'@{child:fields}' +
 				'</div>',
 			buttonset:
-				'<div class="sui-buttonset @{class:orient} @{class:mode} @{class:align} @{class:size} @{prop:ignored}"@{data}>' +
+				'<div class="sui-buttonset @{class:orient} @{class:mode} @{class:align} @{class:size} @{class:prop}"@{data}>' +
 				'<ul class="group">@{child:buttons}</ul>' +
 				'</div>',
 			button:
-				'<li><div class="sui-button @{prop:disable} @{prop:ignored}"@{style}><a class="@{class:icon} @{class:type} @{class:link}"@{attr}@{data}><span>@{label:name}</span></a></div></li>'
+				'<li><div class="sui-button @{class:prop}"@{style}><a class="@{class:icon} @{class:type} @{class:link}"@{attr}@{data}><span>@{label:name}</span></a></div></li>'
 		},
 		map: {
 			map:
@@ -2998,38 +2998,56 @@ sourceui.Parser = function () {
 		if (dataTrim) {
 			xmlIndex = dataTrim.substring(0, 10).indexOf('<?xml');
 			if (xmlIndex > -1) {
-				data = setup.response.parsedXML = $.parseXML(dataTrim);
-				root = data.getElementsByTagName("interface")[0]; // se o xml é um arquivo de interface
-				if (root) {
-					if (setup.render) {
-						var part = Render.parts(root); // testa se o parser vai processar uma parte específica do arquivo de interface
-						if ($.isPlainObject(part) || $.isArray(part)){
-							setup.response.parsedJSON = part;
-						} else {
-							setup.response.parsedHTML = part;
-						}
-					} else if (setup.snippet) {
-						setup.response.parsedSNIP = Render.snippet(root); 	// testa se o parser vai processar de uma forma pré determinada o arquivo de interface
-					} else if (setup.file) {
-						setup.response.parsedSNIP = Render.file(root); 		// testa se o parser vai processar de uma forma pré determinada o arquivo de interface
-					} else {
-						setup.response.parsedHTML = Render.full(root); 		// ou se vai processar o arquivo todo
-					}
-					if (setup.response.parsedHTML){
-						setup.response.parsedJQ = $(setup.response.parsedHTML);
-					}
-					root = data.getElementsByTagName("stylesheet")[0]; // se o xml é um arquivo de javascript
-					if (root) setup.response.parsedCSS = Render.css(root);
-					root = data.getElementsByTagName("javascript")[0]; // se o xml é um arquivo de javascript
-					if (root) setup.response.parsedJS = Render.js(root);
-					root = data.getElementsByTagName("trace")[0]; // se o xml tem os traces de debug
-					if (root) Render.trace(root);
+
+				//data = setup.response.parsedXML = $.parseXML(dataTrim);
+
+				var parser = new DOMParser();
+				var doc = parser.parseFromString(dataTrim, "application/xml");
+				var parsererror;
+				data = setup.response.parsedXML = doc;
+				parsererror = data.getElementsByTagName("parsererror")[0];
+
+				if (parsererror){
+					Console.error({
+						mode: 'Parser',
+						title: 'Browser parser failure',
+						content: $(parsererror).text()
+					});
 				} else {
-					root = data.getElementsByTagName("trace")[0]; // se o xml tem os traces de debug
-					if (root) Render.trace(root);
-					setup.metric.add('parseEndTime');
-					setup.metric.add('bytesTotal', setup.response.textData ? setup.response.textData.length : 0);
-					return false;
+
+					root = data.getElementsByTagName("interface")[0]; // se o xml é um arquivo de interface
+
+					if (root) {
+						if (setup.render) {
+							var part = Render.parts(root); // testa se o parser vai processar uma parte específica do arquivo de interface
+							if ($.isPlainObject(part) || $.isArray(part)){
+								setup.response.parsedJSON = part;
+							} else {
+								setup.response.parsedHTML = part;
+							}
+						} else if (setup.snippet) {
+							setup.response.parsedSNIP = Render.snippet(root); 	// testa se o parser vai processar de uma forma pré determinada o arquivo de interface
+						} else if (setup.file) {
+							setup.response.parsedSNIP = Render.file(root); 		// testa se o parser vai processar de uma forma pré determinada o arquivo de interface
+						} else {
+							setup.response.parsedHTML = Render.full(root); 		// ou se vai processar o arquivo todo
+						}
+						if (setup.response.parsedHTML){
+							setup.response.parsedJQ = $(setup.response.parsedHTML);
+						}
+						root = data.getElementsByTagName("stylesheet")[0]; // se o xml é um arquivo de javascript
+						if (root) setup.response.parsedCSS = Render.css(root);
+						root = data.getElementsByTagName("javascript")[0]; // se o xml é um arquivo de javascript
+						if (root) setup.response.parsedJS = Render.js(root);
+						root = data.getElementsByTagName("trace")[0]; // se o xml tem os traces de debug
+						if (root) Render.trace(root);
+					} else {
+						root = data.getElementsByTagName("trace")[0]; // se o xml tem os traces de debug
+						if (root) Render.trace(root);
+						setup.metric.add('parseEndTime');
+						setup.metric.add('bytesTotal', setup.response.textData ? setup.response.textData.length : 0);
+						return false;
+					}
 				}
 			} else {
 				Console.error({

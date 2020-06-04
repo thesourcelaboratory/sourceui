@@ -714,6 +714,12 @@ $(function () {
 		if ($this.closest('.ignored').length > 0) return true;
 		return false;
 	};
+	$.fn.isReadonly = function (closest) {
+		var $this = $(this);
+		if ($this.is('.readonly')) return true;
+		if ($this.closest('.readonly').length > 0) return true;
+		return false;
+	};
 
 	$.fn.disable = function (bool) {
 		var $this = $(this);
@@ -735,6 +741,7 @@ $(function () {
 		} else if ($this.hasClass('sui-field')) {
 			$this.find('.button').disable(bool);
 			$this.find('.input').prop('disabled', true);
+			$this.trigger('field:disable');
 		}
 		if (bool === true) {
 			$this.filter('.disable').addClass('already-disable');
@@ -742,7 +749,7 @@ $(function () {
 			$this.find('hasAttr:data-link').addClass('disable');
 		}
 		$this.addClass('disable');
-		$this.trigger('disable');
+		$this.trigger($this.is('.sui-field') ? 'field:disable' : 'disable');
 		return this;
 	};
 	$.fn.enable = function (bool) {
@@ -758,16 +765,17 @@ $(function () {
 	$.fn.readonly = function (bool) {
 		var $this = $(this);
 		var $fields;
-		if ($this.is('.sui-widget, .area, .sui-fieldset')) {
-			$fields = $this.find('.sui-field');
-		} else if ($this.hasClass('sui-field')) {
+		if ($this.hasClass('sui-field')) {
 			$fields = $this;
+		} else {
+			$fields = $this.find('.sui-field');
 		}
 		if (bool === true) {
 			if ($fields.length) {
 				$fields.addClass('readonly');
 				$fields.find('.input, :input').prop('readonly', true);
 				$fields.find('.button').disable();
+				$fields.trigger('field:readonly');
 			}
 			$this.trigger('readonly');
 		} else {
@@ -775,6 +783,7 @@ $(function () {
 				$fields.removeClass('readonly');
 				$fields.find('.input, :input').prop('readonly', false);
 				$fields.find('.button').enable();
+				$fields.trigger('field:editable');
 			}
 			$this.trigger('editable');
 		}
@@ -1084,13 +1093,14 @@ $.colorfy = function (value, color) {
 			else return '#cccccc';
 		}
 		var c = {
-			'#64a6f7': /liberad|^inscri|^finalizad|^presen|adimplen|adimplên|^realiz|^\d?$/gi,	// lightblue
+			'#599fdc': /liberad|^inscri|^finalizad|^presen|adimplen|adimplên|^realiz|^\d?$|ado$|edo$|ido$|ído$|ada$|eda$|ida$|ída$/gi,	// lightblue
 			'#2e519e': /^nov|^new/gi,	// darkblue
 			'#e24040': /exclu|delet|remov|ignor|invali|inváli|inadimplen|inadimplên|negativ|^reprov|^revogad|^não |^no |^n$|^-?\d?$/gi,	// red
 			'#5a5a5a': /^ativ|^activ|^sim|^s$|^yes|^y$|^\d$/gi, // darkgray
-			'#F18D25': /ando$|endo$|indo$|^enviad|^ausen|penden|pendên|^em /gi,	// orange
+			'#e6ac08': /ando$|endo$|indo$|^em /gi,	// yellow
+			'#F18D25': /^enviad|^ausen|penden|pendên|^para /gi,	// orange
 			'#BBBBBB': /^inativ|^inactiv|^cancel|falecid/gi,	// litegray
-			'#37a74a': /ado$|edo$|ido$|ído$|ada$|eda$|ida$|ída$|^true$|online/gi,	// green
+			'#37a74a': /^true$|online/gi,	// green
 
             /*
             '#4F8DDA' : /^nov|^new|^\d?$/gi,	// newblue

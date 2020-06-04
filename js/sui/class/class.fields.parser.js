@@ -281,6 +281,16 @@ sourceui.templates.fields = new sourceui.Template({
 			'<div class="droplistlayer"></div>' +
 			'@{child:droplist}' +
 			'</div>',
+		og:
+			'<div class="opengraph">' +
+			'<a class="link" href="@{url}" target="_blank">' +
+			'<div class="cover" style="background-image:url(@{image})"></div>' +
+			'<div class="text">' +
+			'<div class="title">@{title}</div>' +
+			'<div class="desc">@{description}</div>' +
+			'</div>' +
+			'</a>' +
+			'</div>',
 	},
 	droplist: {
 		list: {
@@ -711,36 +721,6 @@ sourceui.parserField = function (element, setup) {
 					});
 				}
 				return html;
-				/*
-				console.log(list);
-				return (($.type(list) == 'object' && $.isEmptyObject(list)) || ($.type(list) == 'array' && !list.length)) ? '' : Template.get('row','simple',list,function(k,v){
-					console.log(k,v);
-					var name = v.name;
-						 if (v.name && setup.mode == 'range') v.name = { from : v.name+'[from]', to : v.name+'[to]' }
-					else if (!v.name && setup.mode == 'range') v.name = { from : 'from', to : 'to' }
-					else if (v.name && setup.mode == 'simple') v.name = { from : v.name }
-					else if (!v.name && setup.mode == 'simple') v.name = { from : 'from' }
-					if (typeof v.value != 'object'){
-						if (v.name && setup.mode == 'range') v.value = { from : 0, to : Number(v.value) || 0 }
-						else v.value = { from : Number(v.value) }
-					}
-
-					return {
-						name : name,
-						child : {
-							cell : Template.get('cell','simple',{
-								child : { content : v.label }
-							})+
-							Template.get('cell','slider',{
-								name : v.name.from,
-								value : v.value.from,
-								prefix : v.prefix,
-								sufix : v.sufix || '%'
-							})
-						}
-					}
-				});
-				*/
 			},
 			radio: function () {
 				var setup = Field.setup;
@@ -996,12 +976,21 @@ sourceui.parserField = function (element, setup) {
 			},
 			addon: function (tpl) {
 				var setup = Field.setup;
-				if (typeof tpl.addon == 'string')
-					return Template.get('addon', tpl.addon, {
+				if (typeof tpl.addon == 'string'){
+					var addondata = {};
+					if (tpl.addon == 'og'){
+						if ($.isPlainObject(setup.valuelist)){
+							$.each(setup.valuelist, function (i,v) {
+								if (v.value) addondata[v.name||i] = v.value;
+							});
+						}
+					}
+					return Template.get('addon', tpl.addon, $.extend(addondata,{
 						child: {
 							droplist: HTML.common.droplist(tpl)
 						}
-					});
+					}));
+				}
 				return '';
 			},
 			droplist: function (tpl) {
@@ -1327,6 +1316,19 @@ sourceui.parserField = function (element, setup) {
 				return HTML.common.field({ input: 'tel', addon: 'simple', droplist: 'plugin', options: 'calendar' });
 			}
 		},
+		og:{
+			url: function () {
+				Field.setup.getval = 'caller';
+				Field.setup.spellcheck = 'false';
+				Field.setup.autocorrect = 'off';
+				Field.setup.valuesas = 'array';
+				Field.setup.value = Field.setup.valuelist && Field.setup.valuelist.url ? Field.setup.valuelist.url.value : '';
+				Field.setup.class += Field.setup.value ? ' valued' : '';
+				Field.setup.mask = Field.setup.mask || 'url';
+				if (Field.setup.button !== false) if (Field.setup.button !== false) Field.setup.buttons.after = [{ icon: 'icon-binocle', alias: 'parse', options: [] }];
+				return HTML.common.field({ input: 'url', addon: 'og' });
+			},
+		},
 		picker: {
 			single: function () {
 				Field.setup.setval = 'caller';
@@ -1552,6 +1554,7 @@ sourceui.parserField = function (element, setup) {
 				case 'date': return setup.mode && HTML.date[Field.setup.mode] ? HTML.date[Field.setup.mode]() : HTML.date.simple(); break;
 				case 'datetime': return setup.mode && HTML.datetime[Field.setup.mode] ? HTML.datetime[Field.setup.mode]() : HTML.datetime.simple(); break;
 				case 'time': return setup.mode && HTML.time[Field.setup.mode] ? HTML.time[Field.setup.mode]() : HTML.time.simple(); break;
+				case 'og': return setup.mode && HTML.og[Field.setup.mode] ? HTML.og[Field.setup.mode]() : HTML.og.url(); break;
 				case 'color': return setup.mode && HTML.color[Field.setup.mode] ? HTML.color[Field.setup.mode]() : HTML.color.spectrum(); break;
 				case 'switch': return setup.mode && HTML.switch[Field.setup.mode] ? HTML.switch[Field.setup.mode]() : HTML.switch.simple(); break;
 				case 'slider': return setup.mode && HTML.slider[Field.setup.mode] ? HTML.slider[Field.setup.mode]() : HTML.slider.simple(); break;

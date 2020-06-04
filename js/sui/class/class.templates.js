@@ -293,6 +293,13 @@ Element.prototype.attr = function(attr,value){
 					attrlist['attr'] = attrlist['attr']||{};
 					attrlist['attr']['title'] = $.htmlspecialchars(a.nodeValue);
 				}
+			} else if (a.prefix == 'prop'){
+				if (a.nodeValue === a.localName || a.nodeValue === 'true' || a.nodeValue === true){
+					if (a.localName == 'ignored' || a.localName == 'disable' || a.localName == 'disabled' || a.localName == 'readonly' || a.localName == 'selected' || a.localName == 'active'){
+						attrlist['class'] = attrlist['class'] || {};
+						attrlist['class']['prop'] = a.localName;
+					}
+				}
 			} else if (a.prefix == 'event'){
 				attrlist['data'] = attrlist['data'] || {};
 				attrlist['data']['event'] = attrlist['data']['event'] || {};
@@ -355,6 +362,11 @@ Element.prototype.getAttr = function(ignoreCSS){
 				else if (a.localName == 'background'){ attr['style'][a.localName] = a.localName+':'+$.colorfy(sui,v); }
 				else if (a.localName == 'color'){ attr['style'][a.localName] = a.localName+':'+$.colorfy(sui,v)+';'; }
 				else attr['style'][a.localName] = a.localName+':'+v+';';
+			} else if (a.prefix == 'prop' && (a.localName == 'ignored' || a.localName == 'disable' || a.localName == 'disabled' || a.localName == 'readonly' || a.localName == 'selected' || a.localName == 'active')){
+				if (v === a.localName || v === true){
+					attr['class'] = attr['class'] || {};
+					attr['class']['prop'] = a.localName;
+				}
 			} else {
 				attr[a.prefix][a.localName] = v;
 			}

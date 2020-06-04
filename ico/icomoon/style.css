@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?tmkwo0');
-  src:  url('fonts/icomoon.eot?tmkwo0#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?tmkwo0') format('truetype'),
-    url('fonts/icomoon.woff?tmkwo0') format('woff'),
-    url('fonts/icomoon.svg?tmkwo0#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?v84069');
+  src:  url('fonts/icomoon.eot?v84069#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?v84069') format('truetype'),
+    url('fonts/icomoon.woff?v84069') format('woff'),
+    url('fonts/icomoon.svg?v84069#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -239,6 +239,9 @@
 }
 .icon-foodtool:before {
   content: "\eca8";
+}
+.icon-dots:before {
+  content: "\ec06";
 }
 .icon-technologic-signal:before {
   content: "\ecd8";
@@ -702,6 +705,9 @@
 .icon-carousel:before {
   content: "\ecd6";
 }
+.icon-circle-pic:before {
+  content: "\ecde";
+}
 .icon-store-3:before {
   content: "\ea08";
 }
@@ -894,6 +900,9 @@
 .icon-cycle-arrows:before {
   content: "\e93b";
 }
+.icon-expand:before {
+  content: "\ecdf";
+}
 .icon-pointer-left:before {
   content: "\e998";
 }
@@ -988,7 +997,7 @@
   content: "\ea1d";
 }
 .icon-circle-check:before {
-  content: "\ec06";
+  content: "\ece0";
 }
 .icon-check:before {
   content: "\ec07";
@@ -1068,6 +1077,9 @@
 .icon-right-quote:before {
   content: "\e9c8";
 }
+.icon-binocle:before {
+  content: "\ece1";
+}
 .icon-lens:before {
   content: "\ea6b";
 }
@@ -1112,6 +1124,9 @@
 }
 .icon-quiz2:before {
   content: "\ea04";
+}
+.icon-target-arrow:before {
+  content: "\ece2";
 }
 .icon-presentation-empty:before {
   content: "\e9ff";

@@ -317,6 +317,7 @@ sourceui.interface.panel = function () {
 		}
 	});
 
+	Dom.floatSectorContainer.trigger('sector:close');
 	Dom.context.trigger('scope:context');
 
 	$('#suiAuth').remove();

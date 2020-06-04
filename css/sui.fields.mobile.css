@@ -360,6 +360,15 @@
 .sui-droplist-container.field.time > .sui-droplist > .options > .table > .clock {  display:table-cell; overflow:hidden; width:240px; height:240px; vertical-align: middle; background-color:#f6f6f6; }
 .sui-droplist-container.field.time > .sui-droplist > .options > .table > .clock .popover-content { -webkit-transform: scale(1.1); transform: scale(1.1); }
 
+/* OG URL */
+.sui-field.og.url > .wrap > .opengraph { display:none; }
+.sui-field.og.url > .wrap > .opengraph > .link { display:flex; justify-content:start; cursor:pointer; text-decoration:none; color:#828282; }
+.sui-field.og.url > .wrap > .opengraph > .link > .cover { width:120px; min-width: 120px; max-width: 120px; height:63px; min-height:63px; max-height:63px; background:#999 no-repeat; background-size:cover; margin:2px; border-radius:3px; }
+.sui-field.og.url > .wrap > .opengraph > .link > .text > .title { font-weight:bold; margin:2px 12px 12px 12px; }
+.sui-field.og.url > .wrap > .opengraph > .link > .text > .desc { font-size:11px; margin:12px 12px 2px 12px; }
+.sui-field.og.url.valued .opengraph { display:block; }
+
+
 /* PICKER SINGLE */
 .sui-field.picker > .wrap > .table > .cell.value { cursor:pointer; width:400px; }
 .sui-field.picker > .wrap > .table > .cell.value .option { cursor:pointer; border-bottom:#EAEAEA solid 1px; }
