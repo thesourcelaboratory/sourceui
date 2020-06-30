@@ -314,6 +314,7 @@
 .sui-field.spin > .wrap > .table > .cell.button:first-child { border-right:#e4e4e4 solid 1px; border-radius:4px 0 0 4px }
 .sui-field.spin > .wrap > .table > .cell.button:last-child { border-left:#e4e4e4 solid 1px; border-radius:0 4px 4px 0; }
 .sui-field.spin > .wrap > .table > .cell .input { text-align:center; padding:0 4px; }
+.disable .cell.button.disable, .readonly .cell.button.disable { background:transparent !important; }
 
 /* SWITCH */
 .sui-field.switch { padding: 2px 8px 2px 12px !important; }
@@ -754,6 +755,8 @@
 .mce-menu-item-preview { border-left:transparent solid 3px !important; }
 .mce-menu-item-preview.mce-active { border-left:#1B74E6 solid 3px !important; background-color:#f2f2f2 !important; }
 .disable .mce-toolbar-grp, .readonly .mce-toolbar-grp { display:none !important; }
+.disable .mce-edit-area, .readonly .mce-edit-area { border-width: 0px  !important; background:transparent !important; }
+.disable .mce-panel, .readonly .mce-panel { border:none !important; }
 
 /* FROALA EDITOR */
 .sui-field.froala { width:100%; }

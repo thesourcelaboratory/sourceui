@@ -184,7 +184,7 @@ sourceui.templates.fields = new sourceui.Template({
 		prefix:
 			'<div class="cell prefix @{icon}" style="@{style:bold}@{style:size}@{style:case}">@{label}</div>',
 		sufix:
-			'<div class="cell sufix @{icon}"" style="@{style:bold}@{style:size}@{style:case}">@{label}</div>',
+			'<div class="cell sufix @{icon}" style="@{style:bold}@{style:size}@{style:case}">@{label}</div>',
 		value:
 			'<div class="cell value @{icon}" style="@{style:width}@{style:max-width}@{style:height}@{style:background}@{style:color}">' +
 			'@{child:input}' +

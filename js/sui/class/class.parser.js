@@ -502,7 +502,7 @@ sourceui.templates.interface = new sourceui.Template({
 		area:
 			'<section class="area @{scroll} @{paginator} @{class:type} @{class:selected} @{class:has}"@{data}@{style}>@{child:area}</section>',
 		tip:
-			'<div class="sui-tip @{class:icon} @{class:type} @{class:size} @{class:prop}"@{style}@{attr}>@{child:tip}</div>',
+			'<div id="@{id}" class="sui-tip @{class:icon} @{class:type} @{class:size} @{class:prop}"@{style}@{attr}>@{child:tip}</div>',
 		footer:
 			'<div class="footer @{type} icon-dots-small"></div>'
 	},
@@ -1882,7 +1882,7 @@ sourceui.Parser = function () {
 					if (wgid) {
 						var wgDom = $('#' + wgid);
 						if (wgDom.length) {
-							wgClass = wgDom.attr('class').replace(/\s\s+/g, ' ').split(" ");
+							wgClass = wgDom.attr('class').replace(/disable|enable|readonly|selecte|active/,'').replace(/\s\s+/g, ' ').split(" ");
 						}
 					}
 					var htmlWidget = sui.toHTML('widget', 'container', (wgClass.length ? { class: { mode: wgClass[2], block: wgClass.slice(3).join(" ") } } : null), Template.get),

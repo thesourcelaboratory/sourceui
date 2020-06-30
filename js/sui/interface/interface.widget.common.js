@@ -64,8 +64,17 @@ sourceui.interface.widget.common = function ($widget, setup) {
 	Common.toggleTools = function (action, toggle, controller) {
 		var $source = this;
 		controller = controller || Common.controller;
-		var $tools = controller.find('[data-event-enable*="' + action + '"],[data-event-disable*="' + action + '"]');
-		$tools = $tools.add(Common.buttons.filter('[data-event-enable*="' + action + '"],[data-event-disable*="' + action + '"]'));
+
+		if (toggle == 'enable'){
+			var $tools = controller.find('[data-event-enable*="' + action + '"]');
+			$tools = $tools.add(Common.buttons.filter('[data-event-enable*="' + action + '"]'));
+		} else if (toggle == 'disable'){
+			var $tools = controller.find('[data-event-disable*="' + action + '"]');
+			$tools = $tools.add(Common.buttons.filter('[data-event-disable*="' + action + '"]'));
+		} else {
+			var $tools = controller.find('[data-event-enable*="' + action + '"], [data-event-disable*="' + action + '"]');
+			$tools = $tools.add(Common.buttons.filter('[data-event-enable*="' + action + '"], [data-event-disable*="' + action + '"]'));
+		}
 		$tools.each(function () {
 			var $tool = $(this);
 			var typetog;

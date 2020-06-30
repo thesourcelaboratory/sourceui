@@ -1093,10 +1093,10 @@ $.colorfy = function (value, color) {
 			else return '#cccccc';
 		}
 		var c = {
-			'#599fdc': /liberad|^inscri|^finalizad|^presen|adimplen|adimplên|^realiz|^\d?$|ado$|edo$|ido$|ído$|ada$|eda$|ida$|ída$/gi,	// lightblue
 			'#2e519e': /^nov|^new/gi,	// darkblue
 			'#e24040': /exclu|delet|remov|ignor|invali|inváli|inadimplen|inadimplên|negativ|^reprov|^revogad|^não |^no |^n$|^-?\d?$/gi,	// red
-			'#5a5a5a': /^ativ|^activ|^sim|^s$|^yes|^y$|^\d$/gi, // darkgray
+			'#599fdc': /liberad|^inscri|^presen|adimplen|adimplên|^realiz|^\d?$|ado$|edo$|ido$|ído$|ada$|eda$|ida$|ída$/gi,	// lightblue
+			'#5a5a5a': /^ativ|^activ|^finalizad|^sim|^s$|^yes|^y$|^\d$/gi, // darkgray
 			'#e6ac08': /ando$|endo$|indo$|^em /gi,	// yellow
 			'#F18D25': /^enviad|^ausen|penden|pendên|^para /gi,	// orange
 			'#BBBBBB': /^inativ|^inactiv|^cancel|falecid/gi,	// litegray

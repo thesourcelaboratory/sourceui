@@ -102,9 +102,17 @@ sourceui.interface.view = function ($view, setup) {
 			View.widgets.on('field:input', function () {
 				var $widget = $(this);
 				$widget.data('Interface').common.toggleTools('field:input', 'enable', View.controller);
+				$widget.data('Interface').common.toggleTools('field:input', 'disable', View.controller);
+			});
+			View.element.on('form:saved', function (event) {
+				var $widget = View.widgets.filter('.form:eq(0)');
+				$widget.data('Interface').common.toggleTools('form:saved', 'enable', View.controller);
+				$widget.data('Interface').common.toggleTools('form:saved', 'disable', View.controller);
 			});
 			View.element.on('form:valid', function (event, $a, wgdata) {
-				Network.link.call($a, wgdata);
+				Network.link.call($a, $.extend(wgdata,{ondone:function(){
+					View.element.trigger('form:saved');
+				}}));
 				$a.filter('[data-alias="save"]').parent().disable();
 			});
 			View.element.on('form:invalid', function (event) {
@@ -194,6 +202,9 @@ sourceui.interface.view = function ($view, setup) {
 						}
 					});
 					event.stopPropagation();
+				} else if (data.alias == 'edit') {
+					$a.data('linkCache', false);
+					Network.link.call($a, data);
 				} else if (data.alias == 'clear') {
 					View.widgets.filter('.form, .wizard').find('.sui-field').val('');
 				} else if (data.alias == 'refresh') {

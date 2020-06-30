@@ -211,6 +211,8 @@ $(function(){
 						$(this).remove(); // prevent memory leaks as @benweet suggested
 						$this.trigger('banner:loaded');
 					});
+				} else {
+					$this.trigger('banner:loaded');
 				}
 				if ($newvis) {
 					$newvis.attr('data-display',$this.attr('id'));

@@ -537,11 +537,11 @@ sourceui.Network = function () {
 									setup.target.replaceWith(setup.response.parsedJQ
 										.data('scrollTop', setup.target.data('scrollTop'))
 										.attr('data-history', setup.target.attr('data-history'))
-										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed'] }));
+										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed', 'disable'] }));
 								}
 								else {
 									setup.target.replaceWith(setup.response.parsedJQ
-										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed'] }));
+										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed', 'disable'] }));
 								}
 							}
 							else

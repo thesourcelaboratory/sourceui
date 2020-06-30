@@ -1862,19 +1862,22 @@ sourceui.customField = function (element, setup) {
 						Dom.wrap.addClass('ajax-courtain');
 						Network.getJSON('https://api.sourceui.com/og/1.0/'+ Network.apikeys.opengraph +'/?addr=' + encodeURIComponent(val), {
 							ondone: function (ogdata) {
-								console.log(ogdata);
 								if ($.isPlainObject(ogdata)){
-									if (ogdata.url) Dom.opengraph.find('.link').attr('href',ogdata.url);
-									if (ogdata.image) Dom.opengraph.find('.cover').data('src',ogdata.image).css('background-image','url(\''+ogdata.image+'\')');
-									if (ogdata.title) Dom.opengraph.find('.title').text(ogdata.title);
-									if (ogdata.description) Dom.opengraph.find('.desc').text(ogdata.description);
-									if (!Dom.opengraph.is(':visible')){
-										Dom.opengraph.velocity("slideDown",{
-											duration:150
-										});
-									}
-									if (!ogdata.image && !ogdata.description && !ogdata.title){
-										Element.trigger('field:clear');
+									if (ogdata.error){
+										Element.trigger('field:error', ['api',ogdata.error]);
+									} else {
+										if (ogdata.url) Dom.opengraph.find('.link').attr('href',ogdata.url);
+										if (ogdata.image) Dom.opengraph.find('.cover').data('src',ogdata.image).css('background-image','url(\''+ogdata.image+'\')');
+										if (ogdata.title) Dom.opengraph.find('.title').text(ogdata.title);
+										if (ogdata.description) Dom.opengraph.find('.desc').text(ogdata.description);
+										if (!Dom.opengraph.is(':visible')){
+											Dom.opengraph.velocity("slideDown",{
+												duration:150
+											});
+										}
+										if (!ogdata.image && !ogdata.description && !ogdata.title){
+											Element.trigger('field:clear');
+										}
 									}
 								} else {
 									Element.trigger('field:clear');
