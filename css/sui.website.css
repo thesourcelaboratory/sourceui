@@ -841,9 +841,9 @@ body .env-develop mark:before { display:block; margin-bottom:-1px; font-size:13p
 
 	main > section .responsive-wrap { margin:0px; display:block; }
 	main > section .responsive-wrap > img { display: block; max-width:320px !important; width:70%; margin:0 auto !important; }
-	main > section .responsive-wrap > img:first-child { margin-bottom:calc(var(--content-padding) / 1.5) !important; }
-	main > section .responsive-wrap > img:last-child { margin-top:calc(var(--content-padding) / 1.5) !important; }
-	main > section .responsive-wrap > img:only-child { max-width:max-content !important; width:100% !important; }
+	main > section .responsive-wrap > img:first-child { margin: 0 auto !important; margin-bottom:calc(var(--content-padding) / 1.5) !important; }
+	main > section .responsive-wrap > img:last-child { margin: 0 auto !important; margin-top:calc(var(--content-padding) / 1.5) !important; }
+	main > section .responsive-wrap > img:only-child { margin: 0 auto !important; max-width:max-content !important; width:100% !important; }
 	main > section .responsive-wrap > p { margin:0 !important; }
 
 	main > section.sui-search + section > .content,
