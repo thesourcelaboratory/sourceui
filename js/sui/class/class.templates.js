@@ -231,7 +231,8 @@ Element.prototype.content = function(){
 	else if (contrim === 'true' || contrim === true) content = true;
 	else if (contrim === 'false' || contrim === false) content = false;
 	else if (contrim === 'null' || contrim === null) content = null;
-	else if (!isNaN(contrim) && contrim.indexOf('0') !== 0) content = +contrim;
+	//else if (!isNaN(contrim) && contrim.indexOf('0') !== 0 && contrim.length <= 9) content = (+contrim);
+
 	return content;
 }
 

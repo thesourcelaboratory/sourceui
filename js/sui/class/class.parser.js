@@ -2151,6 +2151,7 @@ sourceui.Parser = function () {
 											label: { content: suiColumn.content() },
 											prop: { color: suiColumn.attr('prop:color'), prefix: suiColumn.attr('prop:prefix'), original: suiColumn.attr('prop:original') }
 										};
+									//console.log(suiColumn,suiColumn.content(),$(suiColumn).text());
 									if (hd.class) {
 										if (hd.class.type == 'key') { data.label.content = '<small class="icon-key3">' + data.label.content + '</small>'; }
 										else if (hd.class.type == 'image') { data.style['background-image'] = 'url(\'' + $.trim(data.label.content) + '\')'; data.label.content = ''; }
