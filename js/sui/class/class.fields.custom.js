@@ -691,7 +691,7 @@ sourceui.customField = function (element, setup) {
 				single: function () {
 					Validate.required();
 					Dom.buttons.all.filter('[data-alias="browse"]').on('click', function (event) {
-						/* ja existe essa parada
+						/* ja existe essa parada no Network line 1009
 						if (Data.vars){
 							$.each(Data.vars.filter||[],function(k,v){
 								var $fd;

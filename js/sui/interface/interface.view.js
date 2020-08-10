@@ -398,10 +398,10 @@ sourceui.interface.view = function ($view, setup) {
 				tinymce.execCommand('mceRemoveControl', true, editor.attr('id'));
 			}
 		});
-		View.element.find('.sheet').each(function () {
-			var hot = $(this).data('hot');
+		View.element.find('.spreadsheet').each(function () {
+			var handsome = $(this).data('Interface');
 			if (typeof hot == 'object') {
-				hot.destroy();
+				handsome.kill();
 			}
 		});
 		View.element.find('.map').each(function () {

@@ -1329,6 +1329,7 @@ sourceui.interface.plugins = function () {
 			setup.link.placement = 'append';
 			setup.link.sector = $sector;
 			setup.link.cancelnested = true;
+			setup.link.caller = setup.caller;
 			$sector.data('floatcaller', setup.caller);
 			$container.velocity({ opacity: [1, 0] }, { display: 'block', duration: 180 });
 			$sector.velocity({ scale: [1, 0.97] }, { display: 'block', duration: 180, complete: function () {

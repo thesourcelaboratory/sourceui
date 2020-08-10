@@ -301,7 +301,12 @@ sourceui.templates.interface = new sourceui.Template({
 				item:
 					'<li @{attr}class="sn menu sui-link item @{hasicon} @{hasabbr} @{hassubicon} @{hasavatar} @{hasimage} @{class:icon} @{link:icon} @{class:status} @{class:prop}"@{data}>' +
 					'@{child:labels}' +
+					'@{child:subitems}' +
 					'</li>',
+				subitem:
+					'<a @{attr}class="sn sui-link subitem"@{data}>' +
+					'@{label}' +
+					'</a>',
 				label:
 					'<div class="@{class}" @{style}>@{content}</div>',
 
@@ -429,7 +434,7 @@ sourceui.templates.interface = new sourceui.Template({
 				'</div>',
 		},
 		container:
-			'<section class="sui-view @{class:scroll} @{class:selected} @{class:covered} @{class:prop}" id="@{attr:id}"@{data}>' +
+			'<section class="sui-view @{class:scroll} @{class:selected} @{class:covered} @{class:prop}" @{style} id="@{attr:id}"@{data}>' +
 			'@{child:content}' +
 			'</section>',
 		cover:
@@ -1698,7 +1703,12 @@ sourceui.Parser = function () {
 										ahtml.group = suiGroup.toHTML('panel', 'aside', 'nav', 'group', Template.get);
 										ahtml.items = '';
 										suiGroup.findChild('item', function () {
-											ahtml.items += Components.libs.panel.navitem(this);
+											var htmlItem = Components.libs.panel.navitem(this);
+											var htmlSubitems = '';
+											this.findChild('subitem', function () {
+												htmlSubitems += Components.libs.panel.navsubitem(this);
+											});
+											ahtml.items += Template.replace(htmlItem, { child: { subitems: htmlSubitems } });
 										});
 										suiGroup.findChild('empty', function () {
 											ahtml.items += this.toHTML('empty', { child: { html: this.content() } }, Template.get);
@@ -1733,13 +1743,14 @@ sourceui.Parser = function () {
 				navitem: function (sui) {
 					var htlmLabels = '';
 					var suiItem = sui;
+					var description = '';
 					var abbr = suiItem.attr('label:abbr');
 					var image = suiItem.attr('image:cover') || suiItem.attr('style:image');
 					var avatar = suiItem.attr('image:avatar') || suiItem.attr('image:logo');
 					var minicon = suiItem.attr('icon:small') || suiItem.attr('icon:minicon') || suiItem.attr('link:minicon');
 					var title = suiItem.attr('label:title') || suiItem.attr('link:name') || suiItem.attr('link:title');
 					var label = (suiItem.attr('time:ago')) ? suiItem.content() || suiItem.attr('label:label') || suiItem.attr('label:name') : '';
-					var desc = (suiItem.attr('time:ago')) ? $.timeagoHTML(suiItem.attr('time:ago')) : suiItem.attr('label:decription') || suiItem.attr('label:desc') || suiItem.content();
+					var desc = (suiItem.attr('time:ago')) ? $.timeagoHTML(suiItem.attr('time:ago')) : suiItem.attr('label:description') || suiItem.attr('label:desc') || suiItem.content();
 					suiItem.attr('hasabbr', abbr ? 'has-abbr' : '');
 					suiItem.attr('hasimage', image ? 'has-image' : '');
 					suiItem.attr('hasavatar', avatar ? 'has-avatar' : '');
@@ -1753,6 +1764,12 @@ sourceui.Parser = function () {
 					if (label) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'label', content: label }, Template.get);
 					if (desc) htlmLabels += suiItem.toHTML('panel', 'aside', 'nav', 'label', { class: 'description', content: desc }, Template.get);
 					return suiItem.toHTML('panel', 'aside', 'nav', 'item', { child: { labels: htlmLabels } }, Template.get);
+				},
+				navsubitem: function (sui) {
+					var htlmLabels = '';
+					var suiItem = sui;
+					var label = suiItem.content() || suiItem.attr('label:label') || suiItem.attr('label:name') || suiItem.attr('link:name') || suiItem.attr('link:title');
+					return suiItem.toHTML('panel', 'aside', 'nav', 'subitem', { label: label }, Template.get);
 				}
 			},
 			common: {

@@ -40,12 +40,29 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     Handson.common = new Interface.widget.common($widget, setup);
     Handson.widget = $widget;
     Handson.area = Handson.widget.children('.area');
+    Handson.view = Handson.widget.closest('.sui-view');
+    Handson.sector = Handson.view.closest('.sui-sector');
+	Handson.height = null;
     Handson.sheet = Handson.widget.find('.sheet');
+	Handson.cfg = {};
+	Handson.kill = function () {
+         if (Handson.hot && !Handson.killed) Handson.hot.destroy();
+		Handson.killed = true;
+    };
     Handson.refresh = function () {
-        var sh = Handson.widget.is('.maximized') ? Handson.area.outerHeight() : Handson.sheet.find('.wtSpreader').outerHeight();
+        var sh = Handson.cfg.height || Handson.widget.is('.maximized') ? Handson.area.outerHeight() : Handson.sheet.find('.wtSpreader').outerHeight();
         Handson.sheet.height(sh);
         Handson.sheet.css('opacity', 1);
-        if (Handson.hot) Handson.hot.refreshDimensions();
+        if (Handson.hot) setTimeout(function(){
+			Handson.hot.render();
+		},50);
+    };
+	Handson.resize = function () {
+		clearTimeout(Handson.resizeTimeout);
+        Handson.resizeTimeout = setTimeout(function(){
+			Handson.kill();
+			Handson.draw(Handson.cfg);
+		},166);
     };
 
     var validators = {};
@@ -157,10 +174,24 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     });
 
     Handson.draw = function (cfg) {
-        if (Handson.hot) Handson.hot.destroy();
+        if (Handson.hot && !Handson.killed) Handson.hot.destroy();
+		if (cfg.widgetDimensions){
+			Handson.widgetDomensions = cfg.widgetDimensions;
+			var parentheight = Handson.widget.parent().innerHeight();
+			var widgetOffsetTop = Handson.widget.position().top + (Handson.widget.children('.title').height() || 0);
+			var scrollHeight = Handson.widget.closest('.scroll-default').innerHeight();
+			console.log(parentheight,widgetOffsetTop,scrollHeight);
+			cfg.height = (widgetOffsetTop + 300 <= scrollHeight ? parentheight - widgetOffsetTop : 300)+'px';
+			cfg.width = "100%";
+			cfg.renderAllRows = cfg.columns && cfg.columns.length <= 100 ? true : false;
+		}
+		Handson.cfg = $.extend({},cfg);
+		if (cfg.height) Handson.area.height(cfg.height);
         var sh = Handson.widget.is('.maximized') ? Handson.area.outerHeight() : null;
         var hot = Handson.hot = new Handsontable(Handson.sheet.get(0), $.extend(cfg, {
-            height: sh,
+			observeDOMVisibility: false,
+			observeChanges: false,
+            height: cfg.height || sh,
             afterChange: function (changes, source) {
                 if (source != 'loadData') {
                     Handson.widget.trigger('field:input');
@@ -181,6 +212,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                 }
                 Handson.valid = $.isEmptyObject(Handson.invalid);
             },
+			/*
             afterLoadData: function(initialLoad){
                 var data = this.getData();
                 Handson.area.children('.empty').remove();
@@ -196,10 +228,13 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                     Handson.widget.trigger('widget:dataload',[data]);
                 }
             }
+			*/
+			beforeRefreshDimensions: function () { return false; }
         }));
-        setTimeout(hot.render,100);
+        //setTimeout(hot.render,10);
         Handson.sheet.data('hot', hot);
         Handson.widget.trigger('widget:init',[hot]);
+		Handson.killed = false;
         return hot;
     }
 
@@ -223,9 +258,11 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     });
 
     Handson.widgetData = function () {
+		var name = Handson.sheet.data('name');
+		if (!name) return null;
         Handson.wgdata = { data: {}, modified: {}, validate: {}, info: {} };
         if (Handson.valid) {
-            Handson.wgdata.data[Handson.sheet.data('name')] = Handson.hot.getData();
+            Handson.wgdata.data[name] = Handson.hot.getData();
         } else {
             Notify.open({
                 type: 'error',
@@ -237,6 +274,16 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
         return Handson.valid;
     };
 
+	Handson.view.on('view:hidden',function(){
+		Handson.kill();
+	});
+	Handson.view.on('view:shown',function(){
+		Handson.draw(Handson.cfg);
+	});
+
+	$(window).on('resize',function(){
+		Handson.resize();
+	});
     Handson.test = function () {
         console.log(Handson);
     }

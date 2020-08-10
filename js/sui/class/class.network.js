@@ -532,6 +532,9 @@ sourceui.Network = function () {
 							setup.target.html(setup.response.parsedJQ);
 						}
 						else if (setup.placement.indexOf('replace') > -1) {
+							if (setup.target.is('.sui-view')) {
+								setup.target.trigger('view:hidden');
+							}
 							if (setup.exists) {
 								if (!setup.target.attr('data-link-key') || setup.target.attr('data-link-key') === setup.response.parsedJQ.attr('data-link-key')) {
 									setup.target.replaceWith(setup.response.parsedJQ
@@ -1009,10 +1012,12 @@ sourceui.Network = function () {
 					$.each(setup.filter||[], function(k,v){
 						if (typeof v != 'string') return false;
 						var $t;
+						var $orig = setup.caller || setup.element;
+						if ($orig) $orig = $orig.closest('.sui-view, .sui-sector');
 						if (v.indexOf('#') > -1) {
 							$t = $(v);
 						} else if (v.indexOf('@') > -1) {
-							$t = $.ache('field', v, [(setup.view || setup.sector), $(document)]).val();
+							$t = $.ache('field', v, [($orig.length ? $orig : setup.view || setup.sector), $(document)]);
 						}
 						if ($t && $t.length){
 							if ($t.is('.sui-field')) setup.filter[k] = $t.val();
@@ -1030,6 +1035,7 @@ sourceui.Network = function () {
 						command: setup.command,
 						process: setup.process,
 						parentkey: setup.parentkey,
+						cache: setup.cache,
 						owner: setup.owner,
 						id: setup.id,
 						key: setup.key,

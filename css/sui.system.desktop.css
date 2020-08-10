@@ -238,7 +238,8 @@
 
 /* DATAGRID ------------------------------------------ */
 .sui-widget.datagrid > .area .list .header .sui-draggable:after { content:''; display:block; width:1px; height:100%; margin-left:2px; background:rgba(0,0,0,0.06); }
-.sui-widget.datagrid > .area .list .line > .col.visualidentifier { background-size:cover; min-width:64px; max-width:64px; }
+.sui-widget.datagrid > .area .list .line > .col.visualidentifier { background-size:cover; min-width:60px; max-width:60px; }
+.sui-widget.datagrid > .area .list .line > .col.pad + .col.visualidentifier { min-width:64px; max-width:64px; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier.rounded { border-radius:0px; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier img { max-width:54px; max-height:54px; }
 .sui-widget.datagrid > .area .list .line > .col.description .fixflow { max-height: 9.15em; }
@@ -500,7 +501,7 @@
 /* --------------------------------------------------- */
 
 /* SHEET --------------------------------------------- */
-.sui-widget.spreadsheet .area { font-size:13px; }
+.sui-widget.spreadsheet .area { font-size:12.333px; }
 .sui-widget.spreadsheet .area ::-webkit-scrollbar:horizontal { height:14px !important; }
 .sui-widget.spreadsheet .handsontable td, .handsontable th { line-height:20px; }
 /* --------------------------------------------------- */
@@ -685,15 +686,12 @@ main.sui-load-border .sui-spinner .container,
 
 .sui-droplist .calendar a.hover { background:#1B74E6 !important; color:#FFF !important; }
 
-.scroll-default::-webkit-scrollbar{
-	width:8px;
-}
-.scroll-default::-webkit-scrollbar-track {
-    background-color:#f2f2f2;
-}
-.scroll-default::-webkit-scrollbar-thumb {
-	 background-color:#AAA;
-}
+
+.scroll-default::-webkit-scrollbar { width:8px; }
+.scroll-default::-webkit-scrollbar-thumb { background-color:#999; }
+.scroll-default::-webkit-scrollbar-track { background-color:#f2f2f2; }
+.scroll-default::-webkit-scrollbar-corner { background-color:#f2f2f2; }
+
 
 
 @media (max-width: 1280px) {

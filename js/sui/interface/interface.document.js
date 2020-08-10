@@ -93,6 +93,7 @@ sourceui.interface.document = function () {
 			var $views = $sector.find('#suiViewsContainer');
 			var $prevsel = $this.prev('.selected:not(.alwaysactive)');
 			var $nextsel = $this.next('.selected:not(.alwaysactive)');
+			var $siblsel = $this.siblings('.selected:not(.alwaysactive)');
 			var $viewnav = $sector.find('.viewnav:not(.custom)');
 			var $hastool = $target.children('.toolbar');
 			//////////////////////////////////////////
@@ -164,6 +165,8 @@ sourceui.interface.document = function () {
 				Network.history.tab($sector, $target);
 			}
 			///////////////////////////////////////////////
+			if ($siblsel) $sector.find('#' + $siblsel.data('view')).trigger('view:hidden');
+			$target.trigger('view:shown');
 		});
 		context.on('click', '.sui-tabs-view > ol > li .close', function (event) {
 			var $this = $(this);

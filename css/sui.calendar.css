@@ -168,7 +168,7 @@
 	.sui-calendar > .modes > .time > .clock .tick { font-size:12px; }
 	.sui-calendar > .modes > .time { height:260px;  }
 
-	.sui-calendar.datetime > ul.modetabs > .time { display:block !important; background:none !important; position:absolute; right:74px; top:136px; width:128px !important; z-index:1; }
+	.sui-calendar.datetime > ul.modetabs > .time { display:block !important; background:none !important; position:absolute; right:84px; top:136px; width:88px !important; z-index:1; }
 	.sui-calendar.datetime > ul.modetabs > .time > a { height:44px !important; background:none !important; }
 	.sui-calendar.datetime > ul.modetabs > .time > a > b { min-width:44px !important; background:rgba(255,255,255,0.85) !important; font-size:18px; color:#CCC; border-radius:50%; }
 	.sui-calendar.datetime > ul.modetabs > .time > a > b.active { background:rgba(210,210,210,0.75) !important; color:#444; }

@@ -296,6 +296,7 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		if ($this.isDisable()) return;
 		if (clone) {
 			var $clone = $(clone);
+			console.log($this,clone, $clone);
 			$clone.trigger('click', [true]);
 			if (!$clone.is('[data-link-confirm]')) Datagrid.common.swipe.close($line, { duration: 100 });
 		} else if (haslink) {

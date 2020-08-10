@@ -806,7 +806,7 @@
 
 /* CHECKBOX */
 .sui-field.box { margin:4px 0; }
-.sui-field.box > .wrap { border:none; background:none; }
+.sui-field.box > .wrap { border:none; background:none; margin:10px 0; }
 .sui-field.box > .wrap > .table { display:flex; flex-direction:column; min-height:34px; justify-content:center; border:none; background:none; box-shadow:none; }
 .sui-field.box > .wrap > .table > .cell.button { display:flex; align-items:center; margin:4px 0; width:100%; height:auto; min-height:22px; text-align:left; border:none; background:none; white-space: normal !important; }
 .sui-field.box > .wrap > .table > .cell.button .check { display:block; margin-right:10px; position:relative; min-width:20px; width:20px; height:20px; border:2px solid #999; background:#FFF; border-radius:16px; transition:all 200ms; }

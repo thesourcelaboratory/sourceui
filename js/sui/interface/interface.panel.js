@@ -151,17 +151,17 @@ sourceui.interface.panel = function () {
 			setTimeout(function () { window.location.reload(true); }, 250);
 		});
 	});
-	Dom.navLeft.on('click', '.sui-link:not(.selected)', function () { // :attrHas("data-link"):not(.selected)
+	Dom.navLeft.on('click', '.sui-link:not(.selected)', function (event) { // :attrHas("data-link"):not(.selected)
 		var $this = $(this);
 		if ($this.isDisable()) return;
-		if ($this.tag() == 'li' && !$this.is('[data-link-confirm]')) {
+		if (($this.tag() == 'li' || $this.tag() == 'a') && !$this.is('[data-link-confirm]')) {
 			Panel.navLeft.find('.sui-link.selected').removeClass('selected');
 			$this.addClass('selected');
 			if (Device.ismobile) {
 				Dom.body.addClass('leftcollapsed');
 			}
 		}
-
+		event.stopPropagation();
 	});
 	Dom.navLeft.on('click', '.sui-link.selected', function (event) { // :attrHas("data-link"):not(.selected)
 		if (Device.ismobile) {

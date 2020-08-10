@@ -1357,7 +1357,7 @@ sourceui.parserField = function (element, setup) {
 				Field.setup.setval = 'caller';
 				Field.setup.valuelist.yes = $.extend({}, Field.setup.valuelist.yes, Field.setup.valuelist.yes.style || {}) || { style: {} };
 				Field.setup.valuelist.not = $.extend({}, Field.setup.valuelist.not, Field.setup.valuelist.not.style || {}) || { style: {} };
-				if (Field.setup.valuelist.not.value === Field.setup.value) {
+				if (Field.setup.valuelist.not.value === Field.setup.value || (Field.setup.valuelist.not.value === false && !Field.setup.value)) {
 					Field.setup.valuelist.selected = { background: Field.setup.valuelist.not.background || '', bordercolor: (Field.setup.valuelist.not.background) ? Field.setup.valuelist.not.background.replace('background:', 'border-color:') : '' };
 					Field.setup.class += ' not';
 				} else {

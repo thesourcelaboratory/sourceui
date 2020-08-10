@@ -596,12 +596,14 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				var fparam = $.param(Finder.getFilters());
 				var sparam = Finder.sector.attr('data-history');
 				var fhpath;
-				if (fparam){
-					fhpath = sparam.split('?')[0]+'?'+fparam;
-				} else {
-					fhpath = sparam.split('?')[0];
+				if (sparam){
+					if (fparam){
+						fhpath = sparam.split('?')[0]+'?'+fparam;
+					} else {
+						fhpath = sparam.split('?')[0];
+					}
+					Finder.sector.attr('data-history',fhpath);
 				}
-				Finder.sector.attr('data-history',fhpath);
 				Network.history.replace(fhpath);
 			});
 			Finder.widget.on('widget:search', function (event) {
