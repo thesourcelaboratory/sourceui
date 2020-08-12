@@ -558,8 +558,6 @@ main > section.sui-tip > .content .sui-buttonset > .sui-button.bordered { color:
 main > section.sui-search + section.sui-tip::before { content:''; background:#FFF; position:absolute; left:0; top:0; width:100%; height:var(--header-height); }
 main > section.sui-search + section.sui-tip > .content { padding-top: calc(var(--header-height) + calc(var(--content-padding) / 2)); }
 
-
-
 main .sui-buttonset { position:relative; padding:var(--content-padding) 0 0 0; display:flex; justify-content: center; }
 main .sui-buttonset:last-child { padding-bottom:var(--content-padding); }
 
