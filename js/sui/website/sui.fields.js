@@ -207,6 +207,9 @@ $(function(){
 		if (!valid) $form.addClass('invalid');
 		else {
 			$form.append('<div class="sui-loading"/>').find('input[type="submit"]').attr('value','Enviando dados...').prop('disabled',true);
+			setTimeout(function(){
+				$form.find('input[type="submit"]').attr('value','Processando...')
+			},3210);
 		}
 		return valid;
 	});

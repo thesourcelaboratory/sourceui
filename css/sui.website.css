@@ -110,7 +110,7 @@ label > input:disabled ~ b,
 label > textarea:disabled ~ b,
 label > select:disabled ~ b,
 label > .sui-input:disabled ~ b { background:linear-gradient(180deg, transparent 50%, #EEEEEE 50%); transform:scale(0.85); top:-0.6em; color:#999999; width:auto; }
-button:not(.hamburger), .sui-button, input[type="button"], input[type="submit"] { position:relative; display:inline-block; padding:16px 32px; margin:0 10px; font-weight:bold; text-align:center; background-color:rgba(78, 78, 78, 0.9); border:solid 2px rgba(78, 78, 78,0.1); color:#FFFFFF !important; text-decoration: none; border-radius:5px; cursor:pointer; }
+button:not(.hamburger), .sui-button, input[type="button"], input[type="submit"] { position:relative; display:inline-block; padding:12px 32px; margin:10px; font-weight:bold; text-align:center; background-color:rgba(78, 78, 78, 0.9); border:solid 2px rgba(78, 78, 78,0.1); color:#FFFFFF !important; text-decoration: none; border-radius:5px; cursor:pointer; }
 button:not(.hamburger):before, .sui-button:before, input[type="button"]:before, input[type="submit"]:before { padding-right:10px; opacity:0.75; font-weight:normal; }
 button:not(.hamburger):hover:not(:disabled), .sui-button:hover:not(:disabled), input[type="button"]:hover:not(:disabled), input[type="submit"]:hover:not(:disabled) { background-color:#444444; }
 button:not(.hamburger):disabled, .sui-button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled { background-color:#999999; color:#BBBBBB; }
@@ -167,7 +167,7 @@ body > header > nav > .sui-navigation > .sui-menu.fixed > li.search > a i:before
 body > header > nav > .sui-navigation > .sui-menu.fixed > li.user > a { flex-direction:column; }
 body > header > nav > .sui-navigation > .sui-menu.fixed > li.user > a i { font-style:normal; font-weight:normal; display:block; margin-bottom:2px; text-align:center; }
 body > header > nav > .sui-navigation > .sui-menu.fixed > li.user > a i::before { font-size:28px; }
-body > header > nav > .sui-navigation > .sui-menu.fixed > li.user > a span { position: relative; font-size:0.88em; opacity:0.5; }
+body > header > nav > .sui-navigation > .sui-menu.fixed > li.user > a span { position: relative; font-size:0.88em; opacity:0.5; text-align:center; }
 body > header > nav > .sui-navigation > .sui-menu.fixed > li.user > a span:before { position:absolute; bottom:-4px; left:calc(50% - 5px); }
 body > header > nav > .sui-navigation > .sui-menu.fixed > li.user.parent > ol { top:calc(100% - 36px); }
 body > header > nav > .sui-navigation > .sui-menu.fixed > li.parent:not(.user) > a { padding-right:4px; }
@@ -479,7 +479,7 @@ main .sui-share a.email::before { margin-top:-5px; }
 main .sui-social-comments { min-height: 300px; width:100%; }
 main .sui-social-comments iframe { width:100% !important; }
 
-main form { position:relative; background:#F6F6F6; border:#efefef solid 2px; box-shadow:0 0 4px 0px #f2f2f2; border-radius:6px; padding:var(--content-padding); margin-bottom:var(--content-padding); }
+main form { position:relative; background:#F6F6F6; border:#efefef solid 2px; box-shadow:0 0 4px 0px #f2f2f2; border-radius:6px; padding:calc(var(--content-padding) / 1.5) var(--content-padding); margin-bottom:var(--content-padding); }
 main form h1,
 main form h2,
 main form h3,
@@ -535,7 +535,6 @@ main form .sui-captcha { min-height:78px !important; }
 main form .sui-captcha + .sui-buttonset { padding-top:10px !important; }
 main form .sui-fieldset { position:relative; display:flex; justify-content: center; }
 main form .sui-fieldset.vertical { flex-direction:column; }
-main form.invalid:not(.no-validate-bubble) .sui-buttonset:after { content:'Verifique os dados'; display:block; text-align:center; position:absolute; left:50%; top:20px; margin-left:-90px; background:var(--color-error); color:#FFF; width:180px; font-size:12px; font-weight:normal; border-radius:4px; line-height: 28px; }
 main form.invalid input[type="submit"] { background: var(--color-error) !important; animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both; transform: translate3d(0, 0, 0); backface-visibility: hidden; perspective: 1000px; }
 
 
@@ -792,7 +791,7 @@ body .env-develop mark:before { display:block; margin-bottom:-1px; font-size:13p
 
 	.managed::after { transform: scale(0.75); }
 
-	button:not(.hamburger), .sui-button, input[type="button"], input[type="submit"] { font-size:1.15em; letter-spacing:-1px; padding: 13px 20px; margin:0; }
+	button:not(.hamburger), .sui-button, input[type="button"], input[type="submit"] { font-size:1.15em; letter-spacing:-1px; padding: 13px 20px; margin:6px 0; }
 
 	body > header { height:calc(var(--header-height) / 1.75); background-color: rgba(255,255,255,0.685); }
 	body > header > nav { padding:0 calc(var(--content-padding) / 2); }
@@ -977,6 +976,7 @@ body .env-develop mark:before { display:block; margin-bottom:-1px; font-size:13p
 
 
 	.sui-infobox { font-size:0.8em; padding:calc(var(--content-padding) / 2.5) calc(var(--content-padding) / 1.5); }
+	main form > .sui-infobox { margin:0px 0px 20px 0px !important; }
 	.sui-infobox form { padding-top:calc(var(--content-padding) / 2.5) !important; display:block; width: auto; }
 
 	.sui-dialog > .container { top:calc(var(--content-padding) / 3); left:calc(var(--content-padding) / 3); bottom:calc(var(--content-padding) / 3); right:calc(var(--content-padding) / 3); width:auto; }
