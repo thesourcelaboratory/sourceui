@@ -157,13 +157,13 @@ sourceui.templates.fields = new sourceui.Template({
 			'<div class="cell button @{checked} @{selected}">' +
 			'<div class="check"></div>' +
 			'<p class="desc">@{label}</p>' +
-			'<input class="input radio" type="radio" value="@{value}" @{prop}/>' +
+			'<input class="input radio" type="radio" value="@{value}" @{data}@{prop}/>' +
 			'</div>',
 		check:
 			'<div class="cell button @{checked} @{selected}">' +
 			'<div class="check"></div>' +
 			'<div class="desc">@{label}</div>' +
-			'<input class="input checkbox" type="checkbox" value="@{value}" @{prop}/>' +
+			'<input class="input checkbox" type="checkbox" value="@{value}" @{data}@{prop}/>' +
 			'</div>',
 	},
 	cell: {
@@ -226,7 +226,7 @@ sourceui.templates.fields = new sourceui.Template({
 			'<div class="flex">' +
 			'<span class="prefix">@{prefix}</span>' +
 			'<div class="nouislider">@{config}</div>' +
-			'<span class="sufix">@{sufix}</span>' +
+			'<span class="sufix" style="@{style:size}"></span>' +
 			'</div>' +
 			'</div>',
 		files:
@@ -245,7 +245,7 @@ sourceui.templates.fields = new sourceui.Template({
 		html:
 			'<div class="input" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" @{prop}>@{value}</div>',
 		hidden:
-			'<input class="input hidden @{size}" type="hidden" lang="@{lang}" value="@{value}"@{prop}/>',
+			'<input class="input hidden @{size}" type="hidden" lang="@{lang}" value="@{value}"@{data}@{prop}/>',
 		text:
 			'<input class="input text @{size}" type="text" lang="@{lang}" value="@{value}" style="@{style:color}@{style:bold}@{style:align}@{style:case}@{style:size}@{style:background}@{style:letter-spacing}" placeholder="@{placeholder}" pattern="@{pattern}" spellcheck="@{spellcheck}" autocomplete="@{autocomplete}" autocorrect="@{autocorrect}" autocapitalize="@{autocapitalize}"@{prop}/>',
 		search:
@@ -688,6 +688,7 @@ sourceui.parserField = function (element, setup) {
 							name: v.name,
 							child: {
 								cell: Template.get('cell', 'slider', {
+									style: v.style,
 									config: JSONX.stringify(cfg),
 									prefix: v.prefix || v.label || v.name,
 									sufix: v.sufix
@@ -703,7 +704,9 @@ sourceui.parserField = function (element, setup) {
 						html += Template.get('row', 'simple', {
 							child: {
 								cell: Template.get('cell', 'slider', {
+									style: v.style,
 									config: JSONX.stringify(cfg),
+									sufix: v.sufix,
 								})
 							}
 						});
@@ -715,7 +718,9 @@ sourceui.parserField = function (element, setup) {
 					html += Template.get('row', 'simple', {
 						child: {
 							cell: Template.get('cell', 'slider', {
+								style: setup.style,
 								config: JSONX.stringify(cfg),
+								sufix: setup.sufix,
 							})
 						}
 					});
@@ -729,6 +734,7 @@ sourceui.parserField = function (element, setup) {
 					return {
 						selected: (v.selected) ? 'selected' : '',
 						prop: (v.selected) ? 'checked' : '',
+						data: v.data,
 						label: v.label,
 						value: v.value,
 					}
@@ -741,6 +747,7 @@ sourceui.parserField = function (element, setup) {
 					return {
 						selected: (v.selected) ? 'selected' : '',
 						prop: (v.selected) ? 'checked' : '',
+						data: v.data,
 						label: v.label,
 						value: v.value,
 					}

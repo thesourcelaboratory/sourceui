@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?xjb9nx');
-  src:  url('fonts/icomoon.eot?xjb9nx#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?xjb9nx') format('truetype'),
-    url('fonts/icomoon.woff?xjb9nx') format('woff'),
-    url('fonts/icomoon.svg?xjb9nx#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?u6193i');
+  src:  url('fonts/icomoon.eot?u6193i#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?u6193i') format('truetype'),
+    url('fonts/icomoon.woff?u6193i') format('woff'),
+    url('fonts/icomoon.svg?u6193i#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -1017,9 +1017,6 @@
 .icon-bubble-l:before {
   content: "\ec83";
 }
-.icon-copy:before {
-  content: "\ea76";
-}
 .icon-people-talk:before {
   content: "\ec70";
 }
@@ -1080,6 +1077,9 @@
 .icon-sheetstack:before {
   content: "\ec61";
 }
+.icon-copy:before {
+  content: "\ea76";
+}
 .icon-broken-file:before {
   content: "\ea13";
 }
@@ -1128,17 +1128,11 @@
 .icon-folder-up:before {
   content: "\ea7b";
 }
-.icon-costumer-chat:before {
-  content: "\ec84";
-}
 .icon-user-cog:before {
   content: "\e9ee";
 }
-.icon-teamwork:before {
-  content: "\e9f3";
-}
-.icon-workgroup:before {
-  content: "\ea15";
+.icon-cog-head:before {
+  content: "\ea2b";
 }
 .icon-business-woman:before {
   content: "\ea28";
@@ -1147,13 +1141,40 @@
   content: "\ea29";
 }
 .icon-user-circle:before {
-  content: "\ea2b";
+  content: "\ec84";
 }
 .icon-avatar:before {
   content: "\ec3c";
 }
+.icon-us-cap:before {
+  content: "\ecec";
+}
+.icon-french:before {
+  content: "\eced";
+}
 .icon-groupped:before {
   content: "\ea2f";
+}
+.icon-workgroup:before {
+  content: "\ea15";
+}
+.icon-teamwork:before {
+  content: "\e9f3";
+}
+.icon-utilizer:before {
+  content: "\ecee";
+}
+.icon-stick-man:before {
+  content: "\ecef";
+}
+.icon-menknee:before {
+  content: "\ecf0";
+}
+.icon-menwalk:before {
+  content: "\ecf1";
+}
+.icon-go-poty:before {
+  content: "\ecf2";
 }
 .icon-flickr:before {
   content: "\e9dc";
@@ -1890,6 +1911,15 @@
 .icon-form:before {
   content: "\ea4c";
 }
+.icon-jackknife .path1:before {
+  content: "\ecea";
+  color: rgb(0, 0, 0);
+}
+.icon-jackknife .path2:before {
+  content: "\eceb";
+  margin-left: -1em;
+  color: rgb(33, 25, 21);
+}
 .icon-email:before {
   content: "\ea4f";
 }
@@ -1947,11 +1977,14 @@
 .icon-folder-check:before {
   content: "\e9c0";
 }
+.icon-people-1:before {
+  content: "\ea90";
+}
+.icon-social:before {
+  content: "\ea96";
+}
 .icon-people:before {
   content: "\ea81";
-}
-.icon-champion:before {
-  content: "\ea82";
 }
 .icon-bald:before {
   content: "\ea83";
@@ -1965,20 +1998,14 @@
 .icon-operator3:before {
   content: "\ea86";
 }
+.icon-teacher:before {
+  content: "\ea8c";
+}
 .icon-school-2:before {
   content: "\ea87";
 }
 .icon-address-book:before {
   content: "\ea88";
-}
-.icon-accessibility:before {
-  content: "\ea8a";
-}
-.icon-man5:before {
-  content: "\ea8b";
-}
-.icon-teacher:before {
-  content: "\ea8c";
 }
 .icon-headset1:before {
   content: "\ea8d";
@@ -1989,9 +2016,6 @@
 .icon-people2:before {
   content: "\ea8f";
 }
-.icon-people-1:before {
-  content: "\ea90";
-}
 .icon-people-2:before {
   content: "\ea91";
 }
@@ -2000,9 +2024,6 @@
 }
 .icon-shape:before {
   content: "\ea95";
-}
-.icon-social:before {
-  content: "\ea96";
 }
 .icon-user-file:before {
   content: "\ea97";
@@ -2022,6 +2043,12 @@
 .icon-user-check:before {
   content: "\ea9c";
 }
+.icon-accessibility:before {
+  content: "\ea8a";
+}
+.icon-man5:before {
+  content: "\ea8b";
+}
 .icon-man2:before {
   content: "\ea9d";
 }
@@ -2030,6 +2057,9 @@
 }
 .icon-man-woman:before {
   content: "\ea9f";
+}
+.icon-champion:before {
+  content: "\ea82";
 }
 .icon-map:before {
   content: "\ec6a";

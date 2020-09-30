@@ -553,7 +553,7 @@ main > section.sui-tip > .content h1,
 main > section.sui-tip > .content h2,
 main > section.sui-tip > .content h3 { font-size:1.2em !important; margin:0 !important; color:#FFF !important; }
 main > section.sui-tip > .content .sui-buttonset { height:48px; padding:0 0 0 calc(var(--content-padding) / 2); }
-main > section.sui-tip > .content .sui-buttonset > .sui-button { color:#FFFFFF !important; background:rgba(78, 78, 78, 0.9); border-color:rgba(78, 78, 78, 0.9) !important; white-space:nowrap; padding: 10px 18px !important; }
+main > section.sui-tip > .content .sui-buttonset > .sui-button { color:#FFFFFF !important; background:rgba(78, 78, 78, 0.9); border-color:rgba(78, 78, 78, 0.9) !important; white-space:nowrap; padding: 10px 18px !important; margin-top:0; margin-bottom:0; }
 main > section.sui-tip > .content .sui-buttonset > .sui-button.bordered { color:#FFFFFF !important; border-color:#FFFFFF !important; white-space:nowrap; padding: 10px 18px !important; }
 main > section.sui-search + section.sui-tip::before { content:''; background:#FFF; position:absolute; left:0; top:0; width:100%; height:var(--header-height); }
 main > section.sui-search + section.sui-tip > .content { padding-top: calc(var(--header-height) + calc(var(--content-padding) / 2)); }

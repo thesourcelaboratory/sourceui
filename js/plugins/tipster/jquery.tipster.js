@@ -26,7 +26,7 @@ $(function () {
 
             var timeout;
             var $parent = $(this);
-            var $granpa = $parent.parent();
+            var $granpa = $parent.closest('ul,ol,div'); //$parent.parent();
             var $tipster = $(tipsterTemplate.default);
             var $container = $('#suiTipster');
             var $u = $tipster.children('u');
@@ -92,7 +92,7 @@ $(function () {
 
                     $u.attr('style', '');
 
-                    if (p.w > p.h || g.w > g.h) {
+                    if (g.w > g.h) {
                         if (p.o.top <= w.h / 3) {
                             css.top = p.o.top + p.h + 10;
                             $u.css('top', -6);
@@ -115,7 +115,7 @@ $(function () {
                         $u.css('top', t.h / 2 - 5);
                         if (p.o.left + p.w + t.w + 10 > w.w) {
                             css.left = p.o.left - t.w - 10;
-                            $u.css('left', t.w - 5);
+                            $u.css('left', t.w - 7);
                         } else {
                             css.left = p.o.left + p.w + 10;
                             $u.css('left', -5);

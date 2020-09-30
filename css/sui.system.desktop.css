@@ -106,6 +106,7 @@
 .sui-floatsector-container.large { padding:4% 12%; }
 .sui-floatsector-container.medium { padding:4% 22% 8% 22%; }
 .sui-floatsector-container.small { padding:8% 32% 16% 32%; }
+.sui-floatsector-container.modal { padding:8% 22% 16% 22%; }
 .sui-floatsector-container.website { padding:0 20px; }
 .sui-floatsector-container.website .sui-sector { max-width:1110px; margin:0 auto; padding:0; border-radius:0;  }
 .sui-floatsector-container.website .sui-sector > .label { display:block; height:80px; line-height:100px; font-size:32px; letter-spacing:-1px; color:#FFF; text-indent:-9999px; background-image:url(http://sourcelab.ddns.net/sourceui/core/img/logo-360-4x.png); background-repeat:no-repeat; background-position:left center; background-size:contain; }
@@ -701,4 +702,5 @@ main.sui-load-border .sui-spinner .container,
 	.sui-floatsector-container.large { padding:3% 10% ; }
 	.sui-floatsector-container.medium { padding:4% 20%; }
 	.sui-floatsector-container.small { padding:12% 32%; }
+	.sui-floatsector-container.modal { padding:12% 20%; }
 }

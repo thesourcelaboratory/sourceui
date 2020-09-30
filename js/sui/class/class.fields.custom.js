@@ -816,7 +816,7 @@ sourceui.customField = function (element, setup) {
 					$.each(Dom.wrap.find('.nouislider'), function () {
 						var $this = $(this).show();
 						var config = $.extend(Data.vars, JSONX.parse($this.text()));
-						config.start = ($.type(config.start) == 'string') ? JSONX.parse(config.start) : config.start;
+						config.start = ($.type(config.start) == 'string' && config.start !== '') ? JSONX.parse(config.start) : config.start;
 						if (!config.connect) {
 							if ($.type(config.start) !== 'array' || config.start.length === 1) config.connect = [true, false];
 							else if (config.start.length === 2) config.connect = [false, true, false];
@@ -835,12 +835,16 @@ sourceui.customField = function (element, setup) {
 						$this.html('');
 						var nouislider = noUiSlider.create(this, config);
 						if (!config.tooltips) {
+							var $presuf = $this.closest('.cell.value');
 							this.noUiSlider.on('update', function (values, handle) {
-								if (values.length === 1) $this.parent().children('.sufix').text(values[0]);
+								if (values.length === 1) $this.parent().children('.sufix').html(values[0]+' <small>'+$presuf.data('sufix')+'</small>');
 								if (values.length === 2) {
-									$this.parent().children('.prefix').text(values[0]);
-									$this.parent().children('.sufix').text(values[1]);
+									$this.parent().children('.prefix').html(values[0]+' <small>'+$presuf.data('prefix')+'</small>');
+									$this.parent().children('.sufix').html(values[1]+' <small>'+$presuf.data('sufix')+'</small>');
 								}
+							});
+							this.noUiSlider.on('change', function (values, handle) {
+								Element.trigger('field:input').trigger('field:change');
 							});
 						}
 						Element.data('nouislider', nouislider);
@@ -1288,6 +1292,7 @@ sourceui.customField = function (element, setup) {
 						});
 						Element.trigger('field:resize').data('editor', editor);
 						Element.trigger('field:loaded');
+						Element.addClass('sui-restric-activity-control')
 					//}, 100);
 				}
 			},
@@ -1376,6 +1381,7 @@ sourceui.customField = function (element, setup) {
 						selector: '#' + id,
 						branding: false,
 						entity_encoding : "raw",
+						browser_spellcheck: true,
 						skin: 'sourceui',
 						resize: false,
 						menubar: false,
@@ -1383,11 +1389,10 @@ sourceui.customField = function (element, setup) {
 						contextmenu: "cut copy paste",
 						toolbar: tools.MD,
 						plugins: plugins.MD,
-						language: "pt_BR",
 						content_css: 'css/mce-default-content.css?'+(Data.vars.cache || new Date().getTime()),
 						autoresize_min_height: 150,
 						paste_data_images: true,
-						paste_as_text:true,
+						paste_as_text: true,
 						table_class_list: [
 							{ title: 'Nenhum', value: '' },
 							{ title: 'Container de Mídia', value: 'image-container' },
@@ -1425,6 +1430,7 @@ sourceui.customField = function (element, setup) {
 						forced_root_block : 'p',
 						setup: function (editor) {
 							editor.on('init', function (event) {
+								Element.addClass('sui-restric-activity-control');
 								Element.trigger('field:fix').trigger('field:loaded');
 								if (Element.is('.readonly')) Element.trigger('field:readonly');
 							});

@@ -532,9 +532,9 @@ sourceui.interface.document = function () {
 					$droplistContainer.velocity({
 						opacity: [0, 1]
 					}, {
-							duration: 250,
-							display: 'none'
-						});
+						duration: 250,
+						display: 'none'
+					});
 				}
 			}
 			Document.element.trigger('activity:hout');

@@ -163,7 +163,7 @@ sourceui.Activity = function () {
 			$target = $temp;
 		}
 
-		if (Active.focus[0] === $target[0]) return;
+		if ($target && Active.focus[0] === $target[0]) return;
 
 		Dom.document.trigger('activity:blur', [true]);
 
@@ -233,6 +233,14 @@ sourceui.Activity = function () {
 
 	Dom.document.on('keydown', function (event) {
 
+		var $target = $(event.target);
+		var restrict = false;
+		if ($target.is('.sui-disable-activity-control') || $target.closest('.sui-disable-activity-control').length){
+			return true;
+		} else if ($target.is('.sui-restric-activity-control') || $target.closest('.sui-restric-activity-control').length){
+			restrict = true;
+		}
+
 		if (!Dom.aside.length) Dom.aside = $('#suiAsideLeft');
 		if (!Dom.main.length) Dom.main = $('#suiMain');
 
@@ -268,7 +276,7 @@ sourceui.Activity = function () {
 			///////////////////////////
 			// ENTER
 			///////////////////////////
-			else if (event.which === 13) {
+			else if (event.which === 13 && !restrict) {
 				if ($focus.length) {
 					if ($focus.is('.focus')) {
 						if ($focus.is('.navtools')) Dom.document.trigger('activity:focus', [$focus.children('li:first')]);
@@ -306,8 +314,9 @@ sourceui.Activity = function () {
 			///////////////////////////
 			// SPACE
 			///////////////////////////
-			else if (event.which === 32) {
+			else if (event.which === 32 && !restrict) {
 				if ($focus.length) {
+					console.log($focus);
 					if ($focus.is('.focus')) {
 						if ($focus.is('.line, li, a') && !$focus.isDisable()) {
 							if ($closest.is('.blocklist')) {
@@ -336,7 +345,7 @@ sourceui.Activity = function () {
 			///////////////////////////
 			// ESC
 			///////////////////////////
-			else if (event.which === 27) {
+			else if (event.which === 27 && !restrict) {
 				if ($focus.length) {
 					if ($focus.is('.navtools, .blocklist, .block, .sui-sector')) Dom.document.trigger('activity:focus', [$()]);
 					else if ($focus.is('.sui-field')) {
@@ -354,7 +363,7 @@ sourceui.Activity = function () {
 			///////////////////////////
 			// LEFT
 			///////////////////////////
-			else if (event.which === 37) {
+			else if (event.which === 37 && !restrict) {
 				if ($focus.length) {
 					if ($focus.is('.focus')) {
 						if ($focus.is('.navtools')) Dom.document.trigger('activity:focus', [Dom.main.find('.sui-sector:last-of-type')]);
@@ -384,7 +393,7 @@ sourceui.Activity = function () {
 			///////////////////////////
 			// UP
 			///////////////////////////
-			else if (event.which === 38) {
+			else if (event.which === 38 && !restrict) {
 				if ($focus.length) {
 					if ($focus.is('.focus')) {
 						if ($focus.is('.navtools')) Dom.document.trigger('activity:focus', [Dom.aside.find('.sui-nav.selected .blocklist')]);
@@ -417,7 +426,7 @@ sourceui.Activity = function () {
 			///////////////////////////
 			// RIGHT
 			///////////////////////////
-			else if (event.which === 39) {
+			else if (event.which === 39 && !restrict) {
 				if ($focus.length) {
 					if ($focus.is('.focus')) {
 						if ($focus.is('.navtools')) Dom.document.trigger('activity:focus', [Dom.main.find('.sui-sector:first-of-type')]);
@@ -447,7 +456,7 @@ sourceui.Activity = function () {
 			///////////////////////////
 			// DOWN
 			///////////////////////////
-			else if (event.which === 40) {
+			else if (event.which === 40 && !restrict) {
 				if ($focus.length) {
 					if ($focus.is('.focus')) {
 						if ($focus.is('.navtools')) Dom.document.trigger('activity:focus', [Dom.aside.find('.sui-nav.selected .block.selected')]);

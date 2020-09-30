@@ -228,6 +228,54 @@ sourceui.interface.view = function ($view, setup) {
 				event.stopImmediatePropagation();
 				return;
 			});
+		} else if (ctdata == '@report') {
+			View.widgets = View.element.find('.sui-widget');
+			View.widgets.on('document:change', function () {
+				var $widget = $(this);
+				$widget.data('Interface').common.toggleTools('document:change', 'enable', View.controller);
+				$widget.data('Interface').common.toggleTools('document:change', 'disable', View.controller);
+			});
+			View.element.on('document:saved', function (event) {
+				var $widget = View.widgets.filter('.report:eq(0)');
+				$widget.data('Interface').common.toggleTools('document:saved', 'enable', View.controller);
+				$widget.data('Interface').common.toggleTools('document:saved', 'disable', View.controller);
+			});
+			View.element.on('document:valid', function (event, $a, wgdata) {
+				var $widget = View.widgets.filter('.report:eq(0)');
+				$widget.data('Interface').common.toggleTools('document:valid', 'enable', View.controller);
+				$widget.data('Interface').common.toggleTools('document:valid', 'disable', View.controller);
+			});
+			View.element.on('document:invalid', function (event, $a, wgdata) {
+				var $widget = View.widgets.filter('.report:eq(0)');
+				$widget.data('Interface').common.toggleTools('document:invalid', 'enable', View.controller);
+				$widget.data('Interface').common.toggleTools('document:invalid', 'disable', View.controller);
+			});
+			View.controller.on('click', 'li a', function (event) {
+				var $a = $(this), data = $a.data(), link = $a.link();
+				if ($a.isDisable()) return;
+				if (data.alias == 'save' || data.alias == 'exec' || data.alias == 'process') {
+					$a.data('linkCache', false);
+					var wgdata = {data:{}};
+					View.widgets.each(function () {
+						var $widget = $(this);
+						var scope = $widget.data('Interface');
+						if (typeof scope == 'object' && typeof scope.widgetData == 'function') {
+							scope.widgetData();
+							wgdata.data = $.extend(true, wgdata.data, scope.wgdata);
+							Network.link.call($a, $.extend(wgdata,{ondone:function(){
+								View.element.trigger('document:saved');
+							}}));
+							$a.parent().disable();
+						}
+					});
+				} else if (data.alias == 'refresh') {
+					$a.data('linkCache', false);
+					Network.link.call($a, data);
+				} else if (link && link.sui) {
+					Network.link.call($a);
+				}
+				event.stopImmediatePropagation();
+			});
 		} else if (ctdata == '@profile') {
 			View.controller.on('click', 'li a', function (event) {
 				var $a = $(this), data = $a.data(), link = $a.link();

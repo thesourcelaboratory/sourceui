@@ -19,6 +19,8 @@ sourceui.templates.interface = new sourceui.Template({
 		'<div class="sui-draggable sn"></div>',
 	code:
 		'<code@{attr}>@{value}</code>',
+	variable:
+		'<var class="sui-variable" name="@{name}"@{data}>@{value}</var>',
 	empty:
 		'<div class="sn empty @{class:type}">@{child:html}</div>',
 	chart:
@@ -86,7 +88,7 @@ sourceui.templates.interface = new sourceui.Template({
 	},
 	toolbar: {
 		container:
-			'<div class="toolbar @{class:prop}"@{data}@{style}><h3 class="title">@{label:title}</h3>@{child:tools}</div>',
+			'<div class="toolbar @{class:position} @{class:prop}"@{data}@{style}><h3 class="title">@{label:title}</h3>@{child:tools}</div>',
 		tool:
 			'<div class="tools @{class:position} @{class:prop}"@{data}>@{child:groups}</div>',
 		group:
@@ -867,6 +869,32 @@ sourceui.templates.interface = new sourceui.Template({
 				'</div>',
 			button:
 				'<li><div class="sui-button @{class:prop}"@{style}><a class="@{class:icon} @{class:type} @{class:link}"@{attr}@{data}><span>@{label:name}</span></a></div></li>'
+		},
+		report: {
+			document:
+				'<div class="sui-report-document @{paper}">@{child:content}</div>',
+			validations:
+				'<div class="sui-validations">@{child:content}</div>',
+			templates:
+				'<div class="sui-templates">@{child:content}</div>',
+			header:
+				'<div class="header"@{style}@{data}>@{child:content}</div>',
+			footer:
+				'<div class="footer"@{style}@{data}>@{child:content}</div>',
+			page:
+				'<div class="page"@{data}@{style}>@{child:content}</div>',
+			main:
+				'<div class="main"@{data}@{style}>@{child:content}</div>',
+			cover:
+				'<div class="cover"@{data}@{style}>@{child:content}</div>',
+			row:
+				'<div class="row @{name} @{type}"@{data}@{style}>@{child:content}</div>',
+			cell:
+				'<div class="cell @{name} @{type}"@{data}@{style}>@{child:content}</div>',
+			block:
+				'<div class="block @{name} @{type}"@{data}@{style}>@{child:content}</div>',
+			stack:
+				'<div class="stack @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 		},
 		map: {
 			map:
@@ -1859,8 +1887,9 @@ sourceui.Parser = function () {
 					if (attr['label:name'] && !attr['attr:title']) suiButton.attr('attr:alt', attr['label:name']);
 					if (jConfirm) suiButton.attr('link:confirm', JSON.stringify(jConfirm));
 					if (sui.parentNode.nodeName == 'group') {
+						var labelName = suiButton.content() && !suiButton.attr('label:name') && !suiButton.attr('class:icon') ? suiButton.content() : (suiButton.attr('label:name') ? '<span>' + suiButton.attr('label:name') + '</span>' : '');
 						return suiButton.toHTML('toolbar', 'button', {
-							label: { name: (suiButton.attr('label:name')) ? '<span>' + suiButton.attr('label:name') + '</span>' : '' },
+							label: { name: labelName },
 							child: { list: htmlList, code: htmlCode }
 						}, Template.get);
 					} else {
@@ -1947,6 +1976,11 @@ sourceui.Parser = function () {
 							tempTitle = Template.replace(tempTitle, { child: { toolbar: '' } });
 						});
 						htmlChild += tempTitle;
+					});
+
+					sui.findChild('toolbar', function () {
+						var suiBar = this;
+						htmlChild += Components.libs.common.toolbar(suiBar, 'widget');
 					});
 					sui.findChild('helper', function () {
 						var suiHelper = this;
@@ -2097,11 +2131,15 @@ sourceui.Parser = function () {
 				return sui.toHTML('content', Template.get);
 			},
 			layout: function (sui) {
+				var madewith = {
+					'br':'Feito com <span style="font-size:1.35em">&#9829;</span> pela SourceLab',
+					'en':'Coded with <span style="font-size:1.35em">&#9829;</span> by SourceLab'
+				}
 				if (sui.nodeName != 'layout') return '';
 				if (sui.attr('class:type') == 'footer') {
 					var label = {
 						name: sui.attr('label:name') || '--',
-						madewith: sui.attr('label:madewith') || 'Feito com <span style="font-size:1.35em">&#9829;</span> pela SourceLab',
+						madewith: sui.attr('label:madewith') || madewith[sui.attr('label:madewithlang')||'br'],
 						framework: sui.attr('label:framework') || Device.framework.name,
 						version: sui.attr('label:version') || Device.framework.version + '.' + Device.framework.subversion,
 					};
@@ -2708,6 +2746,144 @@ sourceui.Parser = function () {
 								else if (this.nodeName == 'buttonset') htmlList += Components.libs.widget.form.buttonset(this);
 								else if (this.nodeName == 'button') htmlList += Components.libs.widget.form.button(this);
 								else if (this.nodeName == 'tip') htmlList += Components.libs.tip(this);
+							});
+							htmlArea = Template.replace(htmlArea, { child: { area: htmlList } });
+						});
+						return Template.replace(htmlWidget, { child: { area: htmlArea } });
+					}
+				},
+				report: {
+					/*
+					stack : function(sui){
+						var htmlContent = sui.content();
+						return sui.toHTML('wg', 'report', 'stack', { child: { content: htmlContent }}, Template.get);
+					},
+					*/
+					block : function(sui){
+						var htmlContent = '';
+						htmlContent = sui.content();
+						if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
+						else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
+						return sui.toHTML('wg', 'report', 'block', { child: { content: htmlContent }},  Template.get);
+					},
+					cell : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
+						}, function(){
+							if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
+							else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
+							htmlContent = sui.content();
+						});
+						return sui.toHTML('wg', 'report', 'cell', { child: { content: htmlContent }},  Template.get);
+					},
+					row : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
+						}, function(){
+							if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
+							else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
+							htmlContent = sui.content();
+						});
+						return sui.toHTML('wg', 'report', 'row', { child: { content: htmlContent }},  Template.get);
+					},
+					header : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'row') htmlContent += Components.libs.widget.report.row(this);
+							else if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
+						});
+						return sui.toHTML('wg', 'report', 'header', { child: { content: htmlContent }},  Template.get);
+					},
+					footer : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'row') htmlContent += Components.libs.widget.report.row(this);
+							else if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
+						});
+						return sui.toHTML('wg', 'report', 'footer', { child: { content: htmlContent }},  Template.get);
+					},
+					cover : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'row') htmlContent += Components.libs.widget.report.row(this);
+							else if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
+						});
+						return sui.toHTML('wg', 'report', 'cover', { child: { content: htmlContent }},  Template.get);
+					},
+					main : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'row') htmlContent += Components.libs.widget.report.row(this);
+							else if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
+							else if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
+						});
+						return sui.toHTML('wg', 'report', 'main', { child: { content: htmlContent }},  Template.get);
+					},
+					page : function(sui, pgnum, headers, footers){
+						var htmlContent = '';
+						if (sui.attr('data:background')) sui.attr('style:background',sui.attr('data:background'));
+						sui.findChild(function () {
+							if (this.nodeName == 'cover') htmlContent += Components.libs.widget.report.cover(this);
+							else if (this.nodeName == 'repetition' && this.attr('type') == 'header') {
+								var repid = this.attr('id') || 'default';
+								var content = headers[repid];
+								htmlContent += headers[repid];
+							}
+							else if (this.nodeName == 'main') htmlContent += Components.libs.widget.report.main(this);
+							else if (this.nodeName == 'repetition' && this.attr('type') == 'footer') {
+								var repid = this.attr('id') || 'default';
+								var content = footers[repid];
+								htmlContent += content.replace('{pgnum}','<i>'+pgnum+'</i>');
+							}
+						});
+						return sui.toHTML('wg', 'report', 'page', { child: { content: htmlContent }},  Template.get);
+					},
+					document : function(sui, pgnum, headers, footers){
+						var htmlContent = '';
+						var htmlTemplates = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'page'){
+								htmlContent += Components.libs.widget.report.page(this, pgnum, headers, footers);
+								pgnum++;
+							}
+						});
+						return sui.toHTML('wg', 'report', 'document', { child: { content: htmlContent }},  Template.get);
+					},
+					templates : function(sui, pgnum, headers, footers){
+						var htmlContent = '';
+						sui.findChild(function () {
+							var key = this.attr('id') || this.attr('type') || 'default';
+							if (this.nodeName == 'header'){
+								htmlContent += headers[key] = Components.libs.widget.report.header(this);
+							}
+							else if (this.nodeName == 'footer'){
+								htmlContent += footers[key] = Components.libs.widget.report.footer(this);
+							}
+							else if (this.nodeName == 'page'){
+								htmlContent += Components.libs.widget.report.page(this, pgnum, headers, footers);
+							}
+							else if (this.nodeName == 'block'){
+								htmlContent += Components.libs.widget.report.block(this);
+							}
+						});
+						return sui.toHTML('wg', 'report', 'templates', { child: { content: htmlContent }},  Template.get);
+					},
+					full: function (sui) {
+						var htmlWidget = Components.libs.common.widget(sui),
+							htmlArea = '';
+						var headers = {}, footers = {}
+						var pgnum = 1;
+						sui.findChild('area', function () {
+							htmlArea += this.toHTML('widget', 'area', Template.get);
+							var suiArea = this;
+							var htmlList = '';
+							suiArea.findChild(function () {
+								if (this.nodeName == 'var') htmlList += this.toHTML('variable', { value: this.content() },  Template.get);
+								else if (this.nodeName == 'validation') htmlList += this.toHTML('wg', 'report', 'validations', { child: { content: $(this).html() }},  Template.get);
+								else if (this.nodeName == 'templates') htmlList += Components.libs.widget.report.templates(this, pgnum, headers, footers);
+								else if (this.nodeName == 'document') htmlList += Components.libs.widget.report.document(this, pgnum, headers, footers);
 							});
 							htmlArea = Template.replace(htmlArea, { child: { area: htmlList } });
 						});

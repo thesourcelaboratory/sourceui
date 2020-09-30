@@ -676,6 +676,15 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			var globaldata = Device.Global.get(globalname) || {};
 			if (globaldata.html){
 				Finder.ul.html(globaldata.html.replace(' selected"','"'));
+				var filtqs = Network.history.getHash().split('?')[1];
+				if (filtqs){
+					$.each(filtqs.split('&')||[],function(ka,va){
+						var f = va.split('=');
+						f[0] = f[0].replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
+						f[1] = f[1].replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
+						Finder.ul.find('.sui-filter[data-name="'+f[0]+'"][data-value="'+f[1]+'"]').addClass('selected');
+					});
+				}
 				/*
 				var sparam = Finder.sector.attr('data-history');
 				var fparam = $.deparam(sparam.split('?')[1]);

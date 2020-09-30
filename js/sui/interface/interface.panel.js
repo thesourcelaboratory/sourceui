@@ -363,6 +363,9 @@ sourceui.interface.panel = function () {
 			window.dispatchEvent(new Event('resize'));
 		});
 		var x = Device.Global.get('drag-panel-position') || {};
+		if (Dom.asideLeft.data('collapsed') === true && !x.position){ // default collpsed left
+			 x.position = 60;
+		}
 		$draggable.draggabilly('setPosition', x.position).trigger('move', [x.position]);
 	}
 
