@@ -471,8 +471,11 @@ sourceui.interface.view = function ($view, setup) {
 	View.element.on('swipestart', function (event) {
 		View.puller.css({ 'opacity': 0 });
 		View.pullerspin.velocity('stop', true);
+		var $scr = View.element.find('.sui-content.scroll-default, .sui-content.scroll-all');
+		View.element.data('scrollIsAtTop',$scr.scrollTop() === 0);
 	});
 	View.element.on('swipemovedown', function (event) {
+		if (!View.element.data('scrollIsAtTop')) return;
 		var rz = (event.swipedata.translate * 4) % 360;
 		var op = (event.swipedata.translate / 90) * (event.swipedata.translate / 90);
 		View.puller.show().css('transform', 'translateY(' + event.swipedata.translate + 'px)');
@@ -484,6 +487,7 @@ sourceui.interface.view = function ($view, setup) {
 		}
 	});
 	View.element.on('swipedown', function (event) {
+		if (!View.element.data('scrollIsAtTop')) return;
 		if (event.swipedata.translate > 90) {
 			var rz = (event.swipedata.translate * 4) % 360;
 			View.pullerspin
@@ -540,7 +544,7 @@ sourceui.interface.view = function ($view, setup) {
 	// ###########################################################
 	// hide and show toolbars on scroll
 	// ###########################################################
-	View.scrolls = View.element.find('.sui-content.scroll-default');
+	View.scrolls = View.element.find('.sui-content.scroll-default, .sui-content.scroll-all');
 	View.scrdata = {
 		paginator: $(),
 		scrollmax: 0,

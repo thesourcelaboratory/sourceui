@@ -1207,6 +1207,7 @@ a code { display:none !important }
 .sui-widget.map > .area > .map { width:100%; height:100%; }
 .sui-widget.map > .area > .map:after { background-color:#BBBBBBCC; }
 .sui-widget.map > .area > code { display:none; }
+.sui-widget.map .leaflet-tile-pane { filter:grayscale(1); }
 .sui-widget.map .leaflet-container:after { font-size:17.3333px !important; }
 .sui-widget.map .leaflet-control-container > * { transform:translate3d(0,0,0); }
 .sui-widget.map .leaflet-control-attribution { margin-bottom:-100px;}

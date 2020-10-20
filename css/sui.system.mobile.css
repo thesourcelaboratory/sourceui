@@ -204,6 +204,7 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-widget > .title .label { line-height:47px; font-size:13.33px; width:auto; overflow: hidden; text-overflow: ellipsis; padding-left:0 !important; margin: 0; }
 .sui-widget > .title .label:last-child { max-width:inherit !important; }
 .sui-widget > .title .label span { letter-spacing:-0.65px; }
+.sui-widget > .toolbar { width:auto; top:30vh; right:10px; transform-origin: center right; transform: scale(0.75); }
 .sui-widget > .title > .toolbar { position:relative; height: 48px; min-width:calc(100% - 192px); }
 .sui-widget > .title > .toolbar .tools > ol { display:none; }
 .sui-widget > .title > .toolbar .tools > ol:first-child { display:block; }
@@ -464,6 +465,13 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-widget.upload.process .button.add { display:none !important; }
 .sui-widget.upload.complete .button.add { display:block !important; }
 .sui-widget.upload.complete .button.clear { display:block !important; }
+/* ---------------------------------------------------- */
+
+/* REPORT ---------------------------------------------- */
+.sui-widget.report > .area > .sui-report-document { padding: 0 7vw; }
+.sui-widget.report > .area > .sui-report-document > .page { margin: 7vh auto; }
+.sui-widget.report > .area > .sui-report-document > .page:first-child { margin-top: 7vh; }
+.sui-widget.report > .toolbar .tools.bottom { display:none; }
 /* ---------------------------------------------------- */
 
 /* PROFILE ------------------------------------------- */

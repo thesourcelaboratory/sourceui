@@ -40,7 +40,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.area = $widget.children('.area');
 	Report.wgtools = Report.widget.children('.toolbar').find('.tools');
 	Report.view = Report.widget.closest('.sui-view');
-	Report.scroll = Report.view.children('.scroll-default');
+	Report.scroll = Report.view.children('.scroll-default, .scroll-all');
 	Report.viewtools = Report.view.children('.toolbar').children('.tools.left');
 	Report.document = Report.widget.find('.sui-report-document');
 	Report.validations = Report.widget.find('.sui-validations rule');
@@ -53,6 +53,11 @@ sourceui.interface.widget.report = function($widget,setup){
 	}
 	Report.tinymceinlinetoolbar.css({
 		'left':Report.viewtools.offset().left + Report.viewtools.width() + 15
+	});
+
+	Report.area.on('swiperight',function(event){
+		event.stopImmediatePropagation();
+		event.preventDefault();
 	});
 
 	// Widget Tools ------------------------------------------
@@ -664,7 +669,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="tinytext"]:not(.inited)',
 		forced_root_block : 'p',
 		toolbar: 'undo redo removeformat | bold italic underline | styleselect forecolor',
-		valid_elements: 'br,h1[style],h2[style],p[style],strong[style],em,span[style]',
+		valid_elements: 'br,h1[style],h2[style],p[style],strong[style]/b[style],em,span[style]',
 		valid_styles: {
 			'*': 'font-size,font-family,color,text-decoration,text-align'
 		},
@@ -692,10 +697,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'header[style],footer[style],p[style],h1,h2,h3,h4,img[style|src],table[style],colgroup,col,tbody,thead,tfoot,tr[style],th,td[style],a[href|target],strong[style],span[style],em,br',
+		valid_elements: 'header[style],p[style],h1,h2,h3,h4,h5[style],img[style|src],table[style],colgroup,col,tbody,thead,tfoot,tr[style],th[style|colspan|rowspan],td[style|colspan|rowspan],a[href|target],strong[style]/b[style],span[style],em,br',
 		valid_styles: {
 			'header': 'font-size,font-family,color,text-decoration,text-align',
-			'footer': 'font-size,font-family,color,text-decoration,text-align',
+			'h5': 'font-size,font-family,color,text-decoration,text-align',
 			'p': 'font-size,font-family,color,text-decoration,text-align',
 			'table': 'border,border-colapse,border-color,background-color,background,color,width,height',
 			'tr': 'background-color,background',
@@ -711,12 +716,20 @@ sourceui.interface.widget.report = function($widget,setup){
 			{title: 'h3', block: 'h3'},
 			{title: 'h4', block: 'h4'},
 			{title: 'Paragraph', block: 'p'},
-			{title: 'Footer', block: 'footer'},
+			{title: 'Footer/Source', block: 'h5'},
 		],
 		paste_preprocess : function(pl, o) {
 			var $content = $('<div>'+o.content+'</div>');
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
 			if ($td.length) $td.css('border','');
+			console.log($td.attr('style'));
+			var $imgtable = $content.children('img,table');
+			var $target = $(o.target.selection.getNode());
+			if ($imgtable.length){
+				if (!$target.prev('h3,table,img').length && !$target.closest('table',Report.document).prev('h3,table,img').length) $content.prepend('<h3>Clipboard Title</h3>');
+				if (!$target.next('h5,table,img').length && !$target.closest('table',Report.document).next('h5,table,img').length) $content.append('<h5>Clipboard Footer/Source</h5>');
+				$imgtable.removeAttr('width').removeAttr('height');
+			}
 			o.content = $content.html();
 		},
 	});

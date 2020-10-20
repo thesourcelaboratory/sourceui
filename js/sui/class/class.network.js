@@ -360,7 +360,7 @@ sourceui.Network = function () {
 	class Ajax {
 		constructor(setup) {
 			var Ajax = this;
-			setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1) ? setup.sui : Server.name + setup.sui;
+			setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1 || Server.name.indexOf('sourcedev.com.br') > -1) ? setup.sui : Server.name + setup.sui;
 			var Console = Debug.get('Network', {
 				mode: (Server.cors ? 'CORS ' : '') + Server.protocol.toUpperCase(),
 				key: setup.suisrc
@@ -1436,7 +1436,7 @@ sourceui.Network = function () {
 			setup.timeout = setup.timeout || 120000
 			setup.metric = new Metric();
 			//setup.suisrc = Server.name+setup.sui;
-			setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1) ? setup.sui : Server.name + setup.sui;
+			setup.suisrc = (Server.name.indexOf('sourcelab.ddns.net') > -1 || Server.name.indexOf('sourcedev.com.br') > -1) ? setup.sui : Server.name + setup.sui;
 			//setup.suisrc = (Server ? Server.replace(window.location.protocol+'//','') : window.location.hostname+window.location.pathname)+setup.sui;
 			if (setup.precheck == 'test')
 				setup.suisrc += ' (PRECHECK)';

@@ -8,9 +8,20 @@
         minzoom: 1,
         maxzoom: 18,
         tiles: {
+			/*
             mapbox: {
                 layerid: 'mapbox.streets',
                 tile: 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}@2x.png?access_token={token}',
+                attribution: 'Map data &copy; <a href="https://www.mapbox.org/">OpenStreetMap</a> contributors, ' +
+                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                    'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
+            },
+			*/
+            mapbox: {
+                layerid: 'mapbox/streets-v11',
+                tile: 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={token}',
+				tileSize: 512,
+				zoomOffset: -1,
                 attribution: 'Map data &copy; <a href="https://www.mapbox.org/">OpenStreetMap</a> contributors, ' +
                     '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
                     'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
@@ -141,13 +152,22 @@
             Map.setView([0, 0], Setup.minzoom);
         }
         if (Tile) {
+			var mapid = (Setup.layerid || Tile.layerid);
+			if (mapid == 'mapbox.light') mapid = 'mapbox/light-v10';
+			else if (mapid == 'mapbox.dark') mapid = 'mapbox/dark-v10';
+			else if (mapid == 'mapbox.streets') mapid = 'mapbox/streets-v11';
+			else if (mapid == 'mapbox.satellite') mapid = 'mapbox/satellite-v9';
+			else if (mapid == 'mapbox.satellite-streets') mapid = 'mapbox/satellite-streets-v11';
             var tileURL = Tile.tile
                 .replace('{layerid}', Setup.layerid || Tile.layerid)
                 .replace('{token}', Token || '');
             L.tileLayer(tileURL, {
+				tileSize: Setup.tileSize || Tile.tileSize || null,
+				zoomOffset: Setup.zoomOffset || Tile.zoomOffset || null,
                 maxZoom: Setup.maxzoom,
                 attribution: Tile.attribution,
-                id: Setup.layerid || Tile.layerid,
+                accessToken: Token,
+                id: mapid,
             }).addTo(Map);
         }
 
