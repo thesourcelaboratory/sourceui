@@ -241,8 +241,11 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		}
 		event.stopPropagation();
 	});
-	this.widget.on('click', '.area .header .col:not(.image, .icon, .swiper, .pad, .check)', function (event) {
-		Datagrid.common.order.exec.call(this);
+	this.widget.on('click', '.area .header .col', function (event) {
+		var $col = $(this);
+		if (!$col.is('.image, .icon, .swiper, .pad, .check')){
+			Datagrid.common.order.exec.call(this);
+		}
 		event.stopImmediatePropagation();
 	});
 	this.widget.on('click', '.area .paginator', function (event) {

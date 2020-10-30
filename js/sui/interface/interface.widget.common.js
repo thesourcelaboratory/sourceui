@@ -214,6 +214,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 	Common.order = {
 		exec: function ($li, o) {
 			var $col = $(this);
+			var $header = $col.parent();
 			var $list = $col.closest('.linegroup, .list');
 			var data = {
 				col: $col,
@@ -230,7 +231,9 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				}
 			};
 			if (data.filter.limitStart + data.filter.limitLength < data.filter.limitTotal) {
-				Common.order.remote.call(data, $li, o);
+				if (!$header.data('strictdatanameorder') || ($header.data('strictdatanameorder') && $col.attr('data-name') && $col.text())){
+					Common.order.remote.call(data, $li, o);
+				}
 			} else {
 				Common.order.local.call(data, $li, o);
 			}
@@ -256,6 +259,9 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			if (orderType) {
 				setup.filter.sortBy = data.col.data('name') || data.col.data('index');
 				setup.filter.sortOrd = orderType;
+			} else {
+				setup.filter.sortBy = false;
+				setup.filter.sortOrd = false;
 			}
 			if (data.area.length && data.area.link().sui) {
 				Network.link.call(data.col, setup);
@@ -358,6 +364,10 @@ sourceui.interface.widget.common = function ($widget, setup) {
 						sortOrd: $list.data('ord')
 					}
 				};
+				Common.widget.find('.finder .sui-filterset .sui-filter.selected').each(function(){
+					var $filter = $(this);
+					data.filter[$filter.data('name')] = $filter.data('value')
+				});
 			if (data.list.data('paginator') == 'buttonDown') {
 				data.filter.limitStart += data.filter.limitLength;
 				Common.paginate.buttonDown.call(data);

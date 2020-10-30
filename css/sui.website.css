@@ -861,8 +861,8 @@ body .env-develop mark:before { display:block; margin-bottom:-1px; font-size:13p
 
 	main .sui-fitfull.banner .content { padding-top: calc((var(--header-height) / 1.75 - (var(--content-padding) / 2))); }
 	main .sui-fitfull.banner .progress { left:calc(50% - 36vw); width:72vw; }
-	main .sui-fitfull.banner .displays li h1 {  width:auto; font-size:1.8em !important; letter-spacing:-1px; text-align:center; }
-	main .sui-fitfull.banner .displays li p { width:auto; font-size:1.25em; letter-spacing:-0.8px; margin:var(--content-padding) 0; text-align:center; }
+	main .sui-fitfull.banner .displays li h1 {  width:auto; font-size:1.8em !important; letter-spacing:-1px; text-align:center; padding:0 !important; }
+	main .sui-fitfull.banner .displays li p { width:auto; font-size:1.25em; letter-spacing:-0.8px; margin:var(--content-padding) 0; padding:0 !important; text-align:center; }
 	main .sui-fitfull.banner .displays li .sui-buttonset { flex-direction: column; padding:0 calc(var(--content-padding) / 2) !important; }
 	main .sui-fitfull.banner .displays li .sui-button { width: 100%; font-size:1em; letter-spacing:-0.5px; margin: 5px 0; padding: 10px 20px; text-align: center;  border-width:2px; }
 	main .sui-fitfull.banner .indexes li { width:18px; height:8px; margin:0 5px; }

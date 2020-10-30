@@ -539,7 +539,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'<div class="col pad"></div>' +
 					'</div>',
 				column:
-					'<div data-index="@{value:index}" data-name="@{data:name}" class="col sui-link @{class:order} @{class:type} @{class:is} icon-some"@{style}>@{label:name}@{drag}</div>'
+					'<div data-index="@{value:index}" class="col sui-link @{class:order} @{class:type} @{class:is} icon-some"@{style}@{data}>@{label:name}@{drag}</div>'
 			},
 			line: {
 				container:

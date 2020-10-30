@@ -788,6 +788,8 @@ a code { display:none !important }
 .sui-widget.datagrid > .area .list .header.noheader > .col { line-height: 0px !important; opacity:0 !important; transform:scale(0) !important; border:none !important; }
 .sui-widget.datagrid > .area .list .header.hidden > .col { visibility:hidden; height:0px !important; line-height:0px !important; padding:0px !important; border:none !important; font-size:0.001em !important; }
 .sui-widget.datagrid > .area .list .header.hidden > .col > * { display:none !important; }
+.sui-widget.datagrid > .area .list .header[data-strictdatanameorder] > .col:not([data-name]) { cursor:default !important; color:#CCCCCC; }
+
 .sui-widget.datagrid > .area .list > .linegroup > h3 { margin:0; padding:0 16px; min-height:1px; line-height:36px; color:#adacac; font-size:14px; letter-spacing:-1px; background-color:#fafafa; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.035); cursor:default; }
 .sui-widget.datagrid > .area .list > .linegroup > h3 > span { padding:2px 4px; background-color:#AAA; color:#FFF; margin-right:8px; border-radius:3px; }
 .sui-widget.datagrid > .area .list > .linegroup > h3 > span:empty { display:none; }

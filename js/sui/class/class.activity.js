@@ -316,7 +316,6 @@ sourceui.Activity = function () {
 			///////////////////////////
 			else if (event.which === 32 && !restrict) {
 				if ($focus.length) {
-					console.log($focus);
 					if ($focus.is('.focus')) {
 						if ($focus.is('.line, li, a') && !$focus.isDisable()) {
 							if ($closest.is('.blocklist')) {
@@ -565,9 +564,10 @@ sourceui.Activity = function () {
 				Network.history.home();
 				Device.Global.clear(function () {
 					Network.cacheClear(function () {
-						$('#suiBody').html('');
+						var $body = $('#suiBody');
+						$body.html('');
 						Cookies.clear();
-						window.location.reload(true);
+						document.location.reload(true);
 					});
 				});
 				Active.eventPrevent = true;
