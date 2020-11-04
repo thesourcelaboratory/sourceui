@@ -460,6 +460,7 @@ main .sui-faq .content .item > .answer p { margin: calc(var(--content-padding) /
 main .sui-faq .content .item.opened > .question:before { transform:rotate(180deg); }
 
 main .sui-list.author { background:#fafafa; border-top:#eaeaea solid 1px; border-bottom:#eaeaea solid 1px; margin-top:-1px; }
+main .sui-list.author .info > p { margin: calc(var(--content-padding) / 4)  0px }
 
 main .sui-share { background:#eff4fb; border-top: solid 1px #d5e3f6; border-bottom: solid 1px #d5e3f6; margin-top:-1px; }
 main .sui-share:last-of-type { border-bottom:none; }
