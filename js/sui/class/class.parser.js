@@ -559,6 +559,8 @@ sourceui.templates.interface = new sourceui.Template({
 					'<@{value:tag} data-index="@{value:index}" class="col @{class:order} @{class:type} @{class:is} @{class:icon} @{class:info}"@{style}@{async}><div class="fixflow">@{label:content}</div></@{value:tag}>',
 				image:
 					'<@{value:tag} data-index="@{value:index}" data-original="@{prop:original}" class="col @{class:order} @{class:type} @{class:is}"@{data}><div class="img"@{style}@{async}></div></@{value:tag}>',
+				thumb:
+					'<@{value:tag} data-index="@{value:index}" data-original="@{prop:original}" class="col @{class:order} @{class:type} @{class:is}"@{data}><div class="thumb"@{style}@{async}></div></@{value:tag}>',
 				icon:
 					'<@{value:tag} data-index="@{value:index}" data-original="@{prop:original}" class="col @{class:order} @{class:type} @{class:is}"@{data}><i class="icon @{class:icon}"@{style}></i></@{value:tag}>',
 				abbr:
@@ -2210,6 +2212,7 @@ sourceui.Parser = function () {
 									if (hd.class) {
 										if (hd.class.type == 'key') { data.label.content = '<small class="icon-key3">' + data.label.content + '</small>'; }
 										else if (hd.class.type == 'image') { data.style['background-image'] = 'url(\'' + $.trim(data.label.content) + '\')'; data.label.content = ''; }
+										else if (hd.class.type == 'thumb') { data.style['background-image'] = 'url(\'' + $.trim(data.label.content) + '\')'; data.label.content = ''; }
 										else if (hd.class.type == 'icon') { data.class.icon = data.label.content; data.label.content = ''; if (data.prop.color) { data.style['background-color'] = data.style.color = data.prop.color; } }
 										else if (hd.class.type == 'abbr') { data.style['background-color'] = data.prop.color || '#00000088'; }
 										else if (hd.class.type == 'ordinary') { data.style['background-color'] = data.prop.color || '#FFF'; }
@@ -2220,6 +2223,7 @@ sourceui.Parser = function () {
 
 										if (hd.class.type == 'description') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'description', data, Template.get);
 										else if (hd.class.type == 'image') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'image', data, Template.get);
+										else if (hd.class.type == 'thumb') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'thumb', data, Template.get);
 										else if (hd.class.type == 'icon') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'icon', data, Template.get);
 										else if (hd.class.type == 'abbr') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'abbr', data, Template.get);
 										else if (hd.class.type == 'ordinary') htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'line', 'ordinary', data, Template.get);

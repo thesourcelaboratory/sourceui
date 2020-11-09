@@ -240,6 +240,7 @@
 /* DATAGRID ------------------------------------------ */
 .sui-widget.datagrid > .area .list .header .sui-draggable:after { content:''; display:block; width:1px; height:100%; margin-left:2px; background:rgba(0,0,0,0.06); }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier { background-size:cover; min-width:60px; max-width:60px; }
+.sui-widget.datagrid > .area .list .line > .col.visualidentifier.thumb { max-width:120px; vertical-align: top; }
 .sui-widget.datagrid > .area .list .line > .col.pad + .col.visualidentifier { min-width:64px; max-width:64px; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier.rounded { border-radius:0px; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier img { max-width:54px; max-height:54px; }
