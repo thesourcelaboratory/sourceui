@@ -1293,7 +1293,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		if (!$fieldwrap.is('.fieldwrap')){
-			$this.wrap('<div class="fieldwrap" '+($this.data('belongstogroup')?'data-boxgroup="'+$this.data('belongstogroup')+'"':'')+' />');
+			$this.wrap('<div class="fieldwrap '+($this.data('indexer') ? 'indexed' : '')+'" '+($this.data('belongstogroup')?'data-boxgroup="'+$this.data('belongstogroup')+'"':'')+' />');
 			$fieldwrap = $this.parent();
 		} else {
 			$fieldwrap.removeClass('focus active selected error');
