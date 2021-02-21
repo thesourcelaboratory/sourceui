@@ -393,7 +393,7 @@ sourceui.Network = function () {
 					else {
 						setup.xhr.abort();
 						if (!silent) {
-							Ajax.loading.stop();
+							Ajax.loading.stop(true);
 							Console.warn({
 								type: 'XHR',
 								title: 'Connection aborted'
@@ -540,11 +540,11 @@ sourceui.Network = function () {
 									setup.target.replaceWith(setup.response.parsedJQ
 										.data('scrollTop', setup.target.data('scrollTop'))
 										.attr('data-history', setup.target.attr('data-history'))
-										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed', 'disable'] }));
+										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed', 'disable', 'done'] }));
 								}
 								else {
 									setup.target.replaceWith(setup.response.parsedJQ
-										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed', 'disable'] }));
+										.mergeClass(setup.target, { ignoreInTarget: ['covered', 'ignored', 'removed', 'disable', 'done'] }));
 								}
 							}
 							else
@@ -594,7 +594,10 @@ sourceui.Network = function () {
 					@setup - object - required - objeto de setup da requisição
 				---------------------------
 				*/
-				start: function () {
+				start: function (force) {
+
+					if (setup.loading == 'nostart' && !force) return;
+
 					if (setup.command == 'reload' && Device.ismobile)
 						return;
 					if (!setup.loadborder) {
@@ -653,13 +656,15 @@ sourceui.Network = function () {
 					@setup - object - required - objeto de setup da requisição
 				---------------------------
 				*/
-				stop: function () {
+				stop: function (force) {
 					//if (setup.preloadTimeout) clearTimeout(setup.preloadTimeout); // cancela o timeout da animação se ela ainda não foi acionada.
 					/*
 					if (setup.sector && setup.sector.length){
 						$('#suiTabsSector').find('[data-sector="'+setup.sector.data('sector')+'"]').removeClass('ajax-courtain');
 					}
 					*/
+					if (setup.loading == 'nostop' && !force) return;
+
 					if (setup.command == 'reload' && Device.ismobile)
 						return;
 					if (setup.fromcache)
@@ -1344,7 +1349,7 @@ sourceui.Network = function () {
 					})
 					.fail(function (xhr, status, error) {
 						clearTimeout(setup.slowtimeout);
-						Ajax.loading.stop();
+						Ajax.loading.stop(true);
 						setup.metric.add('processEndTime');
 						setup.metric.add('bytesTotal', 0);
 						setup.metric.calc();

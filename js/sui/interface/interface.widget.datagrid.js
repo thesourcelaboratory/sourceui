@@ -314,7 +314,9 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 	});
 	this.widget.on('click', '.area > .list .line:not(.swiped), .area > .treeview .node', function (event) {
 		event.stopPropagation();
-		var $this = $(this);
+		var $this = $(this),
+			$swiped = $this.closest('.area').find('.swiped');
+		if ($swiped.length) return Datagrid.common.swipe.close($swiped, { duration: 100 });
 		if ($this.isDisable()) return;
 		if (Datagrid.widget.hasClass('check')) {
 			if ($this.hasClass('selected')) $this.trigger('uncheck');
@@ -344,7 +346,7 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		Datagrid.widget.trigger('unchecklines', [$selected]);
 		Datagrid.widget.find('.title > .badge.checked').find('span').text($lines.filter('.selected').length);
 	});
-	this.widget.on('pick', '.area > .list .line, .area > .treeview .node', function (event) {
+	this.widget.on('pick', '.area > .list .line:not(.swiped), .area > .treeview .node', function (event) {
 		event.stopPropagation();
 		var $this = $(this),
 			$selected = $this.closest('.sui-view').find('.sui-widget.datagrid > .area .selected');

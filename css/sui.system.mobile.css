@@ -307,6 +307,7 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier:before { font-size:24px; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier:not(.rounded) { background-color:transparent !important; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier:not(.rounded) .icon:before { font-size:32px; }
+.sui-widget.datagrid > .area .list .line > .col.visualidentifier > .thumb { width:100% !important; height:100% !important; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier ~ .col:not(.visualidentifier) { margin-left:56px; width:100%; }
 .sui-widget.datagrid > .area .list .line > .col.visualidentifier + .visualidentifier { -webkit-transform:scale(0.55); transform:scale(0.55); left:36px; top:-3px; color:#6f6b6b; }
 .sui-widget.datagrid > .area .list .line > .col.description .fixflow { max-height: 3.65em; margin-right:0; }

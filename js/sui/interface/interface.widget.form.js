@@ -127,6 +127,23 @@ sourceui.interface.widget.form = function ($widget, setup) {
 		}
 		return { label: encodeURIComponent(fd.label), old: encodeURIComponent(ro), new: encodeURIComponent(rn) };
 	}
+	Form.validate = function (inform) {
+		Form.valid = true;
+		Form.fields = this.widget.find('.sui-field');
+		Form.fields.each(function () {
+			var $field = $(this);
+			if ($field.isDisable()) return true; // continue;
+			var status = $field.validate();
+			if (!inform) $field.trigger('field:focus');
+			if (status !== true) {
+				Form.valid = status;
+				return true;
+			}
+		});
+		if (Form.valid) {
+			Form.widget.trigger('form:valid');
+		}
+	};
 	Form.widgetData = function () {
 		Form.wgdata = { data: {}, modified: {}, validate: {}, info: {} };
 		Form.valid = true;

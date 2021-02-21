@@ -884,7 +884,7 @@ sourceui.templates.interface = new sourceui.Template({
 			footer:
 				'<div class="footer"@{style}@{data}>@{child:content}</div>',
 			page:
-				'<div class="page"@{data}@{style}>@{child:content}</div>',
+				'<div class="page @{data:layout} @{data:structure}"@{data}@{style}><div class="pagedropper"></div>@{child:content}</div>',
 			main:
 				'<div class="main"@{data}@{style}>@{child:content}</div>',
 			cover:
@@ -895,6 +895,8 @@ sourceui.templates.interface = new sourceui.Template({
 				'<div class="cell @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 			block:
 				'<div class="block @{name} @{type}"@{data}@{style}>@{child:content}</div>',
+			flex:
+				'<div class="flex @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 			stack:
 				'<div class="stack @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 		},
@@ -1300,11 +1302,13 @@ sourceui.Parser = function () {
 				} else if (data.selector) {
 					data.jq = $($.toText(data.selector));
 				}
+
 				if (data.jq) {
 					data.jq.each(function () {
 						var $jq = $(this);
 						if (data.trigger) {
-							data.jq.trigger(data.trigger);
+							if (data.arguments) $jq.trigger(data.trigger,JSON.parse($('<div>'+data.arguments+'</div>').html()));
+							else $jq.trigger(data.trigger);
 						} else {
 							var hb = $jq.data('handlebound') || {};
 							var id = $.md5(JSONX.stringify(attr));
@@ -1906,20 +1910,24 @@ sourceui.Parser = function () {
 					if (sui.nodeName != 'toolbar') return '';
 					var htmlBar = sui.toHTML('toolbar', 'container', Template.get),
 						htmlTool = '';
-					sui.findChild('tools', function () {
-						var suiTool = this,
-							tempTool = suiTool.toHTML('toolbar', 'tool', Template.get),
-							htmlGroup = '';
-						suiTool.findChild('group', function () {
-							var suiGroup = this,
-								tempGroup = suiGroup.toHTML('toolbar', 'group', Template.get),
-								htmlButton = '';
-							suiGroup.findChild('button', function () {
-								htmlButton += Components.libs.common.button(this);
+					sui.findChild(function () {
+						if (this.nodeName == 'tools'){
+							var suiTool = this,
+								tempTool = suiTool.toHTML('toolbar', 'tool', Template.get),
+								htmlGroup = '';
+							suiTool.findChild('group', function () {
+								var suiGroup = this,
+									tempGroup = suiGroup.toHTML('toolbar', 'group', Template.get),
+									htmlButton = '';
+								suiGroup.findChild('button', function () {
+									htmlButton += Components.libs.common.button(this);
+								});
+								htmlGroup += Template.replace(tempGroup, { child: { buttons: htmlButton } });
 							});
-							htmlGroup += Template.replace(tempGroup, { child: { buttons: htmlButton } });
-						});
-						htmlTool += Template.replace(tempTool, { child: { groups: htmlGroup } });
+							htmlTool += Template.replace(tempTool, { child: { groups: htmlGroup } });
+						} else if (this.nodeName == 'html'){
+							htmlTool += Components.libs.html(this);
+						}
 					});
 					return Template.replace(htmlBar, { child: { tools: htmlTool } });
 				},
@@ -2768,12 +2776,24 @@ sourceui.Parser = function () {
 						htmlContent = sui.content();
 						if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
 						else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
+						if (!sui.attr('data:edition') && sui.attr('data:position')) sui.attr('style',sui.attr('data:position'));
 						return sui.toHTML('wg', 'report', 'block', { child: { content: htmlContent }},  Template.get);
+					},
+					flex : function(sui){
+						var htmlContent = '';
+						var totalChilds = 0;
+						sui.findChild(function () {
+							if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
+							totalChilds++;
+						});
+						sui.attr('type','childs-'+totalChilds);
+						return sui.toHTML('wg', 'report', 'flex', { child: { content: htmlContent }},  Template.get);
 					},
 					cell : function(sui){
 						var htmlContent = '';
 						sui.findChild(function () {
 							if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
+							else if (this.nodeName == 'flex') htmlContent += Components.libs.widget.report.flex(this);
 						}, function(){
 							if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
 							else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
@@ -2827,7 +2847,7 @@ sourceui.Parser = function () {
 					},
 					page : function(sui, pgnum, headers, footers){
 						var htmlContent = '';
-						if (sui.attr('data:background')) sui.attr('style:background',sui.attr('data:background'));
+						if (sui.attr('data:background')) sui.attr('style:background-image','url(\''+sui.attr('data:background')+'\')');
 						sui.findChild(function () {
 							if (this.nodeName == 'cover') htmlContent += Components.libs.widget.report.cover(this);
 							else if (this.nodeName == 'repetition' && this.attr('type') == 'header') {
@@ -2835,12 +2855,15 @@ sourceui.Parser = function () {
 								var content = headers[repid];
 								htmlContent += headers[repid];
 							}
+							else if (this.nodeName == 'header') htmlContent += Components.libs.widget.report.header(this);
 							else if (this.nodeName == 'main') htmlContent += Components.libs.widget.report.main(this);
 							else if (this.nodeName == 'repetition' && this.attr('type') == 'footer') {
 								var repid = this.attr('id') || 'default';
 								var content = footers[repid];
 								htmlContent += content.replace('{pgnum}','<i>'+pgnum+'</i>');
 							}
+							else if (this.nodeName == 'footer') htmlContent += Components.libs.widget.report.footer(this);
+
 						});
 						return sui.toHTML('wg', 'report', 'page', { child: { content: htmlContent }},  Template.get);
 					},
@@ -2884,7 +2907,7 @@ sourceui.Parser = function () {
 							var suiArea = this;
 							var htmlList = '';
 							suiArea.findChild(function () {
-								if (this.nodeName == 'var') htmlList += this.toHTML('variable', { value: this.content() },  Template.get);
+								if (this.nodeName == 'var') htmlList += this.toHTML('variable', { value: this.attr('value')||this.content() },  Template.get);
 								else if (this.nodeName == 'validation') htmlList += this.toHTML('wg', 'report', 'validations', { child: { content: $(this).html() }},  Template.get);
 								else if (this.nodeName == 'templates') htmlList += Components.libs.widget.report.templates(this, pgnum, headers, footers);
 								else if (this.nodeName == 'document') htmlList += Components.libs.widget.report.document(this, pgnum, headers, footers);

@@ -159,6 +159,9 @@ $(function () {
                             $parent.removeClass('tipstant');
                         }
                     });
+                } else {
+                    $tipster.appendTo($parent);
+                    $parent.removeClass('tipstant');
                 }
             });
 
@@ -182,7 +185,7 @@ $(function () {
 
             var $tipster = $(tipsterTemplate.notify);
             var $container = $('#suiTipster');
-
+            $container.find('.tipster').remove();
             $tipster.html('<span>' + content + '</span>').appendTo($container);
 
             $tipster.velocity({

@@ -172,44 +172,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 		}
 	});
 	Common.calcSort = function (axis, dragger, droppers) {
-		var a = {},
-			o = dragger,
-			mini = 10000000000,
-			closest = {};
-		a.alias = o.find('.key').text();
-		a.top = o.position().top;
-		a.left = o.position().left;
-		a.width = o.width();
-		a.height = o.height();
-		a.x = a.left + (a.width / 2);
-		a.y = a.top + (a.height / 2);
-		$.each(droppers || [], function (i, p) {
-			if (p.hasClass('dragger')) {
-				return true;
-			}
-			var b = {};
-			b.top = p.position().top;
-			b.left = p.position().left;
-			b.width = p.width();
-			b.height = p.height();
-			b.x = b.left + (b.width / 2);
-			b.y = b.top + (b.height / 2);
-			b.xs = b.x - a.x;
-			b.xs = b.xs * b.xs;
-			b.ys = b.y - a.y;
-			b.ys = b.ys * b.ys;
-			b.z = Math.sqrt(b.xs + b.ys);
-			if (b.z <= mini) {
-				mini = b.z;
-				if (axis) {
-					closest.placement = (a.y > b.y) ? 'after' : 'before';
-				} else {
-					closest.placement = (a.x > b.x) ? 'after' : 'before';
-				}
-				closest.element = p;
-			}
-		});
-		return closest;
+		return $.calcSort(axis, dragger, droppers);
 	};
 	Common.order = {
 		exec: function ($li, o) {

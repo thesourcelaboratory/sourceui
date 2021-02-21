@@ -860,6 +860,7 @@ sourceui.customField = function (element, setup) {
 					var $instruction = $filelist.children('.instruction');
 					var $browse = Dom.tools.find('.browse');
 					Bind.common.label();
+					Data.vars.postprocess = Data.vars.postprocess || {};
 					Data.vars.general = Data.vars.general || {};
 					Data.vars.upload = Element.link(Data.vars.upload || {});
 					Data.vars.crop = Data.vars.crop || {};
@@ -978,6 +979,21 @@ sourceui.customField = function (element, setup) {
 						$file.trigger('tools:off');
 						return;
 					});
+					Element.on('field:uploadstart',function(event,data){
+						Data.vars.upload = $.extend(true,Data.vars.upload,data||{});
+						if (!$.isEmptyObject(Data.vars.postprocess)) Data.vars.postprocess = $.extend(true,Data.vars.postprocess,data||{});
+						var $files = Element.find('.file');
+						$files.trigger('tools:off');
+						$files.trigger('upload:prepare');
+
+					});
+					Element.on('upload:processed',function(){
+						if (!$.isEmptyObject(Data.vars.postprocess)){
+							setTimeout(function(){
+								Network.link.call(Element, Data.vars.postprocess);
+							},100);
+						}
+					});
 					Element.on('queue:add', function (event, $file) {
 						var $upload = $file.find('.button.upload');
 						var $crop = $file.find('.button.crop');
@@ -1078,6 +1094,7 @@ sourceui.customField = function (element, setup) {
 									crop: fda.crop,
 								},
 							});
+							$file.addClass('processed');
 							var netup = new Network.upload(data);
 							netup.on('uploading', function (p, l, t) {
 								if (p < 0 || !p) p = 0;
@@ -1088,16 +1105,19 @@ sourceui.customField = function (element, setup) {
 								$file.switchClass('progress', 'queue');
 								$file.data('pct', 0).trigger('dash:stop');
 								$file.trigger('upload:stop');
+								$file.trigger('upload:processed');
 							});
 							netup.on('error', function (error) {
 								$file.switchClass('progress', 'error');
 								$file.data('pct', 0).trigger('dash:stop');
 								$file.trigger('upload:error');
+								$file.trigger('upload:processed');
 							});
 							netup.on('complete', function (t) {
 								$file.switchClass('progress', 'done');
 								$file.data('pct', 100).trigger('dash:progress').removeData('data').removeData('file');
 								$file.trigger('dash:done').trigger('upload:done');
+								$file.trigger('upload:processed');
 							});
 							netup.start();
 							$file.data('netup', netup);
@@ -1113,7 +1133,6 @@ sourceui.customField = function (element, setup) {
 							$browse.velocity({ opacity: [1, 0], scale: [1, 0.5] }, { duration: 250, display: 'block' });
 							$file.trigger('tools:on');
 							$oldfile.remove();
-							Element.trigger('field:fileupload');
 							Element.trigger('field:change');
 						});
 						$file.on('upload:crop', function () {
@@ -1131,6 +1150,7 @@ sourceui.customField = function (element, setup) {
 							$browse.velocity({ opacity: [1, 0], scale: [1, 0.5] }, { duration: 250, display: 'block' });
 						});
 						$file.on('upload:prepare', function (event) {
+							$file.removeClass('processed');
 							$file.switchClass('queue error', 'process prepare').trigger('dash:prepare');
 							var collection = { totalsize: fda.size, maxfilesize: Data.vars.upload.maxfilesize, accept: Data.vars.upload.accept, filelist: {} };
 							collection.filelist[fda.id] = fda;

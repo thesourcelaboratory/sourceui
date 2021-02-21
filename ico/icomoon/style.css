@@ -1,27 +1,16 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?u6193i');
-  src:  url('fonts/icomoon.eot?u6193i#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?u6193i') format('truetype'),
-    url('fonts/icomoon.woff?u6193i') format('woff'),
-    url('fonts/icomoon.svg?u6193i#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?14rv77');
+  src:  url('fonts/icomoon.eot?14rv77#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?14rv77') format('truetype'),
+    url('fonts/icomoon.woff?14rv77') format('woff'),
+    url('fonts/icomoon.svg?14rv77#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
 }
 
 [class^="icon-"], [class*=" icon-"] {
-  /* use !important to prevent issues with browser extensions that change fonts */
-  /*
-  font-family: 'icomoon' !important;
-  speak: never;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  */
-
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -114,14 +103,8 @@
 .icon-xburger:before {
   content: "\ebc7";
 }
-.icon-meat:before {
-  content: "\ebd9";
-}
 .icon-chickleg:before {
   content: "\ec01";
-}
-.icon-chicken:before {
-  content: "\ec08";
 }
 .icon-kebab:before {
   content: "\ec30";
@@ -129,17 +112,8 @@
 .icon-meatleg:before {
   content: "\ec34";
 }
-.icon-bacon:before {
-  content: "\ec35";
-}
 .icon-protein:before {
   content: "\ec48";
-}
-.icon-croissant:before {
-  content: "\ec78";
-}
-.icon-fish:before {
-  content: "\ec87";
 }
 .icon-fish-down:before {
   content: "\ec88";
@@ -147,14 +121,8 @@
 .icon-cakeslice:before {
   content: "\ec89";
 }
-.icon-cupcake:before {
-  content: "\ec8a";
-}
 .icon-muffin:before {
   content: "\ec8b";
-}
-.icon-muffin-cherry:before {
-  content: "\ec8c";
 }
 .icon-drink:before {
   content: "\ec8d";
@@ -171,23 +139,11 @@
 .icon-juice:before {
   content: "\ec91";
 }
-.icon-full-bottle:before {
-  content: "\ec92";
-}
 .icon-coke-bottle:before {
   content: "\ec93";
 }
 .icon-soda:before {
   content: "\ec94";
-}
-.icon-pizza:before {
-  content: "\ec95";
-}
-.icon-pizza-melt:before {
-  content: "\ec96";
-}
-.icon-pizza-yum:before {
-  content: "\ec97";
 }
 .icon-pizza-down:before {
   content: "\ec98";
@@ -197,12 +153,6 @@
 }
 .icon-pizza-fras:before {
   content: "\ec9a";
-}
-.icon-hotrice:before {
-  content: "\ec9b";
-}
-.icon-rice-bow:before {
-  content: "\ec9c";
 }
 .icon-rice-rashi:before {
   content: "\ec9d";
@@ -891,6 +841,9 @@
 .icon-stethoscope:before {
   content: "\ec32";
 }
+.icon-cube-divisions:before {
+  content: "\ea5b";
+}
 .icon-peace:before {
   content: "\e9d9";
 }
@@ -924,6 +877,9 @@
 .icon-harddrive:before {
   content: "\e9fa";
 }
+.icon-split-browser:before {
+  content: "\ebd9";
+}
 .icon-gears:before {
   content: "\ec2f";
 }
@@ -947,6 +903,9 @@
 }
 .icon-wireless-router:before {
   content: "\e9fb";
+}
+.icon-box-margin-x:before {
+  content: "\ec78";
 }
 .icon-bind-left:before {
   content: "\e91d";
@@ -1101,9 +1060,6 @@
 .icon-multimedia:before {
   content: "\ec38";
 }
-.icon-bandaid:before {
-  content: "\e935";
-}
 .icon-link-rectangle:before {
   content: "\e936";
 }
@@ -1175,6 +1131,27 @@
 }
 .icon-go-poty:before {
   content: "\ecf2";
+}
+.icon-spotify:before {
+  content: "\ecf3";
+}
+.icon-spotify-line:before {
+  content: "\ecf4";
+}
+.icon-deezer:before {
+  content: "\ecf5";
+}
+.icon-deezer2:before {
+  content: "\ecf6";
+}
+.icon-amazon:before {
+  content: "\ecf7";
+}
+.icon-form-validate:before {
+  content: "\ecf8";
+}
+.icon-sound-wave:before {
+  content: "\ecf9";
 }
 .icon-flickr:before {
   content: "\e9dc";
@@ -1440,6 +1417,9 @@
 .icon-deskbell:before {
   content: "\eb4b";
 }
+.icon-split-horizontal:before {
+  content: "\ec08";
+}
 .icon-cursor1:before {
   content: "\eae3";
 }
@@ -1484,9 +1464,6 @@
 }
 .icon-angle-down:before {
   content: "\ec53";
-}
-.icon-move-up-down:before {
-  content: "\ecbb";
 }
 .icon-text-out:before {
   content: "\eb12";
@@ -1536,6 +1513,9 @@
 .icon-circle-plus:before {
   content: "\ebcf";
 }
+.icon-plus-weak:before {
+  content: "\e935";
+}
 .icon-new:before {
   content: "\ebe9";
 }
@@ -1544,6 +1524,9 @@
 }
 .icon-stop-cross:before {
   content: "\ea1d";
+}
+.icon-minus-weak:before {
+  content: "\ea48";
 }
 .icon-circle-check:before {
   content: "\ece0";
@@ -1863,6 +1846,12 @@
 .icon-switch:before {
   content: "\e9e8";
 }
+.icon-split-horizontal-box:before {
+  content: "\ec8a";
+}
+.icon-box-margin-y:before {
+  content: "\ec87";
+}
 .icon-contract:before {
   content: "\ec66";
 }
@@ -1899,9 +1888,6 @@
 .icon-edition-2:before {
   content: "\ea47";
 }
-.icon-pen2:before {
-  content: "\ea48";
-}
 .icon-pen-alt2:before {
   content: "\ea4a";
 }
@@ -1911,14 +1897,8 @@
 .icon-form:before {
   content: "\ea4c";
 }
-.icon-jackknife .path1:before {
+.icon-jackknife:before {
   content: "\ecea";
-  color: rgb(0, 0, 0);
-}
-.icon-jackknife .path2:before {
-  content: "\eceb";
-  margin-left: -1em;
-  color: rgb(33, 25, 21);
 }
 .icon-email:before {
   content: "\ea4f";
@@ -1940,9 +1920,6 @@
 }
 .icon-book-alt:before {
   content: "\ea58";
-}
-.icon-tool:before {
-  content: "\ea5b";
 }
 .icon-attachment3:before {
   content: "\ea5e";
@@ -2448,6 +2425,9 @@
 .icon-stopwatch2:before {
   content: "\eb36";
 }
+.icon-split-vertical:before {
+  content: "\ec35";
+}
 .icon-picker-gd:before {
   content: "\eb14";
 }
@@ -2669,6 +2649,9 @@
 }
 .icon-tab:before {
   content: "\eb85";
+}
+.icon-move-up-down:before {
+  content: "\ecbb";
 }
 .icon-move-up:before {
   content: "\eb86";

@@ -110,18 +110,22 @@ sourceui.interface.view = function ($view, setup) {
 				$widget.data('Interface').common.toggleTools('form:saved', 'disable', View.controller);
 			});
 			View.element.on('form:valid', function (event, $a, wgdata) {
-				Network.link.call($a, $.extend(wgdata,{ondone:function(){
-					View.element.trigger('form:saved');
-				}}));
-				$a.filter('[data-alias="save"]').parent().disable();
+				if ($a && wgdata){
+					Network.link.call($a, $.extend(wgdata,{ondone:function(){
+						View.element.trigger('form:saved');
+					}}));
+					$a.filter('[data-alias="save"]').parent().disable();
+				}
 			});
-			View.element.on('form:invalid', function (event) {
-				Notify.open({
-					type: 'error',
-					name: 'Validação',
-					label: 'Ops... algo errado não está certo, Batman',
-					message: 'Dados do formulário são invalidos',
-				});
+			View.element.on('form:invalid', function (event, notify) {
+				if (notify){
+					Notify.open({
+						type: 'error',
+						name: 'Validação',
+						label: 'Ops... algo errado não está certo, Batman',
+						message: 'Dados do formulário são invalidos',
+					});
+				}
 			});
 			View.controller.on('click', 'li a', function (event) {
 				var $a = $(this), data = $a.data(), link = $a.link();
@@ -146,7 +150,7 @@ sourceui.interface.view = function ($view, setup) {
 					if (valid === true) {
 						View.element.trigger('form:valid', [$a, wgdata]);
 					} else if (valid === false) {
-						View.element.trigger('form:invalid');
+						View.element.trigger('form:invalid',[true]);
 					}
 				} else if (data.alias == 'filter') {
 					var wgdata = {};
@@ -230,6 +234,11 @@ sourceui.interface.view = function ($view, setup) {
 			});
 		} else if (ctdata == '@report') {
 			View.widgets = View.element.find('.sui-widget');
+			View.widgets.on('edition:input', function () {
+				var $widget = $(this);
+				$widget.data('Interface').common.toggleTools('edition:input', 'enable', View.controller);
+				$widget.data('Interface').common.toggleTools('edition:input', 'disable', View.controller);
+			});
 			View.widgets.on('document:change', function () {
 				var $widget = $(this);
 				$widget.data('Interface').common.toggleTools('document:change', 'enable', View.controller);
@@ -239,6 +248,11 @@ sourceui.interface.view = function ($view, setup) {
 				var $widget = View.widgets.filter('.report:eq(0)');
 				$widget.data('Interface').common.toggleTools('document:saved', 'enable', View.controller);
 				$widget.data('Interface').common.toggleTools('document:saved', 'disable', View.controller);
+			});
+			View.element.on('document:validsaved', function (event) {
+				var $widget = View.widgets.filter('.report:eq(0)');
+				$widget.data('Interface').common.toggleTools('document:validsaved', 'enable', View.controller);
+				$widget.data('Interface').common.toggleTools('document:validsaved', 'disable', View.controller);
 			});
 			View.element.on('document:valid', function (event, $a, wgdata) {
 				var $widget = View.widgets.filter('.report:eq(0)');
@@ -264,8 +278,13 @@ sourceui.interface.view = function ($view, setup) {
 							wgdata.data = $.extend(true, wgdata.data, scope.wgdata);
 							Network.link.call($a, $.extend(wgdata,{ondone:function(){
 								View.element.trigger('document:saved');
+								if ($widget.find('.sui-validations > rule[valid="false"]').length === 0){
+									View.element.trigger('document:validsaved');
+								}
 							}}));
-							$a.parent().disable();
+							if (data.alias == 'save'){
+								$a.parent().disable();
+							}
 						}
 					});
 				} else if (data.alias == 'refresh') {

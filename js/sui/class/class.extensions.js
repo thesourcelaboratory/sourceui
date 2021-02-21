@@ -445,6 +445,47 @@ Extensr do plugin de scroll que verifica os atributos data como argumentos de co
 	};
 })();
 
+(function () {
+	$.calcSort = function (axis, dragger, droppers) {
+		var a = {},
+			o = dragger,
+			mini = 10000000000,
+			closest = {};
+		a.top = o.position().top;
+		a.left = o.position().left;
+		a.width = o.width();
+		a.height = o.height();
+		a.x = a.left + (a.width / 2);
+		a.y = a.top + (a.height / 2);
+		$.each(droppers || [], function (i, p) {
+			if (p.hasClass('dragger')) return true;
+ 			var b = {};
+			b.top = p.position().top;
+			b.left = p.position().left;
+			b.width = p.width();
+			b.height = p.height();
+			b.x = b.left + (b.width / 2);
+			b.y = b.top + (b.height / 2);
+			b.xs = b.x - a.x;
+			b.xs = b.xs * b.xs;
+			b.ys = b.y - a.y;
+			b.ys = b.ys * b.ys;
+			b.z = Math.sqrt(b.xs + b.ys);
+			if (b.z <= mini) {
+				mini = b.z;
+				if (axis) {
+					closest.placement = (a.y > b.y) ? 'after' : 'before';
+				} else {
+					closest.placement = (a.x > b.x) ? 'after' : 'before';
+				}
+				closest.element = p;
+			}
+		});
+		return closest;
+	};
+})();
+
+
 
 /*
 ---------------------------
@@ -1183,6 +1224,51 @@ $.rgb2hex = function (r, g, b) {
 	h.push(hex.length == 1 ? "0" + hex : hex);
 	return '#' + h.join('');
 };
+
+
+$.svgString2Image = function (svgString, width, height, format, callback) {
+    // set default for format parameter
+    format = format ? format : 'png';
+    // SVG data URL from SVG string
+    var svgData = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
+    // create canvas in memory(not in DOM)
+    var canvas = document.createElement('canvas');
+    // get canvas context for drawing on canvas
+    var context = canvas.getContext('2d');
+    // set canvas size
+    canvas.width = width;
+    canvas.height = height;
+    // create image in memory(not in DOM)
+    var image = new Image();
+    // later when image loads run this
+    image.onload = function () { // async (happens later)
+        // clear canvas
+        context.clearRect(0, 0, width, height);
+        // draw image with SVG data to canvas
+        context.drawImage(image, 0, 0, width, height);
+        // snapshot canvas as png
+        var pngData = canvas.toDataURL('image/' + format);
+        // pass png data URL to callback
+        callback(pngData);
+    }; // end async
+    // start loading SVG data into in memory image
+    image.src = svgData;
+}
+
+
+// call svgString2Image function
+	setTimeout(function(){
+		var svg = $('#chartspot > div').html();
+		if (svg){
+			svgString2Image(svg, 228*4, 160*4, 'png', function (pngData) {
+				// pngData is base64 png string
+				var img = $('<img />');
+				img.attr('src',pngData);
+				$('#chartspot').html(img);
+				console.log(pngData);
+			});
+		}
+	},3000);
 
 $.circleFavicon = function (link,size,text,color,font){
 
