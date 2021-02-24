@@ -1720,7 +1720,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'header[style|class],p[style|class],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style]/b[style],span[style],em,br,mark',
+		valid_elements: 'header[style|class],p[style|class],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style],b[style],ul[style],ol[style],li[style],span[style],em,br,mark',
 		valid_styles: {
 			'header': 'font-size,font-family,color,text-decoration,text-align',
 			'h5': 'font-size,font-family,color,text-decoration,text-align',
