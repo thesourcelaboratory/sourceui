@@ -1809,6 +1809,7 @@ sourceui.Network = function () {
 			protocol: window.location.protocol === 'https:' ? 'https' : 'http',
 			host: window.location.hostname,
 		};
+		console.trace(typeof s);
 		if (typeof s == 'string') {
 			if (s.indexOf("://") > -1) {
 				setup.protocol = s.substring(0, s.indexOf("://")) || setup.protocol;
@@ -1833,7 +1834,11 @@ sourceui.Network = function () {
 			}
 		} else if (typeof s == 'object') {
 			$.extend(setup, s);
+		} else if (s === false) {
+			return false;
 		}
+
+
 
 		setup.secure = setup.protocol == 'https' ? true : false;
 		setup.port = setup.port ? setup.port : (setup.secure ? 3000 : 3001);

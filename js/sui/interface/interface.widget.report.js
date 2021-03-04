@@ -1121,6 +1121,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						if ($d.hasClass('dragleft')) $wrap.css({ width:wwid-dpos.left, left:wpos.left+(dpos.left) });
  						if ($d.hasClass('dragright')) $wrap.css({ width:wwid+(dpos.left-wwid) });
 						$this.attr('data-position','top:'+($wrap.css('top')||0)+'; left:'+($wrap.css('left')||0)+'; width:'+$wrap.width()+'px');
+						$this.trigger('edition:input');
 						/** HISTORY STACK *****************************************************************************************************************************************************/
 						historyStack.push({
 							do:   { action:'positionedition', edition:$this, fieldwrap:$wrap, position:$this.attr('data-position'), scrolltop:Report.scroll.scrollTop(), label:'Box positioned' },
@@ -1148,6 +1149,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					stop:function(ev, obj){
 						var oldposition = $this.attr('data-position');
 						$this.attr('data-position','top:'+($target.css('top')||0)+'; left:'+($target.css('left')||0)+'; width:'+$target.width()+'px');
+						$this.trigger('edition:input');
 						/** HISTORY STACK *****************************************************************************************************************************************************/
 						historyStack.push({
 							do:   { action:'positionedition', edition:$this, fieldwrap:$target, position:$this.attr('data-position'), scrolltop:Report.scroll.scrollTop(), label:'Box positioned' },
@@ -1744,6 +1746,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		],
 		paste_preprocess : function(pl, o) {
 			var $content = $('<div>'+o.content+'</div>');
+			$content.find('p,h1,h2,h3,h4').removeAttr('style');
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
 			if ($td.length) $td.css('border','');
 			var $imgtable = $content.children('img,table');

@@ -349,6 +349,12 @@ a code { display:none !important }
 .sui-main > .sui-tabs .sector li.selected { background:rgba(255,255,255,0.25); color:#FFF; opacity:1 !important; }
 .sui-main > .sui-tabs .sector li.selected .close { display:block; color:rgba(255,255,255,.5); }
 .sui-main > .sui-tabs .sector li.selected .close:hover { color:#FFF; }
+.sui-main > .sui-tabs .sector li.unsaved .close::before { display:none; }
+.sui-main > .sui-tabs .sector li.unsaved .close::after { content:''; position:absolute; background:rgba(255,255,255,0.6); width:10px; height:10px; border-radius:10px; top:5px; left:4px; }
+.sui-main > .sui-tabs .sector li.unsaved.selected .close::after { background:#FFF; }
+.sui-main > .sui-tabs .sector li.unsaved .close:hover::before { display:inline-block; }
+.sui-main > .sui-tabs .sector li.unsaved .close:hover::after { display:none }
+
 .sui-main > .sui-tabs .sector li.unclosable .close { display:none; }
 /* --------------------------------------------------- */
 
@@ -419,6 +425,11 @@ a code { display:none !important }
 .sui-sector-title > .tabs > ol li.selected .close { color:rgba(255,255,255,.6); }
 .sui-sector-title > .tabs > ol li.selected .close:hover { color:#FFF; }
 .sui-sector-title > .tabs > ol li.selected > .label > .visual > .key { background:rgba(36,36,36,0.75); }
+.sui-sector-title > .tabs > ol li.unsaved .close::before { display:none; }
+.sui-sector-title > .tabs > ol li.unsaved .close::after { content:''; position:absolute; background:#888; width:10px; height:10px; border-radius:10px; top:5px; left:4px; }
+.sui-sector-title > .tabs > ol li.unsaved.selected .close::after { background:#FFF; }
+.sui-sector-title > .tabs > ol li.unsaved .close:hover::before { display:inline-block; }
+.sui-sector-title > .tabs > ol li.unsaved .close:hover::after { display:none }
 .sui-sector-title > .space { display:none; }
 .sui-sector-title > .close { display:none; }
 .sui-sector-title.overload > .viewnav { display:table-cell; }

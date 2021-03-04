@@ -592,4 +592,20 @@ sourceui.interface.document = function () {
 		Network.history.following = false;
 	});
 
+
+	window.addEventListener("beforeunload", function (e) {
+
+		var $unsavedView = Dom.body.find('.sui-view.unsaved');
+
+		if ($unsavedView.length){
+			var confirmData = $unsavedView.data('unsavedconfirmdata') || {};
+			var confirmationMessage = confirmData.desc || 'Você está tentando fechar uma aba com dados que ainda não foram salvos. Se você continuar, as alterações serão descartadas.';
+			(e || window.event).returnValue = confirmationMessage; //Gecko + IE
+        	return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+		} else {
+			return undefined;
+		}
+
+    });
+
 };

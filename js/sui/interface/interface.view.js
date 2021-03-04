@@ -30,6 +30,7 @@ sourceui.interface.view = function ($view, setup) {
 	var Device = sourceui.instances.device;
 	var Debug = Device.Debug;
 	var Plugin = sourceui.instances.interface.plugins;
+	var Confirm = Plugin.confirm;
 	var Notify = Plugin.notify;
 	var Interface = sourceui.interface;
 	var Dom = Interface.dom;
@@ -434,10 +435,63 @@ sourceui.interface.view = function ($view, setup) {
 		}
 	}
 	*/
-	View.element.on('view:close', function (event, force) {
+	if (View.element.data('preventclose') == 'unsaved'){
+		View.element.on('field:input edition:input document:change',function(){
+			var $view = $(this);
+			var $sector = View.sector;
+			var $tab = $sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]');
+			var $sectab = Dom.document.find('#suiTabsSector [data-sector="' + $sector.attr('id') + '"]')
+			$tab.addClass('unsaved');
+			$view.addClass('unsaved');
+			$sector.addClass('unsaved');
+			$sectab.addClass('unsaved');
+		});
+		View.element.on('form:saved document:saved',function(){
+			var $view = $(this);
+			var $sector = View.sector;
+			var $tab = $sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]');
+			var $sectab = Dom.document.find('#suiTabsSector [data-sector="' + $sector.attr('id') + '"]')
+			$tab.removeClass('unsaved');
+			$view.removeClass('unsaved');
+			if (!$sector.find('.sui-view.unsaved').length){
+				$sector.removeClass('unsaved');
+				$sectab.removeClass('unsaved');
+			}
+		});
+	}
+	View.element.on('view:close', function (event, force, unsavedforce) {
 		var $view = $(this);
-		var $tab = View.sector.find('#suiTabsView [data-view="' + View.element.attr('id') + '"]');
+		var $tab = View.sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]');
 		var $prev = $tab.prev();
+		if (!unsavedforce){
+			if ($view.hasClass('unsaved')){
+				if (!View.sector.hasClass('unsavedconformed')){
+					var confirmData = $view.data('unsavedconfirmdata') || {};
+					Confirm.open({
+						type: 'unsaved',
+						title: confirmData.title || 'Dados não salvos',
+						desc: confirmData.desc || 'Você está tentando fechar uma aba com dados que ainda não foram salvos. Se você continuar, as alterações <b>serão descartadas</b>.',
+						hilite: confirmData.hilite || 'Essa ação não podeá ser desfeita.',
+						button: [{
+							label: confirmData.button_ok_label || 'Fechar',
+							background: 'var(--brand-color)',
+							callback: function () {
+								View.sector.removeClass('unsavedconformed');
+								setTimeout(function () { View.element.trigger('view:close', [force,true]); }, 10);
+							}
+						},{
+							label: confirmData.button_cancel_label || 'Cancelar',
+							background: '#666666',
+							callback: function () {
+								View.sector.removeClass('unsavedconformed');
+							}
+						}]
+					});
+					View.sector.addClass('unsavedconformed');
+				}
+				return false;
+			}
+		}
 		if (!force) {
 			var $prevall = $view.prevAll('.sui-view');
 			var $nextall = $view.nextAll('.sui-view');
@@ -458,6 +512,10 @@ sourceui.interface.view = function ($view, setup) {
 			if (typeof editor == 'object') {
 				editor.destroy();
 			}
+		});
+		View.element.find('.mce-content-body[contenteditable="true"]').each(function () {
+			var $editor = $(this);
+			tinymce.remove('#'+$editor.attr('id'));
 		});
 		View.element.find('.mce-tinymce').each(function () {
 			var editor = $(this).next('textarea');
