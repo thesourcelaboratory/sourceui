@@ -804,6 +804,10 @@ sourceui.interface.plugins = function () {
 			}
 			$.CURR.confirm = true;
 			Device.audio.file('./audio/confirm.mp3', 0.3, true);
+			$confirm.off('confirm:close');
+			if (confirm.onclose){
+				$confirm.one('confirm:close', confirm.onclose);
+			}
 		},
 		close: function () {
 			$.CURR.confirm = null;
@@ -821,6 +825,7 @@ sourceui.interface.plugins = function () {
 				}, 'easeOutQuad');
 			Dom.body.removeClass('confirmed');
 			Dom.confirmContainer.removeClass('opened');
+			$confirm.trigger('confirm:close');
 		}
 	};
 

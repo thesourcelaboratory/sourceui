@@ -285,8 +285,12 @@ sourceui.interface.panel = function () {
 		var $views = Array.prototype.reverse.call($sector.find('#suiViewsContainer > .sui-view'));
 		var isPrevented = false;
 		$views.each(function () {
+			var $view = $(this);
 			if (!$sector.hasClass('sui-prevent-close')) {
-				$(this).trigger('view:close', [true]);
+				$view.trigger('view:close', [true]);
+				if ($view.hasClass('unsaved')){
+					return false;
+				}
 			} else {
 				isPrevented = true;
 				return false;

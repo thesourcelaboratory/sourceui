@@ -440,7 +440,7 @@ sourceui.interface.view = function ($view, setup) {
 			var $view = $(this);
 			var $sector = View.sector;
 			var $tab = $sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]');
-			var $sectab = Dom.document.find('#suiTabsSector [data-sector="' + $sector.attr('id') + '"]')
+			var $sectab = Dom.document.find('#suiTabsSector [data-sector="' + $sector.attr('id') + '"]');
 			$tab.addClass('unsaved');
 			$view.addClass('unsaved');
 			$sector.addClass('unsaved');
@@ -450,7 +450,7 @@ sourceui.interface.view = function ($view, setup) {
 			var $view = $(this);
 			var $sector = View.sector;
 			var $tab = $sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]');
-			var $sectab = Dom.document.find('#suiTabsSector [data-sector="' + $sector.attr('id') + '"]')
+			var $sectab = Dom.document.find('#suiTabsSector [data-sector="' + $sector.attr('id') + '"]');
 			$tab.removeClass('unsaved');
 			$view.removeClass('unsaved');
 			if (!$sector.find('.sui-view.unsaved').length){
@@ -465,29 +465,37 @@ sourceui.interface.view = function ($view, setup) {
 		var $prev = $tab.prev();
 		if (!unsavedforce){
 			if ($view.hasClass('unsaved')){
-				if (!View.sector.hasClass('unsavedconformed')){
+				if (!View.sector.hasClass('unsavedconfirmed')){
 					var confirmData = $view.data('unsavedconfirmdata') || {};
 					Confirm.open({
 						type: 'unsaved',
 						title: confirmData.title || 'Dados não salvos',
 						desc: confirmData.desc || 'Você está tentando fechar uma aba com dados que ainda não foram salvos. Se você continuar, as alterações <b>serão descartadas</b>.',
 						hilite: confirmData.hilite || 'Essa ação não podeá ser desfeita.',
+						onclose: function () {
+							View.sector.removeClass('unsavedconfirmed');
+						},
 						button: [{
-							label: confirmData.button_ok_label || 'Fechar',
-							background: 'var(--brand-color)',
+							label: confirmData.button_ok_label || 'Ok, fechar aba',
+							background: confirmData.button_ok_color || 'var(--brand-color)',
 							callback: function () {
-								View.sector.removeClass('unsavedconformed');
-								setTimeout(function () { View.element.trigger('view:close', [force,true]); }, 10);
+								var $sector = View.sector;
+								$sector.removeClass('unsavedconfirmed');
+								setTimeout(function () {
+									View.element.trigger('view:close', [force,true]);
+									if (!$sector.find('.sui-view.unsaved').length){
+										var $sectab = Dom.document.find('#suiTabsSector [data-sector="' + $sector.attr('id') + '"]');
+										$sector.removeClass('unsaved');
+										$sectab.removeClass('unsaved');
+									}
+								}, 25);
 							}
 						},{
 							label: confirmData.button_cancel_label || 'Cancelar',
 							background: '#666666',
-							callback: function () {
-								View.sector.removeClass('unsavedconformed');
-							}
 						}]
 					});
-					View.sector.addClass('unsavedconformed');
+					View.sector.addClass('unsavedconfirmed');
 				}
 				return false;
 			}
