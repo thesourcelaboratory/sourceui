@@ -287,9 +287,12 @@ sourceui.interface.panel = function () {
 		$views.each(function () {
 			var $view = $(this);
 			if (!$sector.hasClass('sui-prevent-close')) {
-				$view.trigger('view:close', [true]);
 				if ($view.hasClass('unsaved')){
+					$view.trigger('view:close', ['sector:close']);
+					isPrevented = true;
 					return false;
+				} else {
+					$view.trigger('view:close', [true]);
 				}
 			} else {
 				isPrevented = true;

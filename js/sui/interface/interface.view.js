@@ -488,6 +488,9 @@ sourceui.interface.view = function ($view, setup) {
 										$sector.removeClass('unsaved');
 										$sectab.removeClass('unsaved');
 									}
+									if (force === 'sector:close'){
+										$sector.trigger('sector:close');
+									}
 								}, 25);
 							}
 						},{
