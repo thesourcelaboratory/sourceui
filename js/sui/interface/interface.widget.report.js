@@ -1891,6 +1891,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						var $this = $(this);
 						if ($this.hasClass('block')) suiXml += wdata.suify.block($this);
 						else if ($this.hasClass('fieldwrap')) suiXml += wdata.suify.fieldwrap($this);
+						else if ($this.hasClass('flex')) suiXml += wdata.suify.flex($this);
 					});
 				}
 				var $sui = wdata.aux.strXQ('<cell>'+suiXml+'</cell>');
