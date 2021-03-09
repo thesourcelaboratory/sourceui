@@ -1809,7 +1809,6 @@ sourceui.Network = function () {
 			protocol: window.location.protocol === 'https:' ? 'https' : 'http',
 			host: window.location.hostname,
 		};
-		console.trace(typeof s);
 		if (typeof s == 'string') {
 			if (s.indexOf("://") > -1) {
 				setup.protocol = s.substring(0, s.indexOf("://")) || setup.protocol;
