@@ -84,18 +84,19 @@ sourceui.interface.widget.custom = function($widget,setup){
                         delayForDisplay: 150,
                         hideDelay: 150,
                         formatter: function () {
-                            var value = this.y, html = '';
-                            if (data.tip.percent) value = $.toFloat(this.y, data.tip.decimal || 1) + '%';
-                            else if (data.tip.money) value = $.toMoney(this.y, '');
-                            else if (data.tip.int) value = $.toInt(this.y);
-                            else if (data.tip.number) value = $.toNumber(this.y);
-                            if (data.tip.prefix) value = data.tip.prefix + ' ' + value;
-                            if (data.tip.series) html += '<small style="color:#999" style="font-size:0.8em;">' + this.series.name + '</small><br/>';
-                            if (data.tip.labels) html += data.tip.labels[this.point.index] || '';
-                            else if (this.point.name) html += this.point.name;
-                            else if (this.x) html += this.x;
-                            html += ' <strong style="color:' + (data.tip.color === false ? '#333' : data.tip.color || this.point.color) + '">' + value + '</strong>';
-                            return '<div style="font-size:11px; letter-spacing:-0.5px;">' + html + '</div>';
+							var value = this.y, percent = '', html = '';
+							if (data.tip.percent) percent = $.toFloat(this.percentage, data.tip.decimal || 1) + '%';
+							if (data.tip.money) value = $.toMoney(this.y, '');
+							else if (data.tip.int) value = $.toInt(this.y);
+							else if (data.tip.number) value = $.toNumber(this.y);
+							if (data.tip.prefix) value = data.tip.prefix + ' ' + value;
+							if (data.tip.series) html += '<small style="color:#999" style="font-size:0.8em;">' + this.series.name + '</small><br/>';
+							if (data.tip.labels) html += data.tip.labels[this.point.index] || '';
+							else if (this.point.name) html += this.point.name;
+							else if (this.x) html += this.x;
+							html += '&nbsp;&nbsp;<strong style="color:' + (data.tip.color === false ? '#333' : data.tip.color || this.point.color) + '">' + value + '</strong>';
+							html += (percent ? '&nbsp;&nbsp;<span style="color:' + (data.tip.color === false ? '#333' : data.tip.color || this.point.color) + '">('+percent+')</span>' : '');
+							return '<div style="font-size:11px; letter-spacing:-0.5px;">' + html + '</div>';
                         }
                     } : {},
                     title: data.title === false ? { text: "" } : data.title,
