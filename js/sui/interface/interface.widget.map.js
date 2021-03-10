@@ -157,10 +157,14 @@ sourceui.interface.widget.map = function($widget,setup){
 			}
 		});
 		Wap.widget.on('widget:resize',function(){
-			Map.invalidateSize();
+			setTimeout(function(){
+				Map.invalidateSize();
+			},100);
 		});
 		Dom.window.on('resize',function(){
-			Map.invalidateSize();
+			setTimeout(function(){
+				Map.invalidateSize();
+			},100);
 		});
 
 		Wap.sector.on('sector:hide',function(){
