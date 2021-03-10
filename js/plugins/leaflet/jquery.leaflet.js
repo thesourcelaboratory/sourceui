@@ -140,9 +140,9 @@
         };
         this.heatmap = function (cfg) {
             if (cfg.points && L.heatLayer) {
-                //cfg.points = cfg.points.map(function (p) { return [p[0], p[1]]; });
-                if (cfg.options.gradient) cfg.options.gradient = JSON.parse(cfg.options.gradient);
+                if (cfg.options.gradient && typeof cfg.options.gradient === 'string') cfg.options.gradient = JSON.parse(cfg.options.gradient);
                 var heat = L.heatLayer(cfg.points, cfg.options).addTo(Map);
+				return heat;
             }
         };
 

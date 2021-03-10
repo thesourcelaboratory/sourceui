@@ -35,6 +35,8 @@ sourceui.interface.widget.map = function($widget,setup){
 
 	Wap.common = new Interface.widget.common($widget,setup);
 	Wap.widget = $widget;
+	Wap.view = Wap.widget.closest('.sui-view');
+	Wap.sector = Wap.view.closest('.sui-sector');
 	Wap.code = Wap.widget.find('code[type="map"]').text();
 	Wap.cfg = JSONX.parse(Wap.code);
 
@@ -155,9 +157,20 @@ sourceui.interface.widget.map = function($widget,setup){
 			}
 		});
 		Wap.widget.on('widget:resize',function(){
-			setInterval(function(){
+			Map.invalidateSize();
+		});
+		Dom.window.on('resize',function(){
+			Map.invalidateSize();
+		});
+
+		Wap.sector.on('sector:hide',function(){
+			if (Heatmap) Map.removeLayer(Heatmap);
+		});
+		Wap.sector.on('sector:show',function(){
+			setTimeout(function(){
 				Map.invalidateSize();
-			},450);
+				Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
+			},100);
 		});
 
 		Toolbar.on('click','.center:not(.disable)',function(event){
@@ -176,7 +189,7 @@ sourceui.interface.widget.map = function($widget,setup){
 		if (Wap.cfg.heatmap){
 			setTimeout(function(){
 				Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
-			},200);
+			},100);
 		}
 
 		if (Wap.cfg.fitStuffs) Wap.widget.trigger('map:fitstuffs');

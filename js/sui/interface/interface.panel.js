@@ -234,17 +234,18 @@ sourceui.interface.panel = function () {
 		//////////////////////////////////////////
 		if (!$sector.data('tab')) $sector.data('tab', $this);
 		//////////////////////////////////////////
-		Panel.sectorsContainer.children('.sui-sector.selected:not(.alwaysactive)').removeClass('selected');
+		Panel.sectorsContainer.children('.sui-sector.selected:not(.alwaysactive)').trigger('sector:hide').removeClass('selected');
 		if (animate) {
 			Panel.sectorsContainer.children('#' + $this.data('sector')).css('opacity', 0).addClass('selected').velocity({
 				translateX: animate == 'next' ? [0, 50] : [0, -50],
 				opacity: [1, 0]
 			}, {
-					duration: 220,
-				}, 'ease-out');
+				duration: 220,
+			}, 'ease-out');
 		} else {
 			$sector.addClass('selected');
 		}
+		$sector.trigger('sector:show');
 		Panel.navLeft.find('.sui-link.selected').removeClass('selected');
 		Panel.sectorTabs.children('li.selected').removeClass('selected');
 		$this.addClass('selected');
