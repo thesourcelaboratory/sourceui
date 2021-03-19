@@ -280,9 +280,9 @@
 .sui-field.static > .wrap > .table > .cell .input b { color:#333; }
 .sui-field.static > .wrap > .table > .cell .input strong { color:#222; }
 .sui-field.static.acordeon > .wrap > .table > .cell.value { width:100%; cursor:pointer; }
-.sui-field.static.acordeon > .wrap > .table > .cell.value .input { width:70vw; white-space:nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sui-field.static.acordeon > .wrap > .table > .cell.value .input { width:50vw; white-space:nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sui-field.static.acordeon > .wrap > .table > .cell.value .input > pre { margin:0; max-width:80%; white-space:nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sui-field.static.acordeon.expanded > .wrap > .table > .cell .input { background:rgba(0,0,0,0,0.05); overflow:visible; text-overflow:inherit; }
+.sui-field.static.acordeon.expanded > .wrap > .table > .cell .input { width:auto; background:rgba(0,0,0,0,0.05); overflow:visible; text-overflow:inherit; }
 .sui-field.static.acordeon.expanded > .wrap > .table > .cell .input > pre { white-space:pre; }
 
 /* HIDDEN */
