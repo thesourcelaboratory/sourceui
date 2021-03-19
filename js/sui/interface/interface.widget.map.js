@@ -159,7 +159,7 @@ sourceui.interface.widget.map = function($widget,setup){
 		Wap.widget.on('widget:resize',function(){
 			setTimeout(function(){
 				Map.invalidateSize();
-			},100);
+			},300);
 		});
 		Dom.window.on('resize',function(){
 			setTimeout(function(){
@@ -171,10 +171,14 @@ sourceui.interface.widget.map = function($widget,setup){
 			if (Heatmap) Map.removeLayer(Heatmap);
 		});
 		Wap.sector.on('sector:show',function(){
+			Map.invalidateSize();
 			setTimeout(function(){
-				Map.invalidateSize();
 				Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
-			},100);
+			},1000);
+		});
+		Wap.sector.on('sector:close',function(){
+			Map.off();
+			Map.remove();
 		});
 
 		Toolbar.on('click','.center:not(.disable)',function(event){

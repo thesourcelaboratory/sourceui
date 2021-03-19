@@ -2197,7 +2197,7 @@ sourceui.Network = function () {
 				title: 'Seletor',
 				size: setup.sectorsize || 'large',
 				unclosable: setup.sectorclose === false || setup.sectorclose === 'false' || setup.unclosable === true || setup.unclosable === 'true' ? true : false,
-				link: setup
+				link: $.extend({},setup)
 			});
 			return true;
 		}

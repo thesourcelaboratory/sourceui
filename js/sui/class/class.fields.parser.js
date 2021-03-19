@@ -1055,6 +1055,9 @@ sourceui.parserField = function (element, setup) {
 			simple: function () {
 				return HTML.common.field({ input: 'html' });
 			},
+			acordeon: function () {
+				return HTML.common.field({ input: 'html' });
+			},
 		},
 		hidden: {
 			simple: function () {

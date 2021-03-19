@@ -1988,6 +1988,16 @@ sourceui.customField = function (element, setup) {
 				}
 			}
 		},
+		static: {
+			simple: function () {
+				Bind.common.buttons.simple();
+			},
+			acordeon: function () {
+				Element.on('click',function(){
+					Element.toggleClass('expanded');
+				})
+			},
+		},
 		input: {
 			custom: function () {
 				Bind.common.buttons.simple();
@@ -3431,6 +3441,7 @@ sourceui.customField = function (element, setup) {
 
 			switch (Data.type) {
 				case 'input': Data.mode && Bind.input[Data.mode] ? Bind.input[Data.mode]() : Bind.input.custom(); break;
+				case 'static': Data.mode && Bind.static[Data.mode] ? Bind.static[Data.mode]() : Bind.static.simple(); break;
 				case 'text': Data.mode && Bind.text[Data.mode] ? Bind.text[Data.mode]() : Bind.text.simple(); break;
 				case 'number': Data.mode && Bind.number[Data.mode] ? Bind.number[Data.mode]() : Bind.number.simple(); break;
 				case 'drop': Data.mode && Bind.drop[Data.mode] ? Bind.drop[Data.mode]() : Bind.drop.single(); break;
