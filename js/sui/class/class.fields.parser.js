@@ -364,7 +364,7 @@ sourceui.parserField = function (element, setup) {
 	this.fetch = {
 		list: function (fd, field) {
 			fd.list = {};
-			if (fd.type == 'drop') {
+			if (fd.type == 'drop' || fd.type == 'search' || fd.type == 'tag') {
 				fd.selectval = fd.value !== '' && fd.value !== null ? (fd.value + '').split(",") : [];
 			}
 			field.findChild('list', function () {
@@ -377,7 +377,7 @@ sourceui.parserField = function (element, setup) {
 					var option = suiOption.getAttr();
 					option.label = option.label || suiOption.content();
 					option.value = option.hasOwnProperty('value') ? option.value : suiOption.content() || '';
-					if (option.selected || (fd.selectval && fd.selectval.indexOf(option.value) > -1)) fd.list.selected.push(option);
+					if (option.selected || (fd.selectval && fd.selectval.indexOf(''+option.value) > -1)) fd.list.selected.push(option);
 					fd.list.options.push(option);
 				});
 			});
@@ -570,6 +570,7 @@ sourceui.parserField = function (element, setup) {
 					class: setup.class + (setup.list && setup.list.selected && setup.list.selected.length > 0 ? ' selected' : '') + (setup.help ? ' helped' : ''),
 					data: $.extend(setup.data || {}, {
 						name: setup.name,
+						initval: setup.value,
 						type: setup.type,
 						mode: setup.mode,
 						orient: setup.orient,
@@ -1247,6 +1248,17 @@ sourceui.parserField = function (element, setup) {
 				return HTML.common.field({ input: 'text', addon: 'simple' });
 			}
 		},
+		tag: {
+			simple: function () {
+				Field.setup.getval = 'multiple';
+				Field.setup.setval = 'append';
+				Field.setup.list.class = 'multiple';
+				Field.setup.class += ' sufix';
+				Field.setup.inscroll = true;
+				Field.setup.placeholder = Field.setup.placeholder || 'Digite e Enter...';
+				return HTML.common.field({ cell: 'multisearch', input: 'option', addon: 'simple' });
+			},
+		},
 		date: {
 			simple: function () {
 				Field.setup.setval = 'caller';
@@ -1561,6 +1573,7 @@ sourceui.parserField = function (element, setup) {
 				case 'number': return setup.mode && HTML.number[Field.setup.mode] ? HTML.number[Field.setup.mode]() : HTML.number.simple(); break;
 				case 'drop': return setup.mode && HTML.drop[Field.setup.mode] ? HTML.drop[Field.setup.mode]() : HTML.drop.single(); break;
 				case 'search': return setup.mode && HTML.search[Field.setup.mode] ? HTML.search[Field.setup.mode]() : HTML.search.single(); break;
+				case 'tag': return setup.mode && HTML.tag[Field.setup.mode] ? HTML.tag[Field.setup.mode]() : HTML.tag.simple(); break;
 				case 'date': return setup.mode && HTML.date[Field.setup.mode] ? HTML.date[Field.setup.mode]() : HTML.date.simple(); break;
 				case 'datetime': return setup.mode && HTML.datetime[Field.setup.mode] ? HTML.datetime[Field.setup.mode]() : HTML.datetime.simple(); break;
 				case 'time': return setup.mode && HTML.time[Field.setup.mode] ? HTML.time[Field.setup.mode]() : HTML.time.simple(); break;

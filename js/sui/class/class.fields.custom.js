@@ -687,6 +687,44 @@ sourceui.customField = function (element, setup) {
 					Element.trigger('field:loaded');
 				}
 			},
+			tag: {
+				simple: function(){
+					Bind.common.input();
+					Bind.common.cell();
+					Dom.search.on('keypress', function (event) {
+						if (event.key == ',' || event.key == ';' || event.key == 'Enter'){
+							event.preventDefault();
+							var val = Dom.search.val();
+							Field.val(val);
+							Dom.badge.text(Dom.options.find('.option').length);
+							Dom.search.val('').focus();
+						}
+					});
+					Dom.value.on('click', '.option', function (event) {
+						var $item = $(this);
+						if ($item.is('.picked')) Element.trigger('field:optionunpicked', [$item]);
+						else Element.trigger('field:optionpicked', [$item]);
+						$(document).trigger('activity:focusin', [Element]);
+						event.stopPropagation();
+					});
+					Element.on('field:optionpicked', function (event, $item) {
+						$item.addClass('picked');
+					});
+					Element.on('field:optionunpicked', function (event, $item) {
+						$item.removeClass('picked');
+					});
+					Dom.value.on('click', '.option .remove', function (event, fake) {
+						if (Validate.is.disable(event)) { event.stopImmediatePropagation(); return false; }
+						var $this = $(this);
+						var $option = $this.parent();
+						$option.remove();
+						if (Dom.value.find('.option').length == 0) Field.val('');
+						if (Data.mode == 'multiple') Dom.badge.text(Dom.options.find('.option').length);
+						if (!fake) Element.trigger('field:change');
+					});
+					Element.trigger('field:loaded');
+				}
+			},
 			picker: {
 				single: function () {
 					Validate.required();
@@ -2118,6 +2156,11 @@ sourceui.customField = function (element, setup) {
 				Bind.common.droplist.search();
 			},
 		},
+		tag: {
+			simple: function () {
+				Bind.common.tag.simple();
+			},
+		},
 		date: {
 			simple: function () {
 				Bind.common.text();
@@ -3038,7 +3081,20 @@ sourceui.customField = function (element, setup) {
 		},
 		append: function (val, repl) {
 			var $item, value;
-			if (Data.type == 'drop' || Data.type == 'search') {
+			if (Data.type == 'tag'){
+				value = val;
+				if (value === '' || value === null) {
+					Element.removeClass('selected');
+					Dom.options.find('.option').remove();
+				} else {
+					Element.addClass('selected');
+					var replaces = {
+						label: value,
+						value: value
+					};
+					Dom.options.find('.search').before(Parser.methods.getTemplate('input', 'option', replaces));
+				}
+			} else if (Data.type == 'drop' || Data.type == 'search') {
 				if (val instanceof jQuery) {
 					$item = val;
 					value = val.data('value');
@@ -3446,6 +3502,7 @@ sourceui.customField = function (element, setup) {
 				case 'number': Data.mode && Bind.number[Data.mode] ? Bind.number[Data.mode]() : Bind.number.simple(); break;
 				case 'drop': Data.mode && Bind.drop[Data.mode] ? Bind.drop[Data.mode]() : Bind.drop.single(); break;
 				case 'search': Data.mode && Bind.search[Data.mode] ? Bind.search[Data.mode]() : Bind.search.single(); break;
+				case 'tag': Data.mode && Bind.tag[Data.mode] ? Bind.tag[Data.mode]() : Bind.tag.simple(); break;
 				case 'date': Data.mode && Bind.date[Data.mode] ? Bind.date[Data.mode]() : Bind.date.single(); break;
 				case 'datetime': Data.mode && Bind.datetime[Data.mode] ? Bind.datetime[Data.mode]() : Bind.datetime.short(); break;
 				case 'time': Data.mode && Bind.time[Data.mode] ? Bind.time[Data.mode]() : Bind.time.short(); break;

@@ -277,12 +277,13 @@ sourceui.interface.view = function ($view, setup) {
 						if (typeof scope == 'object' && typeof scope.widgetData == 'function') {
 							scope.widgetData();
 							wgdata.data = $.extend(true, wgdata.data, scope.wgdata);
-							Network.link.call($a, $.extend(wgdata,{ondone:function(){
+							wgdata.ondone = function(){
 								View.element.trigger('document:saved');
 								if ($widget.find('.sui-validations > rule[valid="false"]').length === 0){
 									View.element.trigger('document:validsaved');
 								}
-							}}));
+							}
+							Network.link.call($a, wgdata);
 							if (data.alias == 'save'){
 								$a.parent().disable();
 							}

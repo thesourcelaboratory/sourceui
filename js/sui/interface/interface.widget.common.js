@@ -648,6 +648,8 @@ sourceui.interface.widget.common = function ($widget, setup) {
 
 			var globaldata = Device.Global.get(globalname) || {};
 			if (globaldata.html){
+				/*
+				// filter selected automatico
 				Finder.ul.html(globaldata.html.replace(' selected"','"'));
 				var filtqs = Network.history.getHash().split('?')[1];
 				if (filtqs){
@@ -658,6 +660,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 						Finder.ul.find('.sui-filter[data-name="'+f[0]+'"][data-value="'+f[1]+'"]').addClass('selected');
 					});
 				}
+				*/
 				/*
 				var sparam = Finder.sector.attr('data-history');
 				var fparam = $.deparam(sparam.split('?')[1]);

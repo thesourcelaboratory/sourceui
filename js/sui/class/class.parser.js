@@ -525,7 +525,7 @@ sourceui.templates.interface = new sourceui.Template({
 			linegroup:
 				'<div class="linegroup @{class:type}"><h3><span>@{label:count}</span>@{label:name}</h3><div class="lines @{class:type}"><div class="sizer"></div>@{child:lines}</div></div>',
 			list:
-				'<div class="list @{class:type} @{class:scroll} @{class:prop} @{class:grouped}" data-action-pickline="@{action:pickline}" data-action-checklines="@{action:checklines}" data-paginator="@{default:paginator}"@{data}><div class="sizer"></div>@{child:content}</div>',
+				'<div class="list @{class:type} @{class:scroll} @{class:prop} @{class:grouped}" data-action-pickline="@{action:pickline}" data-action-checklines="@{action:checklines}" data-paginator="@{default:paginator}"@{data}@{style}><div class="sizer"></div>@{child:content}</div>',
 			header: {
 				container:
 					'<div class="sn header @{class:prop}"@{data}>' +
@@ -884,19 +884,23 @@ sourceui.templates.interface = new sourceui.Template({
 			footer:
 				'<div class="footer"@{style}@{data}>@{child:content}</div>',
 			page:
-				'<div class="page @{data:layout} @{data:structure}"@{data}@{style}><div class="pagedropper"></div>@{child:content}</div>',
+				'<div class="page @{data:layout} @{data:structure} @{data:prop} @{data:visible}"@{data}@{style}><div class="pagedropper"></div>@{child:content}</div>',
 			main:
 				'<div class="main"@{data}@{style}>@{child:content}</div>',
 			cover:
-				'<div class="cover"@{data}@{style}>@{child:content}</div>',
+				'<div class="cover @{data:type}@{type}"@{data}@{style}>@{child:content}</div>',
 			row:
 				'<div class="row @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 			cell:
 				'<div class="cell @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 			block:
-				'<div class="block @{name} @{type}"@{data}@{style}>@{child:content}</div>',
-			flex:
-				'<div class="flex @{name} @{type}"@{data}@{style}>@{child:content}</div>',
+				'<div class="block @{name} @{type} @{data:prop} @{data:visible}"@{data}@{style}>@{child:content}</div>',
+			col:
+				'<td class="col"@{data}@{style}>@{child:content}</td>',
+			line:
+				'<tr class="line"@{data}@{style}>@{child:content}</tr>',
+			container:
+				'<table cellspacing="0" class="container"@{data}@{style}><tbody>@{child:content}</tbody></table>',
 			stack:
 				'<div class="stack @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 		},
@@ -2776,38 +2780,57 @@ sourceui.Parser = function () {
 						htmlContent = sui.content();
 						if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
 						else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
+						if (sui.attr('type') && !sui.attr('data:type')) sui.attr('data:type',sui.attr('type'));
+						else if (!sui.attr('type') && sui.attr('data:type')) sui.attr('type',sui.attr('data:type'));
 						if (!sui.attr('data:edition') && sui.attr('data:position')) sui.attr('style',sui.attr('data:position'));
 						return sui.toHTML('wg', 'report', 'block', { child: { content: htmlContent }},  Template.get);
 					},
-					flex : function(sui){
+					col : function(sui){
 						var htmlContent = '';
-						var totalChilds = 0;
 						sui.findChild(function () {
 							if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
-							totalChilds++;
 						});
-						sui.attr('type','childs-'+totalChilds);
-						return sui.toHTML('wg', 'report', 'flex', { child: { content: htmlContent }},  Template.get);
+						if (sui.attr('data:style')) sui.attr('style',sui.attr('data:style'));
+						return sui.toHTML('wg', 'report', 'col', { child: { content: htmlContent }},  Template.get);
+					},
+					line : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'col') htmlContent += Components.libs.widget.report.col(this);
+						});
+						return sui.toHTML('wg', 'report', 'line', { child: { content: htmlContent }},  Template.get);
+					},
+					container : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'line') htmlContent += Components.libs.widget.report.line(this);
+						});
+						if (sui.attr('data:style')) sui.attr('style',sui.attr('data:style'));
+						return sui.toHTML('wg', 'report', 'container', { child: { content: htmlContent }},  Template.get);
 					},
 					cell : function(sui){
 						var htmlContent = '';
+						if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
+						else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
+						if (sui.attr('type') && !sui.attr('data:type')) sui.attr('data:type',sui.attr('type'));
+						else if (!sui.attr('type') && sui.attr('data:type')) sui.attr('type',sui.attr('data:type'));
 						sui.findChild(function () {
 							if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
-							else if (this.nodeName == 'flex') htmlContent += Components.libs.widget.report.flex(this);
+							else if (this.nodeName == 'container') htmlContent += Components.libs.widget.report.container(this);
 						}, function(){
-							if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
-							else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
 							htmlContent = sui.content();
 						});
 						return sui.toHTML('wg', 'report', 'cell', { child: { content: htmlContent }},  Template.get);
 					},
 					row : function(sui){
 						var htmlContent = '';
+						if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
+						else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
+						if (sui.attr('type') && !sui.attr('data:type')) sui.attr('data:type',sui.attr('type'));
+						else if (!sui.attr('type') && sui.attr('data:type')) sui.attr('type',sui.attr('data:type'));
 						sui.findChild(function () {
 							if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
 						}, function(){
-							if (sui.attr('name') && !sui.attr('data:name')) sui.attr('data:name',sui.attr('name'));
-							else if (!sui.attr('name') && sui.attr('data:name')) sui.attr('name',sui.attr('data:name'));
 							htmlContent = sui.content();
 						});
 						return sui.toHTML('wg', 'report', 'row', { child: { content: htmlContent }},  Template.get);
@@ -2842,6 +2865,7 @@ sourceui.Parser = function () {
 							if (this.nodeName == 'row') htmlContent += Components.libs.widget.report.row(this);
 							else if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
 							else if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
+							else if (this.nodeName == 'container') htmlContent += Components.libs.widget.report.container(this);
 						});
 						return sui.toHTML('wg', 'report', 'main', { child: { content: htmlContent }},  Template.get);
 					},
@@ -2893,6 +2917,9 @@ sourceui.Parser = function () {
 							}
 							else if (this.nodeName == 'block'){
 								htmlContent += Components.libs.widget.report.block(this);
+							}
+							else if (this.nodeName == 'container'){
+								htmlContent += Components.libs.widget.report.container(this);
 							}
 						});
 						return sui.toHTML('wg', 'report', 'templates', { child: { content: htmlContent }},  Template.get);

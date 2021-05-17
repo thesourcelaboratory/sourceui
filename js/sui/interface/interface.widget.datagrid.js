@@ -299,7 +299,6 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		if ($this.isDisable()) return;
 		if (clone) {
 			var $clone = $(clone);
-			console.log($this,clone, $clone);
 			$clone.trigger('click', [true]);
 			if (!$clone.is('[data-link-confirm]')) Datagrid.common.swipe.close($line, { duration: 100 });
 		} else if (haslink) {
@@ -349,7 +348,7 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 	this.widget.on('pick', '.area > .list .line:not(.swiped), .area > .treeview .node', function (event) {
 		event.stopPropagation();
 		var $this = $(this),
-			$selected = $this.closest('.sui-view').find('.sui-widget.datagrid > .area .selected');
+			$selected = $this.closest('.sui-view').find('.sui-widget.datagrid:not(.keepcheck):not(.keepchecked):not(.keepselect):not(.keepselected) > .area .selected, .sui-widget#'+Datagrid.widget.attr('id')+' > .area .selected');
 		if ($this.isDisable()) return;
 		$selected.removeClass('selected');
 		$this.addClass('selected');
@@ -375,7 +374,7 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		event.stopPropagation();
 		if ($line.isDisable()) return;
 		var link = $line.link();
-		if (link.href || (link.command && link.sui && link.placement)) {
+		if (link.href || link.download || (link.command && link.sui && link.placement)) {
 			Network.link.call($line, link);
 		} else {
 			Datagrid.common.toggleTools.call($line, 'pickline');
@@ -389,7 +388,9 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		}
 	});
 	this.view.on('click', function () {
-		Datagrid.widget.find('.area > .list .line.selected, .area > .treeview .node.selected').trigger('uncheck');
+		if (!Datagrid.widget.is('.keepcheck, .keepchecked, .keepselect, .keepselected')){
+			Datagrid.widget.find('.area > .list .line.selected, .area > .treeview .node.selected').trigger('uncheck');
+		}
 	});
 
 	this.init = function () {
@@ -551,6 +552,24 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		$node.trigger('node:connect');
 		$node.parents('.node').trigger('node:connect');
 	});
+
+	Datagrid.widgetData = function () {
+		Datagrid.wgdata = { selectedLines:[] };
+		Datagrid.valid = true;
+		if (Datagrid.widget.is('.check')){
+			var $selecteds = Datagrid.widget.find('.line.selected');
+			if ($selecteds.length){
+				$selecteds.each(function(){
+					var $line = $(this);
+					var value = $line.attr('data-link-key') || $line.attr('data-key') || $line.attr('data-id') || $line.attr('id') || false;
+					if (value !== false) Datagrid.wgdata.selectedLines.push(value);
+				});
+			} else {
+				Datagrid.valid = false;
+			}
+		}
+		return Datagrid.valid;
+	};
 
 	setTimeout(function () {
 		Datagrid.nodes.filter('.fold:not(.collapsed)').each(function () {

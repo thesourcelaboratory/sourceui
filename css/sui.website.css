@@ -134,7 +134,7 @@ body > trace { display:none !important; }
 .managed.status-R::after { content:'R'; background:#e24040; }
 .managed.status-I::after { content:'I'; background:#AAAAAA; }
 
-body > header { position:fixed; font-family:var(--font-title); width:100%; height:var(--header-height); z-index:888; transition: all 350ms; background: rgba(255,255,255,0.8); }
+body > header { position:fixed; font-family:var(--font-title); width:100%; height:var(--header-height); z-index:888; transition: all 350ms; background: rgba(255,255,255,0.8); will-change: transform; }
 body > header > nav { max-width:var(--header-width); height:100%; padding:0 40px;  display:flex; justify-content:space-between;  margin:0 auto; color:var(--header-text-color); }
 body > header > nav > .hamburger { display:none; transform:scale(0.85); }
 body > header > nav > .hamburger .hamburger-inner,
@@ -328,18 +328,20 @@ main .sui-fitfull.banner .visualstack > .visual { display:none; position:absolut
 main .sui-fitfull.banner .visualstack > .visual.video { left:-20vw; width:140vw; height:auto; min-width: 100%; min-height: 100%; background-color:#191919; }
 
 
-main > .sui-cover { background-position: center center; background:linear-gradient(120deg, var(--header-text-color) -10%, var(--link-color) 100%); background-size:cover; background-repeat:no-repeat; }
+main > .sui-cover { position:relative; background-position:center center; background:linear-gradient(120deg, var(--header-text-color) -10%, var(--link-color) 100%); background-size:cover; background-repeat:no-repeat; }
 main > .sui-cover > .content h1,
 main > .sui-cover > .content h2,
 main > .sui-cover > .content h3,
 main > .sui-cover > .content h4 { color:#FFF; margin:0; font-size:1.8em; letter-spacing:-1px; }
 main > .sui-cover > .content div,
 main > .sui-cover > .content p { color:#FFF; margin:0; }
-main > .sui-cover.profile > .content { display:flex; }
+main > .sui-cover.profile > .coverstack { position:absolute; height:100%; width:100%; opacity:0.3; overflow:hidden; }
+main > .sui-cover.profile > .coverstack > div { background-repeat:no-repeat; background-size:100% 150%; background-position: center; width:100%; height:100%; filter:blur(15px); transform:scale(1.2); }
+main > .sui-cover.profile > .content { display:flex; width:100%; }
 main > .sui-cover.profile > .content > .visual,
 main > .sui-cover.profile > .content > .info { display:flex; flex-direction:column; justify-content:center; height:100%; }
 main > .sui-cover.profile > .content > .visual { margin-right:var(--content-padding); }
-main > .sui-cover.profile > .content > .visual > i {  background: var(--h1-color); color: #FFFFFF; font-size: 2.6em; width:74px; height:74px; line-height: 74px; align-self: center; border-radius: 50%; font-style: normal; font-weight: 600; display: block; margin-bottom: 2px; text-align: center; }
+main > .sui-cover.profile > .content > .visual > i { background-color: var(--h1-color); background-repeat:no-repeat; background-size:cover; color: #FFFFFF; font-size: 2.6em; width:74px; height:74px; line-height: 74px; align-self: center; border-radius: 50%; font-style: normal; font-weight: 600; display: block; margin-bottom: 2px; text-align: center; }
 
 main .sui-list { display:flex; }
 main .sui-list + .sui-list > .content { padding-top:0px; }

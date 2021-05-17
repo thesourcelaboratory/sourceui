@@ -2176,10 +2176,28 @@ sourceui.Network = function () {
 		// --------------------------
 		*/
 
+		if (setup.wgdata){
+			var $wg = $(setup.wgdata);
+			var wgdata = {};
+			$wg.each(function () {
+				var $widget = $(this);
+				var scope = $widget.data('Interface');
+				if (typeof scope == 'object' && typeof scope.widgetData == 'function') {
+					scope.widgetData();
+					wgdata = $.extend(true, wgdata, scope.wgdata);
+				}
+			});
+			setup.data = $.extend(true, setup.data||{}, wgdata);
+		}
+
 		// download -----------------
 		if (setup.download) {
-			if (typeof setup.download == 'object') return download(setup.download.url, setup.download.name, setup.download.mime);
-			return download(setup.download);
+			var dwld;
+			if (typeof setup.download == 'object') dwld = download(setup.download.url, setup.download.name, setup.download.mime);
+			else dwld = download(setup.download);
+			if (dwld) $.tipster.notify('Aguarde, baixando arquivo...');
+			return dwld;
+
 		}
 		// --------------------------
 
