@@ -43,6 +43,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.variables = Report.area.children('.sui-variable');
 	Report.wgtools = Report.widget.children('.toolbar').find('.tools');
 	Report.view = Report.widget.closest('.sui-view');
+	Report.pagelist = Report.widget.find('.sui-report-pagelist');
 	Report.scroll = Report.view.children('.scroll-default, .scroll-all');
 	Report.viewtools = Report.view.children('.toolbar').children('.tools.left');
 	Report.document = Report.widget.find('.sui-report-document');
@@ -77,7 +78,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	}
 
-	var Variable = {
+	var Variable = Report.variable = {
 		init: function(){
 			Report.variables.each(function(){
 				var $var = $(this);
@@ -87,15 +88,32 @@ sourceui.interface.widget.report = function($widget,setup){
 		get: function(name){
 			var $var = Report.variables.filter('[name="'+name+'"]');
 			var value = $var.text();
+			value = ((value+'').indexOf('[') === 0) ? JSON.parse(value) : value;
 			if ($var.length){
 				if ($.md5('var:'+name+'='+value) === $var.data('verifier')) return value;
 				else console.error('Variable "'+name+'" is invalid');
 			}
 			else console.error('Variable "'+name+'" not found');
 		},
+		getAll: function(){
+			var $var = Report.variables;
+			var values = {};
+			if ($var.length){
+				$var.each(function(){
+					var $v = $(this);
+					var name = $v.attr('name');
+					var value = $v.text();
+					if ($.md5('var:'+name+'='+value) === $v.data('verifier')){
+						values[name] = ((value+'').indexOf('[') === 0) ? JSON.parse(value) : value;
+					} else console.error('Variable "'+name+'" is invalid');
+				});
+			}
+			return values;
+		},
 		set: function(name,value){
 			var $var = Report.variables.filter('[name="'+name+'"]');
 			if ($var.length){
+				value = (typeof value == 'object') ? JSON.stringify(value) : value;
 				$var.text(value);
 				$var.data('verifier',$.md5('var:'+name+'='+value));
 			}
@@ -121,9 +139,10 @@ sourceui.interface.widget.report = function($widget,setup){
 			xhr.responseType = 'blob';
 			xhr.send();
 		},
-		post: function(imgdata,callback,failback){
+		post: function(imgdata,imgname,callback,failback){
 			$.post(
 				Report.widget.data('imgdatauploader'),{
+				imgname:imgname,
 				dochash:Variable.get('docHash'),
 				origin:Report.view.data('link-origin'),
 				imgdata:imgdata
@@ -135,10 +154,19 @@ sourceui.interface.widget.report = function($widget,setup){
 				if (failback) failback(data);
 				console.error('imgdataUploader FAIL',data);
 			});
-
 		}
 	}
 
+	var pageContentChangeId = function($page){
+		var content = '';
+		$page.find('.block').each(function(){
+			content += $(this).html();
+		});
+		content += $page.attr('data-background');
+		content += $page.attr('data-visivle');
+		content += $page.attr('data-layout');
+		return $.md5(content);
+	}
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	var historyStack = {
@@ -240,13 +268,14 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 	};
 	Dom.document.on('keyup', function(event){
-		if (event.ctrlKey){
-			if (event.keyCode == 90){
-				var $edition = Report.document.find('.fieldwrap.focus > [data-edition*="text"], .fieldwrap.focus > [data-edition="graphic"]');
-				if (!$edition.length || !$edition.is('.contentchanged')) historyStack.back();
-			} else if (event.keyCode == 89){
-				var $edition = Report.document.find('.fieldwrap.focus > [data-edition*="text"], .fieldwrap.focus > [data-edition="graphic"]');
-				if (!$edition.length || !$edition.is('.contentchanged')) historyStack.forward();
+		if (event.ctrlKey && (event.keyCode == 90 || event.keyCode == 89)){
+			var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
+			if (!$activeFieldwrap.length){
+				var $activeEdition = $activeFieldwrap.find('[data-edition*="text"], [data-edition="graphic"]');
+				if (!$activeEdition.length || !$edition.is('.contentchanged')){
+					     if (event.keyCode == 90) historyStack.back();
+					else if (event.keyCode == 89) historyStack.forward();
+				}
 			}
 		}
 		if (event.keyCode == 46 || event.keyCode == 8){
@@ -297,7 +326,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				let elPos = $el.position();
 				___cnsl.log('breakBox','overflowed:'+(boxPos.top + elPos.top + $el.outerHeight(true) > edgeHeight),el);
 				if (boxPos.top + elPos.top + $el.outerHeight(true) > edgeHeight){
-					if ($el.is('table')){
+					if ($el.is('table') && $edition.is('.financial-data')){
 						let $table = $el;
 						let $tbodies = $table.children('tbody');
 						let hasBreak = false;
@@ -644,6 +673,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 
 
+
+
 	// Widget Tools -----------------------------------------------------------------------------------------------------------------------------------------------
 	Report.wgtools.filter('.top').find('li:eq(0)').on('click',function(){
 		var rules = []
@@ -680,7 +711,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.wgtools.filter('.top').find('li:gt(1)').pep({
 		place: false,
 		shouldEase: false,
-		droppable: '.sui-report-document, .page, .content, .covered-default .side, .container .col, .fieldwrap, .pagedropper', // precisa olha isso aqui para contar a array certa dentro dos drops
+		droppable: '.sui-report-document, .page, .content, .covered-default .side, .container .col, .fieldwrap, .pagedropper, .tools.top', // precisa olha isso aqui para contar a array certa dentro dos drops
 		revert: true,
 		start: function (ev, obj) {
 			obj.$el.addClass('dragger');
@@ -714,14 +745,25 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $clone;
 			var $target;
 
-			if ($a.hasClass('add-page')){
+			if ($drop[0].is('.tools.top')){
+				$.tipster.notify('Adding elements canceled');
+			} else if ($a.hasClass('add-page')){
 				$target = $drop[1];
-				$clone = Report.templates.children('.page[data-layout="splited"]').clone();
-				if ($target && $target.length) {
-					if ($target.is('.page')) Report.document.trigger('document:addpage',[$clone,$target,'after']);
-					else if ($target.is('.pagedropper')) Report.document.trigger('document:addpage',[$clone,$target.parent(),'before']);
+				if ($target && ($target.is('.fullcovered') || $target.parent().is('.fullcovered, .covered-default'))){
+					$.tipster.notify('Adding pages not allowed here');
+				} else {
+					$clone = Report.templates.children('.page[data-layout="splited"]').clone();
+					if ($target && $target.length) {
+						if ($target.is('.page')){
+							if (this.ev.y > $target.offset().top + ($target.height()/3)){
+								Report.document.trigger('document:addpage',[$clone,$target,'after']);
+							} else {
+								Report.document.trigger('document:addpage',[$clone,$target,'before']);
+							}
+						} else if ($target.is('.pagedropper')) Report.document.trigger('document:addpage',[$clone,$target.parent(),'before']);
+					}
+					else Report.document.trigger('document:addpage',[$clone]);
 				}
-				else Report.document.trigger('document:addpage',[$clone]);
 			} else if ($a.hasClass('add-move')){
 				if (!$a.hasClass('empty')){
 					var $allmoving = Report.document.find('.clipboardmoved');
@@ -950,7 +992,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$page.css('background-image','url("'+reader.result+'")');
 					$page.attr('data-background',reader.result);
 					///////////////////////////////////////////
-					graphic.post(reader.result, function(data){
+					graphic.post(reader.result, null, function(data){
 						var bgimg = document.createElement('img');
 						bgimg.onload = function(){ $page.css('background-image','url("'+data.src+'")'); }
 						bgimg.src = data.src;
@@ -1174,7 +1216,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$spot.find(':not(img)').remove();
 				$spot.append($img);
 				///////////////////////////////////////////
-				graphic.post(reader.result, function(data){
+				graphic.post(reader.result, null, function(data){
 					$img.attr('src',data.src);
 					Report.document.trigger('document:change',[$page]);
 					$.tipster.notify('Image auto uploaded');
@@ -1201,6 +1243,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			form:'dynamic',
 			name: $edit.attr('data-name'),
 			keys: keys,
+			vars:Variable.getAll()
 		}]);
 	});
 	$toolsEdition.on('click','.margin a',function(){
@@ -1375,6 +1418,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (!$this.find('.line').length){
 			Report.document.trigger('container:remove');
 		} else {
+			$this.trigger('container:dimension');
 			Report.document.trigger('document:change',[$page]);
 		}
 	});
@@ -1590,10 +1634,21 @@ sourceui.interface.widget.report = function($widget,setup){
 			$autofill.each(function(){
 				var $e = $(this);
 				var $autofill = Report.area.find('[data-autofill="'+$e.data('autofill')+'"]');
+				$autofill.html($e.text());
+				/*
 				$autofill.filter('[data-edition="text"]').text($e.text());
-				$autofill.filter('[data-edition="plaintext"],[data-edition="tinytext"],[data-edition="richtext"],[data-edition="graphic"]').html($e.html());
+				$autofill.filter('[data-edition="plaintext"],[data-edition="tinytext"],[data-edition="richtext"],[data-edition="graphic"]').html($e.text());
 				$autofill.filter(':not([data-edition])').html($e.text());
+				*/
 				if ($e.text()) $autofill.removeClass('empty-content');
+			});
+			var $indexers = Report.document.find('[data-indexer]');
+			$indexers.each(function(){
+				var $i = $(this);
+				var idx = $.trim($i.attr('data-indexer')).replace(/[ \,\_\-\/]/g,'.');
+				var dots = (idx.match(/\./g)||[]).length;
+				$i.find('bookmark').remove();
+				$i.prepend('<bookmark content="'+$i.text()+'" level="'+dots+'" />');
 			});
 			$this.removeClass('keyboarded');
 		}
@@ -1785,7 +1840,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $img = $(this).addClass('uploading');
 			/////////////////////////////////////////////////
 			graphic.base64($img.attr('src'),function(base64){
-				graphic.post(base64, function(data){
+				graphic.post(base64, null, function(data){
 					$img.attr('src',data.src);
 					$img.removeClass('uploading');
 					$.tipster.notify('Image auto uploaded');
@@ -1801,7 +1856,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$imgs.each(function(){
 			var $img = $(this).addClass('uploading');
 			/////////////////////////////////////////////////
-			graphic.post($img.attr('src'), function(data){
+			graphic.post($img.attr('src'), null, function(data){
 				$img.attr('src',data.src);
 				$img.removeClass('uploading');
 				$.tipster.notify('Image auto uploaded');
@@ -2027,6 +2082,36 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.find('.fieldlink').remove();
 		Report.document.find('.boxgroupconnector').remove();
 	});
+	Report.document.on('page:thumbnail','.page',function(event,fillempty){
+		var $page = $(this);
+		var $pagethumb = Report.pagelist.find('#'+$page.attr('data-thumbid'));
+		/*
+		html2canvas($page.get(0),{
+			backgroundColor:'#FFF',
+			scale:0.25,
+			logging:false,
+		}).then(function(canvas) {
+			canvas.removeAttribute('style');
+			//$pagethumb.css('background-image','url("'+canvas.toDataURL()+'")');
+			///////////////////////////////////////////
+			graphic.post(canvas.toDataURL(), $page.attr('data-thumbid'), function(data){
+				var bgimg = document.createElement('img');
+				bgimg.onload = function(){ $pagethumb.css('background-image','url("'+data.src+'")'); }
+				bgimg.src = data.src;
+				$page.attr('data-thumbnail',data.src);
+				if (fillempty){
+					var $nextPage = $page.nextAll('.page:not([data-thumbnail]):eq(0)');
+					if ($nextPage.length) $nextPage.trigger('page:thumbnail',[true]);
+				}
+			},function(){
+				$.tipster.notify('Page thmbunail upload failed');
+			});
+			$page.removeClass('thumbing');
+			///////////////////////////////////////////
+		});
+		*/
+		$page.removeClass('thumbing'); // isso volta pra dentro do then do html2canvas
+	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -2042,6 +2127,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.trigger('document:validate');
 		Report.widget.trigger('field:input');
 		Report.document.find('.boxgroupconnector').remove();
+		Report.document.trigger('document:pagelist');
 	});
 	Report.document.on('document:boxcount',function(event){
 		var idx = 1;
@@ -2066,6 +2152,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			boxFitter.testPage();
 			Report.document.addClass('loaded');
 			Report.document.trigger('document:validate');
+			Report.document.trigger('document:pagelist');
 		}
 	});
 	Report.document.on('document:validate',function(){
@@ -2098,22 +2185,36 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('document:addpage',function(event,$new,$ref,placement){
 		$new.find('.page-actions').remove();
+		var didBoxBroken, $pageChange, $lastBoxgroupOnPrevPage, $firstBoxgroupOnNextPage, tipsterMsg = 'Page added between';
 		$new.removeAttr('id').css('opacity','0');
+		console.log($new,$ref,placement);
 		if ($ref){
+			$lastBoxgroupOnPrevPage = (placement == 'after') ? $ref.find('.content .fieldwrap[data-boxgroup]').last() : $ref.prev('.page').find('.content .fieldwrap[data-boxgroup]').last();
+			$firstBoxgroupOnNextPage = (placement == 'after') ? $ref.next('.page').find('.content .fieldwrap[data-boxgroup]').first() : $ref.find('.content .fieldwrap[data-boxgroup]').first();
 			if (placement == 'after'){
 				$new.insertAfter($ref);
 			} else if (placement == 'before'){
 				$new.insertBefore($ref);
+			} else {
+				Report.document.append($new);
 			}
 		} else {
 			Report.document.append($new);
+			tipsterMsg = 'Page added at the end';
+		}
+		if ($lastBoxgroupOnPrevPage && $lastBoxgroupOnPrevPage.length && $lastBoxgroupOnPrevPage.attr('data-boxgroup') === $firstBoxgroupOnNextPage.attr('data-boxgroup')){
+			boxFitter.unbreakBox(Report.document.find('.fieldwrap[data-boxgroup="'+$lastBoxgroupOnPrevPage.attr('data-boxgroup')+'"]'), true);
+			$pageChange = (placement == 'after') ? $ref : $new.prev('.page');
+			didBoxBroken = true;
+		} else {
+			$pageChange = $new;
 		}
 		$new.find('[data-edition]').trigger('edition:cleanmce');
-		Report.document.trigger('document:numpage');
 		$new.trigger('edition:init');
+		Report.document.trigger('document:change',[$pageChange]);
+		Report.document.trigger('document:numpage');
 		$new.trigger('page:active');
 		$new.trigger('page:scrollto');
-		Report.document.trigger('document:change',[$new]);
 		$new.velocity({
 			scale:[1,1.1],
 			opacity:[1,0]
@@ -2121,21 +2222,96 @@ sourceui.interface.widget.report = function($widget,setup){
 			easing: "ease-out",
 			duration:200,
 			complete: function(){
-				/** HISTORY STACK *****************************************************************************************************************************************************/
-				historyStack.push({
-					do:  	{ action:'addpage', page:$new, reference:$ref, placement:placement, scrolltop:Report.scroll.scrollTop(), label:'Page added again' },
-					undo: 	{ action:'removepage', page:$new, scrolltop:Report.scroll.scrollTop(), label:'Added page removed' },
-				});
-				/**********************************************************************************************************************************************************************/
+				if (!didBoxBroken){
+					/** HISTORY STACK *****************************************************************************************************************************************************/
+					historyStack.push({
+						do:  	{ action:'addpage', page:$new, reference:$ref, placement:placement, scrolltop:Report.scroll.scrollTop(), label:'Page added again' },
+						undo: 	{ action:'removepage', page:$new, scrolltop:Report.scroll.scrollTop(), label:'Added page removed' },
+					});
+					/**********************************************************************************************************************************************************************/
+				}
+				$.tipster.notify(tipsterMsg);
 			}
 		});
 	});
-	Report.document.on('document:numpage',function(event,$new,$ref,placement){
+	Report.document.on('document:numpage',function(event){
 		var $pages = Report.document.children('.page:visible');
 		$pages.each(function(){
 			var $page = $(this);
-			$page.find('[data-pagenumber] i').text($pages.index($page) + 1);
+			var pgindex = $pages.index($page) + 1;
+			$page.find('[data-pagenumber] i').text(pgindex);
 		});
+
+	});
+	/*
+	Report.document.on('document:pagelist',function(event){
+		Report.pagelist.html('');
+		var $pages = Report.document.children('.page');
+		$pages.each(function(){
+			var $page = $(this);
+			var pgindex = $pages.index($page) + 1;
+			var thumbid = $page.attr('data-thumbid') || $.md5(Math.rand()).substring(0, 16);
+			var $pagethumb = $('<div class="pagethumb" id="'+thumbid+'" data-page="'+pgindex+'" />');
+			var changeid = pageContentChangeId($page);
+			console.log(changeid,$page.attr('data-changeid'),changeid==$page.attr('data-changeid'));
+			if (changeid != $page.attr('data-changeid')){
+				$page.removeAttr('data-thumbnail');
+				$page.attr('data-changeid',changeid);
+			}
+			if ($page.attr('data-thumbnail')) $pagethumb.css('background-image','url("'+$page.attr('data-thumbnail')+'")');
+			$page.attr('data-thumbid',thumbid);
+			Report.pagelist.append($pagethumb);
+		});
+		var $thumbing = $pages.filter(':not([data-thumbnail]):not(.thumbing)');
+		$thumbing.addClass('thumbing');
+		$thumbing.filter(':eq(0)').trigger('page:thumbnail',[true]);
+	});
+	*/
+	Report.widget.on('click','.pagethumb',function(event){
+		var $thumb = $(this);
+		Report.scroll.scrollTo(Report.document.children('.page[data-thumbid="'+$thumb.attr('id')+'"]'),150,{ offset:{top:-50} });
+	});
+	Report.document.on('document:pagelist',function(event){
+		var $pages = Report.document.children('.page');
+		Report.pagelist.find('.pagethumb').each(function(){
+			var $thumb = $(this);
+			if (!$pages.filter('[data-thumbid="'+$thumb.attr('id')+'"]').length){
+				$thumb.remove();
+			}
+		});
+		$pages.each(function(){
+			var $page = $(this);
+			var thumbid = $page.attr('data-thumbid') || $.md5(Math.rand()).substring(0, 16);
+			var $pagethumb = Report.pagelist.find('#'+thumbid);
+			var pgindex = $pages.index($page) + 1;
+			if ($page.is(':visible')){
+				if (!$pagethumb.length){
+					$pagethumb = $('<div class="pagethumb" id="'+thumbid+'" data-page="'+pgindex+'" />');
+					if (pgindex === 1) Report.pagelist.prepend($pagethumb);
+					else Report.pagelist.find('.pagethumb:eq('+(pgindex-2)+')').after($pagethumb);
+				} else {
+					$pagethumb.attr('data-page',pgindex);
+				}
+				var changeid = pageContentChangeId($page);
+				//console.log(changeid,$page.attr('data-changeid'),changeid==$page.attr('data-changeid'));
+				if (changeid != $page.attr('data-changeid')){
+					$page.removeAttr('data-thumbnail');
+					$page.attr('data-changeid',changeid);
+					$pagethumb.css('background-image','');
+				}
+				if ($page.attr('data-thumbnail')){
+					$pagethumb.css('background-image','url("'+$page.attr('data-thumbnail')+'")');
+				}
+				$pagethumb.show();
+			} else {
+				$pagethumb.css('background-image','');
+				$pagethumb.hide();
+			}
+			$page.attr('data-thumbid',thumbid);
+		});
+		var $thumbing = $pages.filter(':not([data-thumbnail]):not(.thumbing)');
+		$thumbing.addClass('thumbing');
+		$thumbing.filter(':eq(0)').trigger('page:thumbnail',[true]);
 	});
 	Report.document.on('click',function(event){
 		Report.document.trigger('page:unactive');
@@ -2227,7 +2403,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ed.trigger('edition:nodechange',[e.target]);
 			});
 			editor.on('keydown', function (e) {
-				if (e.ctrlKey && e.keyCode != 86 && e.keyCode != 88) return true;
+				//if (e.ctrlKey && e.keyCode != 86 && e.keyCode != 88) return true;
 				$ed.addClass('contentchanged');
 				$ed.addClass('keyboarded');
 				$ed.trigger('edition:input');
@@ -2291,7 +2467,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		//powerpaste_allow_local_images: true,
 		//table_toolbar: '',
 		//table_resize_bars: false,
-		valid_elements: 'p[style|class],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],a[href|target],strong[style],b[style],ul[style],ol[style],li[style],span[style],em,br,mark',
+		valid_elements: 'p[style|class],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],a[href|target],strong[style],b[style],ul[style],ol[style],li[style],span[style],em,br,mark,bookmark[content|level]',
 		valid_styles: {
 			'h1': 'font-size,font-family,color,text-decoration,text-align',
 			'h2': 'font-size,font-family,color,text-decoration,text-align',

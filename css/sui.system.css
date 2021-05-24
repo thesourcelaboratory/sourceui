@@ -1177,7 +1177,7 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.report:first-of-type { border-bottom-color:#dbdbdb }
 .sui-widget.report > .area { height:100% !important; background:#e6e6e6; }
 .sui-widget.report > .area > .sui-report-document { height:100% !important; vertical-align:top; padding:0 3vw; overflow: hidden; }
-.sui-widget.report > .area > .sui-report-document > .page { background-color:#FFF; margin:6vh auto; box-shadow:0 6px 12px 0px rgba(0,0,0,0.1); color:#000000; font-family:'Arial','Helvetica'; font-size:12px; line-height:18px; display: flex; flex-direction: column; }
+.sui-widget.report > .area > .sui-report-document > .page { background-color:#FFF; margin:7vh auto; box-shadow:0 6px 12px 0px rgba(0,0,0,0.1); color:#000000; font-family:'Arial','Helvetica'; font-size:12px; line-height:18px; display: flex; flex-direction: column; }
 .sui-widget.report > .area > .sui-report-document > .page:first-child {margin-top:40px; }
 .sui-widget.report > .area > .sui-report-document > .page:last-child {margin-bottom:40px; }
 .sui-widget.report > .area > .sui-report-document > .page h1 { font-size:24px; }

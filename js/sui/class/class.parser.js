@@ -874,7 +874,7 @@ sourceui.templates.interface = new sourceui.Template({
 		},
 		report: {
 			document:
-				'<div class="sui-report-document @{paper}">@{child:content}</div>',
+				'<div class="sui-report-pagelist scroll-custom"></div><div class="sui-report-document @{paper}">@{child:content}</div>',
 			validations:
 				'<div class="sui-validations">@{child:content}</div>',
 			templates:
