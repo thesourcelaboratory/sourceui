@@ -254,6 +254,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							css['background-color'] = color;
 						} else if ($e.is('a,b,u,i,span')){
 							css['background-color'] = color;
+							if (dim.height > 1) css.opacity = 0.15;
 						}
 						if ($e.is('[style*="background-image"]')){
 							css['background-image'] = $e.css('background-image');
@@ -297,6 +298,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							css['background-color'] = color;
 						} else if ($e.is('a,b,u,i,span')){
 							css['background-color'] = color;
+							if (dim.height > 1) css.opacity = 0.2;
 						} else if ($e.is('p')){
 							css = $.extend(css,{'background-color':($e.text()===''?'transparent':$e.css('color')),height:dim.height-2});
 						}

@@ -326,10 +326,14 @@ propriedade data-link de um dado elemento.
 						} else {
 							if (dk == 'key') {
 								data.key = data.key || [];
-								if (v !== null && v !== '') data.key.push(v);
+								if (v !== null && v !== ''){
+									if (data.key.indexOf(v) < 0) data.key.push(v);
+								}
 							} else if (dk == 'owner') {
 								data.owner = data.owner || [];
-								if (v !== null && v !== '') data.owner.push(v);
+								if (v !== null && v !== ''){
+									if (data.owner.indexOf(v) < 0) data.owner.push(v);
+								}
 							} else if (dk == 'parentkey') {
 								if (v !== null && v !== '' && !data.parentkey) data.parentkey = v;
 							} else if (dk == 'seed') {
