@@ -122,7 +122,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	};
 	Variable.init();
 
-	var graphic = {
+	var Graphic = {
 		base64: function(url,callback,failback){
 			var xhr = new XMLHttpRequest();
 			xhr.onload = function() {
@@ -155,7 +155,238 @@ sourceui.interface.widget.report = function($widget,setup){
 				console.error('imgdataUploader FAIL',data);
 			});
 		}
-	}
+	};
+
+	var Thumbnail = {
+		current: {
+			page:null,
+			thumb:null,
+			offset:{top:0,left:0},
+			pageheader:null,
+			pagefooter:null
+		},
+		changeid: function($page){
+			var content = '';
+			$page.find('.block').each(function(){
+				var $this = $(this);
+				content += $this.html() + $this.attr('style') + $this.css('color');
+			});
+			content += $page.attr('data-background') + $page.attr('data-visible') + $page.attr('data-layout');
+			return $.md5(content);
+		},
+		spanwidth: function($elem){
+			var orig = {display:$elem.css('display'),width:$elem.css('width')};
+			$elem.css({display:'inline',width:'auto'});
+			var width = Math.round($elem.width()/10);
+			$elem.css({display:orig.display,width:orig.width});
+			return width;
+			/*
+			var width = 0;
+			var $span = $elem.html('<span>'+$elem.html()+'</span>').children('span');
+			width = Math.round($span.width()/10);
+			$elem.html($span.html());
+			return width;
+			*/
+		},
+		size: function($elem){
+			var w=$elem.outerWidth(), h=$elem.innerHeight();
+			return {width:Math.round(w/10), height:Math.round(h/10)};
+		},
+		dimensions: function($elem){
+			var top=0, left=0, w=$elem.outerWidth(), h=$elem.innerHeight();
+			var offset = $elem.offset();
+			//top = offset.top - Thumbnail.current.offset.top + parseInt($elem.css('margin-top'), 10);
+			//left = offset.left - Thumbnail.current.offset.left + parseInt($elem.css('margin-left'), 10);
+			top = offset.top - Thumbnail.current.offset.top;
+			left = offset.left - Thumbnail.current.offset.left;
+			return {top:top/10, left:left/10, width:Math.round(w/10), height:Math.round(h/10)};
+		},
+		dom: {
+			logo:function($mini,color){
+				$mini.append($('<div class="circle"/>').css({'border-color':color}));
+				$mini.append($('<div class="btg"/><div class="pactual"/>').css({'background-color':color}));
+			},
+			table:function($parent,$elem,type){
+				var $part = $elem.find('caption, tbody'), $c;
+				$part.each(function(){
+					var $p = $(this), bgcolor, border;
+					var dim = Thumbnail.size($p);
+					if ($p.is('caption')){
+						bgcolor = $p.css('background-color');
+					} else {
+						border = $p.find('tr:eq(0) td:eq(1)').css('background-color');
+						border = !border || border == 'rgba(0, 0, 0, 0)' ? $p.find('th:eq(0)').css('background-color') : border;
+						bgcolor = $p.find('tr:eq(1) td:eq(1)').css('background-color');
+						bgcolor = !bgcolor || bgcolor == 'rgba(0, 0, 0, 0)' ? $p.find('tr:eq(0)').css('background-color') : bgcolor;
+						$p.find('tr:eq(1) td[style*="background-color"]').each(function(){
+							var $h = $(this);
+							var dh = Thumbnail.dimensions($h);
+							var $hg = $('<div class="floater flt-highlitecol"/>').css({top:dh.top,left:dh.left,width:dh.width,height:dim.height,background:$h.css('background-color')});
+							$parent.after($hg);
+						});
+					}
+					$c = $('<div class="content cnt-'+$p.tag()+' '+$p.attr('class')+'"/>');
+					$c.css({width:dim.width,height:dim.height,'background-color':bgcolor,'border-color':border||bgcolor||''});
+					$parent.append($c);
+				});
+			},
+			floaters:function(f){
+				var $thumb = Thumbnail.current.thumb;
+				var $return = $('<pre>');
+				var $elems = typeof f.elements == 'string' ? Thumbnail.current.page.find(f.elements) : f.elements;
+				$elems.each(function(){
+					var $e = $(this);
+					var css = {};
+					var dim = Thumbnail.dimensions($e);
+					var classarray = ($e.attr('class')||'').split(' ');
+					var classname = classarray[0] !== $e.attr('data-name') ? classarray[0]+' '+($e.attr('data-name') || '' ) : classarray[0] || $e.attr('data-name');
+					if ($e.is('table')) {
+						var $floater = $('<div class="floater flt-table '+classname+'"/>');
+					} else {
+						var $floater = $('<div class="floater flt-'+$e.tag()+' '+classname+'" />');
+						var color = $e.css('color')||'inherit';
+						if ($e.is('.logo')){
+							Thumbnail.dom.logo($floater,color);
+						} else if ($e.is('.cover')){
+							css['background'] = $e.css('background');
+						} else if (f.spanwidth && $e.is(f.spanwidth)){
+							dim.width = Thumbnail.spanwidth($e);
+							css['background-color'] = color;
+						} else if ($e.is('a,b,u,i,span')){
+							css['background-color'] = color;
+						}
+						if ($e.is('[style*="background-image"]')){
+							css['background-image'] = $e.css('background-image');
+						} else if ($e.is('[src]')){
+							css['background-image'] = 'url("'+$e.attr('src')+'")';
+						}
+					}
+					$floater.css($.extend({top:dim.top,left:dim.left,width:dim.width,height:dim.height},css));
+					$thumb.append($floater);
+					$return.append($floater.clone());
+					if (f.contents){
+						$.each(f.contents,function(k,c){
+							if ($e.is(k)){
+								Thumbnail.dom.contents($floater, {
+									elements:$e.find(c.elements),
+									spanwidth:c.spanwidth,
+								});
+								return false;
+							}
+						});
+					}
+				});
+				return $return;
+			},
+			contents:function($floater,c){
+				var $elems = typeof c.elements == 'string' ? Thumbnail.current.page.find(c.elements) : c.elements;
+				$elems.each(function(){
+					var $e = $(this);
+					var $c;
+					var css = {};
+					if ($e.is('table')) {
+						Thumbnail.dom.table($floater,$e);
+					} else {
+						var dim = Thumbnail.size($e);
+						var classarray = ($e.attr('class')||'').split(' ');
+						var classname = classarray[0] !== $e.attr('data-name') ? classarray[0]+' '+($e.attr('data-name') || '' ) : classarray[0] || $e.attr('data-name');
+						$c = $('<div class="content cnt-'+$e.tag()+' '+classname+'"/>');
+						var color = $e.css('color')||'inherit';
+						if (c.spanwidth && $e.is(c.spanwidth)){
+							dim.width = Thumbnail.spanwidth($e);
+							css['background-color'] = color;
+						} else if ($e.is('a,b,u,i,span')){
+							css['background-color'] = color;
+						} else if ($e.is('p')){
+							css = $.extend(css,{'background-color':($e.text()===''?'transparent':$e.css('color')),height:dim.height-2});
+						}
+						if ($e.is('[style*="background-image"]')){
+							css['background-image'] = $e.css('background-image');
+						} else if ($e.is('[src]')){
+							css['background-image'] = 'url("'+$e.attr('src')+'")';
+						}
+						$c.css($.extend({width:dim.width,height:dim.height},css));
+						$floater.append($c);
+					}
+				});
+			},
+			fullcovered: function(){
+				var $page = Thumbnail.current.page;
+				var $thumb = Thumbnail.current.thumb;
+				$thumb.removeClass('covered-default splited');
+				$thumb.addClass('fullcovered');
+				if ($page.css('background-image') != $thumb.css('background-image')) $thumb.css('background-image', $page.css('background-image'));
+				Thumbnail.dom.floaters({
+					elements:'.logo, .documentLabel, .documentSublabel, .info p, .reportName',
+					spanwidth:'.documentLabel, .documentSublabel, p, .reportName',
+				});
+			},
+			covereddefault: function(){
+				Thumbnail.current.thumb.removeClass('fullcovered splited');
+				Thumbnail.current.thumb.addClass('covered-default');
+				Thumbnail.dom.floaters({
+					elements:'.cover, .cover .logo, .cover .documentLabel, .cover .documentSublabel, .cover .info p, .cover .reportName:last, i.flag',
+					spanwidth:'.documentLabel, .documentSublabel, p, .reportName',
+				});
+				Thumbnail.dom.floaters({
+					elements:'.main .reportTitle, .main .reportSummary, .main .block[data-edition], .main .block a[href], .main .block span[data-mce-style], .main img',
+					spanwidth:'.main .reportTitle',
+					contents: {
+						'.block[data-edition]':{
+							elements:'h1,h2,h3,h4,h5,p,table',
+							spanwidth:'h1,h2,h3,h4',
+						}
+					}
+				});
+			},
+			splited : function(){
+				Thumbnail.current.thumb.removeClass('fullcovered covered-default');
+				Thumbnail.current.thumb.addClass('splited');
+				if (Thumbnail.current.pageheader){
+					Thumbnail.current.thumb.append(Thumbnail.current.pageheader.html());
+				} else {
+					Thumbnail.current.pageheader = Thumbnail.dom.floaters({
+						elements:'.header, .header .autofilltitle, .header [data-autofill="documentType"], .header [data-autofill="documentDate"], .header [data-autofill="documentLabel"], .header [data-autofill="documentSublabel"]',
+						spanwidth:'.autofilltitle, [data-autofill="documentDate"], [data-autofill="documentType"], [data-autofill="documentLabel"], [data-autofill="documentSublabel"]',
+					});
+				}
+				Thumbnail.dom.floaters({
+					elements:'.main .block[data-edition]:not(.company-profile), .main .block a[href], .main .block span[data-mce-style], .company-profile, .company-profile .ratios, .main img',
+					spanwidth:'.main .reportTitle',
+					contents: {
+						'.block[data-edition]:not(.company-profile)':{
+							elements:'h1,h2,h3,h4,h5,p,table',
+							spanwidth:'h1,h2,h3,h4',
+						},
+						'.company-profile':{
+							elements:'h1,h2,h3,h4,.infos',
+							spanwidth:'h1,h2,h3,h4,.infos',
+						},
+						'.ratios':{
+							elements:'h5,table',
+						},
+					}
+				});
+				if (Thumbnail.current.pagefooter){
+					Thumbnail.current.thumb.append(Thumbnail.current.pagefooter.html());
+				} else {
+					Thumbnail.current.pagefooter = Thumbnail.dom.floaters({
+						elements:'.footer, .footer .reportName, .footer .cell.right',
+						spanwidth:'.reportName, .right',
+					});
+				}
+			}
+		},
+		parse : function($page,$thumb){
+			$thumb.html('');
+			Thumbnail.current.page = $page;
+			Thumbnail.current.thumb = $thumb;
+			Thumbnail.current.offset = $page.offset();
+			if ($page.is('.fullcovered')) Thumbnail.dom.fullcovered();
+			if ($page.is('.covered-default')) Thumbnail.dom.covereddefault();
+			if ($page.is('.splited')) Thumbnail.dom.splited();
+		},
+	};
 
 	var pageContentChangeId = function($page){
 		var content = '';
@@ -444,7 +675,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 
 				$clonewrap.after($boxNextAll);
-				$page.trigger('click');
+				$page.trigger('page:active');
 			}
 			$box.removeClass('overflew toolarge unbroken');
 		},
@@ -770,7 +1001,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $page = $drop[1];
 					if ($allmoving.filter('.fieldwrap, .container').length){
 						if ($page && $page.length && $page.is('.page')){
-							$page.trigger('click');
+							$page.trigger('page:active');
 							var $hascol = $drop[key].closest('.col');
 							if ($hascol.length){
 								if ($allmoving.filter('.container').length){
@@ -802,8 +1033,8 @@ sourceui.interface.widget.report = function($widget,setup){
 							}
 						}
 					} else if ($allmoving.filter('.page').length){
-						if ($page && $page.length && $page.is('.page')) $page.trigger('click').after($allmoving);
-						else if ($page && $page.length && $page.is('.pagedropper')) $page.trigger('click').parent().before($allmoving);
+						if ($page && $page.length && $page.is('.page')) $page.trigger('page:active').after($allmoving);
+						else if ($page && $page.length && $page.is('.pagedropper')) $page.trigger('page:active').parent().before($allmoving);
 					}
 					$allmoving.removeClass('clipboardmoved');
 					$a.addClass('empty').find('mark').text('0');
@@ -813,7 +1044,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			} else if ($a.hasClass('add-container')){
 				var $page = $drop[1];
 				if ($page && $page.length && $page.is('.page')){
-					$page.trigger('click');
+					$page.trigger('page:active');
 					$clone = Report.templates.children('.container').clone();
 					if (!$clone.length){
 						$.tipster.notify('There\'s no container template');
@@ -960,6 +1191,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (offset.top + height > windowHeight) $toolsPage.addClass('up');
 		else $toolsPage.removeClass('up');
 	});
+	$toolsPage.on('click',function(event){
+		event.stopPropagation();
+	});
 	$toolsPage.on('click','.clone a',function(){
 		var $page = $toolsPage.parent();
 		var $clone = $page.clone();
@@ -992,7 +1226,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$page.css('background-image','url("'+reader.result+'")');
 					$page.attr('data-background',reader.result);
 					///////////////////////////////////////////
-					graphic.post(reader.result, null, function(data){
+					Graphic.post(reader.result, null, function(data){
 						var bgimg = document.createElement('img');
 						bgimg.onload = function(){ $page.css('background-image','url("'+data.src+'")'); }
 						bgimg.src = data.src;
@@ -1216,7 +1450,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$spot.find(':not(img)').remove();
 				$spot.append($img);
 				///////////////////////////////////////////
-				graphic.post(reader.result, null, function(data){
+				Graphic.post(reader.result, null, function(data){
 					$img.attr('src',data.src);
 					Report.document.trigger('document:change',[$page]);
 					$.tipster.notify('Image auto uploaded');
@@ -1725,6 +1959,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							undo: { action:'positionedition', edition:$this, fieldwrap:$target, position:oldposition, scrolltop:Report.scroll.scrollTop(), label:'Box repositioned' }
 						});
 						/**********************************************************************************************************************************************************************/
+						Report.document.trigger('document:change',[$page]);
 					}
 				});
 				$this.addClass('has-draggable');
@@ -1839,8 +2074,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		$imgs.each(function(){
 			var $img = $(this).addClass('uploading');
 			/////////////////////////////////////////////////
-			graphic.base64($img.attr('src'),function(base64){
-				graphic.post(base64, null, function(data){
+			Graphic.base64($img.attr('src'),function(base64){
+				Graphic.post(base64, null, function(data){
 					$img.attr('src',data.src);
 					$img.removeClass('uploading');
 					$.tipster.notify('Image auto uploaded');
@@ -1856,7 +2091,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$imgs.each(function(){
 			var $img = $(this).addClass('uploading');
 			/////////////////////////////////////////////////
-			graphic.post($img.attr('src'), null, function(data){
+			Graphic.post($img.attr('src'), null, function(data){
 				$img.attr('src',data.src);
 				$img.removeClass('uploading');
 				$.tipster.notify('Image auto uploaded');
@@ -2070,7 +2305,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 		/**********************************************************************************************************************************************************************/
 	});
-	Report.document.on('page:active','.page',function(){
+	Report.document.on('page:active','.page',function(event){
 		var $this = $(this);
 		Report.document.trigger('page:unactive');
 		$this.addClass('active');
@@ -2082,35 +2317,15 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.find('.fieldlink').remove();
 		Report.document.find('.boxgroupconnector').remove();
 	});
-	Report.document.on('page:thumbnail','.page',function(event,fillempty){
+	Report.document.on('page:thumbnail','.page',function(event){
 		var $page = $(this);
-		var $pagethumb = Report.pagelist.find('#'+$page.attr('data-thumbid'));
-		/*
-		html2canvas($page.get(0),{
-			backgroundColor:'#FFF',
-			scale:0.25,
-			logging:false,
-		}).then(function(canvas) {
-			canvas.removeAttribute('style');
-			//$pagethumb.css('background-image','url("'+canvas.toDataURL()+'")');
-			///////////////////////////////////////////
-			graphic.post(canvas.toDataURL(), $page.attr('data-thumbid'), function(data){
-				var bgimg = document.createElement('img');
-				bgimg.onload = function(){ $pagethumb.css('background-image','url("'+data.src+'")'); }
-				bgimg.src = data.src;
-				$page.attr('data-thumbnail',data.src);
-				if (fillempty){
-					var $nextPage = $page.nextAll('.page:not([data-thumbnail]):eq(0)');
-					if ($nextPage.length) $nextPage.trigger('page:thumbnail',[true]);
-				}
-			},function(){
-				$.tipster.notify('Page thmbunail upload failed');
-			});
+		if ($page.hasClass('thumbing')){
+			var $pagethumb = Report.pagelist.find('#'+$page.attr('data-thumbid'));
+			//////////////////////////////////
+			Thumbnail.parse($page,$pagethumb);
+			//////////////////////////////////
 			$page.removeClass('thumbing');
-			///////////////////////////////////////////
-		});
-		*/
-		$page.removeClass('thumbing'); // isso volta pra dentro do then do html2canvas
+		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2152,7 +2367,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			boxFitter.testPage();
 			Report.document.addClass('loaded');
 			Report.document.trigger('document:validate');
-			Report.document.trigger('document:pagelist');
+			setTimeout(function(){
+				Report.document.trigger('document:pagelist',['forceChange']);
+			},100);
 		}
 	});
 	Report.document.on('document:validate',function(){
@@ -2187,7 +2404,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$new.find('.page-actions').remove();
 		var didBoxBroken, $pageChange, $lastBoxgroupOnPrevPage, $firstBoxgroupOnNextPage, tipsterMsg = 'Page added between';
 		$new.removeAttr('id').css('opacity','0');
-		console.log($new,$ref,placement);
+		//console.log($new,$ref,placement);
 		if ($ref){
 			$lastBoxgroupOnPrevPage = (placement == 'after') ? $ref.find('.content .fieldwrap[data-boxgroup]').last() : $ref.prev('.page').find('.content .fieldwrap[data-boxgroup]').last();
 			$firstBoxgroupOnNextPage = (placement == 'after') ? $ref.next('.page').find('.content .fieldwrap[data-boxgroup]').first() : $ref.find('.content .fieldwrap[data-boxgroup]').first();
@@ -2243,75 +2460,54 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 
 	});
-	/*
-	Report.document.on('document:pagelist',function(event){
-		Report.pagelist.html('');
-		var $pages = Report.document.children('.page');
-		$pages.each(function(){
-			var $page = $(this);
-			var pgindex = $pages.index($page) + 1;
-			var thumbid = $page.attr('data-thumbid') || $.md5(Math.rand()).substring(0, 16);
-			var $pagethumb = $('<div class="pagethumb" id="'+thumbid+'" data-page="'+pgindex+'" />');
-			var changeid = pageContentChangeId($page);
-			console.log(changeid,$page.attr('data-changeid'),changeid==$page.attr('data-changeid'));
-			if (changeid != $page.attr('data-changeid')){
-				$page.removeAttr('data-thumbnail');
-				$page.attr('data-changeid',changeid);
-			}
-			if ($page.attr('data-thumbnail')) $pagethumb.css('background-image','url("'+$page.attr('data-thumbnail')+'")');
-			$page.attr('data-thumbid',thumbid);
-			Report.pagelist.append($pagethumb);
-		});
-		var $thumbing = $pages.filter(':not([data-thumbnail]):not(.thumbing)');
-		$thumbing.addClass('thumbing');
-		$thumbing.filter(':eq(0)').trigger('page:thumbnail',[true]);
-	});
-	*/
 	Report.widget.on('click','.pagethumb',function(event){
-		var $thumb = $(this);
-		Report.scroll.scrollTo(Report.document.children('.page[data-thumbid="'+$thumb.attr('id')+'"]'),150,{ offset:{top:-50} });
+		Report.pagelist.find('.selected').removeClass('selected');
+		var $thumb = $(this).addClass('selected');
+		var $page = Report.document.children('.page[data-thumbid="'+$thumb.attr('id')+'"]');
+		Report.scroll.scrollTo($page,180,{ offset:{top:-40} });
+		$page.trigger('page:active',['preventScrollThumb']);
 	});
-	Report.document.on('document:pagelist',function(event){
+	Report.document.on('document:pagelist',function(event,forceChange){
 		var $pages = Report.document.children('.page');
 		Report.pagelist.find('.pagethumb').each(function(){
 			var $thumb = $(this);
-			if (!$pages.filter('[data-thumbid="'+$thumb.attr('id')+'"]').length){
+			if ($thumb.attr('id') && !$pages.filter('[data-thumbid="'+$thumb.attr('id')+'"]').length){
 				$thumb.remove();
 			}
 		});
-		$pages.each(function(){
+		$pages.filter(':not(:visible)').each(function(){
+			var $page = $(this);
+			var thumbid = $page.attr('data-thumbid');
+			if (thumbid){
+				var $pagethumb = Report.pagelist.find('#'+thumbid);
+				$pagethumb.remove();
+			}
+		});
+		var $pagesVisibles = $pages.filter(':visible');
+		$pagesVisibles.filter(':visible').each(function(event){
 			var $page = $(this);
 			var thumbid = $page.attr('data-thumbid') || $.md5(Math.rand()).substring(0, 16);
 			var $pagethumb = Report.pagelist.find('#'+thumbid);
-			var pgindex = $pages.index($page) + 1;
-			if ($page.is(':visible')){
-				if (!$pagethumb.length){
-					$pagethumb = $('<div class="pagethumb" id="'+thumbid+'" data-page="'+pgindex+'" />');
-					if (pgindex === 1) Report.pagelist.prepend($pagethumb);
-					else Report.pagelist.find('.pagethumb:eq('+(pgindex-2)+')').after($pagethumb);
-				} else {
-					$pagethumb.attr('data-page',pgindex);
-				}
-				var changeid = pageContentChangeId($page);
-				//console.log(changeid,$page.attr('data-changeid'),changeid==$page.attr('data-changeid'));
-				if (changeid != $page.attr('data-changeid')){
-					$page.removeAttr('data-thumbnail');
-					$page.attr('data-changeid',changeid);
-					$pagethumb.css('background-image','');
-				}
-				if ($page.attr('data-thumbnail')){
-					$pagethumb.css('background-image','url("'+$page.attr('data-thumbnail')+'")');
-				}
-				$pagethumb.show();
+			var pgindex = $pagesVisibles.index($page) + 1;
+			if (!$pagethumb.length){
+				$pagethumb = $('<div class="pagethumb" id="'+thumbid+'" data-page="'+pgindex+'" />');
+				if (pgindex === 1) Report.pagelist.prepend($pagethumb);
+				else Report.pagelist.find('.pagethumb:eq('+(pgindex-2)+')').after($pagethumb);
 			} else {
-				$pagethumb.css('background-image','');
-				$pagethumb.hide();
+				$pagethumb.attr('data-page',pgindex);
 			}
+			$page.addClass('thumbing');
 			$page.attr('data-thumbid',thumbid);
+			$pagethumb.css('background-image','');
+			$pagethumb.show();
+			var changeid = Thumbnail.changeid($page);
+			if (forceChange || changeid !== $page.attr('data-changeid')){
+				/////////////////////////////////////
+				$page.trigger('page:thumbnail');
+				/////////////////////////////////////
+				$page.attr('data-changeid',changeid);
+			}
 		});
-		var $thumbing = $pages.filter(':not([data-thumbnail]):not(.thumbing)');
-		$thumbing.addClass('thumbing');
-		$thumbing.filter(':eq(0)').trigger('page:thumbnail',[true]);
 	});
 	Report.document.on('click',function(event){
 		Report.document.trigger('page:unactive');
@@ -2319,7 +2515,12 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('click','.page',function(event){
 		event.stopPropagation();
-		$(this).trigger('page:active');
+		var $this = $(this);
+		var $thumb = Report.pagelist.find('#'+$this.attr('data-thumbid'));
+		Report.pagelist.find('.selected').removeClass('selected');
+		$thumb.addClass('selected');
+		if ($thumb.length) Report.pagelist.scrollTo($thumb,{ offset:{top:-15} });
+		$this.trigger('page:active');
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2855,7 +3056,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			variables: function($elem){
 				var $var = wdata.aux.strXQ('<var>'+$elem.text()+'</var>');
 				wdata.aux.parseAttr($var,$elem,/name|value|data\-/);
-				Report.wgdata[$var.attr('name')||$var.attr('id')] = $var.attr('value')||$var.text();
+				var value = $.trim($var.attr('value')||$var.text());
+				if ((value+'').indexOf('[') === 0) value = JSON.parse(value);
+				Report.wgdata[$var.attr('name')||$var.attr('id')] = value;
 				return wdata.aux.xqString($var);
 			},
 			getAll: function(){
