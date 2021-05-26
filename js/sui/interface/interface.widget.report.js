@@ -2402,7 +2402,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('document:addpage',function(event,$new,$ref,placement){
 		$new.find('.page-actions').remove();
-		var didBoxBroken, $pageChange, $lastBoxgroupOnPrevPage, $firstBoxgroupOnNextPage, tipsterMsg = 'Page added between';
+		var didBoxBroken, $pageChange, $lastBoxgroupOnPrevPage, $firstBoxgroupOnNextPage, tipsterMsg;
 		$new.removeAttr('id').css('opacity','0');
 		//console.log($new,$ref,placement);
 		if ($ref){
@@ -2447,7 +2447,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					});
 					/**********************************************************************************************************************************************************************/
 				}
-				$.tipster.notify(tipsterMsg);
+				if (tipsterMsg) $.tipster.notify(tipsterMsg);
 			}
 		});
 	});
