@@ -1018,7 +1018,7 @@ sourceui.Network = function () {
 						if (typeof v != 'string') return false;
 						var $t;
 						var $orig = setup.caller || setup.element;
-						if ($orig) $orig = $orig.closest('.sui-view, .sui-sector');
+						if ($orig) $orig = $orig.closest('.sui-fieldset, .sui-widget, .sui-view, .sui-sector');
 						if (v.indexOf('#') > -1) {
 							$t = $(v);
 						} else if (v.indexOf('@') > -1) {
@@ -2033,7 +2033,6 @@ sourceui.Network = function () {
 					data.link.filter = (typeof data.link.filter != 'string') ? JSON.stringify(data.link.filter) : data.link.filter;
 				}
 			}
-
 			return Template.get('panel', 'aside', 'nav', 'item', {
 				attr: { id: data.id },
 				data: { status: data.status, link: data.link },
@@ -2043,7 +2042,7 @@ sourceui.Network = function () {
 				hasimage: data.image ? 'has-image' : '',
 				hasavatar: data.avatar ? 'has-avatar' : '',
 				class: { icon: data.icon, status: data.status },
-				child: { labels: htmlLabels }
+				child: { labels: htmlLabels, subitems:'' }
 			});
 		};
 		this.emit = function (event, data, id) {

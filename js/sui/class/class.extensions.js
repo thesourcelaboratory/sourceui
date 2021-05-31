@@ -113,7 +113,7 @@ Extensor do método de expressão de seltor de jquery que retorna todos os eleme
 		$.each(topper, function (k, t) {
 			if (t.length) {
 				if (selector.indexOf('@') === 0) {
-					if (type == 'field') collection = t.find('.sui-field[data-name="' + selector.substring(1) + '"]');
+					if (type == 'field') collection = t.find('.sui-field[data-name*="' + selector.substring(1) + '"]');
 				} else {
 					collection = t.find(selector);
 				}

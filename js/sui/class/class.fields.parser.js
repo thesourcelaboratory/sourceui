@@ -565,12 +565,13 @@ sourceui.parserField = function (element, setup) {
 					vars += Template.get('vars', { type: 'json', value: setup.json });
 				}
 				if (!setup.label) setup.class += ' no-label';
+				setup.initval = (setup.value+'').search(/\"|\</g) > -1 ? $('<pre>'+setup.value+'</pre>').text() : setup.value;
 				return Template.get('field', tpl.field, {
 					id: setup.id,
 					class: setup.class + (setup.list && setup.list.selected && setup.list.selected.length > 0 ? ' selected' : '') + (setup.help ? ' helped' : ''),
 					data: $.extend(setup.data || {}, {
 						name: setup.name,
-						initval: setup.value,
+						initval: setup.initval,
 						type: setup.type,
 						mode: setup.mode,
 						orient: setup.orient,

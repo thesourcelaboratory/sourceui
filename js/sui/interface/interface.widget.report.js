@@ -180,13 +180,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			var width = Math.round($elem.width()/10);
 			$elem.css({display:orig.display,width:orig.width});
 			return width;
-			/*
-			var width = 0;
-			var $span = $elem.html('<span>'+$elem.html()+'</span>').children('span');
-			width = Math.round($span.width()/10);
-			$elem.html($span.html());
-			return width;
-			*/
 		},
 		size: function($elem){
 			var w=$elem.outerWidth(), h=$elem.innerHeight();
@@ -195,8 +188,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		dimensions: function($elem){
 			var top=0, left=0, w=$elem.outerWidth(), h=$elem.innerHeight();
 			var offset = $elem.offset();
-			//top = offset.top - Thumbnail.current.offset.top + parseInt($elem.css('margin-top'), 10);
-			//left = offset.left - Thumbnail.current.offset.left + parseInt($elem.css('margin-left'), 10);
 			top = offset.top - Thumbnail.current.offset.top;
 			left = offset.left - Thumbnail.current.offset.left;
 			return {top:top/10, left:left/10, width:Math.round(w/10), height:Math.round(h/10)};
@@ -408,14 +399,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		stack: [],
 		push: function(setup){
 			if (Report.document.hasClass('preventhistorystack')) return false;
-			/*
-			if (historyStack.stack.length > 0){
-				var sliced = historyStack.stack.slice(0,historyStack.pointer);
-				var sliced = sliced.slice(-20);
-			} else {
-				var sliced = historyStack.stack;
-			}
-			*/
 			var sliced = historyStack.stack.slice(0,historyStack.pointer+1);
 			sliced = sliced.slice(-20);
 			historyStack.stack = sliced || [];
@@ -640,8 +623,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			___cnsl.log('breakBox','contentNew',$contentNew.get(0));
 			var contentNew = $contentNew.html();
 			if (contentNew){
-
-				//var $cloneedition = Report.templates.children('[data-edition="'+$edition.data('edition')+'"]').clone();
 				var $cloneedition = $edition.clone().html('');
 				$cloneedition.html(contentNew);
 
@@ -783,9 +764,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height();
 			var ret;
 
-			//strapolateWidth = $box.outerWidth(true) > edgeWidth;
-			//if (strapolateWidth) ret = 1;
-
 			strapolateHeight = $box.outerHeight(true) > edgeHeight;
 			if (strapolateHeight) ret = 2;
 
@@ -803,14 +781,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			} else {
 				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height();
 			}
-
-			/*
-			strapolateWidth = boxPos.left > edgeWidth;
-			if (strapolateWidth) return 1;
-			strapolateWidth = (boxPos.left + $box.outerWidth(true)) > edgeWidth;
-			if (strapolateWidth) return 2;
-			*/
-
 			strapolateHeight = boxPos.top > edgeHeight;
 			if (strapolateHeight) return 3;
 			strapolateHeight = (boxPos.top + $box.outerHeight(true)) > edgeHeight;
@@ -1141,6 +1111,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 
+	/*
 	Report.wgtools.filter('.bottom').find('.zoom-in').on('click',function(){
 		Report.document.trigger('panzoom:in');
 	});
@@ -1155,6 +1126,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.wgtools.filter('.bottom').find('.zoom-out').on('click',function(){
 		Report.document.trigger('panzoom:out');
 	});
+	*/
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1520,6 +1492,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 
 	// PanZoom Events ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	/*
 	Report.document.on('panzoom:init',function(event){
 		var instance = Report.document.data('panzoom');
 		if (!instance){
@@ -1543,7 +1516,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					var shouldIgnore = !e.ctrlKey;
 					return shouldIgnore;
 				},
-				filterKey: function(/* e, dx, dy, dz */) {
+				filterKey: function(/* e, dx, dy, dz *//*) {
 					return true;
 				}
 			});
@@ -1582,6 +1555,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			else Report.document.trigger('panzoom:in');
 		}
 	});
+	*/
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1658,77 +1632,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.trigger('document:change',[$page]);
 		}
 	});
-	/*
-	Report.document.on('mousedown','.container',function(event){
-		event.stopPropagation();
-		var $this = $(this).trigger('container:active');
-	});
-	Report.document.on('mousedown','.container .col',function(event){
-		var $this = $(this).addClass('marked-startrange');
-		var $ctn = $this.closest('.container').addClass('ranged');
-	});
-	Report.document.on('mousemove','.container .col',function(event){
-		var $this = $(this);
-		var $ctn = $this.closest('.container');
-		if ($ctn.is('.ranged')){
-			if (!$this.is('.marked-startrange, .startrange')){
-				if (Mouse.distance(event,$this.data('enterAxis')) > 30){
-					$this.addClass('midrange');
-				} else {
-					$this.removeClass('midrange');
-				}
-				$ctn.trigger('container:selectrange');
-			}
-		}
-	});
-	Report.document.on('mouseleave','.container .col',function(event){
-		var $this = $(this);
-		var $ctn = $this.closest('.container');
-		if ($ctn.is('.ranged')){
-			if ($this.hasClass('marked-startrange')){
-				$this.removeClass('marked-startrange');
-				$this.addClass('startrange');
-			}
-		}
-	});
-	Report.document.on('mouseenter','.container .col',function(event){
-		var $this = $(this);
-		var $ctn = $this.closest('.container');
-		if ($ctn.is('.ranged')){
-			if (!$this.is('.marked-startrange, .startrange')){
-				$this.data('enterAxis',Mouse.axis(event,$this));
-			}
-		}
-	});
-	Report.document.on('mouseup','.container .col',function(event){
-		var $this = $(this);
-		var $ctn = $this.closest('.container');
-		if ($ctn.is('.ranged')){
-			if ($this.is('.marked-startrange, .startrange')){
-				$this.removeClass('marked-startrange startrange');
-			} else if ($this.hasClass('midrange')) {
-				$this.addClass('endrange');
-				$ctn.trigger('container:selectrange');
-			}
-			$ctn.removeClass('ranged');
-		}
-	});
-	Report.document.on('container:selectrange','.container',function(event){
-		var $ctn = $(this);
-		var $startcol = $ctn.find('.col.startrange');
-		var $startline = $startcol.panret();
-		var idxstartcol = $startline.find('.col').index($startcol);
-		var $endcol = $ctn.find('.col.endrange');
-		var $endline = $endcol.panret();
-		var idxendcol = $endline.find('.col').index($endcol);
-		var idx = 0, selected = false;
-		$startline.find('.col').each(function(){
-			if (idx >= idxstartcol || idx >= idxendcol) selected = true;
-			if (selected) $(this).addClass('selected');
-			idx++;
-		});
-	});
-	*/
 	Report.document.on('container:addcolumn','.container',function(event){
 		var $ctn = $(this);
 		$ctn.find('.col:last-of-type').css('width','').after('<td class="col"/>');
@@ -1871,11 +1774,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $e = $(this);
 				var $autofill = Report.area.find('[data-autofill="'+$e.data('autofill')+'"]');
 				$autofill.html($e.text());
-				/*
-				$autofill.filter('[data-edition="text"]').text($e.text());
-				$autofill.filter('[data-edition="plaintext"],[data-edition="tinytext"],[data-edition="richtext"],[data-edition="graphic"]').html($e.text());
-				$autofill.filter(':not([data-edition])').html($e.text());
-				*/
 				if ($e.text()) $autofill.removeClass('empty-content');
 			});
 			var $indexers = Report.document.find('[data-indexer]');
@@ -2121,24 +2019,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $node = $(node);
 		var $toolroot = $('#tinymceinlinetoolbar .mce-tinymce-inline:visible');
-		/*
-		if ($node.is('table')){
-			$toolroot.find('.mce-btn-group:eq(2) .mce-btn:eq(0), .mce-btn-group:eq(2) .mce-btn:eq(3), .mce-btn-group:eq(4), .mce-btn-group:eq(6), .mce-btn-group:gt(9)').hide();
-			$toolroot.find('.mce-btn-group:eq(2), .mce-btn-group:eq(2) .mce-btn:eq(4), .mce-btn-group:eq(7), .mce-btn-group:eq(8), .mce-btn-group:eq(9)').show();
-		} else if ($node.is('img')){
-			$toolroot.find('.mce-btn-group:eq(2), .mce-btn-group:eq(4), .mce-btn-group:gt(5)').hide();
-			$toolroot.find('.mce-btn-group:gt(9)').show();
-		} else {
-			if (!$node.is('[data-edition]')){
-				$node = $node.closest('table, img', $this);
-				if ($node.length){
-					return $this.trigger('edition:nodechange',$node);
-				}
-			}
-			$toolroot.find('.mce-btn-group:eq(2) .mce-btn:eq(4), .mce-btn-group:gt(6)').hide();
-			$toolroot.find('.mce-btn-group:eq(2), .mce-btn-group:eq(2) .mce-btn:eq(0), .mce-btn-group:eq(2) .mce-btn:eq(3), .mce-btn-group:eq(4), .mce-btn-group:eq(6)').show();
-		}
-		*/
 		$toolroot.addClass('adapted');
 	});
 	Report.document.on('edition:remove','[data-edition]',function(event){

@@ -193,6 +193,7 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-nav > .area > .block > .wrap > .name:before { margin:-2px 4px 0 0; opacity:0.35; }
 .sui-nav > .area > .block > .wrap > .name.icon-firebase:before { margin-top:-6px; }
 .sui-nav.navigation > .area > .block > .wrap > .name { text-align:left; background:none; border:none; letter-spacing: -0.5px; font-family:var(--font-special); }
+.sui-nav.notifications .blocklist { display:none !important; }
 
 .sui-nav .group ol { margin:0; padding:0; list-style:none; }
 .sui-nav .group ol { max-height:2000px; transition: all 250ms ease-in-out; }
