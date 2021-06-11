@@ -61,6 +61,10 @@ sourceui.Network = function () {
 		mode: 'State',
 		title: 'Current service state'
 	});
+	Debug.create('JS', {
+		mode: 'Local',
+		title: 'Javascript Local Output'
+	});
 
 	if (this.online) {
 		$('#suiBody').removeClass('offline');

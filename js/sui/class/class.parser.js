@@ -94,7 +94,7 @@ sourceui.templates.interface = new sourceui.Template({
 		group:
 			'<ol@{class}@{data}>@{child:buttons}</ol><u></u>',
 		button:
-			'<li class="sn @{class:prop} @{class:float} @{data:alias} @{class:subicon}"@{style}><a class="@{action:exec} @{class:icon} @{class:type} @{class:option}"@{data}@{attr}>@{label:name}@{child:list}@{child:code}</a></li>',
+			'<li class="sn @{class:prop} @{class:float} @{data:alias} @{class:subicon}"@{style} data-tip="@{tip:text}"><a class="@{action:exec} @{class:icon} @{class:type} @{class:option}"@{data}@{attr}>@{label:name}@{child:list}@{child:code}</a></li>',
 		more:
 			'<div class="more icon-more-vert"></div>'
 
@@ -449,7 +449,7 @@ sourceui.templates.interface = new sourceui.Template({
 	Template utilizado para criação do container de conteúdo (setor terciário), que vai dentro das views (setores secundários).
 	---------------------------
 	*/
-	content: '<div class="sui-content @{class:scroll} @{class:prop}">@{child:content}</div>',
+	content: '<div class="sui-content @{class:scroll} @{class:prop}"@{style}>@{child:content}</div>',
 	/*
 	---------------------------
 	Template.libw.content
@@ -1895,6 +1895,10 @@ sourceui.Parser = function () {
 					var attr = suiButton.attr();
 					if (attr['class:icon']) suiButton.attr('data:icon', attr['class:icon']);
 					if (attr['label:name'] && !attr['attr:title']) suiButton.attr('attr:alt', attr['label:name']);
+					if (attr['data:tip']){
+						suiButton.attr('tip:text',attr['data:tip']);
+						suiButton.removeAttribute('data:tip');
+					}
 					if (jConfirm) suiButton.attr('link:confirm', JSON.stringify(jConfirm));
 					if (sui.parentNode.nodeName == 'group') {
 						var labelName = suiButton.content() && !suiButton.attr('label:name') && !suiButton.attr('class:icon') ? suiButton.content() : (suiButton.attr('label:name') ? '<span>' + suiButton.attr('label:name') + '</span>' : '');

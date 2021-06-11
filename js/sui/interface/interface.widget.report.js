@@ -37,6 +37,10 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	var History = [];
 
+	var Console;
+
+	Console = Debug.get('JS');
+
 	Report.common = new Interface.widget.common($widget,setup);
 	Report.widget = $widget;
 	Report.area = $widget.children('.area');
@@ -91,9 +95,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			value = ((value+'').indexOf('[') === 0) ? JSON.parse(value) : value;
 			if ($var.length){
 				if ($.md5('var:'+name+'='+value) === $var.data('verifier')) return value;
-				else console.error('Variable "'+name+'" is invalid');
+				else Console.error({ mode: 'VAR', title: 'Variable "'+name+'" is invalid'}).trace();
 			}
-			else console.error('Variable "'+name+'" not found');
+			else Console.error({ mode: 'VAR', title: 'Variable "'+name+'" not found'}).trace();
 		},
 		getAll: function(){
 			var $var = Report.variables;
@@ -105,7 +109,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					var value = $v.text();
 					if ($.md5('var:'+name+'='+value) === $v.data('verifier')){
 						values[name] = ((value+'').indexOf('[') === 0) ? JSON.parse(value) : value;
-					} else console.error('Variable "'+name+'" is invalid');
+					} else Console.error({ mode: 'VAR', title: 'Variable "'+name+'" is invalid'}).trace();
 				});
 			}
 			return values;
@@ -117,7 +121,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$var.text(value);
 				$var.data('verifier',$.md5('var:'+name+'='+value));
 			}
-			else console.error('Variable "'+name+'" not found');
+			else  Console.error({ mode: 'VAR', title: 'Variable "'+name+'" not found'}).trace();
 		}
 	};
 	Variable.init();
@@ -148,11 +152,11 @@ sourceui.interface.widget.report = function($widget,setup){
 				imgdata:imgdata
 			},function(data){
 				if (callback) callback(data);
-				console.log('imgdataUploader DONE',data);
+				Console.info({ mode: 'AJAX', title: 'Graphic.post: imgdataUploader DONE', content: data}).trace();
 			},"json")
 			.fail(function(e,data){
 				if (failback) failback(data);
-				console.error('imgdataUploader FAIL',data);
+				Console.error({ mode: 'AJAX', title: 'Graphic.post: imgdataUploader FAIL', content: data }).trace();
 			});
 		}
 	};
@@ -483,16 +487,154 @@ sourceui.interface.widget.report = function($widget,setup){
 			return stack;
 		},
 	};
-	Dom.document.on('keyup', function(event){
-		if (event.ctrlKey && (event.keyCode == 90 || event.keyCode == 89)){
-			var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
-			if (!$activeFieldwrap.length){
-				var $activeEdition = $activeFieldwrap.find('[data-edition*="text"], [data-edition="graphic"]');
-				if (!$activeEdition.length || !$edition.is('.contentchanged')){
-					     if (event.keyCode == 90) historyStack.back();
-					else if (event.keyCode == 89) historyStack.forward();
+	/*
+	if (!cancelDrop){
+		$clone = $('<div class="fieldwrap '+edition+'" />').append($clone);
+		if ($drop[key].is('.col')){
+			if (!$drop[key].children('.fieldwrap').length){
+				$page.trigger('page:addedition',[$clone,$drop[key],'append']);
+			} else {
+				$.tipster.notify('Spot has a box already');
+			}
+		} else if ($drop[key].is('.fieldwrap')){
+			if (!$drop[key].parent().is('.col')){
+				if (this.ev.y > $drop[key].offset().top + ($drop[key].height()/3)){
+					$page.trigger('page:addedition',[$clone,$drop[key],'after']);
+				} else {
+					$page.trigger('page:addedition',[$clone,$drop[key],'before']);
+				}
+			} else {
+				$.tipster.notify('Spot has a box already');
+			}
+		} else if ($drop[key].is('.cell')){
+			$page.trigger('page:addedition',[$clone,$drop[key],'append']);
+		} else {
+			$page.trigger('page:addedition',[$clone]);
+		}
+
+		// autoclick dynamic insertion
+		if (edition == 'dynamic'){
+			$clone.find('[data-edition]').addClass('empty-content').trigger('edition:tools').click();
+			$clone.children('.edition-actions').find('.pick a').click();
+		} else if (edition == 'toc'){
+			$clone.find('[data-edition]').trigger('edition:tools').click();
+		} else {
+			//$clone.find('[data-edition]').focus(); // comentado para verificar se esse é o bug do focus+placeholder
+		}
+		Report.document.trigger('document:boxcount');
+	}
+	*/
+	Dom.document.on('directpaste', function(event,$clone,$page,$container){
+		if ($container.length){
+			var $col = $container.find('.col.selected, col.empty:eq(0)');
+			if ($col.length){
+				$col.removeClass('selected');
+				if (!$col.children('.fieldwrap').length){
+					$page.trigger('page:addedition',[$clone,$col,'append']);
+				} else {
+					$.tipster.notify('Spot has a box already');
 				}
 			}
+		} else {
+			$page.trigger('page:addedition',[$clone]);
+		}
+		$clone.children('[data-edition]').trigger('edition:uploadimgs');
+		Report.document.trigger('document:boxcount');
+		Report.document.trigger('document:change',[$page]);
+	});
+	Dom.document.on('keydown', function(event){
+		if (event.keyCode == 18){
+			Report.document.addClass('grab');
+			Report.wgtools.filter('.bottom').find('.zoom-grab').addClass('active');
+		}
+	});
+	Dom.document.on('keyup', function(event){
+		if (event.ctrlKey){
+			if (event.keyCode == 90 || event.keyCode == 89){
+				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
+				if (!$activeFieldwrap.length){
+					var $activeEdition = $activeFieldwrap.find('[data-edition*="text"], [data-edition="graphic"]');
+					if (!$activeEdition.length || !$edition.is('.contentchanged')){
+							if (event.keyCode == 90) historyStack.back();
+						else if (event.keyCode == 89) historyStack.forward();
+					}
+				}
+			} else if (event.keyCode == 86){
+				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
+				if (!$activeFieldwrap.length){
+					var $page = Report.document.find('.page.active');
+					var $container = Report.document.find('.container.active');
+					var content = {};
+					var allItems = 0;
+					var allDone = 0;
+					if ($page.length){
+						navigator.permissions.query({name: "clipboard-read"}).then(result => {
+							if (result.state == "granted" || result.state == "prompt") {
+								// ver se não vai precisar do readtext para ler texto
+								navigator.clipboard.read().then(data => {
+									for (const item of data) {
+										for (const type of item.types) {
+											if (type == 'image/png' || type == 'text/html' || type == 'text/plain'){
+												allItems++;
+											}
+											item.getType(type).then(blob => {
+												if (blob.type == 'image/png'){
+													content.image = URL.createObjectURL(blob);
+													allDone++;
+												} else if (blob.type == 'text/html'){
+													blob.text().then(html => {
+														content.html = html;
+														allDone++;
+													});
+												} else if (blob.type == 'text/plain' && !content.html){
+													blob.text().then(text => {
+														content.text = text;
+														allDone++;
+													});
+												}
+											});
+										}
+									}
+									var intval = setInterval(function(){
+										if (allItems === allDone){
+											clearInterval(intval);
+											if (content.image){
+												var $clone = Report.templates.children('[data-edition="graphic"]').clone();
+												$clone.find('p.graphicspot').append('<img src="'+content.image+'">');
+												$clone = $('<div class="fieldwrap graphic" />').append($clone);
+											} else if (content.html){
+												var $clone = Report.templates.children('[data-edition="richtext"]').clone();
+												$clone.append(content.html);
+												$clone.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
+												$clone = $('<div class="fieldwrap richtext" />').append($clone);
+											} else if (content.text){
+												var $clone = Report.templates.children('[data-edition="richtext"]').clone();
+												$clone.append(content.text);
+												$clone = $('<div class="fieldwrap richtext" />').append($clone);
+											}
+											Dom.document.trigger('directpaste',[$clone,$page,$container]);
+										}
+									},10);
+									/*
+									for (let i=0; i<data.items.length; i++) {
+										console.log(data.items[i].type, data.items[i]);
+										if (data.items[i].type == "image/png") {
+											const blob = data.items[i].getType("image/png");
+											content.image = URL.createObjectURL(blob);
+										}
+									}
+									Dom.document.trigger('directpaste',[content,$page,$container]);
+									*/
+								});
+							}
+						});
+					}
+				}
+			}
+		}
+		if (event.keyCode == 18){
+			Report.document.removeClass('grab');
+			Report.wgtools.filter('.bottom').find('.zoom-grab').removeClass('active');
 		}
 		if (event.keyCode == 46 || event.keyCode == 8){
 			Report.document.find('.container td.col.selected').trigger('container:delcol');
@@ -1110,23 +1252,25 @@ sourceui.interface.widget.report = function($widget,setup){
 			obj.$el.removeClass('dragger');
 		}
 	});
-
-	/*
-	Report.wgtools.filter('.bottom').find('.zoom-in').on('click',function(){
-		Report.document.trigger('panzoom:in');
+	Report.wgtools.filter('.bottom').find('[class*="zoom"]').on('mousedown mouseup',function(event){
+		event.stopPropagation();
 	});
-	Report.wgtools.filter('.bottom').find('.zoom-toggle').on('click',function(){
-		var $this = $(this);
-		if (Report.scroll.hasClass('unscrolled')){
-			Report.document.trigger('panzoom:destroy');
-		} else {
-			Report.document.trigger('panzoom:init');
-		}
+	Report.wgtools.filter('.bottom').find('.zoom-in').on('click',function(){
+		if ($(this).isDisable()) return;
+		Report.document.trigger('zoom:in');
+	});
+	Report.wgtools.filter('.bottom').find('.zoom-grab').on('click',function(){
+		if ($(this).isDisable()) return;
+		Report.document.trigger('zoom:grab');
+	});
+	Report.wgtools.filter('.bottom').find('.zoom-reset').on('click',function(){
+		if ($(this).isDisable()) return;
+		Report.document.trigger('zoom:reset');
 	});
 	Report.wgtools.filter('.bottom').find('.zoom-out').on('click',function(){
-		Report.document.trigger('panzoom:out');
+		if ($(this).isDisable()) return;
+		Report.document.trigger('zoom:out');
 	});
-	*/
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1492,70 +1636,90 @@ sourceui.interface.widget.report = function($widget,setup){
 
 
 	// PanZoom Events ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	/*
-	Report.document.on('panzoom:init',function(event){
-		var instance = Report.document.data('panzoom');
-		if (!instance){
-			var element = Report.document.get(0);
-			instance = panzoom(element, {
-				maxZoom: 2.4,
-				minZoom: 0.6,
-				bounds: true,
-				boundsPadding: 0.1,
-				beforeWheel: function(e) {
-					// allow wheel-zoom only if altKey is down. Otherwise - ignore
-					var shouldIgnore = !e.ctrlKey;
-					if (shouldIgnore && Report.scroll.hasClass('unscrolled')){
-						var transform = instance.getTransform();
-					instance.moveTo(transform.x, transform.y - (e.deltaY * transform.scale));
-					}
-					return shouldIgnore;
-				},
-				beforeMouseDown: function(e) {
-					// allow mouse-down panning only if altKey is down. Otherwise - ignore
-					var shouldIgnore = !e.ctrlKey;
-					return shouldIgnore;
-				},
-				filterKey: function(/* e, dx, dy, dz *//*) {
-					return true;
-				}
-			});
-			Report.document.data('panzoom',instance);
+	Report.document.on('zoom:change',function(event,zoom,newzoom,scrollMid){
+		let ele = Report.scroll.get(0);
+
+		if (zoom > 2.3) Report.wgtools.filter('.bottom').find('.zoom-in').disable();
+		else Report.wgtools.filter('.bottom').find('.zoom-in').enable();
+		if (zoom < 0.7) Report.wgtools.filter('.bottom').find('.zoom-out').disable();
+		else Report.wgtools.filter('.bottom').find('.zoom-out').enable();
+
+		Report.document.css({ 'transform':'scale('+newzoom+')', 'transform-origin': newzoom < 1 ? 'center top' : 'left top'});
+		Report.document.attr('data-zoom',newzoom);
+
+		ele.scrollTop = (ele.scrollTop * newzoom) / zoom;
+
+		let wd = Math.floor((ele.scrollWidth - Report.scroll.width()) / 2);
+		if ((ele.scrollLeft == 0 || scrollMid === true) && wd > 0){
+			ele.scrollLeft = wd;
 		}
-		Report.scroll.addClass('unscrolled');
-		var $toggle = Report.wgtools.filter('.bottom').find('.zoom-toggle');
-		$toggle.parent().css('background-color','#26a9ff');
 	});
-	Report.document.on('panzoom:in',function(event){
-		Report.document.trigger('panzoom:init');
-		var instance = Report.document.data('panzoom');
-		var transform = instance.getTransform();
-		instance.zoomAbs(parseInt(Report.area.width()/2),0, transform.scale + 0.2);
+	Report.document.on('zoom:in',function(event){
+		let ele = Report.scroll.get(0);
+		var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
+		var newzoom = $.toNumber(((zoom * 1) + (zoom >= 1 ? 0.2 : 0.1)).toFixed(2));
+		let wd = Math.floor((ele.scrollWidth - Report.scroll.width()) / 2);
+		var scrollMid = ele.scrollLeft === wd;
+		Report.document.trigger('zoom:change',[zoom,newzoom,scrollMid]);
 	});
-	Report.document.on('panzoom:out',function(event){
-		Report.document.trigger('panzoom:init');
-		var instance = Report.document.data('panzoom');
-		var transform = instance.getTransform();
-		instance.zoomAbs(parseInt(Report.area.width()/2),0, transform.scale - 0.2);
+	Report.document.on('zoom:reset',function(event){
+		let ele = Report.scroll.get(0);
+		var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
+		Report.document.trigger('zoom:change',[zoom,1,false]);
 	});
-	Report.document.on('panzoom:destroy',function(event){
-		var instance = Report.document.data('panzoom');
-		if (instance) instance.dispose();
-		Report.document.css('transform','none');
-		Report.document.removeData('panzoom');
-		var $toggle = Report.wgtools.filter('.bottom').find('.zoom-toggle');
-		$toggle.parent().attr('style','');
-		Report.scroll.removeClass('unscrolled');
+	Report.document.on('zoom:grab',function(event){
+		Report.document.toggleClass('grab');
+		Report.wgtools.filter('.bottom').find('.zoom-grab').toggleClass('active');
 	});
-	Report.document.on('wheel',function(event){
-		if (event.ctrlKey && !Report.scroll.hasClass('unscrolled')){
+	Report.document.on('zoom:out',function(event){
+		let ele = Report.scroll.get(0);
+		var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
+		var newzoom = $.toNumber(((zoom * 1) - (zoom > 1 ? 0.2 : 0.1)).toFixed(2));
+		let wd = Math.floor((ele.scrollWidth - Report.scroll.width()) / 2);
+		var scrollMid = ele.scrollLeft === wd;
+		Report.document.trigger('zoom:change',[zoom,newzoom,scrollMid]);
+	});
+	Report.scroll.on('wheel',function(event){
+		if (event.altKey){
 			event.stopPropagation();
 			event.preventDefault();
-			if (event.originalEvent.deltaY > 0) Report.document.trigger('panzoom:out');
-			else Report.document.trigger('panzoom:in');
+			if (event.originalEvent.deltaY > 0) Report.wgtools.filter('.bottom').find('.zoom-out').trigger('click');
+			else  Report.wgtools.filter('.bottom').find('.zoom-in').trigger('click');
 		}
 	});
-	*/
+	Report.scroll.on('mousedown',function(event){
+		if (event.altKey || Report.document.hasClass('grab')){
+			if (event.altKey) Report.document.removeClass('grab');
+			Report.document.addClass('grabbing');
+			let ele = Report.scroll.get(0);
+			Report.document.data('zoompos',{
+				left: ele.scrollLeft,
+				top: ele.scrollTop,
+				x: event.clientX,
+				y: event.clientY,
+			});
+		}
+	});
+	Report.document.on('mousemove',function(event){
+		if (Report.document.hasClass('grabbing')){
+			let ele = Report.scroll.get(0);
+			let pos = Report.document.data('zoompos');
+			const dx = event.clientX - pos.x;
+			const dy = event.clientY - pos.y;
+			ele.scrollTop = pos.top - dy;
+			ele.scrollLeft = pos.left - dx;
+		}
+	});
+	Report.document.on('mouseup mouseleave',function(event){
+		Report.document.removeClass('grabbing');
+	});
+	Report.document.on('dblclick',function(event){
+		if (!event.altKey || Report.document.hasClass('grab')){
+			Report.document.removeClass('grab');
+			Report.document.removeClass('grabbing');
+			Report.wgtools.filter('.bottom').find('.zoom-grab').removeClass('active');
+		}
+	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1574,9 +1738,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		event.stopPropagation();
 		var $this = $(this).trigger('container:active');
 	});
-	Report.document.on('dblclick','.container .col',function(event){
+	Report.document.on('click','.container .col',function(event){
 		event.stopPropagation();
 		var $this = $(this);
+		$this.trigger('container:active');
 		if ($this.is('.selected')) $this.removeClass('selected');
 		else {
 			Report.document.find('.container td.col.selected').removeClass('.selected');
@@ -1724,15 +1889,20 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('container:active','.container',function(){
 		var $this = $(this);
 		var $page = $this.closest('.page',Report.document);
-		$page.trigger('page:active');
+		if (!$page.is('.active')) $page.trigger('page:active');
 		$this.removeClass('hover');
 		Report.document.find('.fieldwrap.active').removeClass('active hover focus').find('[data-edition]').blur();
 		$this.addClass('active');
 		$this.trigger('container:tools');
+		$this.find('.col').each(function(){
+			var $c = $(this);
+			if ($c.children(':not(.resize)').length) $c.removeClass('empty');
+			else $c.addClass('empty');
+		});
 	});
 	Report.document.on('container:unactive',function(){
-		Report.document.find('.container.active').removeClass('active')
-		Report.document.find('.container td.col.selected').removeClass('.selected');
+		Report.document.find('.container .col.selected').removeClass('selected');
+		Report.document.find('.container.active').removeClass('active');
 	});
 	Report.document.on('container:clipboardmoved','.container',function(){
 		var $this = $(this);
@@ -2057,6 +2227,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $page = $this.closest('.page',Report.document);
 		$page.trigger('page:active');
 		$fieldwrap.removeClass('hover');
+		$fieldwrap.closest('.col').removeClass('selected');
 		Report.document.find('.fieldwrap.active').removeClass('active');
 		Report.document.find('.fieldlink').remove();
 		$fieldwrap.addClass('active');
@@ -2194,7 +2365,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$this.trigger('page:tools');
 	});
 	Report.document.on('page:unactive',function(){
-		Report.document.find('.page.active,.fieldwrap.active,.container.active').removeClass('active');
+		Report.document.find('.page.active, .fieldwrap.active, .container.active, .col.selected').removeClass('active selected');
 		Report.document.find('[data-mce-selected]').removeAttr('data-mce-selected');
 		Report.document.find('.fieldlink').remove();
 		Report.document.find('.boxgroupconnector').remove();
