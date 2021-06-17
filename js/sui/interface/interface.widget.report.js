@@ -401,6 +401,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		online: false,
 		pointer: -1,
 		stack: [],
+		clear: function(){
+			historyStack.pointer = -1;
+			historyStack.stack = [];
+		},
 		push: function(setup){
 			if (Report.document.hasClass('preventhistorystack')) return false;
 			var sliced = historyStack.stack.slice(0,historyStack.pointer+1);
@@ -437,7 +441,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					historyStack.pointer++;
 				}
 			}
-			else $.tipster.notify('No more forward stacks');
+			//else $.tipster.notify('No more forward stacks');
 		},
 		back: function(){
 			if (Report.document.hasClass('preventhistorystack')) return false;
@@ -452,7 +456,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					historyStack.pointer--;
 				}
 			}
-			else $.tipster.notify('No more back stacks');
+			//else $.tipster.notify('No more back stacks');
 		},
 		go: function(pointer){
 			if (Report.document.hasClass('preventhistorystack')) return false;
@@ -472,7 +476,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					else if (pile.do.action == 'removepage'){ 			pile.do.page.trigger('page:remove'); }
 				}
 				else if (pointer <= historyStack.pointer){
-					if (pile.undo.action == 'addedition'){ 				pile.undo.page.trigger('page:addedition',[pile.undo.wrap,pile.undo.reference,pile.undo.placement]); }
+					if (pile.undo.action == 'addedition'){ 				pile.undo.page.trigger('page:addedition',[pile.undo.fieldwrap,pile.undo.reference,pile.undo.placement]); }
 					else if (pile.undo.action == 'removeedition'){ 		pile.undo.edition.trigger('edition:remove'); }
 					else if (pile.undo.action == 'movededition'){ 		pile.undo.reference[pile.undo.placement](pile.undo.fieldwrap); }
 					else if (pile.undo.action == 'positionedition'){ 	pile.undo.edition.attr('data-position',pile.undo.position); pile.undo.fieldwrap.attr('style',pile.undo.position); }
@@ -487,43 +491,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			return stack;
 		},
 	};
-	/*
-	if (!cancelDrop){
-		$clone = $('<div class="fieldwrap '+edition+'" />').append($clone);
-		if ($drop[key].is('.col')){
-			if (!$drop[key].children('.fieldwrap').length){
-				$page.trigger('page:addedition',[$clone,$drop[key],'append']);
-			} else {
-				$.tipster.notify('Spot has a box already');
-			}
-		} else if ($drop[key].is('.fieldwrap')){
-			if (!$drop[key].parent().is('.col')){
-				if (this.ev.y > $drop[key].offset().top + ($drop[key].height()/3)){
-					$page.trigger('page:addedition',[$clone,$drop[key],'after']);
-				} else {
-					$page.trigger('page:addedition',[$clone,$drop[key],'before']);
-				}
-			} else {
-				$.tipster.notify('Spot has a box already');
-			}
-		} else if ($drop[key].is('.cell')){
-			$page.trigger('page:addedition',[$clone,$drop[key],'append']);
-		} else {
-			$page.trigger('page:addedition',[$clone]);
-		}
-
-		// autoclick dynamic insertion
-		if (edition == 'dynamic'){
-			$clone.find('[data-edition]').addClass('empty-content').trigger('edition:tools').click();
-			$clone.children('.edition-actions').find('.pick a').click();
-		} else if (edition == 'toc'){
-			$clone.find('[data-edition]').trigger('edition:tools').click();
-		} else {
-			//$clone.find('[data-edition]').focus(); // comentado para verificar se esse é o bug do focus+placeholder
-		}
-		Report.document.trigger('document:boxcount');
-	}
-	*/
 	Dom.document.on('directpaste', function(event,$clone,$page,$container){
 		if ($container.length){
 			var $col = $container.find('.col.selected, col.empty:eq(0)');
@@ -546,6 +513,11 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (event.keyCode == 18){
 			Report.document.addClass('grab');
 			Report.wgtools.filter('.bottom').find('.zoom-grab').addClass('active');
+		}
+		if (event.ctrlKey){
+			if (event.keyCode == 90 || event.keyCode == 89){
+				event.preventDefault();
+			}
 		}
 	});
 	Dom.document.on('keyup', function(event){
@@ -615,16 +587,6 @@ sourceui.interface.widget.report = function($widget,setup){
 											Dom.document.trigger('directpaste',[$clone,$page,$container]);
 										}
 									},10);
-									/*
-									for (let i=0; i<data.items.length; i++) {
-										console.log(data.items[i].type, data.items[i]);
-										if (data.items[i].type == "image/png") {
-											const blob = data.items[i].getType("image/png");
-											content.image = URL.createObjectURL(blob);
-										}
-									}
-									Dom.document.trigger('directpaste',[content,$page,$container]);
-									*/
 								});
 							}
 						});
@@ -1885,6 +1847,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		$this.remove();
 		Report.document.trigger('document:change',[$page]);
 		$.tipster.notify('Container removed');
+		/** HISTORY STACK *****************************************************************************************************************************************************/
+		historyStack.push({
+			do: 	{ action:'removecontainer', this:$this, scrolltop:Report.scroll.scrollTop(), label:'Added container removed' },
+			undo:   { action:'addcontainer', page:$page, container:$this, reference:$this.prev(), placement:$this.prev().length ? 'after' : 'prepend', scrolltop:Report.scroll.scrollTop(), label:'Container added again' },
+		});
+		/**********************************************************************************************************************************************************************/
 	});
 	Report.document.on('container:active','.container',function(){
 		var $this = $(this);
@@ -1994,7 +1962,6 @@ sourceui.interface.widget.report = function($widget,setup){
 						if ($d.hasClass('dragleft')) $wrap.css({ width:wwid-dpos.left, left:wpos.left+(dpos.left) });
  						if ($d.hasClass('dragright')) $wrap.css({ width:wwid+(dpos.left-wwid) });
 						$this.attr('data-position','top:'+($wrap.css('top')||0)+'; left:'+($wrap.css('left')||0)+'; width:'+$wrap.width()+'px');
-						$this.trigger('edition:input');
 						/** HISTORY STACK *****************************************************************************************************************************************************/
 						historyStack.push({
 							do:   { action:'positionedition', edition:$this, fieldwrap:$wrap, position:$this.attr('data-position'), scrolltop:Report.scroll.scrollTop(), label:'Box positioned' },
@@ -2022,7 +1989,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					stop:function(ev, obj){
 						var oldposition = $this.attr('data-position');
 						$this.attr('data-position','top:'+($target.css('top')||0)+'; left:'+($target.css('left')||0)+'; width:'+$target.width()+'px');
-						$this.trigger('edition:input');
 						/** HISTORY STACK *****************************************************************************************************************************************************/
 						historyStack.push({
 							do:   { action:'positionedition', edition:$this, fieldwrap:$target, position:$this.attr('data-position'), scrolltop:Report.scroll.scrollTop(), label:'Box positioned' },
@@ -2062,7 +2028,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					var y = -1 * matrix[5];
 					obj.moveToUsingTransforms(x, y);
 					obj.$el.css({ position: 'relative' });
-					$this.trigger('edition:input');
 					$this.trigger('edition:change');
 				}
 				obj.$el.removeClass('dragger');
@@ -2115,6 +2080,14 @@ sourceui.interface.widget.report = function($widget,setup){
 			$this.append($js);
 			$code.remove();
 			$js.remove();
+		});
+	});
+	Report.document.on('edition:chartpngloaded','[data-edition]',function(event,$img){
+		var pngData = $img.attr('src');
+		Graphic.post(pngData, null, function(data){
+			$img.attr('src',data.src);
+		},function(){
+			$.tipster.notify('Chart upload not allowed');
 		});
 	});
 	Report.document.on('edition:cleanmce','[data-edition]',function(event){
@@ -2194,16 +2167,18 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('edition:remove','[data-edition]',function(event){
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
-		var $page;
+		var $page, $reference;
 		if ($fieldwrap.data('boxgroup')){
 			Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"] [data-edition]').each(function(ke, e){
 				var $e = $(e);
+				if (!$reference) $reference = $e.parent().prev();
 				Report.widget.append($e.siblings('.edition-actions'));
 				$page = $page ? $page : $e.closest('.page');
 				//if ($e.attr('id') && $e.is('.mce-content-body')) tinymce.remove('#'+$e.attr('id'));
 				$e.parent().remove();
 			});
 		} else {
+			$reference = $fieldwrap.prev();
 			$page = $this.closest('.page');
 			Report.widget.append($this.siblings('.edition-actions'));
 			//if ($this.attr('id') && $this.is('.mce-content-body')) tinymce.remove('#'+$this.attr('id'));
@@ -2214,8 +2189,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			$.tipster.notify('Edition box removed');
 			/** HISTORY STACK *****************************************************************************************************************************************************/
 			historyStack.push({
-				do: 	{ action:'removeedition', edition:$this, scrolltop:Report.scroll.scrollTop(), label:'Added box removed' },
-				undo:   { action:'addedition', page:$page, fieldwrap:$fieldwrap, reference:$fieldwrap.prev(), placement:$fieldwrap.prev().length ? 'after' : 'prepend', scrolltop:Report.scroll.scrollTop(), label:'Box added again' },
+				do: 	{ action:'removeedition', this:$this, scrolltop:Report.scroll.scrollTop(), label:'Added box removed' },
+				undo:   { action:'addedition', page:$page, fieldwrap:$fieldwrap, reference:$reference, placement:$reference.length ? 'after' : 'prepend', scrolltop:Report.scroll.scrollTop(), label:'Box added again' },
 			});
 			/**********************************************************************************************************************************************************************/
 		}
@@ -2310,7 +2285,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $edit = $new.children('[data-edition]');
 		$new.find('.edition-actions').remove();
 		$edit.removeAttr('id');
-		if ($ref){
+		if ($ref && $ref.length){
 			if (placement == 'after'){
 				$new.insertAfter($ref);
 			} else if (placement == 'before'){
@@ -2660,7 +2635,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				//if (e.ctrlKey && e.keyCode != 86 && e.keyCode != 88) return true;
 				$ed.addClass('contentchanged');
 				$ed.addClass('keyboarded');
-				$ed.trigger('edition:input');
 			});
 			editor.on('input', function (e) {
 				$ed.addClass('contentchanged');
@@ -2674,15 +2648,19 @@ sourceui.interface.widget.report = function($widget,setup){
 					setTimeout(function(){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
+						editor.undoManager.clear();
 					},10);
 				}
+			});
+			editor.on('BeforeAddUndo', function(e) {
+				return false;
 			});
 		}
 	};
 	var mceSetupText = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="text"]:not(.inited)',
 		forced_root_block : false,
-		toolbar: 'undo redo removeformat | bold italic underline',
+		toolbar: 'removeformat | bold italic underline',
 		valid_elements: 'strong,em,span[style],a[href]',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align'
@@ -2691,7 +2669,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetupPlaintext = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="plaintext"]:not(.inited)',
 		forced_root_block : false,
-		toolbar: 'undo redo removeformat',
+		toolbar: 'removeformat',
 		valid_elements: 'br',
 		valid_styles: {
 			'*': 'color'
@@ -2700,7 +2678,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetupTinytext = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="tinytext"]:not(.inited)',
 		forced_root_block : 'p',
-		toolbar: 'undo redo removeformat | bold italic underline | forecolor | alignleft aligncenter alignright',
+		toolbar: 'removeformat | bold italic underline | forecolor | alignleft aligncenter alignright',
 		valid_elements: 'p[style],h1[style|class],h2[style|class],h3[style|class],h4[style|class],strong[style]/b[style],em,span[style|class],a[href],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align,font-style'
@@ -2714,7 +2692,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		//imagetools_toolbar: 'none',
 		//paste_data_images: false,
 		toolbar: [
-			'undo redo removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent | link'
+			'removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent | link'
 		],
 		//automatic_uploads: true,
 		//file_picker_types: 'image',
@@ -2760,7 +2738,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		imagetools_toolbar: 'none',
 		paste_data_images: true,
 		toolbar: [
-			'undo redo | link | table '
+			'link | table '
 		],
 		automatic_uploads: true,
 		file_picker_types: 'image',
