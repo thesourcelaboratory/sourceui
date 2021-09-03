@@ -90,6 +90,7 @@ sourceui.interface.document = function () {
 			var $this = $(this);
 			var $sector = $this.closest('.sui-sector');
 			var $target = $sector.find('#' + $this.data('view'));
+			var $iframes = $target.find('iframe');
 			var $views = $sector.find('#suiViewsContainer');
 			var $prevsel = $this.prev('.selected:not(.alwaysactive)');
 			var $nextsel = $this.next('.selected:not(.alwaysactive)');
@@ -149,6 +150,12 @@ sourceui.interface.document = function () {
 			} else {
 				$views.children('.sui-view.selected:not(.alwaysactive)').removeClass('selected');
 				$target.addClass('selected').trigger('view:open');
+			}
+			if ($iframes.length){
+				$iframes.css('width','calc(100% + 1px)');
+				setTimeout(function(){
+					$iframes.css('width','100%');
+				},10);
 			}
 			if ($hastool.length) {
 				$sector.children('.sui-sector-title').removeClass('sui-topper-bar');

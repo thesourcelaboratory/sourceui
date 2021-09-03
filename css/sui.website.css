@@ -60,11 +60,11 @@ html, body { margin:0; padding:0; width:100%; height:100%; word-spacing: 6px; }
 ::-moz-placeholder { color: transparent; }
 :-ms-input-placeholder { color: transparent; }
 ::placeholder { color: transparent; }
-:focus::-webkit-input-placeholder { color: rgba(128,128,128,0.35); }
-:focus:-moz-placeholder { color: rgba(128,128,128,0.35); }
-:focus::-moz-placeholder { color: rgba(128,128,128,0.35); }
-:focus:-ms-input-placeholder { color: rgba(128,128,128,0.35); }
-:focus::placeholder { color: rgba(128,128,128,0.35); }
+:focus::-webkit-input-placeholder, :only-child::-webkit-input-placeholder { color: rgba(128,128,128,0.35); }
+:focus:-moz-placeholder, :only-child:-moz-placeholder { color: rgba(128,128,128,0.35); }
+:focus::-moz-placeholder, :only-child::-moz-placeholder { color: rgba(128,128,128,0.35); }
+:focus:-ms-input-placeholder, :only-child:-ms-input-placeholder { color: rgba(128,128,128,0.35); }
+:focus::placeholder, :only-child::placeholder { color: rgba(128,128,128,0.35); }
 input[type="search"]::-webkit-input-placeholder { color: rgba(128,128,128,0.35); }
 input[type="search"]:-moz-placeholder { color: rgba(128,128,128,0.35); }
 input[type="search"]::-moz-placeholder { color: rgba(128,128,128,0.35); }

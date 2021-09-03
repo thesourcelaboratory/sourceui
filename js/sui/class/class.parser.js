@@ -2942,6 +2942,7 @@ sourceui.Parser = function () {
 								else if (this.nodeName == 'validation') htmlList += this.toHTML('wg', 'report', 'validations', { child: { content: $(this).html() }},  Template.get);
 								else if (this.nodeName == 'templates') htmlList += Components.libs.widget.report.templates(this, pgnum, headers, footers);
 								else if (this.nodeName == 'document') htmlList += Components.libs.widget.report.document(this, pgnum, headers, footers);
+								else if (this.nodeName == 'tip') htmlList += Components.libs.tip(this);
 							});
 							htmlArea = Template.replace(htmlArea, { child: { area: htmlList } });
 						});

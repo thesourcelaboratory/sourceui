@@ -170,7 +170,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
         cfg.afterInit = function () {
             Handson.refresh();
         }
-        Handson.hot = Handson.draw(cfg);
+		setTimeout(function(){ Handson.hot = Handson.draw(cfg); }, 100);
     });
 
     Handson.draw = function (cfg) {
@@ -278,7 +278,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
 		Handson.kill();
 	});
 	Handson.view.on('view:shown',function(){
-		Handson.draw(Handson.cfg);
+		setTimeout(function(){ Handson.draw(Handson.cfg); }, 10);
 	});
 
 	$(window).on('resize',function(){

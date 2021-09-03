@@ -1675,6 +1675,14 @@ String.prototype.difference = function (b) {
 	}
 	return result;
 };
+String.prototype.toEntities = function(pattern){
+	var str = this.valueOf();
+	pattern = pattern || /[\u00A0-\u9999<>\&]/gim; // entities range "&, etc"
+	str = str.replace(pattern, function(i) {
+       return '&#'+i.charCodeAt(0)+';';
+    });
+	return str;
+}
 
 Object.key = function (o, v) {
 	var keys = Object.keys(o);

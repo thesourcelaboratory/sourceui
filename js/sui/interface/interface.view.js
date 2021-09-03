@@ -462,7 +462,8 @@ sourceui.interface.view = function ($view, setup) {
 	}
 	View.element.on('view:close', function (event, force, unsavedforce) {
 		var $view = $(this);
-		var $tab = View.sector.find('#suiTabsView [data-view="' + $view.attr('id') + '"]');
+		var $tabsview = View.sector.find('#suiTabsView');
+		var $tab = $tabsview.find('[data-view="' + $view.attr('id') + '"]');
 		var $prev = $tab.prev();
 		if (!unsavedforce){
 			if ($view.hasClass('unsaved')){
@@ -505,14 +506,23 @@ sourceui.interface.view = function ($view, setup) {
 			}
 		}
 		if (!force) {
-			var $prevall = $view.prevAll('.sui-view');
-			var $nextall = $view.nextAll('.sui-view');
-			if (!$prevall.length) {
-				View.sector.trigger('sector:close');
-			} else if ($nextall.length) {
-				$nextall.each(function () {
-					$(this).trigger('view:close', [true]);
-				});
+			if ($tabsview.is('.no-nested')){
+				// Quando as tabs não representam abertura de conteúdo em níveis, a tabsview vem com uma classe "no-nested".
+				// Assim se o usuário fechar uma tab as próximas se manterão carregadas.
+				var $prevall = $view.prevAll('.sui-view');
+				if (!$prevall.length) {
+					View.sector.trigger('sector:close');
+				}
+			} else {
+				var $prevall = $view.prevAll('.sui-view');
+				var $nextall = $view.nextAll('.sui-view');
+				if (!$prevall.length) {
+					View.sector.trigger('sector:close');
+				} else if ($nextall.length) {
+					$nextall.each(function () {
+						$(this).trigger('view:close', [true]);
+					});
+				}
 			}
 		}
 		// ###########################################################

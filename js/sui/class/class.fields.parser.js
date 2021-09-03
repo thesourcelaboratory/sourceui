@@ -1364,7 +1364,7 @@ sourceui.parserField = function (element, setup) {
 		},
 		color: {
 			spectrum: function () {
-				Field.setup.placeholder = 'Selecione uma cor';
+				Field.setup.placeholder = Field.setup.placeholder || 'Selecione uma cor';
 				Field.setup.list.class = 'plugin';
 				Field.setup.buttons.after = [{ alias: 'droplist', color: Field.setup.value, options: [] }];
 				return HTML.common.field({ input: 'text', addon: 'simple', droplist: 'plugin', options: 'spectrum', button: 'complexcolor' });
