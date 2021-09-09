@@ -142,7 +142,7 @@ sourceui.templates.fields = new sourceui.Template({
 			'</svg>' +
 			'</div>' +
 			'</div>' +
-			'<div class="icon"><i class="sui-fs @{ext} g"><b>@{ext}</b></i></div>' +
+			'<div class="icon"><i class="sui-fs @{extension} g"><b>@{extension}</b></i></div>' +
 			'<div class="type">@{extension}<mark></mark></div>' +
 			'<div class="button remove icon-garbage"></div>' +
 			'<div class="button upload icon-upload3"></div>' +

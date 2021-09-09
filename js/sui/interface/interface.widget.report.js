@@ -603,6 +603,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.trigger('document:change',[$page]);
 	});
 	Dom.document.on('keydown', function(event){
+		if (!Report.document.is(':visible')) return;
 		if (event.keyCode == 18){
 			Report.document.addClass('grab');
 			Report.wgtools.filter('.bottom').find('.zoom-grab').addClass('active');
@@ -614,6 +615,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	Dom.document.on('keyup', function(event){
+		if (!Report.document.is(':visible')) return;
 		if (event.ctrlKey){
 			if (event.keyCode == 90 || event.keyCode == 89){
 				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
@@ -773,8 +775,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			var hasfucked = false;
 			$mayfuckedges.each(function(){
 				var $mfe = $(this);
-				if ($mfe.find('img') || $mfe.outerHeight(true) >= edgeHeight){
+				if ($mfe.outerHeight(true) >= edgeHeight){
 					hasfucked = true;
+					___cnsl.log('breakBox','imagetoolarge:'+($mfe.outerHeight(true) >= edgeHeight),$mfe.get(0));
 					return false;
 				}
 			});
@@ -788,7 +791,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			$edition.children().each(function(k,el){
 				let $el = $(el);
-				if ($el.is(':empty') || $el.html() === '<br>') {
+				if (!$el.is('img') && ($el.is(':empty') || $el.html() === '<br>')) {
 					$el.remove();
 					return true;
 				}
@@ -868,7 +871,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							return false;
 						}
 					} else {
-						if ($edition.data('edition') == 'richtext' || $edition.data('name') == 'global-disclaimer'){
+						if (($edition.data('edition') == 'richtext' || $edition.data('name') == 'global-disclaimer') && $el.is('p')){
 							let $econ = $el.contents();
 							$el.html('');
 							let $cl = $el.clone();
@@ -897,12 +900,14 @@ sourceui.interface.widget.report = function($widget,setup){
 							$cl.find('.wordwrap-autobreak:last').text($.trim($cl.find('.wordwrap-autobreak:last').text()));
 							$cl.find('.wordwrap-autobreak').contents().unwrap();
 							$cl.get(0).normalize();
-							if (!$cl.is(':empty')) $contentNew.append($cl);
+							if ($cl.text() !== '' || $cl.children('img,table').length) $contentNew.append($cl);
 
-							$el.find('.wordwrap-autobreak:first').text($.trim($el.find('.wordwrap-autobreak:first').text()));
+							$el.find('.wordwrap-autobreak:first').text($el.find('.wordwrap-autobreak:first').text());
 							$el.find('.wordwrap-autobreak').contents().unwrap();
 							$el.get(0).normalize();
 							$contentNew.append($el.nextAll());
+							if (false === ($el.text() !== '' || $el.children('img,table').length > 0)) $el.remove();
+
 						} else {
 							$contentNew.append($el.nextAll().addBack());
 						}
@@ -1831,7 +1836,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.trigger('document:addpage',[$nextpage,$page,'after']);
 		}
 		var $nextcell = $nextpage.find('.cell[class="'+$cell.attr('class')+'"]');
-		console.log($nextpage,$fieldwrap);
 		$nextpage.find('.cell[class="'+$cell.attr('class')+'"]').append($fieldwrap);
 		//Report.document.trigger('document:change',[$page]);
 	});
@@ -2391,11 +2395,14 @@ sourceui.interface.widget.report = function($widget,setup){
 				Graphic.post(base64, null, function(data){
 					$img.attr('src',data.src);
 					$img.removeClass('uploading');
+					$img.addClass('uploaded');
 					$.tipster.notify('Image auto uploaded');
 				},function(){
+					$img.addClass('localsource');
 					$.tipster.notify('Image upload not allowed');
 				});
 			},function(){
+				$img.addClass('localsource');
 				$.tipster.notify('Image data not converted');
 			});
 			/////////////////////////////////////////////////
@@ -2407,8 +2414,10 @@ sourceui.interface.widget.report = function($widget,setup){
 			Graphic.post($img.attr('src'), null, function(data){
 				$img.attr('src',data.src);
 				$img.removeClass('uploading');
+				$img.addClass('uploaded');
 				$.tipster.notify('Image auto uploaded');
 			},function(){
+				$img.addClass('localsource');
 				$.tipster.notify('Image upload not allowed');
 			});
 			/////////////////////////////////////////////////
@@ -2429,10 +2438,13 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($this.is('[data-edition*="text"]')){
 			var $boxgroup = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"]');
 			$page = $boxgroup.length ? $boxgroup.filter(':eq(0)').closest('.page') : $page;
-		} else if ($this.is('[data-edition*="graphic"]')){
-			$this.trigger('edition:uploadimgs');
 		}
 		Report.document.trigger('document:change',[$page]);
+		var $localsource = $this.find('img.localsource');
+		if ($localsource.length){
+			$this.trigger('edition:uploadimgs');
+			$localsource.removeClass('localsource');
+		}
 	});
 	Report.document.on('edition:nodechange','[data-edition]',function(event,node){
 		var $this = $(this);
@@ -2550,7 +2562,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $clonewrap = $('<div class="fieldwrap '+$clone.data('edition')+' active" data-boxgroup="'+$clone.data('boxgroup')+'" />').append($clone);
 
 				$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
-				console.log($clone,$this);
 				return false;
 			}
 		});
@@ -2782,7 +2793,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		$new.find('.page-actions').remove();
 		var didBoxBroken, $pageChange, $lastBoxgroupOnPrevPage, $firstBoxgroupOnNextPage, tipsterMsg;
 		$new.removeAttr('id').css('opacity','0');
-		//console.log($new,$ref,placement);
 		if ($ref){
 			$lastBoxgroupOnPrevPage = (placement == 'after') ? $ref.find('.content .fieldwrap[data-boxgroup]').last() : $ref.prev('.page').find('.content .fieldwrap[data-boxgroup]').last();
 			$firstBoxgroupOnNextPage = (placement == 'after') ? $ref.next('.page').find('.content .fieldwrap[data-boxgroup]').first() : $ref.find('.content .fieldwrap[data-boxgroup]').first();
@@ -2919,6 +2929,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_word_import: 'merge',
 		powerpaste_html_import: 'merge',
 		browser_spellcheck: true,
+		relative_urls : false,
+		remove_script_host : false,
 		textcolor_map: [
 			"FCFCFC", "Snow White",
 			"D2D2D2", "Silver",
@@ -3017,7 +3029,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
-				$ed.trigger('edition:uploadimgs');
+				//$ed.trigger('edition:uploadimgs');
 				historyStack.clear();
 			});
 			editor.on('blur', function (e) {
@@ -3110,6 +3122,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $content = $('<div>'+o.content+'</div>');
 			var $imgtable = $content.children('img,table');
 			$imgtable.addClass('pastedelement');
+			$imgtable.filter('img').addClass('localsource');
 			$content.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
 			o.content = $content.html();
 			/*
@@ -3155,6 +3168,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
 			if ($td.length) $td.css('border','');
 			var $imgtable = $content.children('img,table');
+			$imgtable.filter('img').addClass('localsource');
 			if ($imgtable.length){
 				if (hasp){
 					$imgtable.addClass('pastedelement').removeAttr('width').removeAttr('height');
@@ -3264,6 +3278,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						var content = '';
 						if ($this.attr('data-edition').indexOf('text') > -1){
 							content = tinymce.get($this.attr('id')).getContent();
+							//content = $this.html();
 						} else if ($this.attr('data-edition').indexOf('graphic') > -1){
 							content = $this.html();
 						} else if ($this.attr('data-edition').indexOf('dynamic') > -1){
