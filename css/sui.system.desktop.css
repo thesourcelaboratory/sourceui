@@ -699,7 +699,7 @@ main.sui-load-border .sui-spinner .container,
 
 .scroll-all > .sui-layout.table , .scroll-xy > .sui-layout.table { width:100% !important; }
 
-@media (max-width: 1280px) {
+@media (max-width: 1180px) {
 	.sui-aside.left { width:300px; }
 	.sui-nav:not(.navigation) { width:300px; }
 	.sui-main { left:300px; width:calc(100% - 300px); }
@@ -707,4 +707,10 @@ main.sui-load-border .sui-spinner .container,
 	.sui-floatsector-container.medium { padding:4vh 20vw; }
 	.sui-floatsector-container.small { padding:12vh 32vw; }
 	.sui-floatsector-container.modal { padding:12vh 20vh; }
+}
+@media (min-width: 1680px) {
+	.sui-floatsector-container.large { padding:8vh 18vw; }
+	.sui-floatsector-container.medium { padding:10vh 26vw 12vh 26vw; }
+	.sui-floatsector-container.small { padding: 14vh 40vw 14vh 40vw; }
+	.sui-floatsector-container.modal { padding:14vh 30vw 14vh 30vw; }
 }
