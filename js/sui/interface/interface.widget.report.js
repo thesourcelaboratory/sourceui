@@ -1228,7 +1228,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			data[$v.attr('name')] = $v.attr('value') || $v.text();
 		});
 		data.usecover = Report.document.find('.page.fullcovered').attr('data-visible');
-		data.reportName = $.trim(Report.document.find('.page.covered-default .reportName .block, .page.covered-default .reportName').first().text());
+		data.reportName = $.trim(Report.document.find('.page.covered-default .block.reportName, .page.covered-default .cell.reportName .block').first().text());
 		Report.document.trigger('document:openfloat',[Report.document, $.extend(data,{
 			form:'metadata',
 		})]);
