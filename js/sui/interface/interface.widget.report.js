@@ -184,7 +184,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			return $.md5(content);
 		},
 		spanwidth: function($elem){
-			var orig = {display:$elem.css('display'),width:$elem.css('width')};
+			var hasdisplay = ($elem.attr('display')||'').indexOf('display') > -1
+			var haswidth = ($elem.attr('style')||'').indexOf('width') > -1
+			var orig = {
+				display: hasdisplay ? $elem.css('display') : '',
+				width: haswidth ? $elem.css('width') : ''
+			};
 			$elem.css({display:'inline',width:'auto'});
 			var width = Math.round($elem.width()/10);
 			$elem.css({display:orig.display,width:orig.width});
@@ -1632,7 +1637,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $ctn = $this.closest('.container');
 		$ctn.removeAttr('style');
-		$ctn.find('.line > .col[style]').removeAttr('style');
+		$ctn.find('.line > .col').removeAttr('style');
+		$ctn.trigger('container:dimension');
 	});
 	Report.document.on('click','.container-actions .move a',function(){
 		var $this = $(this);
@@ -2047,7 +2053,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('container:dimension','.container',function(event){
 		var $ctn = $(this);
-		var $cols = $ctn.find('.line:eq(0) > .col');
+		var $cols = $ctn.find('.line > .col');
 		$cols.each(function(){
 			var $c = $(this);
 			$c.innerWidth($c.innerWidth());
@@ -2069,7 +2075,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				shouldEase: false,
 				place: false,
 				useCSSTranslation: false,
-				shouldPreventDefault: false,
+				shouldPreventDefault: true,
 				start:function(ev, obj){
 					var $d = obj.$el;
 					$ctn.trigger('container:active');
@@ -2098,6 +2104,10 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 					$resizes.height($ctn.outerHeight());
 					$d.attr('style','');
+					$ctn.find('.line:gt(0) > .col').removeAttr('style').each(function(){
+						var $c = $(this);
+						$c.innerWidth($c.innerWidth());
+					});
 					Report.document.trigger('document:change',[$page]);
 				}
 			});
@@ -2654,10 +2664,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.trigger('document:change',[$page]);
 		if ($new.is('[data-boxgroup]')) return;
 		/** HISTORY STACK *****************************************************************************************************************************************************/
+		/*
 		historyStack.push({
 			do:   { action:'addedition', page:$page, fieldwrap:$new, reference:$ref, placement:placement, scrolltop:Report.scroll.scrollTop(), label:'Box added again' },
 			undo: { action:'removeedition', edition:$edit, scrolltop:Report.scroll.scrollTop(), label:'Added box removed' }
 		});
+		*/
 		/**********************************************************************************************************************************************************************/
 	});
 	Report.document.on('page:scrollto','.page',function(event,$new,$ref,placement){
@@ -3388,6 +3400,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			},
 			main: function($elem){
 				var suiXml = '';
+				var h = $elem.height();
 				$elem.children().each(function(){
 					var $this = $(this);
 					if ($this.hasClass('row')) suiXml += wdata.suify.row($this);
@@ -3395,7 +3408,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					else if ($this.hasClass('fieldwrap')) suiXml += wdata.suify.fieldwrap($this);
 					else if ($this.hasClass('container')) suiXml += wdata.suify.container($this);
 				});
-				return '<main>'+suiXml+'</main>';
+				return '<main data:height="'+h+'px">'+suiXml+'</main>';
 			},
 			header: function($elem,repetition){
 				if (repetition){

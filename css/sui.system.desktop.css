@@ -708,7 +708,7 @@ main.sui-load-border .sui-spinner .container,
 	.sui-floatsector-container.small { padding:12vh 32vw; }
 	.sui-floatsector-container.modal { padding:12vh 20vh; }
 }
-@media (min-width: 1680px) {
+@media (min-width: 1760px) {
 	.sui-floatsector-container.large { padding:8vh 18vw; }
 	.sui-floatsector-container.medium { padding:10vh 26vw 12vh 26vw; }
 	.sui-floatsector-container.small { padding: 14vh 40vw 14vh 40vw; }

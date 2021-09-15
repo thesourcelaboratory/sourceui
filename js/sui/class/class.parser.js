@@ -2865,6 +2865,7 @@ sourceui.Parser = function () {
 					},
 					main : function(sui){
 						var htmlContent = '';
+						console.log(sui.attr('data-height'),sui);
 						sui.findChild(function () {
 							if (this.nodeName == 'row') htmlContent += Components.libs.widget.report.row(this);
 							else if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
