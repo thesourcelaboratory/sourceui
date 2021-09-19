@@ -780,6 +780,9 @@
 .disable .mce-toolbar-grp, .readonly .mce-toolbar-grp { display:none !important; }
 .disable .mce-edit-area, .readonly .mce-edit-area { border-width: 0px  !important; background:transparent !important; }
 .disable .mce-panel, .readonly .mce-panel { border:none !important; }
+.mce-menu-item.mce-disabled .mce-ico,
+.mce-menu-item.mce-disabled .mce-text { color:#bbbbbb !important; }
+
 
 /* FROALA EDITOR */
 .sui-field.froala { width:100%; }

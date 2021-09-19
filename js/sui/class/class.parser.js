@@ -1001,6 +1001,8 @@ sourceui.Parser = function () {
 	var Userguide = Plugins.userguide;
 	var Session = Device.session.data();
 
+	var isPT = (Dom.html.attr('lang').indexOf('pt-') > -1);
+
 	var Console;
 
 	var setup;
@@ -1403,8 +1405,8 @@ sourceui.Parser = function () {
 					color: sui.attr('color'),
 					position: sui.attr('position'),
 					duration: sui.attr('duration'),
-					name: 'Desconhecido',
-					message: 'Ocorreu um erro desconhecido.'
+					name: isPT ? 'Desconhecido' : 'Unknown',
+					message: isPT ? 'Ocorreu um erro desconhecido.' : 'An unknown error was occurred.'
 				};
 				sui.findChild('name', function () { cfg.name = this.content(); });
 				sui.findChild('label', function () { cfg.label = this.content(); });
@@ -1455,9 +1457,9 @@ sourceui.Parser = function () {
 				if (haserror) {
 					Notify.open({
 						type: 'error',
-						name: 'Validação',
-						label: 'Ops... algo errado não está certo, Batman',
-						message: 'Os dados do formulário são invalidos',
+						name: isPT ? 'Validação' : 'Validation',
+						label: isPT ? 'Ops... algo errado não está certo, Batman' : 'Oops... something got wrong, Batman',
+						message: isPT ? 'Os dados do formulário são invalidos' : 'Some form data is invalid',
 					});
 				}
 
@@ -1475,8 +1477,8 @@ sourceui.Parser = function () {
 				var cfg = Components.libs.confirmg(sui);
 				if (cfg.pattern == 'session-invalid') {
 					cfg.type = cfg.type || 'alert';
-					cfg.title = cfg.title || 'Sessão inválida';
-					cfg.desc = cfg.desc || 'Você precisa ter uma sessão autenticada válida para acessar essa área do sistema.<br/><br/>Uma nova autenticação é requerida.';
+					cfg.title = cfg.title || isPT ? 'Sessão inválida' : 'Invalid Session';
+					cfg.desc = cfg.desc || isPT ? 'Você precisa ter uma sessão autenticada válida para acessar essa área do sistema.<br/><br/>Uma nova autenticação é requerida.' : 'You need a valid authenticated session to access this system area.<br/><br/>A new login is required.';
 					cfg.button = {
 						label: 'Recarregar',
 						background: '#c35043',
@@ -2787,6 +2789,7 @@ sourceui.Parser = function () {
 						if (sui.attr('type') && !sui.attr('data:type')) sui.attr('data:type',sui.attr('type'));
 						else if (!sui.attr('type') && sui.attr('data:type')) sui.attr('type',sui.attr('data:type'));
 						if (!sui.attr('data:edition') && sui.attr('data:position')) sui.attr('style',sui.attr('data:position'));
+						if (sui.attr('data:background')) sui.attr('style','background:'+sui.attr('data:background')+'; '+sui.attr('style'));
 						return sui.toHTML('wg', 'report', 'block', { child: { content: htmlContent }},  Template.get);
 					},
 					col : function(sui){
@@ -3310,8 +3313,8 @@ sourceui.Parser = function () {
 				});
 				Notify.open({
 					type: 'fatal',
-					name: 'Isso é bem constrangedor...',
-					message: 'Uma falha ocorreu ao processar o arquivo de resposta'
+					name: isPT ? 'Isso é bem constrangedor...' : 'This is awkward...',
+					message: isPT ? 'Uma falha ocorreu ao processar o arquivo de resposta' : 'A fail occurred when a response got processed'
 				});
 				setup.metric.add('parseEndTime');
 				setup.metric.add('bytesTotal', setup.response.textData ? setup.response.textData.length : 0);

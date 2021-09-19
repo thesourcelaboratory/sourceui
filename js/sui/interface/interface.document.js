@@ -33,6 +33,7 @@ sourceui.interface.document = function () {
 
 
 	Dom.window = this.window = $(window);
+	Dom.html = this.html = $('html');
 	Dom.document = this.element = $(document);
 	Dom.head = this.head = $('head');
 	Dom.body = this.body = $('#suiBody');

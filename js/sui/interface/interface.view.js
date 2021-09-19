@@ -35,6 +35,9 @@ sourceui.interface.view = function ($view, setup) {
 	var Interface = sourceui.interface;
 	var Dom = Interface.dom;
 
+	var isPT = (Dom.html.attr('lang').indexOf('pt-') > -1);
+
+
 	View.element = $view || setup.response.parsedJQ;
 	View.sector = View.element.closest('.sui-sector');
 	View.scrolltabs = View.sector.find('#suiTabsView');
@@ -122,9 +125,9 @@ sourceui.interface.view = function ($view, setup) {
 				if (notify){
 					Notify.open({
 						type: 'error',
-						name: 'Validação',
-						label: 'Ops... algo errado não está certo, Batman',
-						message: 'Dados do formulário são invalidos',
+						name: isPT ? 'Validação' : 'Validation',
+						label: isPT ? 'Ops... algo errado não está certo, Batman' : 'Oops... something got wrong, Batman',
+						message: isPT ? 'Dados do formulário são invalidos' : 'Some form data was invalid',
 					});
 				}
 			});

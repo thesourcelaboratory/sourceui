@@ -35,6 +35,8 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
     var Dom = Interface.dom;
     var JSONX = JSON5 || JSON;
 
+	var isPT = (Dom.html.attr('lang').indexOf('pt-') > -1);
+
     Handson.valid = true;
     Handson.invalid = {};
     Handson.common = new Interface.widget.common($widget, setup);
@@ -266,9 +268,9 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
         } else {
             Notify.open({
                 type: 'error',
-                name: 'Validação',
-                label: 'Oh... algo não está bom',
-                message: 'Dados na planilha são inválidos',
+                name: isPT ? 'Validação' : 'Validation',
+                label: isPT ? 'Oh... algo não está bom' : 'Oh... something is not so good',
+                message: isPT ? 'Dados na planilha são inválidos' : 'Spreadsheet data was invalid',
             });
         }
         return Handson.valid;

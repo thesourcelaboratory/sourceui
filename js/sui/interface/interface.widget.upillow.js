@@ -34,6 +34,8 @@ sourceui.interface.widget.upillow = function($widget,setup){
 	var Interface = sourceui.interface;
 	var Dom = Interface.dom;
 
+	var isPT = (Dom.html.attr('lang').indexOf('pt-') > -1);
+
 	Upillow.common = new Interface.widget.common($widget,setup);
 	Upillow.widget = $widget;
 	Upillow.code = this.widget.children('code');
@@ -99,8 +101,8 @@ sourceui.interface.widget.upillow = function($widget,setup){
 			Upillow.widget.trigger('upload:complete');
 			Notify.open({
 				type : 'valid',
-				name : 'Upload de arquivos',
-				message : 'O processo foi concluído com sucesso',
+				name : isPT ? 'Upload de arquivos' : 'Upload files',
+				message : isPT ? 'O processo foi concluído com sucesso' : 'Process was finished successful',
 			});
 		},
 		filecomplete: function(t,r){
@@ -110,16 +112,16 @@ sourceui.interface.widget.upillow = function($widget,setup){
 			Trace(r);
 			Notify.open({
 				type : 'error',
-				name : 'Upload de arquivos',
-				message : 'Erros ocorreram durante a execução do processo',
+				name : isPT ? 'Upload de arquivos' : 'Upload files',
+				message : isPT ? 'Erros ocorreram durante a execução do processo' : 'Errors was triggered while process execution',
 			});
 		},
 		fileerror: function(e,r){
 			Trace(r);
 			Notify.open({
 				type : 'error',
-				name : 'Upload de arquivos',
-				message : 'Alguns arquivos não puderam ser transmitidos para o servidor',
+				name : isPT ? 'Upload de arquivos' : 'Upload files',
+				message : isPT ? 'Alguns arquivos não puderam ser transmitidos para o servidor' : 'Some files could not be sent to the server',
 			});
 		},
 	}

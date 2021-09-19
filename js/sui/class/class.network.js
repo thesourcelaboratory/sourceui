@@ -38,6 +38,8 @@ sourceui.Network = function () {
 	var History = {};
 	var ActiveRequests = {};
 
+	var isPT = ($('html').attr('lang').indexOf('pt-') > -1);
+
 
 	this.online = typeof navigator.onLine !== 'undefined' ? navigator.onLine : true;
 
@@ -389,9 +391,9 @@ sourceui.Network = function () {
 					if (setup.process) {
 						Notify.open({
 							type: 'warn',
-							name: 'Muita calma nessa hora...',
+							name: isPT ? 'Muita calma nessa hora...' : 'Hang on...',
 							label: setup.suiname,
-							message: 'O processo está em andamento e precisa ser concluído pelo servidor.',
+							message: isPT ? 'O processo está em andamento e precisa ser concluído pelo servidor.' : 'The process is getting finished by the server.',
 						});
 					}
 					else {
@@ -404,9 +406,9 @@ sourceui.Network = function () {
 							}).show();
 							Notify.open({
 								type: 'warn',
-								name: 'Alerta de Rede',
+								name: isPT ? 'Alerta de Rede' : 'Network warning',
 								label: setup.suiname,
-								message: 'A requisição foi cancelada',
+								message: isPT ? 'A requisição foi cancelada' : 'Request was aborted',
 							});
 						}
 					}
@@ -1204,9 +1206,9 @@ sourceui.Network = function () {
 						setup.slowtimeout = setTimeout(function () {
 							Notify.open({
 								type: 'warn',
-								name: 'Poxa, está bem lento...',
+								name: isPT ? 'Poxa, está bem lento...' : 'Very very slow...',
 								label: setup.suiname,
-								message: 'Tentaremos concluir essa tarefa a tempo.<br/>Verifique a conexão de internet logo em seguida.',
+								message: isPT ? 'Tentaremos concluir essa tarefa a tempo.<br/>Verifique a conexão de internet logo em seguida.' : 'We gonna try to get things finished on server.<br/>Check your internet connection quality before you keep going forward.',
 							});
 						}, 25000);
 					}
@@ -1376,7 +1378,7 @@ sourceui.Network = function () {
 								});
 								Notify.open({
 									type: 'error',
-									name: 'Falha de Requisição',
+									name: isPT ? 'Falha de Requisição' : 'Request error',
 									label: setup.suiname,
 									message: error,
 								});
@@ -1696,9 +1698,9 @@ sourceui.Network = function () {
 						if (!setup.response) {
 							Notify.open({
 								type: 'warn',
-								name: 'O upload não foi concluído',
+								name: isPT ? 'O upload não foi concluído' : 'Upload could not be finished',
 								label: setup.sui,
-								message: 'O tempo limite da conexão foi alcançado ('+setup.timeout+'ms).',
+								message: isPT ? 'O tempo limite da conexão foi alcançado ('+setup.timeout+'ms).' : 'Connection timeout was reached ('+setup.timeout+'ms).',
 							});
 							Upload.stop();
 						}
@@ -2198,7 +2200,7 @@ sourceui.Network = function () {
 			var dwld;
 			if (typeof setup.download == 'object') dwld = download(setup.download.url, setup.download.name, setup.download.mime);
 			else dwld = download(setup.download);
-			if (dwld) $.tipster.notify('Aguarde, baixando arquivo...');
+			if (dwld) $.tipster.notify(isPT ? 'Aguarde, baixando arquivo...' : 'Wait, dowloading file...');
 			return dwld;
 
 		}

@@ -1810,8 +1810,13 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		var $page = $fieldwrap.closest('.page');
-		$edit.toggleClass('extramargin');
-		$this.toggleClass('active');
+		if (!$edit.hasClass('extramargin')){
+			$edit.addClass('extramargin');
+			$this.addClass('active');
+		} else {
+			$edit.removeClass('extramargin');
+			$this.removeClass('active');
+		}
 		Report.document.trigger('document:change',[$page]);
 	});
 	Report.document.on('click','.edition-actions .editable a',function(){
@@ -1829,6 +1834,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $clone = $fieldwrap.clone();
 		$page.trigger('page:addedition',[$clone,$fieldwrap,'after']);
 		$clone.children('[data-edition]').focus();
+		Report.document.trigger('document:boxcount');
 	});
 	Report.document.on('click','.edition-actions .split a',function(){
 		var $this = $(this);
@@ -2730,7 +2736,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.trigger('document:validate');
 		Report.widget.trigger('field:input');
 		Report.document.trigger('document:pagelist');
-		Report.document.trigger('document:disclaimerrefpage');
+		setTimeout(function(){ Report.document.trigger('document:disclaimerrefpage'); },350);
 	});
 	Report.document.on('document:disclaimerrefpage',function(event){
 		var $page = Report.document.find('.block.global-disclaimer:eq(0)').closest('.page');
@@ -2857,6 +2863,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $page = $(this);
 			var pgindex = $pages.index($page) + 1;
 			$page.find('[data-pagenumber] i').text(pgindex);
+			$page.find('.page-actions li.label').text('Page '+pgindex);
 		});
 
 	});
@@ -3057,11 +3064,17 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				}
 			});
-			/*
-			editor.on('BeforeAddUndo', function(e) {
-				return false;
+			editor.on('NodeChange', function(e) {
+				if ($ed.is('[data-edition="richtext"],[data-edition="graphic"]')){
+					var $elem = e.element ? $(e.element) : $();
+					var $toolroot = $('#tinymceinlinetoolbar .mce-tinymce-inline:visible');
+					if ($elem.is('img')){
+						$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').show();
+					} else {
+						$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').hide();
+					}
+				}
 			});
-			*/
 		}
 	};
 	var mceSetupText = $.extend(true, {}, mceSetup, {
@@ -3085,7 +3098,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetupTinytext = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="tinytext"]:not(.inited)',
 		forced_root_block : 'p',
-		toolbar: 'undo redo | removeformat | bold italic underline | forecolor | alignleft aligncenter alignright',
+		toolbar: 'undo redo | removeformat | bold italic underline | forecolor | alignleft aligncenter alignjustify alignright',
 		valid_elements: 'p[style],h1[style|class],h2[style|class],h3[style|class],h4[style|class],strong[style]/b[style],em,span[style|class],a[href],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align,font-style'
@@ -3099,7 +3112,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		imagetools_toolbar: 'none',
 		paste_data_images: false,
 		toolbar: [
-			'undo redo | removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent | link | table | editimage imageoptions '
+			'undo redo | removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignjustify alignright | numlist bullist outdent indent | link | table | editimage imageoptions '
 		],
 		automatic_uploads: true,
 		file_picker_types: 'image',

@@ -34,6 +34,8 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 	var Notify = Plugin.notify;
 	var Dom = Interface.dom;
 
+	var isPT = (Dom.html.attr('lang').indexOf('pt-') > -1);
+
 	Datagrid.common = new Interface.widget.common($widget, setup);
 	Datagrid.widget = $widget;
 	Datagrid.view = Datagrid.widget.closest('.sui-view');
@@ -96,7 +98,7 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 					type: 'alert',
 					name: $this.text() || $this.attr('title') || $this.attr('alt') || 'Ação',
 					label: Datagrid.widget.find('.title h3 span').text(),
-					message: 'Selecione pelo menos um registro.'
+					message: isPT ? 'Selecione pelo menos um registro.' : 'Select at least one register.'
 				});
 			}
 			event.stopImmediatePropagation();
