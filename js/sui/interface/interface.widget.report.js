@@ -1546,11 +1546,14 @@ sourceui.interface.widget.report = function($widget,setup){
 						$page.attr('data-background',data.src);
 						Report.document.trigger('document:change',[$page]);
 						$.tipster.notify('Image auto uploaded');
+						$page.removeClass('ajax-courtain');
 					},function(){
 						$.tipster.notify('Image upload not allowed');
+						$page.removeClass('ajax-courtain');
 					});
 					///////////////////////////////////////////
 				};
+				$page.addClass('ajax-courtain');
 				reader.readAsDataURL(file);
 			};
 			input.click();
@@ -1778,12 +1781,14 @@ sourceui.interface.widget.report = function($widget,setup){
 					$img.attr('src',data.src);
 					Report.document.trigger('document:change',[$page]);
 					$.tipster.notify('Image auto uploaded');
+					$edit.removeClass('ajax-courtain');
 				},function(){
 					$.tipster.notify('Image upload not allowed');
 				});
 				///////////////////////////////////////////
 			};
 			reader.readAsDataURL(file);
+			$edit.addClass('ajax-courtain');
 		};
 		input.click();
 	});
@@ -2372,14 +2377,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			$js.remove();
 		});
 	});
-	Report.document.on('edition:chartpngloaded','[data-edition]',function(event,$img){
-		var pngData = $img.attr('src');
-		Graphic.post(pngData, null, function(data){
-			$img.attr('src',data.src);
-		},function(){
-			$.tipster.notify('Chart upload not allowed');
-		});
-	});
 	Report.document.on('edition:cleanmce','[data-edition]',function(event){
 		var $this = $(this);
 		$this.removeClass('mce-content-body inited content-placeholder mce-edit-focus').removeAttr('id').removeAttr('contenteditable');
@@ -2403,41 +2400,50 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('edition:uploadimgs','[data-edition]',function(){
 		var $this = $(this);
-		var $imgs = $this.find('img[src*="blob:"]:not(.uploading)');
-		$imgs.each(function(){
-			var $img = $(this).addClass('uploading');
-			/////////////////////////////////////////////////
-			Graphic.base64($img.attr('src'),function(base64){
-				Graphic.post(base64, null, function(data){
+		setTimeout(function(){
+			var $imgsBlob = $this.find('img.localsource[src*="blob:"]:not(.uploading)');
+			$imgsBlob.each(function(){
+				var $img = $(this).addClass('uploading');
+				/////////////////////////////////////////////////
+				Graphic.base64($img.attr('src'),function(base64){
+					Graphic.post(base64, null, function(data){
+						$img.attr('src',data.src);
+						$img.removeClass('uploading');
+						$img.removeClass('localsource');
+						$img.addClass('uploaded');
+						$.tipster.notify('Image auto uploaded');
+						if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
+					},function(){
+						$img.addClass('localsource');
+						$.tipster.notify('Image upload not allowed');
+						$this.removeClass('ajax-courtain');
+					});
+				},function(){
+					$img.addClass('localsource');
+					$.tipster.notify('Image data not converted');
+					$this.removeClass('ajax-courtain');
+				});
+				/////////////////////////////////////////////////
+			});
+			var $imgsData = $this.find('img.localsource[src*="data:"]:not(.uploading)');
+			$imgsData.each(function(){
+				var $img = $(this).addClass('uploading');
+				/////////////////////////////////////////////////
+				Graphic.post($img.attr('src'), null, function(data){
 					$img.attr('src',data.src);
 					$img.removeClass('uploading');
+					$img.removeClass('localsource');
 					$img.addClass('uploaded');
 					$.tipster.notify('Image auto uploaded');
+					if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
 				},function(){
 					$img.addClass('localsource');
 					$.tipster.notify('Image upload not allowed');
+					$this.removeClass('ajax-courtain');
 				});
-			},function(){
-				$img.addClass('localsource');
-				$.tipster.notify('Image data not converted');
+				/////////////////////////////////////////////////
 			});
-			/////////////////////////////////////////////////
-		});
-		$imgs = $this.find('img[src*="data:"]:not(.uploading)');
-		$imgs.each(function(){
-			var $img = $(this).addClass('uploading');
-			/////////////////////////////////////////////////
-			Graphic.post($img.attr('src'), null, function(data){
-				$img.attr('src',data.src);
-				$img.removeClass('uploading');
-				$img.addClass('uploaded');
-				$.tipster.notify('Image auto uploaded');
-			},function(){
-				$img.addClass('localsource');
-				$.tipster.notify('Image upload not allowed');
-			});
-			/////////////////////////////////////////////////
-		});
+		},100);
 	});
 	Report.document.on('edition:contenthash','[data-edition]',function(){
 		var $this = $(this);
@@ -2456,11 +2462,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			$page = $boxgroup.length ? $boxgroup.filter(':eq(0)').closest('.page') : $page;
 		}
 		Report.document.trigger('document:change',[$page]);
-		var $localsource = $this.find('img.localsource');
-		if ($localsource.length){
-			$this.trigger('edition:uploadimgs');
-			$localsource.removeClass('localsource');
-		}
 	});
 	Report.document.on('edition:nodechange','[data-edition]',function(event,node){
 		var $this = $(this);
@@ -3048,7 +3049,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
-				//$ed.trigger('edition:uploadimgs');
+				$ed.trigger('edition:uploadimgs');
 				historyStack.clear();
 			});
 			editor.on('blur', function (e) {
@@ -3146,20 +3147,17 @@ sourceui.interface.widget.report = function($widget,setup){
 		paste_preprocess : function(pl, o) {
 			var $content = $('<div>'+o.content+'</div>');
 			var $imgtable = $content.children('img,table');
+			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
 			$imgtable.addClass('pastedelement');
-			$imgtable.filter('img').addClass('localsource');
+			$imglocal.addClass('localsource');
 			$content.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
 			o.content = $content.html();
-			/*
-			if ($imgtable.length){
-				$.tipster.notify('Paste only formatted text');
-				o.content = '';
-			} else {
-				$content.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
-				o.content = $content.html();
+			if ($imglocal.length){
+				var $target = $(o.target.selection.getNode());
+				var $field = $target.closest('[data-edition]');
+				$field.addClass('ajax-courtain');
 			}
-			*/
-		},
+		}
 	});
 	var mceSetupGraphic = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="graphic"]:not(.inited)',
@@ -3193,7 +3191,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
 			if ($td.length) $td.css('border','');
 			var $imgtable = $content.children('img,table');
-			$imgtable.filter('img').addClass('localsource');
+			var $imglocal = $img.filter('img[src*="blob:"],img[src*="data:"]');
+			$imglocal.addClass('localsource');
 			if ($imgtable.length){
 				if (hasp){
 					$imgtable.addClass('pastedelement').removeAttr('width').removeAttr('height');
@@ -3201,6 +3200,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				} else {
 					$.tipster.notify('Paste in middle only');
 					o.content = '<p></p>';
+				}
+				if ($imglocal.length){
+					$field.addClass('ajax-courtain');
 				}
 			} else {
 				if (hash){
@@ -3210,7 +3212,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					o.content = hasp ? '<p></p>' : '';
 				}
 			}
-		},
+		}
 	});
 
 
