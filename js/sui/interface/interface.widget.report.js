@@ -1692,7 +1692,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $li = $(this).removeClass('deny allow');
 				var a = $li.data('action');
 				if (a == 'margin'){
-					if ($this.is('.extramargin')) $li.children('a').addClass('active');
+					if ($this.is('[data-extramargin]')) $li.children('a').addClass('active');
 					else $li.children('a').removeClass('active');
 				} else if (a == 'editable'){
 					if ($this.attr('contenteditable') == "true") $li.children('a').addClass('active');
@@ -1747,7 +1747,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			titles: titles.length ? titles : [{indexer:'',type:'',text:''}],
 			legend: $edit.find('h5').text(),
 			background: $edit.attr('data-background'),
-			margin: $edit.hasClass('extramargin') ? 'S' : 'N',
+			margin: $edit.attr('data-extramargin') || 'N',
 			editable: $edit.attr('contenteditable'),
 		}]);
 	});
@@ -1810,11 +1810,11 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		var $page = $fieldwrap.closest('.page');
-		if (!$edit.hasClass('extramargin')){
-			$edit.addClass('extramargin');
+		if (!$edit.attr('data-extramargin')){
+			$edit.attr('data-extramargin','S');
 			$this.addClass('active');
 		} else {
-			$edit.removeClass('extramargin');
+			$edit.removeAttr('data-extramargin');
 			$this.removeClass('active');
 		}
 		Report.document.trigger('document:change',[$page]);
