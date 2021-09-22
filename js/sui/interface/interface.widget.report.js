@@ -65,7 +65,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			___cnsl.log('initStak',where,stack);
 		},
 		log: function(){
-			//return;
+			return;
 			var a=[],l;
 			$.each(arguments,function(k,v){
 				if (v instanceof HTMLElement || v instanceof jQuery || typeof v === 'object') l = v;
