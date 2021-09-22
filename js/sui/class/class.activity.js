@@ -335,6 +335,9 @@ sourceui.Activity = function () {
 							if (!$hover.length && !$focus.is('.text, .number')) $focus.firstFound('.cell.button').trigger('click');
 							else if ($hover.is('li, a')) $hover.trigger('click');
 						}
+						else if ($focus.is('.mce-content-body')){
+							Active.eventPrevent = false;
+						}
 						else if ($focus.is('.sui-floatsector-container')) Dom.document.trigger('activity:focus', [$focus.children('.sui-sector')]);
 					} else {
 						Dom.document.trigger('activity:focus', [$focus]);
@@ -573,8 +576,6 @@ sourceui.Activity = function () {
 				Active.eventPrevent = true;
 			}
 		}
-
-
 
 		if (Active.eventPrevent) {
 			event.stopPropagation();

@@ -468,30 +468,16 @@ sourceui.interface.widget.report = function($widget,setup){
 				let $edition = $fieldwrap.children('[data-edition]');
 				let $caret = $edition.find('.caret-autobreak');
 				if ($caret.length){
-					//setTimeout(function(){
-						//$edition.focus();
-						var ed = tinymce.get($edition.attr('id'));
-						if (ed){
-							ed.focus();
-							ed.selection.select($caret.get(0));
-						}
-						$caret.remove();
-						$.event.trigger({ type : 'keypress' });
-					//},1000)
+					var ed = tinymce.get($edition.attr('id'));
+					if (ed){
+						ed.focus();
+						ed.selection.select($caret.get(0));
+					}
+					$caret.remove();
+					$.event.trigger({ type : 'keypress' });
 				}
 			}
 		}
-	};
-
-	var pageContentChangeId = function($page){
-		var content = '';
-		$page.find('.block').each(function(){
-			content += $(this).html();
-		});
-		content += $page.attr('data-background');
-		content += $page.attr('data-visivle');
-		content += $page.attr('data-layout');
-		return $.md5(content);
 	};
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -742,7 +728,64 @@ sourceui.interface.widget.report = function($widget,setup){
 				boxFitter.boxgroupID($nextwrap,bgID);
 			}
 		},
-		breakBox: function($box,$edge){
+		flowText: function($edition){
+			var $edge = $edition.closest('.content, .side');
+			var $fieldwrap = $edition.parent();
+			var $contentNew = boxFitter.breakBox($fieldwrap,$edge,true);
+			var contentNew = $contentNew.html();
+			if (contentNew){
+				var $page = $edition.closest('.page');
+				var $next = $page.next('.page').find('[data-edition="'+$edition.attr('data-edition')+'"]');
+				var $nextwrap = $next.parent();
+				if ($nextwrap.is(':first-of-type')){
+					$next.prepend(contentNew);
+				} else {
+					boxFitter.appendBroken($edition,$edge,$contentNew);
+				}
+			}
+		},
+		appendBroken: function($edition,$edge,$contentNew,$boxNextAll){
+			var contentNew = $contentNew.html();
+			if (contentNew){
+				var $cloneedition = $edition.clone().html('');
+				$cloneedition.html(contentNew);
+
+				var $clonewrap = $('<div class="fieldwrap '+$cloneedition.data('edition')+' active" data-boxgroup="'+$edition.attr('data-belongstogroup')+'" />').append($cloneedition);
+
+				var $page = $edge.closest('.page'), $clonepage;
+
+				var pagelayout = $page.data('layout');
+				if (pagelayout == 'covered-default') pagelayout = 'splited';
+
+				var $nextpage = $page.next('.page[data-layout="'+pagelayout+'"]');
+
+				if ($nextpage.length){
+					if ($edge.is('.side')) {
+						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.side'),'prepend']);
+					} else if ($edge.is('.content')){
+						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.content'),'prepend']);
+					} else {
+						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.main > .row > .cell'),'prepend']);
+					}
+					___cnsl.log('breakBox','contentNew','prepend to next page',$nextpage.get(0));
+				} else {
+					$clonepage = Report.templates.children('.page[data-layout="'+pagelayout+'"]').clone();
+					Report.document.trigger('document:addpage',[$clonepage,$page,'after']);
+					if ($edge.is('.side')){
+						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.side'),'prepend']);
+					} else if ($edge.is('.content')){
+						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.content'),'prepend']);
+					} else {
+						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.main > .row > .cell'),'prepend']);
+					}
+					___cnsl.log('breakBox','contentNew','prepend to new page',$clonepage.get(0));
+				}
+				if ($boxNextAll) $clonewrap.after($boxNextAll);
+				//$page.trigger('page:active');
+			}
+
+		},
+		breakBox: function($box,$edge,returnBroken){
 
 			var $edition = $box.children('[data-edition]');
 			$edge = $edge || $box.parent();
@@ -921,45 +964,10 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			});
 			___cnsl.log('breakBox','contentNew',$contentNew.get(0));
-			var contentNew = $contentNew.html();
-			if (contentNew){
-				var $cloneedition = $edition.clone().html('');
-				$cloneedition.html(contentNew);
-
-				var $clonewrap = $('<div class="fieldwrap '+$cloneedition.data('edition')+' active" data-boxgroup="'+bgID+'" />').append($cloneedition);
-
-				var $page = $edge.closest('.page'), $clonepage;
-
-				var pagelayout = $page.data('layout');
-				if (pagelayout == 'covered-default') pagelayout = 'splited';
-
-				var $nextpage = $page.next('.page[data-layout="'+pagelayout+'"]');
-
-				if ($nextpage.length){
-					if ($edge.is('.side')) {
-						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.side'),'prepend']);
-					} else if ($edge.is('.content')){
-						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.content'),'prepend']);
-					} else {
-						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.main > .row > .cell'),'prepend']);
-					}
-					___cnsl.log('breakBox','contentNew','prepend to next page',$nextpage.get(0));
-				} else {
-					$clonepage = Report.templates.children('.page[data-layout="'+pagelayout+'"]').clone();
-					Report.document.trigger('document:addpage',[$clonepage,$page,'after']);
-					if ($edge.is('.side')){
-						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.side'),'prepend']);
-					} else if ($edge.is('.content')){
-						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.content'),'prepend']);
-					} else {
-						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.main > .row > .cell'),'prepend']);
-					}
-					___cnsl.log('breakBox','contentNew','prepend to new page',$clonepage.get(0));
-				}
-
-				$clonewrap.after($boxNextAll);
-				$page.trigger('page:active');
-			}
+			/////////////////////////////////////
+			if (returnBroken) return $contentNew;
+			else boxFitter.appendBroken($edition,$edge,$contentNew,$boxNextAll);
+			/////////////////////////////////////
 			$box.removeClass('overflew toolarge');
 		},
 		unbreakBox: function($boxGroup,forcestrapolate){
@@ -980,11 +988,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					___cnsl.log('unbreakBox',box);
 					var $edition = $box.children('[data-edition]');
 					var content, $content;
-					if (($edition.attr('data-edition') || '').indexOf('richtext') > -1){
-						content = tinymce.get($edition.attr('id')).getContent();
-					} else {
-						content = $edition.html();
-					}
+					content = $edition.html();
 					if (content){
 						var $sourcemovedcontent = $contentAll.find('.sourcemovedcontent:eq(0)');
 						if ($sourcemovedcontent.length){
@@ -1027,11 +1031,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					___cnsl.log('unbreakBox','contentAll',$contentAll.get(0));
 					var $b = $boxGroup.filter(':eq(0)');
 					var $e = $b.children('[data-edition]');
-					if (($e.attr('data-edition') || '').indexOf('text') > -1){
-						tinymce.get($e.attr('id')).setContent(contentAll);
-					} else {
-						$e.html(contentAll);
-					}
+					$e.html(contentAll);
 					$boxGroup.filter(':gt(0)').remove();
 					return true;
 				}
@@ -1096,12 +1096,16 @@ sourceui.interface.widget.report = function($widget,setup){
 			return false;
 		},
 		isExtrapolatedBox: function($box,$edge){
+
+			var paddingTolerance = 8; // is the P padding at end of box, that always overflow the height.
+
 			$edge = $edge || $box.parent();
 			if ($edge.is('.content')){
-				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.closest('.main').width(), edgeHeight = $edge.height();
+				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.closest('.main').width(), edgeHeight = $edge.height() + paddingTolerance;
 			} else {
-				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height();
+				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height() + paddingTolerance;
 			}
+
 			strapolateHeight = boxPos.top > edgeHeight;
 			if (strapolateHeight) return 3;
 			strapolateHeight = (boxPos.top + $box.outerHeight(true)) > edgeHeight;
@@ -1109,7 +1113,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			return false;
 		},
-		testPage: function($page,forceunbreak){
+		testPage: function($page,forceunbreak,nomceinit){
 
 			$page = $page || Report.document.find('.page:eq(0)');
 
@@ -1176,8 +1180,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			$boxGroup.filter(':first').children('[data-edition]').trigger('edition:contenthash');
 
 			var $nextPage = $page.next('.page');
-			if ($nextPage.length) boxFitter.testPage($nextPage);
+			if ($nextPage.length) boxFitter.testPage($nextPage,null,true);
 			else boxFitter.finished = true;
+
+			if (!nomceinit) Report.document.trigger('edition:init');
+
 		}
 	};
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2194,6 +2201,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $wrap = $this.parent();
 		$this.trigger('edition:active');
 		$wrap.addClass('focus');
+		$(document).trigger('activity:focus', [$this]);
 	});
 	Report.document.on('blur','[data-edition]',function(){
 		var $this = $(this);
@@ -2380,7 +2388,6 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('edition:cleanmce','[data-edition]',function(event){
 		var $this = $(this);
 		$this.removeClass('mce-content-body inited content-placeholder mce-edit-focus').removeAttr('id').removeAttr('contenteditable');
-		$this.siblings('.edition-actions').remove();
 	});
 	Report.document.on('edition:wrapfield','[data-edition]',function(event){
 		var $this = $(this);
@@ -2635,10 +2642,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 		/**********************************************************************************************************************************************************************/
 	});
-	Report.document.on('page:addedition','.page',function(event,$new,$ref,placement,y){
+	Report.document.on('page:addedition','.page',function(event,$new,$ref,placement,y,nomceinit){
 		var $page = $(this);
 		var $edit = $new.children('[data-edition]');
-		$new.find('.edition-actions').remove();
 		$edit.removeAttr('id');
 		if ($ref && $ref.length){
 			if (placement == 'after'){
@@ -2667,7 +2673,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			$page.find('.main .cell:eq(0)').append($new);
 		}
 		$edit.trigger('edition:cleanmce');
-		$edit.trigger('edition:init');
+		if (!nomceinit){
+			$edit.trigger('edition:init');
+		}
 		Report.document.trigger('document:change',[$page]);
 		if ($new.is('[data-boxgroup]')) return;
 		/** HISTORY STACK *****************************************************************************************************************************************************/
@@ -2770,8 +2778,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$origin.attr('id',id);
 	});
 	Report.document.on('document:hasinited',function(){
-		if (!Report.document.hasClass('loaded') && !Report.editors.filter(':not(.inited)').length){
-			boxFitter.testPage();
+		if (!Report.document.hasClass('loaded')){
 			Report.document.addClass('loaded');
 			Report.document.trigger('document:validate');
 			setTimeout(function(){
@@ -3008,40 +3015,40 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $ed = $(editor.getElement());
 			var $page = $ed.closest('.page');
 			editor.on('init', function (e) {
-				$ed.addClass('inited').addClass('sui-restric-activity-control');
-				Report.document.trigger('document:hasinited');
+				$ed.addClass('inited');
 			});
 			editor.on('click', function (e) {
 				$ed.trigger('edition:nodechange',[e.target]);
 			});
-			editor.on('keydown', function (e) {
+			editor.on('keyup', function (e) {
 				$ed.addClass('contentchanged');
 				$ed.addClass('keyboarded');
-				if (e.key == 'Delete' && caret.isAtEnd($ed) && !caret.hasSelection($ed)){
+				if (e.key == 'Escape'){
+					caret.save($ed);
+					boxFitter.testPage($page);
+					caret.focus($ed);
+				} else if (e.key == 'Delete' && caret.isAtEnd($ed) && !caret.hasSelection($ed)){
+					Report.document.addClass('preventeventchange');
 					caret.save($ed,'end');
 					boxFitter.groupNext($ed);
 					boxFitter.testPage($page,'jointextatcaret');
 					caret.focus();
 					e.preventDefault();
+					Report.document.removeClass('preventeventchange');
 				} else if (e.key == 'Backspace' && caret.isAtBegining($ed) && !caret.hasSelection($ed)){
+					Report.document.addClass('preventeventchange');
 					caret.save($ed,'begining');
 					boxFitter.groupPrev($ed);
 					boxFitter.testPage($page.prev('.page'),'jointextatcaret');
 					caret.focus();
 					e.preventDefault();
-				} else if (e.key == 'Escape'){
-					caret.save($ed);
-					boxFitter.testPage($page);
-					caret.focus($ed);
+					Report.document.removeClass('preventeventchange');
 				} else if (caret.isOverflew($ed)){
+					Report.document.addClass('preventeventchange');
 					caret.save($ed);
-					boxFitter.testPage($page);
+					boxFitter.flowText($ed);
 					caret.focus();
-				}
-			});
-			editor.on('keyup', function (e) {
-				if (e.key != 'Delete' && e.key != 'Backspace' && e.key != 'Escape' && caret.isOverflew($ed)){
-					//boxFitter.testPage($page);
+					Report.document.removeClass('preventeventchange');
 				}
 			});
 			editor.on('input', function (e) {
@@ -3057,11 +3064,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
 					if (contenthash !== $ed.attr('data-contenthash')){
-						setTimeout(function(){
-							$ed.trigger('edition:change');
-							$ed.removeClass('contentchanged');
-							editor.undoManager.clear();
-						},10);
+						$ed.trigger('edition:change');
+						$ed.removeClass('contentchanged');
+						editor.undoManager.clear();
 					}
 				}
 			});
@@ -3216,14 +3221,14 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 
 
-	Report.widget.on('edition:init','.sui-report-document, .page, [data-edition]',function(event){
+	Report.widget.on('edition:init','.sui-report-document, .page, [data-edition]',function(event,firstload){
 
 		event.stopPropagation();
 		event.stopImmediatePropagation();
 
 		var $elem = $(this);
 		var id = $elem.attr('id') || 'sui' + $.md5(Math.rand()).substring(0, 16);
-		var $edits;
+		var $edits = $();
 		var setup = {}
 		var selector;
 
@@ -3251,19 +3256,38 @@ sourceui.interface.widget.report = function($widget,setup){
 		$edits.trigger('edition:wrapfield');
 		$edits.trigger('edition:jscode');
 
+		/*
+
+		$edits.attr('contenteditable','true').one('focus',function(){
+			var $e = $(this);
+			var eid = $e.attr('id') || 'box'+$.md5(Math.rand()).substring(0, 16);
+			$e.attr('id',eid);
+			var v = $.extend(true, {},setup[$e.attr('data-edition')]||{});
+			v.selector = '#'+eid;
+			tinymce.init(v);
+			setTimeout(function(){$e.trigger('focus');},300);
+			$e.addClass('binded')
+		});
+
+		*/
+
 		$.each(setup,function(k,v){
 			v.selector = '#'+(selector || id+' '+v.selector);
 			tinymce.init(v);
 		});
 
-		setTimeout(function(){
-			Report.document.removeClass('preventhistorystack');
-		},2000);
+		if ($elem.is('.sui-report-document') && firstload){
+			setTimeout(function(){
+				Report.document.removeClass('preventhistorystack');
+				Report.document.trigger('document:hasinited');
+				boxFitter.testPage();
+			},250);
+		}
 
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	Report.document.trigger('edition:init');
+	Report.document.trigger('edition:init',[true]);
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.wgdata = {};
@@ -3304,7 +3328,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (/block|cell|row/.test(nodename)){
 						var content = '';
 						if ($this.attr('data-edition').indexOf('text') > -1){
-							content = tinymce.get($this.attr('id')).getContent();
+							var tinymcedit = tinymce.get($this.attr('id'))
+							content = tinymcedit ? tinymcedit.getContent() : $this.html();
 							//content = $this.html();
 						} else if ($this.attr('data-edition').indexOf('graphic') > -1){
 							content = $this.html();
