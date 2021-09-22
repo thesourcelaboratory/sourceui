@@ -65,7 +65,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			___cnsl.log('initStak',where,stack);
 		},
 		log: function(){
-			return;
+			//return;
 			var a=[],l;
 			$.each(arguments,function(k,v){
 				if (v instanceof HTMLElement || v instanceof jQuery || typeof v === 'object') l = v;
@@ -955,9 +955,12 @@ sourceui.interface.widget.report = function($widget,setup){
 							$el.get(0).normalize();
 							$contentNew.append($el.nextAll());
 							if (false === ($el.text() !== '' || $el.children('img,table').length > 0)) $el.remove();
-
 						} else {
-							$contentNew.append($el.nextAll().addBack());
+							if ($el.is(':first-child')){
+								boxFitter.moveBox($box,$edge);
+							} else {
+								$contentNew.append($el.nextAll().addBack());
+							}
 						}
 						return false;
 					}
@@ -2411,6 +2414,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $imgsBlob = $this.find('img.localsource[src*="blob:"]:not(.uploading)');
 			$imgsBlob.each(function(){
 				var $img = $(this).addClass('uploading');
+				$img.width($img.width());
+				$img.height($img.height());
 				/////////////////////////////////////////////////
 				Graphic.base64($img.attr('src'),function(base64){
 					Graphic.post(base64, null, function(data){
@@ -2435,6 +2440,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $imgsData = $this.find('img.localsource[src*="data:"]:not(.uploading)');
 			$imgsData.each(function(){
 				var $img = $(this).addClass('uploading');
+				$img.width($img.width());
+				$img.height($img.height());
 				/////////////////////////////////////////////////
 				Graphic.post($img.attr('src'), null, function(data){
 					$img.attr('src',data.src);
@@ -3137,7 +3144,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			'tr': 'style,background-color,background,height',
 			'th': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
 			'td': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
-			'img': 'width',
+			'img': 'width, height',
 			'strong': 'font-size,font-family,color,text-decoration,text-align,background-color',
 			'span': 'font-size,font-family,color,text-decoration,text-align,background-color',
 		},
@@ -3185,7 +3192,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			'tr': 'style,background-color,background,height',
 			'th': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
 			'td': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
-			'img': 'width',
+			'img': 'width, height',
 		},
 		paste_preprocess : function(pl, o) {
 			var $target = $(o.target.selection.getNode());
