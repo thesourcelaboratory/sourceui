@@ -1200,7 +1200,8 @@ sourceui.Network = function () {
 					//////////////////////////////////////////////
 					// AJAX REQUEST HEADER ASSIGNMENT ===========================================
 					xhr.setRequestHeader('X-Sui-Request-Engine', setup.engine || 'default');
-					xhr.setRequestHeader('X-Sui-Request-Payload', btoa(JSON.stringify(requestHeaderPayload)));
+					//xhr.setRequestHeader('X-Sui-Request-Payload', btoa(JSON.stringify(requestHeaderPayload)));
+					xhr.setRequestHeader('X-Sui-Request-Payload', btoa(unescape(encodeURIComponent(JSON.stringify(requestHeaderPayload)))));
 					// ==========================================================================
 					if (setup.timeout <= 60000) {
 						setup.slowtimeout = setTimeout(function () {

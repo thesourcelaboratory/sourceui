@@ -62,18 +62,35 @@ sourceui.interface.widget.report = function($widget,setup){
 		stack: function(where){
 			 let stack = new Error().stack || '';
 			stack = stack.split('\n').map(function (line) { return line.trim(); });
-			___cnsl.log('initStak',where,stack);
+			___cnsl.blue('initStak',where,stack);
 		},
 		log: function(){
 			return;
-			var a=[],l;
+			var a=[],l,ball;
+			if (this === 'green') ball =  '🟢';
+			else if (this === 'yellow') ball =  '🟡';
+			else if (this === 'red') ball =  '🔴';
+			else if (this === 'blue') ball =  '🔵';
+			else ball =  '⚪️';
 			$.each(arguments,function(k,v){
 				if (v instanceof HTMLElement || v instanceof jQuery || typeof v === 'object') l = v;
 				else a.push(v);
 			});
-			console.groupCollapsed('🔵 '+a.join('  '),[l]);
+			console.groupCollapsed(ball+' '+a.join('  '),[l]);
 			console.info(l);
 			console.groupEnd();
+		},
+		green: function(){
+			___cnsl.log.apply('green',arguments);
+		},
+		yellow: function(){
+			___cnsl.log.apply('yellow',arguments);
+		},
+		red: function(){
+			___cnsl.log.apply('red',arguments);
+		},
+		blue: function(){
+			___cnsl.log.apply('blue',arguments);
 		}
 	};
 
@@ -825,7 +842,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $mfe = $(this);
 				if ($mfe.outerHeight(true) >= edgeHeight){
 					hasfucked = true;
-					___cnsl.log('breakBox','imagetoolarge:'+($mfe.outerHeight(true) >= edgeHeight),$mfe.get(0));
+					___cnsl.red('breakBox','imagetoolarge:'+($mfe.outerHeight(true) >= edgeHeight),$mfe.get(0));
 					return false;
 				}
 			});
@@ -844,8 +861,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					return true;
 				}
 				let elPos = $el.position();
-				___cnsl.log('breakBox','overflowed:'+(boxPos.top + elPos.top + $el.outerHeight(true) > edgeHeight),el);
-				if (boxPos.top + elPos.top + $el.outerHeight(true) > edgeHeight){
+				let overflowed = boxPos.top + elPos.top + $el.outerHeight(true) > edgeHeight;
+				___cnsl[overflowed ? 'red' : 'log']('breakBox','overflowed:'+overflowed,el);
+				if (overflowed){
 					if ($el.is('table') && $edition.is('.financial-data')){
 						let $table = $el;
 						let $tbodies = $table.children('tbody');
@@ -988,7 +1006,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $contentAll = $('<pre></pre>');
 				$boxGroup.each(function(kb,box){
 					var $box = $(box);
-					___cnsl.log('unbreakBox',box);
+					___cnsl.yellow('unbreakBox',box);
 					var $edition = $box.children('[data-edition]');
 					var content, $content;
 					content = $edition.html();
