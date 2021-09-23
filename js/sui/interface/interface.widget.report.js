@@ -691,6 +691,8 @@ sourceui.interface.widget.report = function($widget,setup){
 										}
 									},10);
 								});
+							} else {
+								$.tipster.notify('Clipboard read permission is denied. Verify browser settings.');
 							}
 						});
 					}
