@@ -1814,6 +1814,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$edit.removeClass('ajax-courtain');
 				},function(){
 					$.tipster.notify('Image upload not allowed');
+					$img.addClass('error');
 				});
 				///////////////////////////////////////////
 			};
@@ -2446,12 +2447,12 @@ sourceui.interface.widget.report = function($widget,setup){
 						$.tipster.notify('Image auto uploaded');
 						if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
 					},function(){
-						$img.addClass('localsource');
+						$img.addClass('localsource error');
 						$.tipster.notify('Image upload not allowed');
 						$this.removeClass('ajax-courtain');
 					});
 				},function(){
-					$img.addClass('localsource');
+					$img.addClass('localsource error');
 					$.tipster.notify('Image data not converted');
 					$this.removeClass('ajax-courtain');
 				});
@@ -2471,7 +2472,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$.tipster.notify('Image auto uploaded');
 					if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
 				},function(){
-					$img.addClass('localsource');
+					$img.addClass('localsource error');
 					$.tipster.notify('Image upload not allowed');
 					$this.removeClass('ajax-courtain');
 				});
@@ -3145,9 +3146,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		imagetools_toolbar: 'none',
 		paste_data_images: false,
 		toolbar: [
-			'undo redo | removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignjustify alignright | numlist bullist outdent indent | link | table | editimage imageoptions '
+			'removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignjustify alignright | numlist bullist outdent indent | link | table | editimage imageoptions '
 		],
-		automatic_uploads: true,
+		automatic_uploads: false,
 		file_picker_types: 'image',
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
@@ -3201,7 +3202,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		toolbar: [
 			'undo redo | link | table | editimage imageoptions '
 		],
-		automatic_uploads: true,
+		automatic_uploads: false,
 		file_picker_types: 'image',
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',

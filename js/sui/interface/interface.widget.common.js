@@ -599,6 +599,11 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				var filt = filter || Finder.getFilters() || {};
 				var setup = {};
 				if (Finder.widget.is('.datagrid')){
+					filt.selection = [];
+					Common.widget.find('.line.selected').each(function(){
+						var $line = $(this);
+						filt.selection.push($line.data('link-key') || $line.data('key') || $line.data('id'));
+					});
 					setup = {
 						target: '@widget-area',
 						render: '@datagrid-list',
