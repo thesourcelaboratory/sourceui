@@ -3224,7 +3224,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
 			if ($td.length) $td.css('border','');
 			var $imgtable = $content.children('img,table');
-			var $imglocal = $img.filter('img[src*="blob:"],img[src*="data:"]');
+			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
 			$imglocal.addClass('localsource');
 			if ($imgtable.length){
 				if (hasp){
