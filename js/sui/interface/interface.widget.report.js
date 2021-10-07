@@ -2253,6 +2253,14 @@ sourceui.interface.widget.report = function($widget,setup){
 			$this.removeClass('keyboarded');
 		}
 	});
+	Report.document.on('blur','date[contenteditable="true"]',function(){
+		var $this = $(this);
+		var $parent = $this.parent();
+		if ($parent.data('autofill')){
+			Report.area.find('[data-autofill="'+$parent.data('autofill')+'"] date').html($this.text());
+			Report.document.trigger('field:input');
+		}
+	});
 	Report.document.on('click','[data-edition]',function(event){
 		event.stopPropagation();
 		var $this = $(this);
