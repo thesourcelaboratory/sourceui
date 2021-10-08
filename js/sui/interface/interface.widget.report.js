@@ -613,8 +613,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	Dom.document.on('keydown', function(event){
 		if (!Report.document.is(':visible')) return;
 		if (event.keyCode == 18){
-			Report.document.addClass('grab');
-			Report.wgtools.filter('.bottom').find('.zoom-grab').addClass('active');
+			//Report.document.addClass('grab');
+			//Report.wgtools.filter('.bottom').find('.zoom-grab').addClass('active');
 		}
 		if (event.ctrlKey){
 			if (event.keyCode == 90 || event.keyCode == 89){
@@ -700,8 +700,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		}
 		if (event.keyCode == 18){
-			Report.document.removeClass('grab');
-			Report.wgtools.filter('.bottom').find('.zoom-grab').removeClass('active');
+			//Report.document.removeClass('grab');
+			//Report.wgtools.filter('.bottom').find('.zoom-grab').removeClass('active');
 		}
 		if (event.keyCode == 46 || event.keyCode == 8){
 			Report.document.find('.container td.col.selected').trigger('container:delcol');
@@ -1471,6 +1471,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			obj.$el.removeClass('dragger');
 		}
 	});
+	/*
 	Report.wgtools.filter('.bottom').find('[class*="zoom"]').on('mousedown mouseup',function(event){
 		event.stopPropagation();
 	});
@@ -1490,6 +1491,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($(this).isDisable()) return;
 		Report.document.trigger('zoom:out');
 	});
+	*/
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1914,7 +1916,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 
 
-
+	/*
 	// PanZoom Events ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('zoom:change',function(event,zoom,newzoom,scrollMid){
 		let ele = Report.scroll.get(0);
@@ -2001,7 +2003,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+	*/
 
 
 
