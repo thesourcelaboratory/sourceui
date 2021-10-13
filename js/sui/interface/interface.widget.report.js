@@ -1471,7 +1471,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			obj.$el.removeClass('dragger');
 		}
 	});
-	/*
+
 	Report.wgtools.filter('.bottom').find('[class*="zoom"]').on('mousedown mouseup',function(event){
 		event.stopPropagation();
 	});
@@ -1491,7 +1491,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($(this).isDisable()) return;
 		Report.document.trigger('zoom:out');
 	});
-	*/
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1916,7 +1915,6 @@ sourceui.interface.widget.report = function($widget,setup){
 
 
 
-	/*
 	// PanZoom Events ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('zoom:change',function(event,zoom,newzoom,scrollMid){
 		let ele = Report.scroll.get(0);
@@ -2003,7 +2001,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	*/
 
 
 
@@ -2127,7 +2124,10 @@ sourceui.interface.widget.report = function($widget,setup){
 				stop:function(ev, obj){
 					var $d = obj.$el;
 					var $col = $d.parent();
+					var $colthisnext = $().add($col).add($col.next('.col'));
 					var dpos = $d.position();
+					var zoom = Report.document.attr('data-zoom') || 1;
+					$colthisnext.find('img').css({width:'', height:''});
 					if (!$ctn.is('[style*="width"]')){
 						$ctn.css('width',$ctn.outerWidth());
 					}
@@ -2136,10 +2136,10 @@ sourceui.interface.widget.report = function($widget,setup){
 							var $c = $(this);
 							$c.innerWidth($c.innerWidth());
 						});
-						$ctn.css('width', $ctn.outerWidth() - ($col.innerWidth() - dpos.left));
+						$ctn.css('width', ($ctn.outerWidth() - ($col.innerWidth() - dpos.left) / zoom));
 						$col.css({ width: '' });
 					} else {
-						$col.innerWidth(dpos.left);
+						$col.innerWidth(dpos.left / zoom);
 						$col.next().css({ width: '' });
 						$col.siblings('.col').each(function(){
 							var $c = $(this);
