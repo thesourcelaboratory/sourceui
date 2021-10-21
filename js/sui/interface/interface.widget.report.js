@@ -1808,15 +1808,37 @@ sourceui.interface.widget.report = function($widget,setup){
 				$spot.find(':not(img)').remove();
 				$spot.append($img);
 				///////////////////////////////////////////
-				Graphic.post(reader.result, null, function(data){
-					$img.attr('src',data.src);
-					Report.document.trigger('document:change',[$page]);
-					$.tipster.notify('Image auto uploaded');
-					$edit.removeClass('ajax-courtain');
-				},function(){
-					$.tipster.notify('Image upload not allowed');
-					$img.addClass('error');
-				});
+				if ($img.is('[src*="image/svg"]')){
+					var svg = $img.attr('src').split(',')[1];
+					svg = decodeURIComponent(escape(atob(svg)));
+					if (svg){
+						setTimeout(function(){
+							$.svgString2Image(svg, $img.width()*5, $img.height()*5, 'png', function (pngData) {
+								// pngData is base64 png string
+								console.log(svg,pngData);
+								Graphic.post(pngData, null, function(data){
+									$img.attr('src',data.src);
+									Report.document.trigger('document:change',[$page]);
+									$.tipster.notify('Image auto converted and uploaded');
+									$edit.removeClass('ajax-courtain');
+								},function(){
+									$.tipster.notify('Image upload not allowed');
+									$img.addClass('error');
+								});
+							});
+						},150);
+					}
+				} else {
+					Graphic.post(reader.result, null, function(data){
+						$img.attr('src',data.src);
+						Report.document.trigger('document:change',[$page]);
+						$.tipster.notify('Image auto uploaded');
+						$edit.removeClass('ajax-courtain');
+					},function(){
+						$.tipster.notify('Image upload not allowed');
+						$img.addClass('error');
+					});
+				}
 				///////////////////////////////////////////
 			};
 			reader.readAsDataURL(file);
@@ -2441,6 +2463,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('edition:uploadimgs','[data-edition]',function(){
 		var $this = $(this);
+		//return true;
 		setTimeout(function(){
 			var $imgsBlob = $this.find('img.localsource[src*="blob:"]:not(.uploading)');
 			$imgsBlob.each(function(){
@@ -2993,6 +3016,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		fontsize_formats: "8px 9px 10px 11px 12px 14px 16px 18px 20px 22px",
 		powerpaste_word_import: 'merge',
 		powerpaste_html_import: 'merge',
+		powerpaste_keep_unsupported_src: true,
 		browser_spellcheck: true,
 		relative_urls : false,
 		remove_script_host : false,
@@ -3226,6 +3250,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			'img': 'width, height',
 		},
 		paste_preprocess : function(pl, o) {
+			console.log(pl,o);
 			var $target = $(o.target.selection.getNode());
 			var $field = $target.closest('[data-edition]');
 			var hasp = $target.is('p') || $target.closest('p',$field).length;
