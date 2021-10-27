@@ -35,8 +35,6 @@ sourceui.interface.widget.report = function($widget,setup){
 	var Dom = Interface.dom;
 	var Notify = sourceui.instances.interface.plugins.notify;
 
-	var History = [];
-
 	var Console;
 
 	Console = Debug.get('JS');
@@ -498,100 +496,6 @@ sourceui.interface.widget.report = function($widget,setup){
 	};
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	var historyStack = {
-		online: false,
-		pointer: -1,
-		stack: [],
-		clear: function(){
-			historyStack.pointer = -1;
-			historyStack.stack = [];
-		},
-		push: function(setup){
-			if (Report.document.hasClass('preventhistorystack')) return false;
-			var sliced = historyStack.stack.slice(0,historyStack.pointer+1);
-			sliced = sliced.slice(-20);
-			historyStack.stack = sliced || [];
-			historyStack.pointer = historyStack.stack.length;
-			historyStack.pile(setup);
-			return setup;
-		},
-		replace: function(setup){
-			if (Report.document.hasClass('preventhistorystack')) return false;
-			historyStack.stack[historyStack.pointer] = {
-				pile:[setup]
-			};
-			return setup;
-		},
-		pile: function(setup){
-			if (Report.document.hasClass('preventhistorystack')) return false;
-			historyStack.stack[historyStack.pointer] = historyStack.stack[historyStack.pointer] || [];
-			historyStack.stack[historyStack.pointer].piles = historyStack.stack[historyStack.pointer].piles || [];
-			historyStack.stack[historyStack.pointer].piles.push(setup);
-			return setup;
-		},
-		forward: function(){
-			if (Report.document.hasClass('preventhistorystack')) return false;
-			var stack = historyStack.go(historyStack.pointer+1);
-			if (stack){
-				var firstpile = stack.piles[0];
-				if (firstpile){
-					var $scrollelement = firstpile.do.page || firstpile.do.reference || firstpile.do.fieldwrap || firstpile.do.edition;
-					var notification = (firstpile.do.label || 'History got forward')+' ('+(historyStack.pointer+1)+')';
-					Report.scroll.scrollTo($.isNumeric(firstpile.do.scrolltop)? firstpile.do.scrolltop : $scrollelement, 100, !$.isNumeric(firstpile.do.scrolltop) ? { offset:Dom.window.height()/3} : {} );
-					$.tipster.notify(notification);
-					historyStack.pointer++;
-				}
-			}
-			//else $.tipster.notify('No more forward stacks');
-		},
-		back: function(){
-			if (Report.document.hasClass('preventhistorystack')) return false;
-			var stack = historyStack.go(historyStack.pointer);
-			if (stack){
-				var firstpile = stack.piles[0];
-				if (firstpile){
-					var $scrollelement = firstpile.undo.page || firstpile.undo.reference || firstpile.undo.fieldwrap || firstpile.undo.edition;
-					var notification = (firstpile.undo.label || 'History got back')+' ('+historyStack.pointer+')';
-					Report.scroll.scrollTo($.isNumeric(firstpile.undo.scrolltop)? firstpile.undo.scrolltop : $scrollelement, 100, !$.isNumeric(firstpile.undo.scrolltop) ? { offset:Dom.window.height()/3} : {} );
-					$.tipster.notify(notification);
-					historyStack.pointer--;
-				}
-			}
-			//else $.tipster.notify('No more back stacks');
-		},
-		go: function(pointer){
-			if (Report.document.hasClass('preventhistorystack')) return false;
-			var stack = historyStack.stack[pointer];
-			if (!stack) return;
-			stack.piles = stack.piles || [];
-			Report.document.addClass('preventhistorystack');
-			$.each(stack.piles, function(kp,pile){
-				if (pointer > historyStack.pointer){
-					if (pile.do.action == 'addedition'){ 				pile.do.page.trigger('page:addedition',[pile.do.fieldwrap,pile.do.reference,pile.do.placement]); }
-					else if (pile.do.action == 'removeedition'){ 		pile.do.edition.trigger('edition:remove'); }
-					else if (pile.do.action == 'movededition'){ 		pile.do.reference[pile.do.placement](pile.do.fieldwrap); }
-					else if (pile.do.action == 'positionedition'){ 		pile.do.edition.attr('data-position',pile.do.position); pile.do.fieldwrap.attr('style',pile.do.position); }
-					else if (pile.do.action == 'addcontainer'){ 		Report.document.trigger('page:addcontainer',[pile.do.container,pile.do.reference,pile.do.placement]); }
-					else if (pile.do.action == 'removecontainer'){		pile.do.container.trigger('container:remove'); }
-					else if (pile.do.action == 'addpage'){ 				Report.document.trigger('document:addpage',[pile.do.page,pile.do.reference,pile.do.placement]); }
-					else if (pile.do.action == 'removepage'){ 			pile.do.page.trigger('page:remove'); }
-				}
-				else if (pointer <= historyStack.pointer){
-					if (pile.undo.action == 'addedition'){ 				pile.undo.page.trigger('page:addedition',[pile.undo.fieldwrap,pile.undo.reference,pile.undo.placement]); }
-					else if (pile.undo.action == 'removeedition'){ 		pile.undo.edition.trigger('edition:remove'); }
-					else if (pile.undo.action == 'movededition'){ 		pile.undo.reference[pile.undo.placement](pile.undo.fieldwrap); }
-					else if (pile.undo.action == 'positionedition'){ 	pile.undo.edition.attr('data-position',pile.undo.position); pile.undo.fieldwrap.attr('style',pile.undo.position); }
-					else if (pile.undo.action == 'addcontainer'){		Report.document.trigger('page:addcontainer',[pile.undo.container,pile.undo.reference,pile.undo.placement]); }
-					else if (pile.undo.action == 'removecontainer'){ 	pile.undo.container.trigger('container:remove'); }
-					else if (pile.undo.action == 'addpage'){			Report.document.trigger('document:addpage',[pile.undo.page,pile.undo.reference,pile.undo.placement]); }
-					else if (pile.undo.action == 'removepage'){ 		pile.undo.page.trigger('page:remove'); }
-
-				}
-			});
-			Report.document.removeClass('preventhistorystack');
-			return stack;
-		},
-	};
 	Dom.document.on('directpaste', function(event,$clone,$page,$container){
 		if ($container.length){
 			var $col = $container.find('.col.selected, col.empty:eq(0)');
@@ -630,8 +534,8 @@ sourceui.interface.widget.report = function($widget,setup){
 				if (!$activeFieldwrap.length){
 					var $activeEdition = $activeFieldwrap.find('[data-edition*="text"], [data-edition="graphic"]');
 					if (!$activeEdition.length || !$edition.is('.contentchanged')){
-							if (event.keyCode == 90) historyStack.back();
-						else if (event.keyCode == 89) historyStack.forward();
+							if (event.keyCode == 90) Report.document.trigger('historyworker:back');
+						else if (event.keyCode == 89) Report.document.trigger('historyworker:forward');
 					}
 				}
 			} else if (event.keyCode == 86){
@@ -1564,6 +1468,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', 'image/*');
 			input.onchange = function() {
+				Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 				var file = this.files[0];
 				var reader = new FileReader();
 				reader.onload = function () {
@@ -1668,6 +1573,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.trigger('container:addline');
 	});
 	Report.document.on('click','.container-actions .reset a',function(){
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $this = $(this);
 		var $ctn = $this.closest('.container');
 		$ctn.removeAttr('style');
@@ -1794,6 +1700,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		input.setAttribute('type', 'file');
 		input.setAttribute('accept', 'image/*');
 		input.onchange = function() {
+			Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 			var file = this.files[0];
 			var reader = new FileReader();
 			reader.onload = function () {
@@ -1815,7 +1722,6 @@ sourceui.interface.widget.report = function($widget,setup){
 						setTimeout(function(){
 							$.svgString2Image(svg, $img.width()*5, $img.height()*5, 'png', function (pngData) {
 								// pngData is base64 png string
-								console.log(svg,pngData);
 								Graphic.post(pngData, null, function(data){
 									$img.attr('src',data.src);
 									Report.document.trigger('document:change',[$page]);
@@ -2082,6 +1988,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	Report.document.on('container:delrange','.container',function(event,$spots){
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $this = $(this);
 		var $page = $this.closest('.page',Report.document);
 		Report.document.addClass('preventeventchange');
@@ -2099,12 +2006,14 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	Report.document.on('container:addcolumn','.container',function(event){
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $ctn = $(this);
 		$ctn.find('.col:last-of-type').css('width','').after('<td class="col"/>');
 		$ctn.trigger('container:dimension');
 		$ctn.trigger('container:resizable');
 	});
 	Report.document.on('container:addline','.container',function(event){
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $ctn = $(this);
 		var $line = $('<tr class="line"/>');
 		var $lastline = $ctn.find('.line:last-of-type');
@@ -2144,6 +2053,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$ctn.trigger('container:active');
 				},
 				stop:function(ev, obj){
+					Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 					var $d = obj.$el;
 					var $col = $d.parent();
 					var $colthisnext = $().add($col).add($col.next('.col'));
@@ -2183,6 +2093,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.removeAttr('data-style').find('[data-style]').removeAttr('data-style');
 	});
 	Report.document.on('container:remove','.container',function(){
+		/** HISTORY WORKER **********************************************/
+		Report.document.trigger('historyworker:add');
+		/****************************************************************/
 		var $this = $(this);
 		var $page = $this.closest('.page',Report.document);
 		var $preved = $this.prev('.fieldwrap').children('[data-edition]');
@@ -2198,12 +2111,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 		Report.document.trigger('document:change',[$page]);
 		$.tipster.notify('Container removed');
-		/** HISTORY STACK *****************************************************************************************************************************************************/
-		historyStack.push({
-			do: 	{ action:'removecontainer', this:$this, scrolltop:Report.scroll.scrollTop(), label:'Added container removed' },
-			undo:   { action:'addcontainer', page:$page, container:$this, reference:$this.prev(), placement:$this.prev().length ? 'after' : 'prepend', scrolltop:Report.scroll.scrollTop(), label:'Container added again' },
-		});
-		/**********************************************************************************************************************************************************************/
 	});
 	Report.document.on('container:active','.container',function(){
 		var $this = $(this);
@@ -2224,6 +2131,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.find('.container.active').removeClass('active');
 	});
 	Report.document.on('container:clipboardmoved','.container',function(){
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $this = $(this);
 		var $tool = Report.wgtools.find('.add-move');
 		$this.toggleClass('clipboardmoved');
@@ -2314,6 +2222,9 @@ sourceui.interface.widget.report = function($widget,setup){
 						$this.trigger('edition:active');
 					},
 					stop:function(ev, obj){
+						/** HISTORY WORKER **********************************************/
+						Report.document.trigger('historyworker:add');
+						/****************************************************************/
 						var $d = obj.$el;
 						var dpos = $d.position();
 						var wpos = $wrap.position();
@@ -2322,12 +2233,6 @@ sourceui.interface.widget.report = function($widget,setup){
 						if ($d.hasClass('dragleft')) $wrap.css({ width:wwid-dpos.left, left:wpos.left+(dpos.left) });
  						if ($d.hasClass('dragright')) $wrap.css({ width:wwid+(dpos.left-wwid) });
 						$this.attr('data-position','top:'+($wrap.css('top')||0)+'; left:'+($wrap.css('left')||0)+'; width:'+$wrap.width()+'px');
-						/** HISTORY STACK *****************************************************************************************************************************************************/
-						historyStack.push({
-							do:   { action:'positionedition', edition:$this, fieldwrap:$wrap, position:$this.attr('data-position'), scrolltop:Report.scroll.scrollTop(), label:'Box positioned' },
-							undo: { action:'positionedition', edition:$this, fieldwrap:$wrap, position:oldposition, scrolltop:Report.scroll.scrollTop(), label:'Box repositioned' }
-						});
-						/**********************************************************************************************************************************************************************/
 						$d.attr('style','');
 					}
 				});
@@ -2347,14 +2252,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					constrainTo: 'parent',
 					elementsWithInteraction: $this.is('[data-edition]') ? '.resize, .block, li[data-action]' : 'input',
 					stop:function(ev, obj){
+						/** HISTORY WORKER **********************************************/
+						Report.document.trigger('historyworker:add');
+						/****************************************************************/
 						var oldposition = $this.attr('data-position');
 						$this.attr('data-position','top:'+($target.css('top')||0)+'; left:'+($target.css('left')||0)+'; width:'+$target.width()+'px');
-						/** HISTORY STACK *****************************************************************************************************************************************************/
-						historyStack.push({
-							do:   { action:'positionedition', edition:$this, fieldwrap:$target, position:$this.attr('data-position'), scrolltop:Report.scroll.scrollTop(), label:'Box positioned' },
-							undo: { action:'positionedition', edition:$this, fieldwrap:$target, position:oldposition, scrolltop:Report.scroll.scrollTop(), label:'Box repositioned' }
-						});
-						/**********************************************************************************************************************************************************************/
 						Report.document.trigger('document:change',[$page]);
 					}
 				});
@@ -2379,6 +2281,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$this.trigger('edition:active');
 			},
 			stop: function (ev, obj) {
+				Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 				var closest = $.calcSort('y', obj.$el, this.activeDropRegions);
 				if (closest.placement) {
 					if (closest.placement == 'after') obj.$el.insertAfter(closest.element);
@@ -2443,7 +2346,14 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('edition:cleanmce','[data-edition]',function(event){
 		var $this = $(this);
-		$this.removeClass('mce-content-body inited content-placeholder mce-edit-focus').removeAttr('id').removeAttr('contenteditable');
+		var eid = $this.attr('id');
+		if (eid){
+			var mce = tinymce.get(eid);
+			if (mce) mce.remove();
+		}
+		$this.removeClass('mce-content-body inited content-placeholder mce-edit-focus');
+		$this.removeAttr('id')
+		$this.removeAttr('contenteditable');
 	});
 	Report.document.on('edition:wrapfield','[data-edition]',function(event){
 		var $this = $(this);
@@ -2538,6 +2448,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		$toolroot.addClass('adapted');
 	});
 	Report.document.on('edition:remove','[data-edition]',function(event){
+		/** HISTORY WORKER **********************************************/
+		Report.document.trigger('historyworker:add');
+		/****************************************************************/
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		var $page, $reference;
@@ -2562,12 +2475,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (!Report.document.hasClass('preventeventchange')){
 			Report.document.trigger('document:change',[$page]);
 			$.tipster.notify('Edition box removed');
-			/** HISTORY STACK *****************************************************************************************************************************************************/
-			historyStack.push({
-				do: 	{ action:'removeedition', this:$this, scrolltop:Report.scroll.scrollTop(), label:'Added box removed' },
-				undo:   { action:'addedition', page:$page, fieldwrap:$fieldwrap, reference:$reference, placement:$reference.length ? 'after' : 'prepend', scrolltop:Report.scroll.scrollTop(), label:'Box added again' },
-			});
-			/**********************************************************************************************************************************************************************/
 		}
 		Report.document.trigger('document:boxcount');
 	});
@@ -2588,6 +2495,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 	});
 	Report.document.on('edition:clipboardmoved','[data-edition]',function(){
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		var $edge = $fieldwrap.parent();
@@ -2665,6 +2573,9 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	// Page Events ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('page:addcontainer','.page',function(event,$new,$ref,placement,y){
+		/** HISTORY WORKER **********************************************/
+		Report.document.trigger('historyworker:add');
+		/****************************************************************/
 		var $page = $(this);
 		$new.siblings('.container-actions').remove();
 		$new.removeAttr('id');
@@ -2696,14 +2607,11 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 		$new.trigger('container:resizable');
 		Report.document.trigger('document:change',[$page]);
-		/** HISTORY STACK *****************************************************************************************************************************************************/
-		historyStack.push({
-			do:   { action:'addecontainer', page:$page, container:$new, reference:$ref, placement:placement, scrolltop:Report.scroll.scrollTop(), label:'Container added again' },
-			undo: { action:'removecontainer', container:$new, scrolltop:Report.scroll.scrollTop(), label:'Added container removed' }
-		});
-		/**********************************************************************************************************************************************************************/
 	});
 	Report.document.on('page:addedition','.page',function(event,$new,$ref,placement,y,nomceinit){
+		/** HISTORY WORKER **********************************************/
+		Report.document.trigger('historyworker:add');
+		/****************************************************************/
 		var $page = $(this);
 		var $edit = $new.children('[data-edition]');
 		$edit.removeAttr('id');
@@ -2739,20 +2647,15 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 		Report.document.trigger('document:change',[$page]);
 		if ($new.is('[data-boxgroup]')) return;
-		/** HISTORY STACK *****************************************************************************************************************************************************/
-		/*
-		historyStack.push({
-			do:   { action:'addedition', page:$page, fieldwrap:$new, reference:$ref, placement:placement, scrolltop:Report.scroll.scrollTop(), label:'Box added again' },
-			undo: { action:'removeedition', edition:$edit, scrolltop:Report.scroll.scrollTop(), label:'Added box removed' }
-		});
-		*/
-		/**********************************************************************************************************************************************************************/
 	});
 	Report.document.on('page:scrollto','.page',function(event,$new,$ref,placement){
 		var $page = $(this);
 		$(Report.document.closest('.scroll-default')).scrollTo($page,350,{ offset:{top:-50} });
 	});
 	Report.document.on('page:remove','.page',function(){
+		/** HISTORY WORKER **********************************************/
+		Report.document.trigger('historyworker:add');
+		/****************************************************************/
 		var $this = $(this);
 		var $next = $this.next('.page');
 		Report.document.addClass('preventeventchange');
@@ -2763,12 +2666,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		$this.remove();
 		Report.document.trigger('document:change',[$next]);
 		$.tipster.notify('Page removed');
-		/** HISTORY STACK *****************************************************************************************************************************************************/
-		historyStack.push({
-			do: 	{ action:'removepage', page:$this, scrolltop:Report.scroll.scrollTop(), label:'Added page removed' },
-			undo:   { action:'addpage', page:$this, reference:$this.prev('.page'), placement:$this.prev('.page').length ? 'after' : 'prepend', scrolltop:Report.scroll.scrollTop(), label:'Page added again' },
-		});
-		/**********************************************************************************************************************************************************************/
 	});
 	Report.document.on('page:active','.page',function(event){
 		var $this = $(this);
@@ -2877,6 +2774,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	Report.document.on('document:addpage',function(event,$new,$ref,placement){
+		/** HISTORY WORKER **********************************************/
+		Report.document.trigger('historyworker:add');
+		/****************************************************************/
 		$new.find('.page-actions').remove();
 		var didBoxBroken, $pageChange, $lastBoxgroupOnPrevPage, $firstBoxgroupOnNextPage, tipsterMsg;
 		$new.removeAttr('id').css('opacity','0');
@@ -2914,14 +2814,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			easing: "ease-out",
 			duration:200,
 			complete: function(){
-				if (!didBoxBroken){
-					/** HISTORY STACK *****************************************************************************************************************************************************/
-					historyStack.push({
-						do:  	{ action:'addpage', page:$new, reference:$ref, placement:placement, scrolltop:Report.scroll.scrollTop(), label:'Page added again' },
-						undo: 	{ action:'removepage', page:$new, scrolltop:Report.scroll.scrollTop(), label:'Added page removed' },
-					});
-					/**********************************************************************************************************************************************************************/
-				}
 				if (tipsterMsg) $.tipster.notify(tipsterMsg);
 			}
 		});
@@ -3000,6 +2892,54 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+	// History Events --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Report.document.on('historyworker:add',function(event,keepStatement){
+		if (Report.document.hasClass('preventhistorystack')) return true;
+		var content = Report.documetHTML();
+		historyWorker.postMessage({
+			command:'add',
+			dochash:Variable.get('docHash'),
+			content:content
+		});
+		if (!keepStatement) Report.document.removeClass('historykeepstatement');
+	});
+	Report.document.on('historyworker:back',function(event){
+		if (!Report.document.hasClass('historykeepstatement')){
+			Report.document.trigger('historyworker:add',[true]);
+			Report.document.addClass('historykeepstatement');
+		}
+		historyWorker.postMessage({
+			command:'back',
+			dochash:Variable.get('docHash')
+		});
+	});
+	Report.document.on('historyworker:forward',function(event){
+		if (!Report.document.hasClass('historykeepstatement')){
+			Report.document.trigger('historyworker:add',[true]);
+			Report.document.addClass('historykeepstatement');
+		}
+		historyWorker.postMessage({
+			command:'forward',
+			dochash:Variable.get('docHash')
+		});
+	});
+	Report.document.on('historyworker:clear',function(event,data){
+		historyWorker.postMessage({
+			command:'clear',
+			dochash:Variable.get('docHash')
+		});
+	});
+	Report.document.on('historyworker:redraw',function(event,data){
+		if (data.content){
+			Report.document.find('[data-edition]').trigger('edition:cleanmce');
+			Report.document.html(data.content);
+			Report.document.find('[data-edition]').trigger('edition:cleanmce');
+			Report.document.trigger('edition:init',[true]);
+			Report.document = Report.widget.find('.sui-report-document');
+			Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="graphic"]');
+		}
+	});
+	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// MCE Setup --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	var mceSetup = {
@@ -3114,12 +3054,16 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			});
 			editor.on('input', function (e) {
+				if (!$ed.hasClass('contentchanged')){
+					/** HISTORY WORKER **********************************************/
+					//Report.document.trigger('historyworker:add');
+					/****************************************************************/
+				}
 				$ed.addClass('contentchanged');
 			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
 				$ed.trigger('edition:uploadimgs');
-				historyStack.clear();
 			});
 			editor.on('blur', function (e) {
 				if ($ed.hasClass('contentchanged')){
@@ -3128,7 +3072,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
-						editor.undoManager.clear();
 					}
 				}
 			});
@@ -3250,7 +3193,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			'img': 'width, height',
 		},
 		paste_preprocess : function(pl, o) {
-			console.log(pl,o);
 			var $target = $(o.target.selection.getNode());
 			var $field = $target.closest('[data-edition]');
 			var hasp = $target.is('p') || $target.closest('p',$field).length;
@@ -3351,6 +3293,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	Report.document.trigger('edition:init',[true]);
+	Report.document.trigger('historyworker:clear');
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.wgdata = {};
@@ -3643,6 +3586,16 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.widgetData = function () {
 		Report.wgdata = {};
 		wdata.suify.getAll();
+		return Report.wgdata;
 	};
+
+	Report.documetHTML = function(){
+		var $document = Report.document.clone();
+		var $editions = $document.find('[data-edition]');
+		$document.removeClass('loaded');
+		$document.find('.haspep, .pep-dpa, .pep-dropping, .pep-active, .pep-ease').removeClass('haspep pep-dpa pep-dropping pep-active pep-ease');
+		$document.find('.active, .focus').removeClass('active focus');
+		return $document.html();
+	}
 
 };
