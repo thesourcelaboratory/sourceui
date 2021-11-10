@@ -1177,7 +1177,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var data = {}
 		Report.variables.each(function(){
 			var $v = $(this);
-			data[$v.attr('name')] = $v.attr('value') || $v.text();
+			data[$v.attr('name')] = $v.attr('value') || $v.html();
 		});
 		if (data.reportSummary) data.reportSummary = encodeURIComponent(data.reportSummary);
 		data.usecover = Report.document.find('.page.fullcovered').attr('data-visible');
