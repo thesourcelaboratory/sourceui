@@ -134,11 +134,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 			return values;
 		},
-		set: function(name,value){
+		set: function(name,value,appendType){
 			var $var = Report.variables.filter('[name="'+name+'"]');
 			if ($var.length){
 				value = (typeof value == 'object') ? JSON.stringify(value) : value;
-				$var.text(value);
+				if (appendType == 'html') $var.html(value);
+				else $var.text(value);
 				$var.data('verifier',$.md5('var:'+name+'='+value));
 			}
 			else  Console.error({ mode: 'VAR', title: 'Variable "'+name+'" not found'}).trace();
