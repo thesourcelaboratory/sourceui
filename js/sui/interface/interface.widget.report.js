@@ -428,18 +428,24 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		isOverflew: function($edit){
 			var data = caret.data($edit);
+			var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 			if (data.clientRects && data.clientRects[0]){
-				var boolTop = data.clientRects[0].top + data.clientRects[0].height - data.edgeRects.top >= data.edge.height();
-				if (boolTop) return true;
+				var calc = (data.clientRects[0].top + data.clientRects[0].height - data.edgeRects.top) / zoom;
+				var boolTop = calc >= data.edge.height();
+				if (boolTop) {
+					___cnsl.red('caret','isOverflew:true ('+data.clientRects[0].top+' + '+data.clientRects[0].height+' - '+data.edgeRects.top+') / '+zoom+' >= '+data.edge.height()+'',$edit.get(0));
+					return true;
+				}
 			}
 			return false;
 		},
 		isAtBegining: function($edit){
 			var data = caret.data($edit);
+			//var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 			var $rangstart = $(data.range.startContainer);
 			var $paragraph = data.range.startContainer && $rangstart.is('p,h1,h2,h3,h4,h5,img,td') ? $rangstart : $rangstart.closest('p,h1,h2,h3,h4,h5,img,td');
 			if (data.clientRects && data.clientRects[0]){
-				var boolTop = data.clientRects[0].top - data.editRects.top <= data.clientRects[0].height;
+				var boolTop = (data.clientRects[0].top - data.editRects.top) <= data.clientRects[0].height;
 				var boolLeft = data.clientRects[0].left - data.editRects.left <= data.clientRects[0].width;
 				if (boolTop && boolLeft) return true;
 			} else if ($edit.text().length === 0 || (data.range.startContainer && data.range.startOffset === 0 && $edit.children().get(0) === $paragraph.get(0))){
@@ -449,6 +455,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		isAtEnd: function($edit){
 			var data = caret.data($edit);
+			//var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 			var $rangstart = $(data.range.startContainer);
 			var $paragraph = data.range.startContainer && $rangstart.is('p,h1,h2,h3,h4,h5,img,td') ? $rangstart : $rangstart.closest('p,h1,h2,h3,h4,h5,img,td');
 			if (data.clientRects && data.clientRects[0]){
@@ -710,6 +717,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		breakBox: function($box,$edge,returnBroken){
 
+			var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
+
 			var $edition = $box.children('[data-edition]');
 			$edge = $edge || $box.parent();
 
@@ -767,8 +776,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					return true;
 				}
 				let elPos = $el.position();
-				let overflowed = boxPos.top + elPos.top + $el.outerHeight(true) > edgeHeight;
-				___cnsl[overflowed ? 'red' : 'log']('breakBox','overflowed:'+overflowed,el);
+				let overflowed = ((boxPos.top + elPos.top) / zoom) + $el.outerHeight(true) > edgeHeight;
+				___cnsl[overflowed ? 'red' : 'log']('breakBox','overflowed:'+overflowed+' (('+boxPos.top+' + '+elPos.top+') / '+zoom+') + '+$el.outerHeight(true)+' > '+edgeHeight,el);
 				if (overflowed){
 					if ($el.is('table') && $edition.is('.financial-data')){
 						let $table = $el;
@@ -778,14 +787,16 @@ sourceui.interface.widget.report = function($widget,setup){
 							$tbodies.each(function(ky,tbody){
 								var $tbody = $(tbody);
 								let tbodyPos = $tbody.position();
-								___cnsl.log('breakBox','tbody','overflowed:'+(boxPos.top + elPos.top + tbodyPos.top + $tbody.outerHeight(true) > edgeHeight),tbody);
-								if (boxPos.top + elPos.top + tbodyPos.top + $tbody.outerHeight(true) > edgeHeight){
+								let calc = (boxPos.top + elPos.top + tbodyPos.top + $tbody.outerHeight(true)) / zoom;
+								___cnsl.log('breakBox','tbody','overflowed:'+(calc > edgeHeight),tbody);
+								if (calc > edgeHeight){
 									$tbody.children('tr').each(function(ktr,tr){
 										var $tr = $(tr);
 										let trPos = $tr.position();
 										let trHeight = $tr.outerHeight(true);
-										___cnsl.log('breakBox','tbody','tr','overflowed:',(boxPos.top + elPos.top + trPos.top + trHeight > edgeHeight),tr);
-										if (boxPos.top + elPos.top + trPos.top + trHeight > edgeHeight){
+										let calc = (boxPos.top + elPos.top + trPos.top + trHeight) / zoom;
+										___cnsl.log('breakBox','tbody','tr','overflowed:',(calc > edgeHeight),tr);
+										if (calc > edgeHeight){
 											$tr.children('td').each(function(ktd,td){
 												$(td).width($(td).width());
 											});
@@ -819,8 +830,9 @@ sourceui.interface.widget.report = function($widget,setup){
 								var $tr = $(tr);
 								let trPos = $tr.position();
 								let trHeight = $tr.outerHeight(true);
-								___cnsl.log('breakBox','tr','overflowed:'+(boxPos.top + elPos.top + trPos.top + trHeight > edgeHeight)+', index:'+ktr,tr);
-								if (boxPos.top + elPos.top + trPos.top + trHeight > edgeHeight){
+								let calc = (boxPos.top + elPos.top + trPos.top + trHeight) / zoom;
+								___cnsl.log('breakBox','tr','overflowed:'+(calc > edgeHeight)+', index:'+ktr,tr);
+								if (calc > edgeHeight){
 									$tr.children('td').each(function(ktd,td){
 										$(td).width($(td).width());
 									});
@@ -862,8 +874,9 @@ sourceui.interface.widget.report = function($widget,setup){
 							$el.children().each(function(){
 								let $sp = $(this);
 								let spPos = $sp.position();
-								___cnsl.log('breakBox','wordwrap:'+(boxPos.top + elPos.top + spPos.top + $sp.outerHeight(true) > edgeHeight)+' ('+boxPos.top+' + '+elPos.top+' + '+spPos.top+' + '+$sp.outerHeight(true)+' > '+edgeHeight+')',$sp.text(),$sp.get(0));
-								if (boxPos.top + elPos.top + spPos.top + $sp.outerHeight(true) > edgeHeight){
+								let calc = ((boxPos.top + elPos.top + spPos.top) / zoom) + $sp.outerHeight(true);
+								___cnsl.log('breakBox','wordwrap:'+(calc > edgeHeight)+' (('+boxPos.top+' + '+elPos.top+' + '+spPos.top+') / '+zoom+') + '+$sp.outerHeight(true)+' > '+edgeHeight+' ',$sp.text(),$sp.get(0));
+								if (calc > edgeHeight){
 									$cl.append($sp.nextAll().addBack());
 									return false;
 								}
@@ -1166,6 +1179,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $v = $(this);
 			data[$v.attr('name')] = $v.attr('value') || $v.text();
 		});
+		if (data.reportSummary) data.reportSummary = encodeURIComponent(data.reportSummary);
 		data.usecover = Report.document.find('.page.fullcovered').attr('data-visible');
 		data.reportName = $.trim(Report.document.find('.page.covered-default .block.reportName, .page.covered-default .cell.reportName .block').first().text());
 		Report.document.trigger('document:openfloat',[Report.document, $.extend(data,{
@@ -2058,7 +2072,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $col = $d.parent();
 					var $colthisnext = $().add($col).add($col.next('.col'));
 					var dpos = $d.position();
-					var zoom = Report.document.attr('data-zoom') || 1;
+					var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 					$colthisnext.find('img').css({width:'', height:''});
 					if (!$ctn.is('[style*="width"]')){
 						$ctn.css('width',$ctn.outerWidth());
