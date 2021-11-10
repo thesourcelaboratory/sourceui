@@ -3569,7 +3569,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			variables: function($elem){
 				var $var = wdata.aux.strXQ('<var>'+$elem.html().toEntities()+'</var>');
 				wdata.aux.parseAttr($var,$elem,/name|value|data\-/);
-				var value = $.trim($var.attr('value')||$var.text());
+				var value = $.trim($var.attr('value')||$var.html());
 				if ((value+'').indexOf('[') === 0) value = JSON.parse(value);
 				Report.wgdata[$var.attr('name')||$var.attr('id')] = value;
 				return wdata.aux.xqString($var);
