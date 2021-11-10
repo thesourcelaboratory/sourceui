@@ -3567,7 +3567,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				return '<validation>'+suiXml+'</validation>';
 			},
 			variables: function($elem){
-				var $var = wdata.aux.strXQ('<var>'+$elem.text().toEntities()+'</var>');
+				var $var = wdata.aux.strXQ('<var>'+$elem.html().toEntities()+'</var>');
 				wdata.aux.parseAttr($var,$elem,/name|value|data\-/);
 				var value = $.trim($var.attr('value')||$var.text());
 				if ((value+'').indexOf('[') === 0) value = JSON.parse(value);
