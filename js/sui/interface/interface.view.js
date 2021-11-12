@@ -126,7 +126,7 @@ sourceui.interface.view = function ($view, setup) {
 					Notify.open({
 						type: 'error',
 						name: isPT ? 'Validação' : 'Validation',
-						label: isPT ? 'Ops... algo errado não está certo, Batman' : 'Oops... something got wrong, Batman',
+						label: isPT ? 'Algo não está certo' : 'Something got wrong',
 						message: isPT ? 'Dados do formulário são invalidos' : 'Some form data was invalid',
 					});
 				}

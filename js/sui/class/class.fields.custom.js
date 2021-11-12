@@ -32,6 +32,9 @@ sourceui.customField = function (element, setup) {
 	var Dom = {}; 								 	// coleção de objetos jquery para as partes que compõem um campo
 	var Data = {};									// objeto contendo os atributos data do campo
 	var JSONX = JSON5 || JSON;
+
+	var isPT = ($('html').attr('lang').indexOf('pt-') > -1);
+
 	/*
 	---------------------------
 	protected Field.Bind()
@@ -2650,8 +2653,8 @@ sourceui.customField = function (element, setup) {
 						Notify.open({
 							type: 'fail',
 							name: Dom.label.text(),
-							label: 'Ops... seu arquivo é muito grande (' + $.formatBytes(v.size) + ')',
-							message: 'Apenas arquivos ' + Data.vars.upload.accept + ' com até ' + $.formatBytes(Data.vars.upload.maxfilesize) + ' são aceitos.'
+							label: isPT ? 'O arquivo é muito grande (' + $.formatBytes(v.size) + ')' : 'The file is too large (' + $.formatBytes(v.size) + ')',
+							message: isPT ? 'Apenas arquivos ' + Data.vars.upload.accept + ' com até ' + $.formatBytes(Data.vars.upload.maxfilesize) + ' são aceitos.' : 'Only ' + Data.vars.upload.accept + ' files with ' + $.formatBytes(Data.vars.upload.maxfilesize) + ' will be accepted.'
 						});
 						return false;
 					} else {

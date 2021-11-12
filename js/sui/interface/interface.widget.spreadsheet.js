@@ -269,7 +269,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
             Notify.open({
                 type: 'error',
                 name: isPT ? 'Validação' : 'Validation',
-                label: isPT ? 'Oh... algo não está bom' : 'Oh... something is not so good',
+                label: isPT ? 'Algo não está certo' : 'Something got wrong',
                 message: isPT ? 'Dados na planilha são inválidos' : 'Spreadsheet data was invalid',
             });
         }

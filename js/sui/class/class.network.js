@@ -391,7 +391,7 @@ sourceui.Network = function () {
 					if (setup.process) {
 						Notify.open({
 							type: 'warn',
-							name: isPT ? 'Muita calma nessa hora...' : 'Hang on...',
+							name: isPT ? 'Por favor aguarde...' : 'Hang on...',
 							label: setup.suiname,
 							message: isPT ? 'O processo está em andamento e precisa ser concluído pelo servidor.' : 'The process is getting finished by the server.',
 						});
@@ -1207,7 +1207,7 @@ sourceui.Network = function () {
 						setup.slowtimeout = setTimeout(function () {
 							Notify.open({
 								type: 'warn',
-								name: isPT ? 'Poxa, está bem lento...' : 'Very very slow...',
+								name: isPT ? 'Está bem lento...' : 'Very very slow...',
 								label: setup.suiname,
 								message: isPT ? 'Tentaremos concluir essa tarefa a tempo.<br/>Verifique a conexão de internet logo em seguida.' : 'We gonna try to get things finished on server.<br/>Check your internet connection quality before you keep going forward.',
 							});

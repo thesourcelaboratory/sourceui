@@ -185,7 +185,7 @@ sourceui.interface.widget.calendar = function($widget,setup){
 					type: 'alert',
 					name: $this.text() || $this.attr('title') || $this.attr('alt') || 'Ação',
 					label: Datagrid.widget.find('.title h3 span').text(),
-					message: 'Selecione pelo menos um registro.'
+					message: isPT ? 'Selecione pelo menos um registro.' : 'Select at least one register'
 				});
 			}
 			event.stopImmediatePropagation();

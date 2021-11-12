@@ -1458,7 +1458,7 @@ sourceui.Parser = function () {
 					Notify.open({
 						type: 'error',
 						name: isPT ? 'Validação' : 'Validation',
-						label: isPT ? 'Ops... algo errado não está certo, Batman' : 'Oops... something got wrong, Batman',
+						label: isPT ? 'Algo não está certo' : 'Something got wrong',
 						message: isPT ? 'Os dados do formulário são invalidos' : 'Some form data is invalid',
 					});
 				}
@@ -3313,7 +3313,7 @@ sourceui.Parser = function () {
 				});
 				Notify.open({
 					type: 'fatal',
-					name: isPT ? 'Isso é bem constrangedor...' : 'This is awkward...',
+					name: isPT ? 'Erro inesperado de parser' : 'Unexpected parser error',
 					message: isPT ? 'Uma falha ocorreu ao processar o arquivo de resposta' : 'A fail occurred when a response got processed'
 				});
 				setup.metric.add('parseEndTime');

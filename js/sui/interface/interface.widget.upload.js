@@ -175,7 +175,7 @@ sourceui.interface.widget.upload = function($widget,setup){
 				Notify.open({
 					type : 'error',
 					name : isPT ? 'Upload de Arquivos' : 'File Upload',
-					label : isPT ? 'Oh céus, não há bons arquivos...' : 'Oh lord, there is no good files...',
+					label : isPT ? 'Não há bons arquivos...' : 'There is no good files...',
 					message : isPT ? 'Nenhum dos arquivos da lista está apto para upload' : 'None good files at the list to be uploaded',
 				});
 			}
@@ -312,8 +312,8 @@ sourceui.interface.widget.upload = function($widget,setup){
 			Notify.open({
 				type : 'error',
 				name : isPT ? 'Upload de Arquivos' : 'Upload files',
-				label : isPT ? 'Oh céus, não há bons arquivos...' : 'Oh Lord, there is no good files',
-				message : isPT ? 'Nenhum dos arquivos da lista está apto para ser recebido pelo servidor' : 'None good files to be received by the ese44rver at the list',
+				label : isPT ? 'Não há bons arquivos...' : 'There is no good files',
+				message : isPT ? 'Nenhum dos arquivos da lista está apto para ser recebido pelo servidor' : 'None good files to be received by the server at the list',
 			});
 		}
 	});

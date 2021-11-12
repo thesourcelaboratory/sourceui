@@ -31,6 +31,8 @@ sourceui.interface.plugins = function () {
 	var Interface = sourceui.interface;
 	var Dom = Interface.dom;
 
+	var isPT = ($('html').attr('lang').indexOf('pt-') > -1);
+
 	Dom.userguide.on('click', '.button a', function () {
 		var $a = $(this);
 		var $li = $a.parent();
@@ -771,8 +773,8 @@ sourceui.interface.plugins = function () {
 					cb.on('error', function (e) {
 						Notify.open({
 							type: 'error',
-							name: 'Copiar',
-							message: 'Dados não foram copiados para a memória',
+							name: isPT ? 'Copiar' : 'Copy',
+							message: isPT ? 'Dados não foram copiados para a memória' : 'Data were not copied to clipboard',
 						});
 					});
 				} else {
@@ -1551,8 +1553,8 @@ sourceui.interface.plugins = function () {
 			});
 			Notify.open({
 				type: 'valid',
-				name: 'Upload de arquivos',
-				message: 'O processo foi concluído com sucesso',
+				name: isPT ? 'Upload de arquivos' : 'File upload',
+				message: isPT ? 'O processo foi concluído com sucesso' : 'The process was finished successfully',
 			});
 			var $refresh = $widget.data('Interface').common.controller.find('[data-alias="refresh"]');
 			if (!$refresh.length) $refresh = $widget.closest('.sui-view').children('.toolbar').find('[data-alias="refresh"]');
