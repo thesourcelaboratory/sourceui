@@ -1459,7 +1459,7 @@ sourceui.customField = function (element, setup) {
 							{ title: 'Container de Mídia', value: 'image-container' },
 							{ title: 'Grade de Dados', value: 'datagrid' }
 						],
-						textcolor_map: $.extend([
+						textcolor_map: $.extend(Data.vars.textcolor_map || [
 							"000000", "Preto",
 							"808080", "Cinza",
 							"AFAFAF", "Prata",
@@ -1470,7 +1470,7 @@ sourceui.customField = function (element, setup) {
 							"304681", "Marinho",
 						],Data.vars.colormap || []),
 						valid_children:
-						 	"body[p|ol|ul|div|table|span|strong|br|#text]" +
+						 	"body[p|ol|ul|div|table|span|strong|br|em|#text]" +
 							",div[p|img|video]" +
 							",p[br|a|span|b|strong|i|em|u|sup|sub|img|video|hr|#text]" +
 							",span[a|b|strong|i|em|u|sup|sub|#text]" +
