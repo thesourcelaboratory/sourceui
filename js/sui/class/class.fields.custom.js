@@ -1470,7 +1470,7 @@ sourceui.customField = function (element, setup) {
 							"304681", "Marinho",
 						],Data.vars.colormap || []),
 						valid_children:
-						 	"body[p|ol|ul|div|table|span]" +
+						 	"body[p|ol|ul|div|table|span|strong|br|#text]" +
 							",div[p|img|video]" +
 							",p[a|span|b|strong|i|em|u|sup|sub|img|video|hr|#text]" +
 							",span[a|b|strong|i|em|u|sup|sub|#text]" +

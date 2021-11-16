@@ -2178,15 +2178,20 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $wrap = $this.parent();
 		$wrap.removeClass('hover active focus');
-		if ($this.hasClass('keyboarded')){
+		if ($this.hasClass('keyboarded') || $this.hasClass('contentchanged')){
 			var $autofill = $this.find('[data-autofill]');
 			if ($this.data('autofill')){
 				$autofill = $autofill.add($this);
 			}
 			$autofill.each(function(){
 				var $e = $(this);
+				var content = $e.html();
 				var $autofill = Report.area.find('[data-autofill="'+$e.data('autofill')+'"]');
-				$autofill.html($e.text());
+				$autofill.each(function(){
+					var $af = $(this);
+					if ($af.is('.sui-variable')) Variable.set($af.attr('name'),content,'html');
+					else $af.html(content);
+				});
 				if ($e.text()) $autofill.removeClass('empty-content');
 			});
 			var $indexers = Report.document.find('[data-indexer]');
@@ -3106,8 +3111,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetupText = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="text"]:not(.inited)',
 		forced_root_block : false,
-		toolbar: 'undo redo | removeformat | bold italic underline',
-		valid_elements: 'strong,em,span[style],a[href]',
+		toolbar: 'undo redo | forecolor | bold italic underline | removeformat',
+		valid_elements: 'p,strong[style],em,span[style],a[href],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align'
 		},
