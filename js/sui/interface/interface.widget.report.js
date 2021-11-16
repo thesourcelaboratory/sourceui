@@ -1346,11 +1346,15 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (!cancelDrop){
 						$clone = $('<div class="fieldwrap '+edition+'" />').append($clone);
 						if ($drop[key].is('.col')){
+							/*
+							//CAM - stack de boxes dentro de uma col
 							if (!$drop[key].children('.fieldwrap').length){
 								$page.trigger('page:addedition',[$clone,$drop[key],'append']);
 							} else {
 								$.tipster.notify('Spot has a box already');
 							}
+							*/
+							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
 						} else if ($drop[key].is('.fieldwrap')){
 							if (!$drop[key].parent().is('.col')){
 								if (edition == 'graphic' || edition == 'dynamic'){
@@ -1363,7 +1367,8 @@ sourceui.interface.widget.report = function($widget,setup){
 									}
 								}
 							} else {
-								$.tipster.notify('Spot has a box already');
+								$page.trigger('page:addedition',[$clone,$drop[key],'after']);
+								//$.tipster.notify('Spot already has a box');
 							}
 						} else if ($drop[key].is('.cell')){
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
@@ -2055,7 +2060,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $cols = $ctn.find('.line:eq(0) > .col');
 		var $nopep = $cols.filter(':not(.haspep)');
 		if ($nopep.length){
-			$nopep.prepend('<div class="resize" />');
+			$nopep.prepend('<a class="resize" />');
 			var $resizes = $nopep.find('.resize');
 			var $pep = $resizes.pep({
 				axis: 'x',
