@@ -1472,7 +1472,7 @@ sourceui.customField = function (element, setup) {
 						valid_children:
 						 	"body[p|ol|ul|div|table|span|strong|br|#text]" +
 							",div[p|img|video]" +
-							",p[a|span|b|strong|i|em|u|sup|sub|img|video|hr|#text]" +
+							",p[br|a|span|b|strong|i|em|u|sup|sub|img|video|hr|#text]" +
 							",span[a|b|strong|i|em|u|sup|sub|#text]" +
 							",a[span|b|strong|i|em|u|sup|sub|img|#text]" +
 							",b[span|a|i|em|u|sup|sub|img|#text|label]" +
@@ -1487,7 +1487,8 @@ sourceui.customField = function (element, setup) {
 							",td[span|a|b|strong|i|u|sup|sub|img|#text]" +
 							",li[span|a|b|strong|i|u|sup|sub|img|ol|ul|#text]" +
 							",ol[li]" +
-							",ul[li]",
+							",ul[li]" +
+							",br",
 						forced_root_block : 'p',
 						setup: function (editor) {
 							editor.on('init', function (event) {
@@ -1520,6 +1521,9 @@ sourceui.customField = function (element, setup) {
 							});
 						},
 					}, Data.vars);
+					if (!data.forced_root_block){
+						Element.addClass('ignore-sanitize');
+					}
 					tinymce.init(data);
 					Bind.common.mce.docroot = $('#'+id).tinymce();
 					Element.on('field:loaded',function(){
@@ -1537,6 +1541,7 @@ sourceui.customField = function (element, setup) {
 					});
 				},
 				sanitize: function(noempty){
+					if (Element.hasClass('ignore-sanitize')) return;
 					var $el = Bind.common.mce.docroot.$('body > *');
 					$el.each(function(k,v){
 						var $e = $(this);
