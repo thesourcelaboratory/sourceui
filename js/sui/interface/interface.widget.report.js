@@ -2841,7 +2841,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $lastbox = $content.find('.fieldwrap:not(.dynamic):last');
 			console.log($lastbox);
 			var lasboxh = $lastbox.position().top + $lastbox.height();
-			$frontpages.attr('data-margintop',($content.height() + 8) - lasboxh );
+			$frontpages.attr('data-margintop',($content.height() + 16) - lasboxh );
 		}
 	});
 	Report.document.on('document:addpage',function(event,$new,$ref,placement){
