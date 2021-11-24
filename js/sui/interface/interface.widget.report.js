@@ -2548,8 +2548,9 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('edition:split','[data-edition]',function(event,y){
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
-		$this.removeAttr('data-belongstogroup')
-		$fieldwrap.removeAttr('data-boxgroup')
+		var boxgroup = $this.attr('data-belongstogroup');
+		$this.removeAttr('data-belongstogroup');
+		$fieldwrap.removeAttr('data-boxgroup');
 		var $clone = $this.clone();
 		var $page = $this.closest('.page');
 		var boxPos = $this.offset();
@@ -2589,9 +2590,14 @@ sourceui.interface.widget.report = function($widget,setup){
 				$el.get(0).normalize();
 				$clone.append($el.nextAll());
 
-				var $clonewrap = $('<div class="fieldwrap '+$clone.data('edition')+' active" data-boxgroup="'+$clone.data('boxgroup')+'" />').append($clone);
+				var $clonewrap = $('<div class="fieldwrap '+$clone.data('edition')+' active" />').append($clone);
 
 				$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
+
+				if (boxgroup){
+					$clonewrap.nextAll('[data-belongstogroup="'+boxgroup+'"]').removeAttr('data-belongstogroup').parent().removeAttr('data-boxgroup');
+					$page.nextAll('.page').find('[data-belongstogroup="'+boxgroup+'"]').removeAttr('data-belongstogroup').parent().removeAttr('data-boxgroup');
+				}
 				return false;
 			}
 		});
