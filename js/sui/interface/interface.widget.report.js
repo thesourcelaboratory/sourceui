@@ -51,7 +51,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document = Report.widget.find('.sui-report-document');
 	Report.validations = Report.widget.find('.sui-validations rule');
 	Report.templates = Report.widget.find('.sui-templates');
-	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="graphic"]');
+	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
 
 	Report.document.addClass('preventhistorystack');
@@ -147,7 +147,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	};
 	Variable.init();
 
-	var Graphic = {
+	var Figure = {
 		base64: function(url,callback,failback){
 			var xhr = new XMLHttpRequest();
 			xhr.onload = function() {
@@ -173,11 +173,11 @@ sourceui.interface.widget.report = function($widget,setup){
 				imgdata:imgdata
 			},function(data){
 				if (callback) callback(data);
-				Console.info({ mode: 'AJAX', title: 'Graphic.post: imgdataUploader DONE', content: data}).trace();
+				Console.info({ mode: 'AJAX', title: 'Figure.post: imgdataUploader DONE', content: data}).trace();
 			},"json")
 			.fail(function(e,data){
 				if (failback) failback(data);
-				Console.error({ mode: 'AJAX', title: 'Graphic.post: imgdataUploader FAIL', content: data }).trace();
+				Console.error({ mode: 'AJAX', title: 'Figure.post: imgdataUploader FAIL', content: data }).trace();
 			});
 		}
 	};
@@ -540,7 +540,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (event.keyCode == 90 || event.keyCode == 89){
 				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
 				if (!$activeFieldwrap.length){
-					var $activeEdition = $activeFieldwrap.find('[data-edition*="text"], [data-edition="graphic"]');
+					var $activeEdition = $activeFieldwrap.find('[data-edition*="text"], [data-edition="figure"]');
 					if (!$activeEdition.length || !$edition.is('.contentchanged')){
 							if (event.keyCode == 90) Report.document.trigger('historyworker:back');
 						else if (event.keyCode == 89) Report.document.trigger('historyworker:forward');
@@ -586,9 +586,9 @@ sourceui.interface.widget.report = function($widget,setup){
 										if (allItems === allDone){
 											clearInterval(intval);
 											if (content.image){
-												var $clone = Report.templates.children('[data-edition="graphic"]').clone();
-												$clone.find('p.graphicspot').append('<img src="'+content.image+'">');
-												$clone = $('<div class="fieldwrap graphic" />').append($clone);
+												var $clone = Report.templates.children('[data-edition="figure"]').clone();
+												$clone.find('p.figurespot').append('<img src="'+content.image+'">');
+												$clone = $('<div class="fieldwrap figure" />').append($clone);
 											} else if (content.html){
 												var $clone = Report.templates.children('[data-edition="richtext"]').clone();
 												$clone.append(content.html);
@@ -723,11 +723,14 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $edition = $box.children('[data-edition]');
 			$edge = $edge || $box.parent();
 
+			if ($edition.is('.front-pages')){
+				return false;
+			}
 			if ($box.is('.container')){
 				boxFitter.moveBox($box,$edge);
 				return false;
 			}
-			else if ($edition.is('[data-edition="graphic"]')){
+			else if ($edition.is('[data-edition="figure"]')){
 				boxFitter.moveBox($box,$edge);
 				return false;
 			}
@@ -1085,6 +1088,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $boxes = $e.children('.fieldwrap, .container');
 					$boxes.each(function(kb,b){
 						var $b = $(b);
+						if ($b.children('.block').is('.front-pages')){
+							return true;
+						}
 						var extrapolate = boxFitter.isExtrapolatedBox($b,$e);
 						___cnsl.log('testPage','isExtrapolatedBox: ',extrapolate,extrapolate ? $b.get(0) : '');
 						if (extrapolate){
@@ -1326,7 +1332,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					if ($a.hasClass('add-richtext')) edition = 'richtext';
 					else if ($a.hasClass('add-tinytext')) edition = 'tinytext';
 					else if ($a.hasClass('add-text')) edition = 'text';
-					else if ($a.hasClass('add-graphic')) edition = 'graphic';
+					else if ($a.hasClass('add-figure')) edition = 'figure';
 					else if ($a.hasClass('add-dynamic')) edition = 'dynamic';
 					else if ($a.hasClass('add-toc')) edition = 'toc';
 
@@ -1357,7 +1363,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
 						} else if ($drop[key].is('.fieldwrap')){
 							if (!$drop[key].parent().is('.col')){
-								if (edition == 'graphic' || edition == 'dynamic'){
+								if (edition == 'figure' || edition == 'dynamic'){
 									$page.trigger('page:addedition',[$clone,$drop[key],'split',this.ev.y]);
 								} else {
 									if (this.ev.y > $drop[key].offset().top + ($drop[key].height()/3)){
@@ -1380,8 +1386,8 @@ sourceui.interface.widget.report = function($widget,setup){
 						if (edition == 'dynamic'){
 							$clone.find('[data-edition]').addClass('empty-content').trigger('edition:tools').click();
 							$clone.children('.edition-actions').find('.pick a').click();
-						} else if (edition == 'graphic'){
-							$clone.find('[data-edition]').attr('data-indexlabel','Graphic');
+						} else if (edition == 'figure'){
+							$clone.find('[data-edition]').attr('data-indexlabel','Figure');
 						} else if (edition == 'toc'){
 							$clone.find('[data-edition]').trigger('edition:tools').click();
 						} else {
@@ -1495,7 +1501,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$page.css('background-image','url("'+reader.result+'")');
 					$page.attr('data-background',reader.result);
 					///////////////////////////////////////////
-					Graphic.post(reader.result, null, function(data){
+					Figure.post(reader.result, null, function(data){
 						var bgimg = document.createElement('img');
 						bgimg.onload = function(){ $page.css('background-image','url("'+data.src+'")'); }
 						bgimg.src = data.src;
@@ -1665,7 +1671,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			});
 
-			if ($this.attr('data-edition') == 'graphic') {
+			if ($this.attr('data-edition') == 'figure') {
 				$tools.find('li.img').removeClass('deny').addClass('allow');
 			} else {
 				$tools.find('li.img').removeClass('allow').addClass('deny');
@@ -1724,15 +1730,15 @@ sourceui.interface.widget.report = function($widget,setup){
 			var file = this.files[0];
 			var reader = new FileReader();
 			reader.onload = function () {
-				var $spot = $edit.find('.graphicspot');
+				var $spot = $edit.find('.figurespot');
 				if (!$spot.length){
-					$spot = $('<p class="graphicspot yedt" contenteditable="true" />');
+					$spot = $('<p class="figurespot yedt" contenteditable="true" />');
 					var $h = $edit.find('h4');
 					if ($h.length) $h.after($spot);
 					else $edit.prepend($spot);
 				}
 				var $img = $('<img src="'+reader.result+'" class="browserdelement" />');
-				$spot.find(':not(img)').remove();
+				//$spot.find(':not(img)').remove();
 				$spot.append($img);
 				///////////////////////////////////////////
 				if ($img.is('[src*="image/svg"]')){
@@ -1742,7 +1748,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						setTimeout(function(){
 							$.svgString2Image(svg, $img.width()*5, $img.height()*5, 'png', function (pngData) {
 								// pngData is base64 png string
-								Graphic.post(pngData, null, function(data){
+								Figure.post(pngData, null, function(data){
 									$img.attr('src',data.src);
 									Report.document.trigger('document:change',[$page]);
 									$.tipster.notify('Image auto converted and uploaded');
@@ -1755,7 +1761,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						},150);
 					}
 				} else {
-					Graphic.post(reader.result, null, function(data){
+					Figure.post(reader.result, null, function(data){
 						$img.attr('src',data.src);
 						Report.document.trigger('document:change',[$page]);
 						$.tipster.notify('Image auto uploaded');
@@ -2406,8 +2412,8 @@ sourceui.interface.widget.report = function($widget,setup){
 				$img.width($img.width());
 				$img.height($img.height());
 				/////////////////////////////////////////////////
-				Graphic.base64($img.attr('src'),function(base64){
-					Graphic.post(base64, null, function(data){
+				Figure.base64($img.attr('src'),function(base64){
+					Figure.post(base64, null, function(data){
 						$img.attr('src',data.src);
 						$img.removeClass('uploading');
 						$img.removeClass('localsource');
@@ -2432,7 +2438,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$img.width($img.width());
 				$img.height($img.height());
 				/////////////////////////////////////////////////
-				Graphic.post($img.attr('src'), null, function(data){
+				Figure.post($img.attr('src'), null, function(data){
 					$img.attr('src',data.src);
 					$img.removeClass('uploading');
 					$img.removeClass('localsource');
@@ -2480,8 +2486,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $fieldwrap = $this.parent();
 		var $page, $reference;
 		var editiontype = $this.data('edition');
-		var $preved = (editiontype === 'dynamic' || editiontype === 'graphic') ? $fieldwrap.prev('.fieldwrap').children('[data-edition]') : '';
-		var $nexted = (editiontype === 'dynamic' || editiontype === 'graphic') ? $fieldwrap.next('.fieldwrap').children('[data-edition]') : '';
+		var $preved = (editiontype === 'dynamic' || editiontype === 'figure') ? $fieldwrap.prev('.fieldwrap').children('[data-edition]') : '';
+		var $nexted = (editiontype === 'dynamic' || editiontype === 'figure') ? $fieldwrap.next('.fieldwrap').children('[data-edition]') : '';
 		if ($fieldwrap.is('.dynamic[data-boxgroup]')){
 			Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"] [data-edition]').each(function(ke, e){
 				var $e = $(e);
@@ -2588,6 +2594,18 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		$this.append($next.children());
 		$next.trigger('edition:remove');
+	});
+	Report.document.on('click','[data-edition] span.counter',function(event){
+		var $this = $(this);
+		var $field = $this.closest('[data-edition]');
+		var $page = $field.closest('.page');
+		var indexlabel = ($field.attr('data-indexlabel')+'').toLowerCase();
+		if (indexlabel == 'figure') $field.attr('data-indexlabel','Chart');
+		else if (indexlabel == 'chart') $field.attr('data-indexlabel','Image');
+		else if (indexlabel == 'image') $field.attr('data-indexlabel','Table');
+		else if (indexlabel == 'table') $field.attr('data-indexlabel','Figure');
+		Report.document.trigger('document:boxcount');
+		Report.document.trigger('document:change',[$page]);
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2720,6 +2738,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	// Document Events --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('document:change',function(event,$page){
+		Report.document.trigger('document:reducedfit');
 		/////////////////////////////////////////////////////////////////
 		if (Report.document.hasClass('preventeventchange')) return false;
 		/////////////////////////////////////////////////////////////////
@@ -2740,7 +2759,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('document:boxcount',function(event){
 		var idx = {};
-		Report.document.find('[data-edition="graphic"]').each(function(){
+		Report.document.find('[data-edition="figure"]').each(function(){
 			var $this = $(this);
 			var $h4 = $this.find('h4');
 			if ($h4.length){
@@ -2764,6 +2783,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (!Report.document.hasClass('loaded')){
 			Report.document.addClass('loaded');
 			Report.document.trigger('document:validate');
+			Report.document.trigger('document:reducedfit');
 			setTimeout(function(){
 				Report.document.trigger('document:pagelist',['forceChange']);
 				Report.document.trigger('document:disclaimerrefpage');
@@ -2796,6 +2816,26 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.trigger('document:invalid');
 			$vchecked.removeClass('icon-done').parent().css('background','#e24040');
 			$vchecked.html('<b>!'+invalids+'</b>');
+		}
+	});
+	Report.document.on('document:reducedfit',function(){
+		var $frontpages = Report.document.find('.block.front-pages');
+		var $fieldwrap = $frontpages.parent();
+		if ($fieldwrap.length){
+			var boxh = $fieldwrap.outerHeight(true);
+			var $content = $fieldwrap.closest('.content');
+			$content.css('height','100%');
+			$content.height($content.height() - boxh);
+			setTimeout(function(){
+				$fieldwrap.css({
+					'position':'absolute',
+					'bottom':-(boxh+8)
+				});
+			},10);
+			var $lastbox = $content.find('.fieldwrap:not(.dynamic):last');
+			console.log($lastbox);
+			var lasboxh = $lastbox.position().top + $lastbox.height();
+			$frontpages.attr('data-margintop',($content.height() + 8) - lasboxh );
 		}
 	});
 	Report.document.on('document:addpage',function(event,$new,$ref,placement){
@@ -2920,7 +2960,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	// History Events --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('historyworker:add',function(event,keepStatement){
 		if (Report.document.hasClass('preventhistorystack')) return true;
-		var content = Report.documetHTML();
+		var content = Report.documentHTML();
 		historyWorker.postMessage({
 			command:'add',
 			dochash:Variable.get('docHash'),
@@ -2961,7 +3001,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.find('[data-edition]').trigger('edition:cleanmce');
 			Report.document.trigger('edition:init',[true]);
 			Report.document = Report.widget.find('.sui-report-document');
-			Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="graphic"]');
+			Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -3019,19 +3059,19 @@ sourceui.interface.widget.report = function($widget,setup){
 						reader.onload = function () {
 							var img = document.createElement('img');
 							img.src = reader.result;
-							var $p = $('<p class="graphicspot"></p>');
+							var $p = $('<p class="figurespot"></p>');
 							$p.append(img);
 							var $target = $(editor.selection.getNode());
 							var $field = $target.closest('[data-edition]');
 							if (!$target.is('p')) $target = $target.closest('p',$field);
-							if (!$target.is('p')) $target = $field.find('.graphicspot, p:eq(0)');
+							if (!$target.is('p')) $target = $field.find('.figurespot, p:eq(0)');
 							if (!$target.is('p')){
 								if ($field.children('header,h1,h2,h3,h4').length) $field.children('h1,h2,h3,h4').after($p);
 								else if ($field.children('h5').length) $field.children('h5').before($p);
 								$field.append($p);
 							} else {
 								if (!$target.find('img').length) $target.replaceWith($p);
-								else $target.append($p.html()).addClass('graphicspot');
+								else $target.append($p.html()).addClass('figurespot');
 							}
 						};
 						reader.readAsDataURL(file);
@@ -3101,7 +3141,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			});
 			editor.on('NodeChange', function(e) {
-				if ($ed.is('[data-edition="richtext"],[data-edition="graphic"]')){
+				if ($ed.is('[data-edition="richtext"],[data-edition="figure"]')){
 					var $elem = e.element ? $(e.element) : $();
 					var $toolroot = $('#tinymceinlinetoolbar .mce-tinymce-inline:visible');
 					if ($elem.is('img')){
@@ -3194,16 +3234,14 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		}
 	});
-	var mceSetupGraphic = $.extend(true, {}, mceSetup, {
-		selector: '[data-edition="graphic"]:not(.inited)',
+	var mceSetupFigure = $.extend(true, {}, mceSetup, {
+		selector: '[data-edition="figure"]:not(.inited)',
 		placeholder:'Paste images, pictures and glyphs here...',
 		forced_root_block : 'p',
 		table_appearance_options: false,
 		imagetools_toolbar: 'none',
 		paste_data_images: true,
-		toolbar: [
-			'undo redo | link | table | editimage imageoptions '
-		],
+		toolbar: 'undo redo | forecolor | bold italic underline | removeformat | link | table | editimage imageoptions ',
 		automatic_uploads: false,
 		file_picker_types: 'image',
 		powerpaste_allow_local_images: true,
@@ -3230,6 +3268,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			$imglocal.addClass('localsource');
 			if ($imgtable.length){
 				if (hasp){
+					var $p = $target.is('p') ? $target : $target.closest('p',$field);
+					$field.find('.figurespot').removeClass('figurespot');
+					$p.addClass('figurespot yedt');
 					$imgtable.addClass('pastedelement').removeAttr('width').removeAttr('height');
 					o.content = $content.html();
 				} else {
@@ -3240,12 +3281,15 @@ sourceui.interface.widget.report = function($widget,setup){
 					$field.addClass('ajax-courtain');
 				}
 			} else {
+				o.content = $content.html();
+				/*
 				if (hash){
 					o.content = $content.html();
 				} else {
-					$.tipster.notify('Paste graphics only');
+					$.tipster.notify('Paste figures only');
 					o.content = hasp ? '<p></p>' : '';
 				}
+				*/
 			}
 		}
 	});
@@ -3281,13 +3325,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($edits.filter('[data-edition="plaintext"]').length) setup.tinytext = $.extend(true, {}, mceSetupPlaintext);
 		if ($edits.filter('[data-edition="tinytext"]').length) setup.tinytext = $.extend(true, {}, mceSetupTinytext);
 		if ($edits.filter('[data-edition="richtext"]').length) setup.richtext = $.extend(true, {}, mceSetupRichtext);
-		if ($edits.filter('[data-edition="graphic"]').length) setup.graphic = $.extend(true, {}, mceSetupGraphic);
+		if ($edits.filter('[data-edition="figure"]').length) setup.figure = $.extend(true, {}, mceSetupFigure);
 
 		$edits.trigger('edition:wrapfield');
 		$edits.trigger('edition:jscode');
 
 		/*
-
 		$edits.attr('contenteditable','true').one('focus',function(){
 			var $e = $(this);
 			var eid = $e.attr('id') || 'box'+$.md5(Math.rand()).substring(0, 16);
@@ -3298,7 +3341,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			setTimeout(function(){$e.trigger('focus');},300);
 			$e.addClass('binded')
 		});
-
 		*/
 
 		$.each(setup,function(k,v){
@@ -3362,7 +3404,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							var tinymcedit = tinymce.get($this.attr('id'))
 							content = tinymcedit ? tinymcedit.getContent() : $this.html();
 							//content = $this.html();
-						} else if ($this.attr('data-edition').indexOf('graphic') > -1){
+						} else if ($this.attr('data-edition').indexOf('figure') > -1){
 							content = $this.html();
 						} else if ($this.attr('data-edition').indexOf('dynamic') > -1){
 							content = $this.html();
@@ -3418,6 +3460,19 @@ sourceui.interface.widget.report = function($widget,setup){
 				wdata.aux.parseAttr($sui,$elem,/data\-/);
 				return wdata.aux.xqString($sui);
 			},
+			grower: function($elem){
+				var suiXml = '';
+				$elem.children().each(function(){
+					var $this = $(this);
+					if ($this.hasClass('block')) suiXml += wdata.suify.block($this);
+					else if ($this.hasClass('fieldwrap')) suiXml += wdata.suify.fieldwrap($this);
+					else if ($this.hasClass('container')) suiXml += wdata.suify.container($this);
+				});
+				var $sui = wdata.aux.strXQ('<grower>'+suiXml+'</grower>');
+				if (!$elem.attr('data-type') && wdata.aux.getClassAt($elem,1)) $sui.attr('data-type',wdata.aux.getClassAt($elem,1));
+				wdata.aux.parseAttr($sui,$elem,/data\-/);
+				return wdata.aux.xqString($sui);
+			},
 			cell: function($elem){
 				var suiXml = '';
 
@@ -3427,6 +3482,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$elem.children().each(function(){
 						var $this = $(this);
 						if ($this.hasClass('block')) suiXml += wdata.suify.block($this);
+						else if ($this.hasClass('grower')) suiXml += wdata.suify.grower($this);
 						else if ($this.hasClass('fieldwrap')) suiXml += wdata.suify.fieldwrap($this);
 						else if ($this.hasClass('container')) suiXml += wdata.suify.container($this);
 					});
@@ -3614,7 +3670,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		return Report.wgdata;
 	};
 
-	Report.documetHTML = function(){
+	Report.documentHTML = function(){
 		var $document = Report.document.clone();
 		var $editions = $document.find('[data-edition]');
 		$document.removeClass('loaded');
