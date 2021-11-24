@@ -1394,6 +1394,12 @@ sourceui.interface.widget.report = function($widget,setup){
 							//$clone.find('[data-edition]').focus(); // comentado para verificar se esse é o bug do focus+placeholder
 						}
 						Report.document.trigger('document:boxcount');
+
+						// Para sempre manter as frontpages por ultimo na lista de DOM
+						var $reduced = $clone.closest('.reduced');
+						if ($reduced.length){
+							$reduced.find('.front-pages').parent().appendTo($reduced);
+						}
 					}
 				}
 			}
