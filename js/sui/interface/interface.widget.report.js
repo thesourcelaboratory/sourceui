@@ -481,6 +481,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				let tinyeditor = tinymce.get($edition.attr('id'));
 				tinyeditor.selection.setContent('<span class="caret-autobreak '+place+'"></span>');
 			}
+			return $edition.find('.caret-autobreak');
 		},
 		focus: function($edit){
 			let $fieldwrap = $edit && $edit.length ? $edit.parent() : Report.document.find('.caret-autobreak').closest('.fieldwrap');
@@ -1770,7 +1771,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					else $edit.prepend($spot);
 				}
 				var $img = $('<img src="'+reader.result+'" class="browserdelement" />');
-				//$spot.find(':not(img)').remove();
+				$spot.find(':not(img):not(table)').remove();
+				$spot.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
 				$spot.append($img);
 				///////////////////////////////////////////
 				if ($img.is('[src*="image/svg"]')){
@@ -2878,7 +2880,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				});
 			},10);
 			var $lastbox = $content.find('.fieldwrap:not(.dynamic):last');
-			console.log($lastbox);
 			var lasboxh = $lastbox.position().top + $lastbox.height();
 			$frontpages.attr('data-margintop',($content.height() + 16) - lasboxh );
 		}
@@ -3090,6 +3091,100 @@ sourceui.interface.widget.report = function($widget,setup){
 			"d053af", "Pink",
 		],
 		setup: function (editor) {
+			var $ed = $(editor.getElement());
+			var $page = $ed.closest('.page');
+			editor.on('init', function (e) {
+				$ed.addClass('inited');
+			});
+			editor.on('click', function (e) {
+				$ed.trigger('edition:nodechange',[e.target]);
+			});
+			editor.on('input', function (e) {
+				$ed.addClass('contentchanged');
+			});
+		}
+	};
+	var mceSetupText = $.extend(true, {}, mceSetup, {
+		selector: '[data-edition="text"]:not(.inited)',
+		forced_root_block : false,
+		toolbar: 'undo redo | forecolor | bold italic underline | removeformat',
+		valid_elements: 'p,strong[style],em,span[style],a[href],br',
+		valid_styles: {
+			'*': 'color,text-decoration,text-align'
+		},
+	});
+	var mceSetupPlaintext = $.extend(true, {}, mceSetup, {
+		selector: '[data-edition="plaintext"]:not(.inited)',
+		forced_root_block : false,
+		toolbar: 'undo redo | removeformat',
+		valid_elements: 'br',
+		valid_styles: {
+			'*': 'color'
+		},
+	});
+	var mceSetupTinytext = $.extend(true, {}, mceSetup, {
+		selector: '[data-edition="tinytext"]:not(.inited)',
+		forced_root_block : 'p',
+		toolbar: 'undo redo | removeformat | bold italic underline | forecolor | alignleft aligncenter alignjustify alignright',
+		valid_elements: 'p[style],h1[style|class],h2[style|class],h3[style|class],h4[style|class],strong[style]/b[style],em,span[style|class],a[href],br',
+		valid_styles: {
+			'*': 'color,text-decoration,text-align,font-style'
+		}
+	});
+	var mceSetupRichtext = $.extend(true, {}, mceSetup, {
+		selector: '[data-edition="richtext"]:not(.inited)',
+		placeholder:'Enter formatted text here...',
+		forced_root_block : 'p',
+		table_appearance_options: false,
+		imagetools_toolbar: 'none',
+		paste_data_images: false,
+		toolbar: [
+			'removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignjustify alignright | numlist bullist outdent indent | link | table | editimage imageoptions '
+		],
+		automatic_uploads: false,
+		file_picker_types: 'image',
+		powerpaste_allow_local_images: true,
+		table_toolbar: '',
+		table_resize_bars: false,
+		valid_elements: 'p[style|class],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
+		valid_styles: {
+			'h1': 'font-size,font-family,color,text-decoration,text-align',
+			'h2': 'font-size,font-family,color,text-decoration,text-align',
+			'h3': 'font-size,font-family,color,text-decoration,text-align',
+			'h4': 'font-size,font-family,color,text-decoration,text-align',
+			'h5': 'font-size,font-family,color,text-decoration,text-align',
+			'p': 'font-size,font-family,color,text-decoration,text-align',
+			'table': 'border,border-colapse,border-color,border-style,background-color,background,color,width,height,cellpadding,cellspacing',
+			'tr': 'style,background-color,background,height',
+			'th': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
+			'td': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
+			'img': 'width, height',
+			'strong': 'font-size,font-family,color,text-decoration,text-align,background-color',
+			'span': 'font-size,font-family,color,text-decoration,text-align,background-color',
+		},
+		style_formats: [
+			{title: 'XLarge Title', block: 'h1'},
+			{title: 'Large Title', block: 'h2'},
+			{title: 'Regular Title', block: 'h3'},
+			{title: 'Small Title', block: 'h4'},
+			{title: 'Paragraph', block: 'p'},
+			{title: 'Legend', block: 'h5'},
+		],
+		paste_preprocess : function(pl, o) {
+			var $content = $('<div>'+o.content+'</div>');
+			var $imgtable = $content.children('img,table');
+			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
+			$imgtable.addClass('pastedelement');
+			$imglocal.addClass('localsource');
+			$content.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
+			o.content = $content.html();
+			if ($imglocal.length){
+				var $target = $(o.target.selection.getNode());
+				var $field = $target.closest('[data-edition]');
+				$field.addClass('ajax-courtain');
+			}
+		},
+		setup: function (editor) {
 			editor.addButton('browseimg', {
 				text: null,
 				icon: 'image',
@@ -3165,11 +3260,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			});
 			editor.on('input', function (e) {
-				if (!$ed.hasClass('contentchanged')){
-					/** HISTORY WORKER **********************************************/
-					//Report.document.trigger('historyworker:add');
-					/****************************************************************/
-				}
 				$ed.addClass('contentchanged');
 			});
 			editor.on('change', function (e) {
@@ -3187,97 +3277,14 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			});
 			editor.on('NodeChange', function(e) {
-				if ($ed.is('[data-edition="richtext"],[data-edition="figure"]')){
-					var $elem = e.element ? $(e.element) : $();
-					var $toolroot = $('#tinymceinlinetoolbar .mce-tinymce-inline:visible');
-					if ($elem.is('img')){
-						$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').show();
-					} else {
-						$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').hide();
-					}
+				var $elem = e.element ? $(e.element) : $();
+				var $toolroot = $('#tinymceinlinetoolbar .mce-tinymce-inline:visible');
+				if ($elem.is('img')){
+					$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').show();
+				} else {
+					$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').hide();
 				}
 			});
-		}
-	};
-	var mceSetupText = $.extend(true, {}, mceSetup, {
-		selector: '[data-edition="text"]:not(.inited)',
-		forced_root_block : false,
-		toolbar: 'undo redo | forecolor | bold italic underline | removeformat',
-		valid_elements: 'p,strong[style],em,span[style],a[href],br',
-		valid_styles: {
-			'*': 'color,text-decoration,text-align'
-		},
-	});
-	var mceSetupPlaintext = $.extend(true, {}, mceSetup, {
-		selector: '[data-edition="plaintext"]:not(.inited)',
-		forced_root_block : false,
-		toolbar: 'undo redo | removeformat',
-		valid_elements: 'br',
-		valid_styles: {
-			'*': 'color'
-		},
-	});
-	var mceSetupTinytext = $.extend(true, {}, mceSetup, {
-		selector: '[data-edition="tinytext"]:not(.inited)',
-		forced_root_block : 'p',
-		toolbar: 'undo redo | removeformat | bold italic underline | forecolor | alignleft aligncenter alignjustify alignright',
-		valid_elements: 'p[style],h1[style|class],h2[style|class],h3[style|class],h4[style|class],strong[style]/b[style],em,span[style|class],a[href],br',
-		valid_styles: {
-			'*': 'color,text-decoration,text-align,font-style'
-		},
-	});
-	var mceSetupRichtext = $.extend(true, {}, mceSetup, {
-		selector: '[data-edition="richtext"]:not(.inited)',
-		placeholder:'Enter formatted text here...',
-		forced_root_block : 'p',
-		table_appearance_options: false,
-		imagetools_toolbar: 'none',
-		paste_data_images: false,
-		toolbar: [
-			'removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignjustify alignright | numlist bullist outdent indent | link | table | editimage imageoptions '
-		],
-		automatic_uploads: false,
-		file_picker_types: 'image',
-		powerpaste_allow_local_images: true,
-		table_toolbar: '',
-		table_resize_bars: false,
-		valid_elements: 'p[style|class],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
-		valid_styles: {
-			'h1': 'font-size,font-family,color,text-decoration,text-align',
-			'h2': 'font-size,font-family,color,text-decoration,text-align',
-			'h3': 'font-size,font-family,color,text-decoration,text-align',
-			'h4': 'font-size,font-family,color,text-decoration,text-align',
-			'h5': 'font-size,font-family,color,text-decoration,text-align',
-			'p': 'font-size,font-family,color,text-decoration,text-align',
-			'table': 'border,border-colapse,border-color,border-style,background-color,background,color,width,height,cellpadding,cellspacing',
-			'tr': 'style,background-color,background,height',
-			'th': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
-			'td': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
-			'img': 'width, height',
-			'strong': 'font-size,font-family,color,text-decoration,text-align,background-color',
-			'span': 'font-size,font-family,color,text-decoration,text-align,background-color',
-		},
-		style_formats: [
-			{title: 'XLarge Title', block: 'h1'},
-			{title: 'Large Title', block: 'h2'},
-			{title: 'Regular Title', block: 'h3'},
-			{title: 'Small Title', block: 'h4'},
-			{title: 'Paragraph', block: 'p'},
-			{title: 'Legend', block: 'h5'},
-		],
-		paste_preprocess : function(pl, o) {
-			var $content = $('<div>'+o.content+'</div>');
-			var $imgtable = $content.children('img,table');
-			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
-			$imgtable.addClass('pastedelement');
-			$imglocal.addClass('localsource');
-			$content.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
-			o.content = $content.html();
-			if ($imglocal.length){
-				var $target = $(o.target.selection.getNode());
-				var $field = $target.closest('[data-edition]');
-				$field.addClass('ajax-courtain');
-			}
 		}
 	});
 	var mceSetupFigure = $.extend(true, {}, mceSetup, {
@@ -3304,7 +3311,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		paste_preprocess : function(pl, o) {
 			var $target = $(o.target.selection.getNode());
 			var $field = $target.closest('[data-edition]');
-			var hasp = $target.is('p') || $target.closest('p',$field).length;
+			var haspot = $target.is('p.figurespot') || $target.closest('p.figurespot',$field).length;
 			var hash = $target.is('h3,h5') || $target.closest('h3,h5',$field).length;
 			var $content = $('<div>'+o.content+'</div>');
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
@@ -3313,30 +3320,88 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
 			$imglocal.addClass('localsource');
 			if ($imgtable.length){
-				if (hasp){
+				if (haspot){
 					var $p = $target.is('p') ? $target : $target.closest('p',$field);
-					$field.find('.figurespot').removeClass('figurespot');
-					$p.addClass('figurespot yedt');
+					$p.find(':not(img):not(table)').remove();
+					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
 					$imgtable.addClass('pastedelement').removeAttr('width').removeAttr('height');
 					o.content = $content.html();
 				} else {
-					$.tipster.notify('Paste in middle only');
-					o.content = '<p></p>';
+					$.tipster.notify('Paste only into the spot');
+					o.content = hash ? '' : '<p></p>';
 				}
 				if ($imglocal.length){
 					$field.addClass('ajax-courtain');
 				}
 			} else {
 				o.content = $content.html();
-				/*
-				if (hash){
-					o.content = $content.html();
-				} else {
-					$.tipster.notify('Paste figures only');
-					o.content = hasp ? '<p></p>' : '';
-				}
-				*/
 			}
+		},
+		setup: function (editor) {
+			var $ed = $(editor.getElement());
+			var $page = $ed.closest('.page');
+			editor.on('init', function (e) {
+				$ed.addClass('inited');
+			});
+			editor.on('click', function (e) {
+				$ed.trigger('edition:nodechange',[e.target]);
+			});
+			editor.on('input', function (e) {
+				$ed.addClass('contentchanged');
+			});
+			editor.on('keydown', function (e) {
+				if (e.key == 'Enter'){
+					var $caret = caret.save($ed,'begining');
+					if ($caret.closest('.figurespot').length){
+						e.preventDefault();
+						var $p = $('<p></p>');
+						$p.insertAfter($ed.find('.figurespot')).append($caret);
+						caret.focus();
+						$p.append('<br>');
+					} else if ($caret.closest('h4').length){
+						e.preventDefault();
+						var $p = $('<p></p>');
+						$p.insertAfter($ed.find('h4')).append($caret);
+						caret.focus();
+						$p.append('<br>');
+					} else if ($caret.closest('h5').length){
+						e.preventDefault();
+						caret.focus();
+					} else {
+						caret.focus();
+					}
+				}
+			});
+			editor.on('keyup', function (e) {
+				if ((e.ctrlKey && e.key != 'Control' && e.key != 'c' && e.key != 'v' && e.key != 'x' && e.key != 'z') || (e.key != 'Enter' && e.key != 'Backspace' && e.key != 'Delete' && e.key != 'Escape' && e.key != 'Tab')){
+					var $p = $ed.find('.figurespot');
+					$p.find(':not(img):not(table)').remove();
+					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
+				}
+			});
+			editor.on('change', function (e) {
+				$ed.addClass('contentchanged');
+				$ed.trigger('edition:uploadimgs');
+			});
+			editor.on('blur', function (e) {
+				if ($ed.hasClass('contentchanged')){
+					var contenthash = $ed.attr('data-contenthash');
+					$ed.trigger('edition:contenthash');
+					if (contenthash !== $ed.attr('data-contenthash')){
+						$ed.trigger('edition:change');
+						$ed.removeClass('contentchanged');
+					}
+				}
+			});
+			editor.on('NodeChange', function(e) {
+				var $elem = e.element ? $(e.element) : $();
+				var $toolroot = $('#tinymceinlinetoolbar .mce-tinymce-inline:visible');
+				if ($elem.is('img')){
+					$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').show();
+				} else {
+					$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').hide();
+				}
+			});
 		}
 	});
 
