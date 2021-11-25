@@ -415,7 +415,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		data: function($edit){
 			var data = {
 				edit: $edit,
-				edge: $edit.closest('.content, .side, .main > .row > .cell'),
+				edge: $edit.closest('.content, .side, .boxstack, .main > .row > .cell'),
 				page: $edit.closest('.page'),
 			};
 			data.selection = document.getSelection();
@@ -429,12 +429,11 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		isOverflew: function($edit){
 			var data = caret.data($edit);
-			var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 			if (data.clientRects && data.clientRects[0]){
-				var calc = (data.clientRects[0].top + data.clientRects[0].height - data.edgeRects.top) / zoom;
+				var calc = (data.clientRects[0].top + data.clientRects[0].height - data.edgeRects.top);
 				var boolTop = calc >= data.edge.height();
 				if (boolTop) {
-					___cnsl.red('caret','isOverflew:true ('+data.clientRects[0].top+' + '+data.clientRects[0].height+' - '+data.edgeRects.top+') / '+zoom+' >= '+data.edge.height()+'',$edit.get(0));
+					___cnsl.red('caret','isOverflew:true ('+data.clientRects[0].top+' + '+data.clientRects[0].height+' - '+data.edgeRects.top+') >= '+data.edge.height()+'',$edit.get(0));
 					return true;
 				}
 			}
@@ -442,7 +441,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		isAtBegining: function($edit){
 			var data = caret.data($edit);
-			//var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 			var $rangstart = $(data.range.startContainer);
 			var $paragraph = data.range.startContainer && $rangstart.is('p,h1,h2,h3,h4,h5,img,td') ? $rangstart : $rangstart.closest('p,h1,h2,h3,h4,h5,img,td');
 			if (data.clientRects && data.clientRects[0]){
@@ -456,7 +454,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		isAtEnd: function($edit){
 			var data = caret.data($edit);
-			//var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 			var $rangstart = $(data.range.startContainer);
 			var $paragraph = data.range.startContainer && $rangstart.is('p,h1,h2,h3,h4,h5,img,td') ? $rangstart : $rangstart.closest('p,h1,h2,h3,h4,h5,img,td');
 			if (data.clientRects && data.clientRects[0]){
@@ -635,7 +632,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		groupPrev: function($box){
 			var $page = $box.closest('.page');
-			var $edge = $page.find('.content, .side, .main > .row > .cell');
+			var $edge = $page.find('.content, .side, .boxstack, .main > .row > .cell');
 			var $fieldwrap = ($box.is('[data-edition]')) ? $box.parent() : $box;
 			var $edition = $fieldwrap.children('[data-edition]');
 			var prevSelector = '.fieldwrap.'+$edition.attr('data-edition');
@@ -648,7 +645,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		groupNext: function($box){
 			var $page = $box.closest('.page');
-			var $edge = $page.find('.content, .side, .main > .row > .cell');
+			var $edge = $page.find('.content, .side, .boxstack, .main > .row > .cell');
 			var $fieldwrap = ($box.is('[data-edition]')) ? $box.parent() : $box;
 			var $edition = $fieldwrap.children('[data-edition]');
 			var nextSelector = '.fieldwrap.'+$edition.attr('data-edition');
@@ -660,18 +657,20 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		},
 		flowText: function($edition){
-			var $edge = $edition.closest('.content, .side');
+			var $edge = $edition.closest('.content, .side, .boxstack');
 			var $fieldwrap = $edition.parent();
 			var $contentNew = boxFitter.breakBox($fieldwrap,$edge,true);
-			var contentNew = $contentNew.html();
-			if (contentNew){
-				var $page = $edition.closest('.page');
-				var $next = $page.next('.page').find('[data-edition="'+$edition.attr('data-edition')+'"]');
-				var $nextwrap = $next.parent();
-				if ($nextwrap.is(':first-of-type')){
-					$next.prepend(contentNew);
-				} else {
-					boxFitter.appendBroken($edition,$edge,$contentNew);
+			if ($contentNew.length){
+				var contentNew = $contentNew.html();
+				if (contentNew){
+					var $page = $edition.closest('.page');
+					var $next = $page.next('.page').find('[data-edition="'+$edition.attr('data-edition')+'"]');
+					var $nextwrap = $next.parent();
+					if ($nextwrap.is(':first-of-type')){
+						$next.prepend(contentNew);
+					} else {
+						boxFitter.appendBroken($edition,$edge,$contentNew);
+					}
 				}
 			}
 		},
@@ -695,6 +694,8 @@ sourceui.interface.widget.report = function($widget,setup){
 						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.side'),'prepend']);
 					} else if ($edge.is('.content')){
 						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.content'),'prepend']);
+					} else if ($edge.is('.boxstack')){
+						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.boxstack'),'prepend']);
 					} else {
 						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.main > .row > .cell'),'prepend']);
 					}
@@ -706,6 +707,8 @@ sourceui.interface.widget.report = function($widget,setup){
 						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.side'),'prepend']);
 					} else if ($edge.is('.content')){
 						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.content'),'prepend']);
+					} else if ($edge.is('.boxstack')){
+						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.boxstack'),'prepend']);
 					} else {
 						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.main > .row > .cell'),'prepend']);
 					}
@@ -718,27 +721,25 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		breakBox: function($box,$edge,returnBroken){
 
-			var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
-
 			var $edition = $box.children('[data-edition]');
 			$edge = $edge || $box.parent();
+
 
 			if ($edition.is('.front-pages')){
 				return false;
 			}
-			if ($box.is('.container')){
-				boxFitter.moveBox($box,$edge);
+			else if ($box.is('.container')){
+				if (!boxFitter.isTooBigBox($box,$edge)) boxFitter.moveBox($box,$edge);
 				return false;
 			}
 			else if ($edition.is('[data-edition="figure"]')){
-				boxFitter.moveBox($box,$edge);
+				if (!boxFitter.isTooBigBox($box,$edge)) boxFitter.moveBox($box,$edge);
 				return false;
 			}
 			else if ($edition.is('.financial-data')){
-				boxFitter.moveBox($box,$edge);
+				if (!boxFitter.isTooBigBox($box,$edge)) boxFitter.moveBox($box,$edge);
 				return false;
 			}
-
 
 			var bgID = $box.data('boxgroup');
 			if (!bgID){
@@ -749,7 +750,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 
 			var $boxNextAll = $box.nextAll();
-
 			var edgeHeight = $edge.height();
 			var boxPos = $box.position();
 			var $contentNew = $('<pre></pre>');
@@ -780,8 +780,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					return true;
 				}
 				let elPos = $el.position();
-				let overflowed = ((boxPos.top + elPos.top) / zoom) + $el.outerHeight(true) > edgeHeight;
-				___cnsl[overflowed ? 'red' : 'log']('breakBox','overflowed:'+overflowed+' (('+boxPos.top+' + '+elPos.top+') / '+zoom+') + '+$el.outerHeight(true)+' > '+edgeHeight,el);
+				let overflowed = (boxPos.top + elPos.top) + $el.outerHeight(true) > edgeHeight;
+				___cnsl[overflowed ? 'red' : 'log']('breakBox','overflowed:'+overflowed+' ('+boxPos.top+' + '+elPos.top+') + '+$el.outerHeight(true)+' > '+edgeHeight,el);
 				if (overflowed){
 					if ($el.is('table') && $edition.is('.financial-data')){
 						let $table = $el;
@@ -791,14 +791,14 @@ sourceui.interface.widget.report = function($widget,setup){
 							$tbodies.each(function(ky,tbody){
 								var $tbody = $(tbody);
 								let tbodyPos = $tbody.position();
-								let calc = (boxPos.top + elPos.top + tbodyPos.top + $tbody.outerHeight(true)) / zoom;
+								let calc = (boxPos.top + elPos.top + tbodyPos.top + $tbody.outerHeight(true));
 								___cnsl.log('breakBox','tbody','overflowed:'+(calc > edgeHeight),tbody);
 								if (calc > edgeHeight){
 									$tbody.children('tr').each(function(ktr,tr){
 										var $tr = $(tr);
 										let trPos = $tr.position();
 										let trHeight = $tr.outerHeight(true);
-										let calc = (boxPos.top + elPos.top + trPos.top + trHeight) / zoom;
+										let calc = (boxPos.top + elPos.top + trPos.top + trHeight);
 										___cnsl.log('breakBox','tbody','tr','overflowed:',(calc > edgeHeight),tr);
 										if (calc > edgeHeight){
 											$tr.children('td').each(function(ktd,td){
@@ -834,7 +834,7 @@ sourceui.interface.widget.report = function($widget,setup){
 								var $tr = $(tr);
 								let trPos = $tr.position();
 								let trHeight = $tr.outerHeight(true);
-								let calc = (boxPos.top + elPos.top + trPos.top + trHeight) / zoom;
+								let calc = (boxPos.top + elPos.top + trPos.top + trHeight);
 								___cnsl.log('breakBox','tr','overflowed:'+(calc > edgeHeight)+', index:'+ktr,tr);
 								if (calc > edgeHeight){
 									$tr.children('td').each(function(ktd,td){
@@ -878,8 +878,8 @@ sourceui.interface.widget.report = function($widget,setup){
 							$el.children().each(function(){
 								let $sp = $(this);
 								let spPos = $sp.position();
-								let calc = ((boxPos.top + elPos.top + spPos.top) / zoom) + $sp.outerHeight(true);
-								___cnsl.log('breakBox','wordwrap:'+(calc > edgeHeight)+' (('+boxPos.top+' + '+elPos.top+' + '+spPos.top+') / '+zoom+') + '+$sp.outerHeight(true)+' > '+edgeHeight+' ',$sp.text(),$sp.get(0));
+								let calc = (boxPos.top + elPos.top + spPos.top) + $sp.outerHeight(true);
+								___cnsl.log('breakBox','wordwrap:'+(calc > edgeHeight)+' ('+boxPos.top+' + '+elPos.top+' + '+spPos.top+') + '+$sp.outerHeight(true)+' > '+edgeHeight+' ',$sp.text(),$sp.get(0));
 								if (calc > edgeHeight){
 									$cl.append($sp.nextAll().addBack());
 									return false;
@@ -1002,6 +1002,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				if ($nextpage.length){
 					if ($edge.is('.side')) $nextpage.find('.cell.side').prepend($boxesToPrepend);
 					else if ($edge.is('.content')) $nextpage.find('.cell.content').prepend($boxesToPrepend);
+					else if ($edge.is('.boxstack')) $nextpage.find('.boxstack').prepend($boxesToPrepend);
 					else  $nextpage.find('.main > .row > .cell').prepend($boxesToPrepend);
 					___cnsl.log('moveBox','prepend to next page',$nextpage.get(0));
 				} else {
@@ -1009,12 +1010,12 @@ sourceui.interface.widget.report = function($widget,setup){
 					Report.document.trigger('document:addpage',[$clonepage,$page,'after']);
 					if ($edge.is('.side')) $clonepage.find('.cell.side').prepend($boxesToPrepend);
 					else if ($edge.is('.content')) $clonepage.find('.cell.content').prepend($boxesToPrepend);
+					else if ($edge.is('.boxstack')) $clonepage.find('.boxstack').prepend($boxesToPrepend);
 					else  $clonepage.find('.main > .row > .cell').prepend($boxesToPrepend);
 					___cnsl.log('moveBox','prepend to new page',$clonepage.get(0));
 				}
 			}
 
-			boxFitter.isTooBigBox($box,$edge);
 		},
 		hasOverflow: function($edge){
 			var el = $edge.get(0);
@@ -1044,7 +1045,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var paddingTolerance = 8; // is the P padding at end of box, that always overflow the height.
 
 			$edge = $edge || $box.parent();
-			if ($edge.is('.content')){
+			if ($edge.is('.content, .boxstack')){
 				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.closest('.main').width(), edgeHeight = $edge.height() + paddingTolerance;
 			} else {
 				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height() + paddingTolerance;
@@ -1080,10 +1081,13 @@ sourceui.interface.widget.report = function($widget,setup){
 				boxFitter.unbreakBox($page.nextAll('.page').addBack().find('[data-boxgroup="'+kie+'"]'),forceunbreak||false);
 			});
 
-			var $edge = $page.find('.content, .side, .main > .row > .cell');
+			var $edge = $page.find('.content, .side, .boxstack, .main > .row > .cell');
 			$edge.each(function(ke,e){
 				___cnsl.log('testPage','edge',e);
 				var $e = $(e);
+				///////////////////////////////////////////////
+				$e.find('.overflew, .toolarge').removeClass('overflew toolarge');
+				///////////////////////////////////////////////
 				if (boxFitter.hasOverflow($e)){
 					var $boxes = $e.children('.fieldwrap, .container');
 					$boxes.each(function(kb,b){
@@ -1119,8 +1123,6 @@ sourceui.interface.widget.report = function($widget,setup){
 							$b.removeAttr('data-extrapolate');
 						}
 					});
-				} else {
-					$e.find('.overflew, .toolarge').removeClass('overflew toolarge');
 				}
 			});
 
@@ -1193,11 +1195,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			form:'metadata',
 		})]);
 	});
-	Report.wgtools.filter('.top').find('li:gt(1)').pep({
+	var pepObject = {
 		place: false,
 		shouldEase: false,
-		droppable: '.sui-report-document, .page, .content, .covered-default .side, .container .col, .fieldwrap, .pagedropper, .tools.top', // precisa olha isso aqui para contar a array certa dentro dos drops
+		droppable: '.sui-report-document, .page, .content, .covered-default .side, .boxstack, .container .col, .fieldwrap, .pagedropper, .tools.top', // precisa olha isso aqui para contar a array certa dentro dos drops
 		revert: true,
+		useBoundingClientRect:true,
 		start: function (ev, obj) {
 			obj.$el.addClass('dragger');
 		},
@@ -1215,8 +1218,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					$target.addClass('pep-dropping');
 				}
 			} else {
-				$target = $drop[3] || $drop[2] || $drop[1];
-				if ($target && $target.length && $target.is('.fieldwrap, .cell, .page, .col')){
+				$target = $drop[4] || $drop[3] || $drop[2] || $drop[1];
+				if ($target && $target.length && $target.is('.fieldwrap, .cell, .boxstack, .page, .col')){
 					$target.addClass('pep-dropping');
 				}
 			}
@@ -1229,6 +1232,8 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			var $clone;
 			var $target;
+
+			if (!$drop[0]) return;
 
 			if ($drop[0].is('.tools.top')){
 				$.tipster.notify('Adding elements canceled');
@@ -1275,14 +1280,20 @@ sourceui.interface.widget.report = function($widget,setup){
 									$.tipster.notify('Cell must be empty');
 								}
 							} else if ($drop[key].is('.fieldwrap')){
-								var $ref = $drop[key]
-								var boxPos = $allmoving.first().offset();
-								if (boxPos.top + 24 > this.ev.y) $allmoving.insertBefore($ref);
-								else if (boxPos.top + $ref.outerHeight(true) - 24 < this.ev.y) $allmoving.insertAfter($ref);
-								var $refed = $ref.children('[data-edition]');
-								$refed.trigger('edition:split',[this.ev.y]);
-								$refed.parent().after($allmoving);
+								if (!$drop[key].parent().is('.reserved')){
+									var $ref = $drop[key];
+									var boxPos = $allmoving.first().offset();
+									if (boxPos.top + 24 > this.ev.y) $allmoving.insertBefore($ref);
+									else if (boxPos.top + $ref.outerHeight(true) - 24 < this.ev.y) $allmoving.insertAfter($ref);
+									var $refed = $ref.children('[data-edition]');
+									$refed.trigger('edition:split',[this.ev.y]);
+									$refed.parent().after($allmoving);
+								} else {
+									$.tipster.notify('No more boxes allowed');
+								}
 							} else if ($drop[key].is('.cell')){
+								$drop[key].append($allmoving);
+							} else if ($drop[key].is('.boxstack')){
 								$drop[key].append($allmoving);
 							} else {
 								$page.find('.main > .row > .content').append($allmoving);
@@ -1314,8 +1325,14 @@ sourceui.interface.widget.report = function($widget,setup){
 							$page.trigger('page:addcontainer',[$clone,$ctn,'before']);
 						}
 					} else if ($drop[key].is('.fieldwrap')){
-						$page.trigger('page:addcontainer',[$clone,$drop[key],'split',this.ev.y]);
+						if (!$drop[key].parent().is('.reserved')){
+							$page.trigger('page:addcontainer',[$clone,$drop[key],'split',this.ev.y]);
+						} else {
+							$.tipster.notify('No more boxes allowed');
+						}
 					} else if ($drop[key].is('.cell')){
+						$page.trigger('page:addcontainer',[$clone,$drop[key],'append']);
+					} else if ($drop[key].is('.boxstack')){
 						$page.trigger('page:addcontainer',[$clone,$drop[key],'append']);
 					} else {
 						$page.trigger('page:addcontainer',[$clone]);
@@ -1362,21 +1379,28 @@ sourceui.interface.widget.report = function($widget,setup){
 							*/
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
 						} else if ($drop[key].is('.fieldwrap')){
-							if (!$drop[key].parent().is('.col')){
-								if (edition == 'figure' || edition == 'dynamic'){
-									$page.trigger('page:addedition',[$clone,$drop[key],'split',this.ev.y]);
-								} else {
-									if (this.ev.y > $drop[key].offset().top + ($drop[key].height()/3)){
-										$page.trigger('page:addedition',[$clone,$drop[key],'after']);
+							if (!$drop[key].parent().is('.reserved')){
+								$page.trigger('page:addedition',[$clone,$drop[key],'after']);
+								if (!$drop[key].parent().is('.col')){
+									if (edition == 'figure' || edition == 'dynamic'){
+										$page.trigger('page:addedition',[$clone,$drop[key],'split',this.ev.y]);
 									} else {
-										$page.trigger('page:addedition',[$clone,$drop[key],'before']);
+										if (this.ev.y > $drop[key].offset().top + ($drop[key].height()/3)){
+											$page.trigger('page:addedition',[$clone,$drop[key],'after']);
+										} else {
+											$page.trigger('page:addedition',[$clone,$drop[key],'before']);
+										}
 									}
+								} else {
+									$page.trigger('page:addedition',[$clone,$drop[key],'after']);
+									//$.tipster.notify('Spot already has a box');
 								}
 							} else {
-								$page.trigger('page:addedition',[$clone,$drop[key],'after']);
-								//$.tipster.notify('Spot already has a box');
+								$.tipster.notify('No more boxes allowed');
 							}
 						} else if ($drop[key].is('.cell')){
+							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
+						} else if ($drop[key].is('.boxstack')){
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
 						} else {
 							$page.trigger('page:addedition',[$clone]);
@@ -1406,7 +1430,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			$.each($drop||[],function(k,v){ v.removeClass('pep-dpa pep-dropping'); });
 			obj.$el.removeClass('dragger');
 		}
-	});
+	};
+	var $wgtooltop = Report.wgtools.filter('.top').find('li:gt(1)');
+	$wgtooltop.pep(pepObject);
 
 	Report.wgtools.filter('.bottom').find('[class*="zoom"]').on('mousedown mouseup',function(event){
 		event.stopPropagation();
@@ -1884,7 +1910,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (zoom < 0.7) Report.wgtools.filter('.bottom').find('.zoom-out').disable();
 		else Report.wgtools.filter('.bottom').find('.zoom-out').enable();
 
-		Report.document.css({ 'transform':'scale('+newzoom+')', 'transform-origin': newzoom < 1 ? 'center top' : 'left top'});
+		//Report.document.css({ 'transform':'scale('+newzoom+')', 'transform-origin': newzoom < 1 ? 'center top' : 'left top'});
+		Report.document.css({ 'zoom':newzoom});
 		Report.document.attr('data-zoom',newzoom);
 
 		ele.scrollTop = (ele.scrollTop * newzoom) / zoom;
@@ -1893,6 +1920,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ((ele.scrollLeft == 0 || scrollMid === true) && wd > 0){
 			ele.scrollLeft = wd;
 		}
+
+		var $wgtooltop = Report.wgtools.filter('.top').find('li:gt(1)');
+		$.pep.unbind( $wgtooltop );
+		pepObject.zoom = newzoom;
+		$wgtooltop.pep(pepObject);
+
 	});
 	Report.document.on('zoom:in',function(event){
 		let ele = Report.scroll.get(0);
@@ -2090,7 +2123,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $col = $d.parent();
 					var $colthisnext = $().add($col).add($col.next('.col'));
 					var dpos = $d.position();
-					var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 					$colthisnext.find('img').css({width:'', height:''});
 					if (!$ctn.is('[style*="width"]')){
 						$ctn.css('width',$ctn.outerWidth());
@@ -2100,10 +2132,10 @@ sourceui.interface.widget.report = function($widget,setup){
 							var $c = $(this);
 							$c.innerWidth($c.innerWidth());
 						});
-						$ctn.css('width', ($ctn.outerWidth() - ($col.innerWidth() - dpos.left) / zoom));
+						$ctn.css('width', ($ctn.outerWidth() - ($col.innerWidth() - dpos.left)));
 						$col.css({ width: '' });
 					} else {
-						$col.innerWidth(dpos.left / zoom);
+						$col.innerWidth(dpos.left);
 						$col.next().css({ width: '' });
 						$col.siblings('.col').each(function(){
 							var $c = $(this);
@@ -2750,7 +2782,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	// Document Events --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('document:change',function(event,$page){
-		Report.document.trigger('document:reducedfit');
+		//Report.document.trigger('document:reducedfit');
 		/////////////////////////////////////////////////////////////////
 		if (Report.document.hasClass('preventeventchange')) return false;
 		/////////////////////////////////////////////////////////////////
@@ -2795,7 +2827,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (!Report.document.hasClass('loaded')){
 			Report.document.addClass('loaded');
 			Report.document.trigger('document:validate');
-			Report.document.trigger('document:reducedfit');
+			//Report.document.trigger('document:reducedfit');
 			setTimeout(function(){
 				Report.document.trigger('document:pagelist',['forceChange']);
 				Report.document.trigger('document:disclaimerrefpage');
@@ -2831,6 +2863,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	Report.document.on('document:reducedfit',function(){
+		/*
 		var $frontpages = Report.document.find('.block.front-pages');
 		var $fieldwrap = $frontpages.parent();
 		if ($fieldwrap.length){
@@ -2849,6 +2882,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var lasboxh = $lastbox.position().top + $lastbox.height();
 			$frontpages.attr('data-margintop',($content.height() + 16) - lasboxh );
 		}
+		*/
 	});
 	Report.document.on('document:addpage',function(event,$new,$ref,placement){
 		/** HISTORY WORKER **********************************************/
@@ -3253,7 +3287,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		table_appearance_options: false,
 		imagetools_toolbar: 'none',
 		paste_data_images: true,
-		toolbar: 'undo redo | forecolor | bold italic underline | removeformat | link | table | editimage imageoptions ',
+		toolbar: 'undo redo | forecolor | bold italic underline | removeformat | link | table ',
 		automatic_uploads: false,
 		file_picker_types: 'image',
 		powerpaste_allow_local_images: true,
@@ -3472,7 +3506,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				wdata.aux.parseAttr($sui,$elem,/data\-/);
 				return wdata.aux.xqString($sui);
 			},
-			grower: function($elem){
+			stacker: function($elem){
 				var suiXml = '';
 				$elem.children().each(function(){
 					var $this = $(this);
@@ -3480,7 +3514,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					else if ($this.hasClass('fieldwrap')) suiXml += wdata.suify.fieldwrap($this);
 					else if ($this.hasClass('container')) suiXml += wdata.suify.container($this);
 				});
-				var $sui = wdata.aux.strXQ('<grower>'+suiXml+'</grower>');
+				var $sui = wdata.aux.strXQ('<stacker>'+suiXml+'</stacker>');
 				if (!$elem.attr('data-type') && wdata.aux.getClassAt($elem,1)) $sui.attr('data-type',wdata.aux.getClassAt($elem,1));
 				wdata.aux.parseAttr($sui,$elem,/data\-/);
 				return wdata.aux.xqString($sui);
@@ -3494,7 +3528,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$elem.children().each(function(){
 						var $this = $(this);
 						if ($this.hasClass('block')) suiXml += wdata.suify.block($this);
-						else if ($this.hasClass('grower')) suiXml += wdata.suify.grower($this);
+						else if ($this.hasClass('stacker')) suiXml += wdata.suify.stacker($this);
 						else if ($this.hasClass('fieldwrap')) suiXml += wdata.suify.fieldwrap($this);
 						else if ($this.hasClass('container')) suiXml += wdata.suify.container($this);
 					});

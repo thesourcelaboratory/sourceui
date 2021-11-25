@@ -893,8 +893,8 @@ sourceui.templates.interface = new sourceui.Template({
 				'<div class="row @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 			cell:
 				'<div class="cell @{name} @{type}"@{data}@{style}>@{child:content}</div>',
-			grower:
-				'<div class="grower @{type}"@{data}@{style}>@{child:content}</div>',
+			stacker:
+				'<div class="stacker @{type}"@{data}@{style}>@{child:content}</div>',
 			block:
 				'<div class="block @{name} @{type} @{data:prop} @{data:visible}"@{data}@{style}>@{child:content}</div>',
 			col:
@@ -2817,7 +2817,7 @@ sourceui.Parser = function () {
 						if (sui.attr('data:style')) sui.attr('style',sui.attr('data:style'));
 						return sui.toHTML('wg', 'report', 'container', { child: { content: htmlContent }},  Template.get);
 					},
-					grower : function(sui){
+					stacker : function(sui){
 						var htmlContent = '';
 						if (sui.attr('type') && !sui.attr('data:type')) sui.attr('data:type',sui.attr('type'));
 						else if (!sui.attr('type') && sui.attr('data:type')) sui.attr('type',sui.attr('data:type'));
@@ -2827,7 +2827,7 @@ sourceui.Parser = function () {
 						}, function(){
 							htmlContent = sui.content();
 						});
-						return sui.toHTML('wg', 'report', 'grower', { child: { content: htmlContent }},  Template.get);
+						return sui.toHTML('wg', 'report', 'stacker', { child: { content: htmlContent }},  Template.get);
 					},
 					cell : function(sui){
 						var htmlContent = '';
@@ -2838,7 +2838,7 @@ sourceui.Parser = function () {
 						sui.findChild(function () {
 							if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
 							else if (this.nodeName == 'container') htmlContent += Components.libs.widget.report.container(this);
-							else if (this.nodeName == 'grower') htmlContent += Components.libs.widget.report.grower(this);
+							else if (this.nodeName == 'stacker') htmlContent += Components.libs.widget.report.stacker(this);
 						}, function(){
 							htmlContent = sui.content();
 						});
@@ -2888,7 +2888,7 @@ sourceui.Parser = function () {
 							else if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);
 							else if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
 							else if (this.nodeName == 'container') htmlContent += Components.libs.widget.report.container(this);
-							else if (this.nodeName == 'grower') htmlContent += Components.libs.widget.report.grower(this);
+							else if (this.nodeName == 'stacker') htmlContent += Components.libs.widget.report.stacker(this);
 						});
 						return sui.toHTML('wg', 'report', 'main', { child: { content: htmlContent }},  Template.get);
 					},

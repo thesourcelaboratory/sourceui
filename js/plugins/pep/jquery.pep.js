@@ -72,7 +72,8 @@
         left:                           null,
         top:                            null
     },
-    useBoundingClientRect:          false
+    useBoundingClientRect:          false,
+	zoom: 							1
   };
 
   //  ---------------------------------
@@ -862,8 +863,8 @@
     } else if ( typeof this.options.constrainTo === 'string' ) {
       lowerXLimit       = 0;
       lowerYLimit       = 0;
-      upperXLimit       = this.$container.width()  - (this.options.useBoundingClientRect ? this.$el[0].getBoundingClientRect().width : this.$el.outerWidth());
-      upperYLimit       = this.$container.height() - (this.options.useBoundingClientRect ? this.$el[0].getBoundingClientRect().height : this.$el.outerHeight());
+      upperXLimit       = this.$container.width()  - (this.options.useBoundingClientRect ? this.options.zoom * this.$el[0].getBoundingClientRect().width : this.$el.outerWidth());
+      upperYLimit       = this.$container.height() - (this.options.useBoundingClientRect ? this.options.zoom * this.$el[0].getBoundingClientRect().height : this.$el.outerHeight());
 
       // is our object trying to move outside lower X & Y limits?
       if ( this.pos.x + dx < 0 )              hash.x = 0;
@@ -939,10 +940,10 @@
     var rect1 = $a[0].getBoundingClientRect();
     var rect2 = $b[0].getBoundingClientRect();
 
-    return !( rect1.right   < rect2.left  ||
-              rect1.left    > rect2.right ||
-              rect1.bottom  < rect2.top   ||
-              rect1.top     > rect2.bottom  );
+    return !( this.options.zoom * rect1.right   < rect2.left  ||
+              this.options.zoom * rect1.left    > rect2.right ||
+              this.options.zoom * rect1.bottom  < rect2.top   ||
+              this.options.zoom * rect1.top     > rect2.bottom  );
   };
 
   //  isTouch();
