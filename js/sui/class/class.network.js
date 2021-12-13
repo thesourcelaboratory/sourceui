@@ -716,7 +716,7 @@ sourceui.Network = function () {
 						setup.loadborder = setup.target.closest('.sui-views-container, form');
 					}
 					if (setup.loadborder) {
-						var $offline = $(Template.get('offline')).css('opacity', 0);
+						var $offline = $(Template.get('offline',isPT ? 'pt-br' : 'en-us')).css('opacity', 0);
 						setup.loadborder.prepend($offline);
 						$offline.velocity({ opacity: [1, 0] }, 300);
 						$offline.find('.button').on('click', function () {
@@ -1361,7 +1361,10 @@ sourceui.Network = function () {
 						setup.metric.add('bytesTotal', 0);
 						setup.metric.calc();
 						if (Network.online) {
-							if (status == 'abort' || status == 'canceled') return;
+							if (status == 'abort' || status == 'canceled'){
+								if (typeof setup.oncancel == 'function') setup.oncancel.call(Ajax, xhr, status, error);
+								return;
+							}
 							setup.response = {
 								error: error,
 								status: status,

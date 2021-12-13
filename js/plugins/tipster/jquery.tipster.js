@@ -174,7 +174,7 @@ $(function () {
             });
         },
 
-        notify: function (content) {
+        notify: function (content, duration) {
 
             var Network = sourceui.instances.network;
             var Template = sourceui.templates.interface;
@@ -198,6 +198,7 @@ $(function () {
                             opacity: 0,
                             display: 'none'
                         }, {
+                                delay: duration||100,
                                 duration: 3000,
                                 easing: "easeInSine",
                                 complete: function () {

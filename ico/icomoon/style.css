@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?mvz4j');
-  src:  url('fonts/icomoon.eot?mvz4j#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?mvz4j') format('truetype'),
-    url('fonts/icomoon.woff?mvz4j') format('woff'),
-    url('fonts/icomoon.svg?mvz4j#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?uebl7p');
+  src:  url('fonts/icomoon.eot?uebl7p#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?uebl7p') format('truetype'),
+    url('fonts/icomoon.woff?uebl7p') format('woff'),
+    url('fonts/icomoon.svg?uebl7p#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -915,6 +915,9 @@
 .icon-wireless-router:before {
   content: "\e9fb";
 }
+.icon-edit-content:before {
+  content: "\ec96";
+}
 .icon-box-margin-x:before {
   content: "\ec78";
 }
@@ -1442,6 +1445,9 @@
 }
 .icon-rearrange-line:before {
   content: "\ec8c";
+}
+.icon-rearrange-content:before {
+  content: "\ec95";
 }
 .icon-expand:before {
   content: "\ecdf";

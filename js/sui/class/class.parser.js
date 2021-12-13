@@ -41,12 +41,20 @@ sourceui.templates.interface = new sourceui.Template({
 		'<circle class="path" cx="26px" cy="26px" r="20px" fill="none" stroke-dasharray="31" stroke-width="6px"/>' +
 		'</svg>' +
 		'</div>',
-	offline:
-		'<div class="sui-offline icon-network-offline">' +
-		'<h2>Sem internet</h2>' +
-		'<p><b>Esta ação precisa de uma conexão com a internet.</b><br>Pode ser que registros não sejam os mais atuais.</p>' +
-		'<a class="button">Ok, entendi</a>' +
-		'</div>',
+	offline: {
+		"pt-br":
+			'<div class="sui-offline icon-network-offline">' +
+			'<h2>Sem internet</h2>' +
+			'<p><b>Esta ação precisa de uma conexão com a internet.</b><br>Pode ser que registros não sejam os mais atuais.</p>' +
+			'<a class="button">Ok, entendi</a>' +
+			'</div>',
+		"en-us":
+			'<div class="sui-offline icon-network-offline">' +
+			'<h2>No internet</h2>' +
+			'<p><b>This action needs an idle internet connection.</b><br>Some information might be out of date.</p>' +
+			'<a class="button">Ok, got it</a>' +
+			'</div>',
+	},
 	imgeditor: {
 		container:
 			'<div class="window">' +

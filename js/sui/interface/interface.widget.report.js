@@ -112,9 +112,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		get: function(name){
 			var $var = Report.variables.filter('[name="'+name+'"]');
 			var value = $var.text();
+			var verifier = $.md5('var:'+name+'='+value);
 			value = ((value+'').indexOf('[') === 0) ? JSON.parse(value) : value;
 			if ($var.length){
-				if ($.md5('var:'+name+'='+value) === $var.data('verifier')) return value;
+				if (verifier === $var.data('verifier')) return value;
 				else Console.error({ mode: 'VAR', title: 'Variable "'+name+'" is invalid'}).trace();
 			}
 			else Console.error({ mode: 'VAR', title: 'Variable "'+name+'" not found'}).trace();
@@ -681,7 +682,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $cloneedition = $edition.clone().html('');
 				$cloneedition.html(contentNew);
 
-				var $clonewrap = $('<div class="fieldwrap '+$cloneedition.data('edition')+' active" data-boxgroup="'+$edition.attr('data-belongstogroup')+'" />').append($cloneedition);
+				var $clonewrap = $('<div class="fieldwrap '+$cloneedition.data('edition')+'" data-boxgroup="'+$edition.attr('data-belongstogroup')+'" />').append($cloneedition);
 
 				var $page = $edge.closest('.page'), $clonepage;
 
@@ -1093,6 +1094,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $boxes = $e.children('.fieldwrap, .container');
 					$boxes.each(function(kb,b){
 						var $b = $(b);
+						var isActive = $b.is('.active');
 						if ($b.children('.block').is('.front-pages')){
 							return true;
 						}
@@ -1665,11 +1667,11 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="pick" class="nedt pick" contenteditable="false"><a class="icon-picker-gd" data-tip="Pick box data"></a></li>'+
 		'<li data-action="img" class="nedt img" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse a local image"></a></li>'+
 		'<li data-action="margin" class="nedt margin" contenteditable="false"><a class="icon-box-margin-y" data-tip="Toggle box extra margin"></a></li>'+
-		'<li data-action="editable" class="nedt editable" contenteditable="false"><a class="icon-text-in" data-tip="Toggle box content editable"></a></li>'+
+		'<li data-action="editable" class="nedt editable" contenteditable="false"><a class="icon-edit-content" data-tip="Toggle box content editable"></a></li>'+
 		'<li data-action="clone" class="nedt clone" contenteditable="false"><a class="icon-copy" data-tip="Clone this box as next"></a></li>'+
-		//'<li data-action="split" class="nedt split" contenteditable="false"><a class="icon-split-horizontal-box" data-tip="Split page before this box"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to clipboard"></a></li>'+
-		'<li data-action="rearrange" class="nedt rearrange" contenteditable="false"><a class="icon-rearrange-line" data-tip="Rearrange auto breaks"></a></li>'+
+		'<li data-action="rearrange" class="nedt rearrange" contenteditable="false"><a class="icon-split-horizontal" data-tip="Rearrange autobreaks"></a></li>'+
+		'<li data-action="refresh" class="nedt refresh" contenteditable="false"><a class="icon-rearrange-content" data-tip="Refresh active content"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this box"></a></li>'+
 		'</ul>';
 
@@ -1711,11 +1713,14 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 
 			if ($this.attr('data-edition') == 'dynamic') {
-				$tools.find('li.prop').removeClass('allow').addClass('deny');
+				$tools.find('li.prop, li.refresh').removeClass('allow').addClass('deny');
+				if ($this.data('name') == 'global-disclaimer' || ($this.data('name')||'').indexOf('financial-data') > -1){
+					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
+				}
 			} else if ($this.attr('data-edition') == 'toc') {
-				$tools.find('li.prop, li.pick, li.editable').removeClass('allow').addClass('deny');
+				$tools.find('li.prop, li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
 			} else {
-				$tools.find('li.pick, li.editable').removeClass('allow').addClass('deny');
+				$tools.find('li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
 			}
 			$wrap.prepend($tools);
 			$tools.find('[data-tip]').tip();
@@ -1814,6 +1819,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('click','.edition-actions .pick a',function(){
 		var $this = $(this);
+		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		if ($fieldwrap.is('[data-boxgroup]')) $edit = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"] > [data-edition]');
@@ -1832,6 +1838,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('click','.edition-actions .margin a',function(){
 		var $this = $(this);
+		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		var $page = $fieldwrap.closest('.page');
@@ -1846,6 +1853,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('click','.edition-actions .editable a',function(){
 		var $this = $(this);
+		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		var $page = $fieldwrap.closest('.page');
@@ -1854,6 +1862,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('click','.edition-actions .clone a',function(){
 		var $this = $(this);
+		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $page = $fieldwrap.closest('.page');
 		var $clone = $fieldwrap.clone();
@@ -1861,23 +1870,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		$clone.children('[data-edition]').focus();
 		Report.document.trigger('document:boxcount');
 	});
-	Report.document.on('click','.edition-actions .split a',function(){
-		var $this = $(this);
-		var $fieldwrap = $this.closest('.fieldwrap');
-		if ($fieldwrap.is('[data-boxgroup]')) $fieldwrap = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"]');
-		var $cell = $fieldwrap.first().closest('.cell',Report.document);
-		var $page = $fieldwrap.first().closest('.page',Report.document);
-		var $nextpage = $page.next('.page');
-		if ($nextpage.length){
-			$nextpage = Report.templates.children('.page[data-layout="splited"]').clone();
-			Report.document.trigger('document:addpage',[$nextpage,$page,'after']);
-		}
-		var $nextcell = $nextpage.find('.cell[class="'+$cell.attr('class')+'"]');
-		$nextpage.find('.cell[class="'+$cell.attr('class')+'"]').append($fieldwrap);
-		//Report.document.trigger('document:change',[$page]);
-	});
 	Report.document.on('click','.edition-actions .move a',function(){
 		var $this = $(this);
+		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		var $page = $fieldwrap.closest('.page',Report.document);
@@ -1886,14 +1881,26 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('click','.edition-actions .rearrange a',function(){
 		var $this = $(this);
+		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		var $boxgroup = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"]');
 		var $page = $boxgroup.filter(':eq(0)').closest('.page');
+		$page = $page.length ? $page : $fieldwrap.closest('.page');
 		boxFitter.testPage($page,true);
+		$edit.trigger('edition:active');
+		$.tipster.notify('Box autobreak rearranged');
+	});
+	Report.document.on('click','.edition-actions .refresh a',function(){
+		var $this = $(this);
+		if ($this.closest('.disable').length) return;
+		var $fieldwrap = $this.closest('.fieldwrap');
+		var $edit = $fieldwrap.children('[data-edition]');
+		$edit.trigger('edition:activecontentrefresh');
 	});
 	Report.document.on('click','.edition-actions .remove a',function(){
 		var $this = $(this);
+		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		$edit.trigger('edition:remove');
@@ -2210,6 +2217,20 @@ sourceui.interface.widget.report = function($widget,setup){
 
 
 	// Edition Events ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Report.document.on('input','[data-edition="dynamic"]',function(){
+		var $this = $(this);
+		var $edition = $this.data('belongstogroup') ? Report.document.find('[data-belongstogroup="'+$this.data('belongstogroup')+'"]') : $this;
+		$edition.attr('data-activecontentchanged','changed');
+		$this.addClass('activecontentinputed');
+	});
+	Report.document.on('blur','[data-edition="dynamic"]',function(){
+		var $this = $(this);
+		if ($this.hasClass('activecontentinputed')){
+			$this.trigger('edition:change');
+			$this.removeClass('activecontentinputed')
+		}
+	});
+
 	Report.document.on('mouseenter','[data-edition]',function(){
 		var $this = $(this);
 		var $wrap = $this.parent().addClass('hover');
@@ -2517,6 +2538,42 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $node = $(node);
 		var $toolroot = $('#tinymceinlinetoolbar .mce-tinymce-inline:visible');
 		$toolroot.addClass('adapted');
+	});
+
+	Report.document.on('edition:activecontentrefresh','[data-edition]',function(event){
+		var $edit = $(this);
+		var $wrap = $edit.parent();
+		var $tool = $wrap.find('ul.edition-actions li').addClass('disable');
+		var id = $edit.attr('id') || 'sui' + $.md5(Math.rand()).substring(0, 16);
+		$edit = $edit.data('belongstogroup') ? Report.document.find('[data-belongstogroup="'+$edit.data('belongstogroup')+'"]') : $edit;
+		$edit.attr('id',id);
+		$edit.addClass('ajax-courtain');
+		Report.viewtools.disable().addClass('ajax-courtain');
+		Network.link({
+			id: id,
+			sui: Report.widget.data('activecontent'),
+			key: Report.view.data('link-key'),
+			command: 'contentrefresh',
+			json: {
+				companyId: Variable.get('companyId'),
+				boxname: $edit.attr('data-name'),
+			},
+			ondone: function(){
+				$edit.removeClass('ajax-courtain');
+				$tool.removeClass('disable');
+				Report.viewtools.enable().removeClass('ajax-courtain');
+			},
+			onfail: function(){
+				$edit.removeClass('ajax-courtain');
+				$tool.removeClass('disable');
+				Report.viewtools.enable().removeClass('ajax-courtain');
+			},
+			oncancel: function(){
+				$edit.removeClass('ajax-courtain');
+				$tool.removeClass('disable');
+				Report.viewtools.enable().removeClass('ajax-courtain');
+			}
+		});
 	});
 	Report.document.on('edition:remove','[data-edition]',function(event){
 		/** HISTORY WORKER **********************************************/
@@ -3102,6 +3159,16 @@ sourceui.interface.widget.report = function($widget,setup){
 			editor.on('input', function (e) {
 				$ed.addClass('contentchanged');
 			});
+			editor.on('blur', function (e) {
+				if ($ed.hasClass('contentchanged')){
+					var contenthash = $ed.attr('data-contenthash');
+					$ed.trigger('edition:contenthash');
+					if (contenthash !== $ed.attr('data-contenthash')){
+						$ed.trigger('edition:change');
+						$ed.removeClass('contentchanged');
+					}
+				}
+			});
 		}
 	};
 	var mceSetupText = $.extend(true, {}, mceSetup, {
@@ -3464,6 +3531,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				Report.document.removeClass('preventhistorystack');
 				Report.document.trigger('document:hasinited');
 				boxFitter.testPage();
+				Report.document.trigger('document:numpage');
 			},250);
 		}
 
