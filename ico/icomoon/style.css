@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?uebl7p');
-  src:  url('fonts/icomoon.eot?uebl7p#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?uebl7p') format('truetype'),
-    url('fonts/icomoon.woff?uebl7p') format('woff'),
-    url('fonts/icomoon.svg?uebl7p#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?sj4za1');
+  src:  url('fonts/icomoon.eot?sj4za1#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?sj4za1') format('truetype'),
+    url('fonts/icomoon.woff?sj4za1') format('woff'),
+    url('fonts/icomoon.svg?sj4za1#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -920,6 +920,9 @@
 }
 .icon-box-margin-x:before {
   content: "\ec78";
+}
+.icon-box-wide-right:before {
+  content: "\ecfb";
 }
 .icon-bind-left:before {
   content: "\e91d";
@@ -2855,6 +2858,30 @@
 }
 .icon-nuvole:before {
   content: "\ecaa";
+}
+.icon-sourcelab-color .path1:before {
+  content: "\ec97";
+  color: rgb(221, 61, 0);
+}
+.icon-sourcelab-color .path2:before {
+  content: "\ec9b";
+  margin-left: -1.6259765625em;
+  color: rgb(255, 124, 6);
+}
+.icon-sourcelab-color .path3:before {
+  content: "\ec9c";
+  margin-left: -1.6259765625em;
+  color: rgb(254, 83, 10);
+}
+.icon-sourcelab-color .path4:before {
+  content: "\eceb";
+  margin-left: -1.6259765625em;
+  color: rgb(255, 191, 0);
+}
+.icon-sourcelab-color .path5:before {
+  content: "\ecfa";
+  margin-left: -1.6259765625em;
+  color: rgb(244, 165, 0);
 }
 .icon-sourcelab:before {
   content: "\e9c1";

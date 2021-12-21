@@ -54,6 +54,10 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
 
+	Report.view.on('view:close',function(){
+		Report.locker(false);
+	})
+
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
@@ -248,7 +252,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						});
 					}
 					$c = $('<div class="content cnt-'+$p.tag()+' '+$p.attr('class')+'"/>');
-					$c.css({width:dim.width,height:dim.height,'background-color':bgcolor,'border-color':border||bgcolor||''});
+					$c.css({width:dim.width,height:dim.height,zoom:$elem.css('zoom')||1,'background-color':bgcolor,'border-color':border||bgcolor||''});
 					$parent.append($c);
 				});
 			},
@@ -586,7 +590,7 @@ sourceui.interface.widget.report = function($widget,setup){
 											clearInterval(intval);
 											if (content.image){
 												var $clone = Report.templates.children('[data-edition="figure"]').clone();
-												$clone.find('p.figurespot').append('<img src="'+content.image+'">');
+												$clone.find('.figurespot').append('<img src="'+content.image+'">');
 												$clone = $('<div class="fieldwrap figure" />').append($clone);
 											} else if (content.html){
 												var $clone = Report.templates.children('[data-edition="richtext"]').clone();
@@ -1666,7 +1670,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="prop" class="nedt prop" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit box properties"></a></li>'+
 		'<li data-action="pick" class="nedt pick" contenteditable="false"><a class="icon-picker-gd" data-tip="Pick box data"></a></li>'+
 		'<li data-action="img" class="nedt img" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse a local image"></a></li>'+
-		'<li data-action="margin" class="nedt margin" contenteditable="false"><a class="icon-box-margin-y" data-tip="Toggle box extra margin"></a></li>'+
+		//'<li data-action="margin" class="nedt margin" contenteditable="false"><a class="icon-box-margin-y" data-tip="Toggle box extra margin"></a></li>'+
+		'<li data-action="wide" class="nedt wide" contenteditable="false"><a class="icon-box-wide-right" data-tip="Toggle wide width"></a></li>'+
 		'<li data-action="editable" class="nedt editable" contenteditable="false"><a class="icon-edit-content" data-tip="Toggle box content editable"></a></li>'+
 		'<li data-action="clone" class="nedt clone" contenteditable="false"><a class="icon-copy" data-tip="Clone this box as next"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to clipboard"></a></li>'+
@@ -1713,12 +1718,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 
 			if ($this.attr('data-edition') == 'dynamic') {
-				$tools.find('li.prop, li.refresh').removeClass('allow').addClass('deny');
+				$tools.find('li.prop, li.refresh, li.wide').removeClass('allow').addClass('deny');
 				if ($this.data('name') == 'global-disclaimer' || ($this.data('name')||'').indexOf('financial-data') > -1){
 					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
 				}
 			} else if ($this.attr('data-edition') == 'toc') {
-				$tools.find('li.prop, li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
+				$tools.find('li.prop, li.pick, li.editable, li.refresh, li.wide').removeClass('allow').addClass('deny');
 			} else {
 				$tools.find('li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
 			}
@@ -1770,7 +1775,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			reader.onload = function () {
 				var $spot = $edit.find('.figurespot');
 				if (!$spot.length){
-					$spot = $('<p class="figurespot yedt" contenteditable="true" />');
+					$spot = $('<div class="figurespot yedt" contenteditable="true" />');
 					var $h = $edit.find('h4');
 					if ($h.length) $h.after($spot);
 					else $edit.prepend($spot);
@@ -1850,6 +1855,21 @@ sourceui.interface.widget.report = function($widget,setup){
 			$this.removeClass('active');
 		}
 		Report.document.trigger('document:change',[$page]);
+	});
+	Report.document.on('click','.edition-actions .wide a',function(){
+		var $this = $(this);
+		if ($this.closest('.disable').length) return;
+		var $fieldwrap = $this.closest('.fieldwrap');
+		var $edit = $fieldwrap.children('[data-edition]');
+		if (!$edit.attr('data-wide')){
+			$edit.attr('data-wide','S');
+			$fieldwrap.addClass('wide');
+			$this.addClass('active');
+		} else {
+			$edit.removeAttr('data-wide');
+			$fieldwrap.removeClass('wide');
+			$this.removeClass('active');
+		}
 	});
 	Report.document.on('click','.edition-actions .editable a',function(){
 		var $this = $(this);
@@ -2451,7 +2471,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		if (!$fieldwrap.is('.fieldwrap')){
-			$this.wrap('<div class="fieldwrap '+$this.data('edition')+($this.data('indexer') ? ' indexed' : '')+'" '+($this.data('belongstogroup')?'data-boxgroup="'+$this.data('belongstogroup')+'"':'')+' />');
+			$this.wrap('<div class="fieldwrap '+$this.data('edition')+($this.data('indexer') ? ' indexed' : '')+($this.data('wide') ? ' wide' : '')+'" '+($this.data('belongstogroup')?'data-boxgroup="'+$this.data('belongstogroup')+'"':'')+' />');
 			$fieldwrap = $this.parent();
 		} else {
 			$fieldwrap.removeClass('focus active selected error');
@@ -2515,6 +2535,18 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 		},100);
 	});
+	Report.document.on('edition:tablefit','[data-edition]',function(){
+		var $this = $(this);
+		var $table = $this.find('table.pastedelement');
+		if ($table.length){
+			var wt = $table.outerWidth(), we = $this.innerWidth(), zoom;
+			if (we > wt) zoom = 1;
+			else zoom = we/wt;
+			console.log('edition:tablefit',{'zoom':zoom});
+			$table.css({'zoom':zoom});
+			$table.addClass('fitted');
+		}
+	});
 	Report.document.on('edition:contenthash','[data-edition]',function(){
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
@@ -2555,6 +2587,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			key: Report.view.data('link-key'),
 			command: 'contentrefresh',
 			json: {
+				languageId: Variable.get('languageId'),
 				companyId: Variable.get('companyId'),
 				boxname: $edit.attr('data-name'),
 			},
@@ -3114,6 +3147,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetup = {
 		menubar: false,
 		inline: true,
+		//object_resizing : 'img',
 		fixed_toolbar_container: '#tinymceinlinetoolbar',
 		plugins: [
 			'placeholder lists link image imagetools charmap',
@@ -3267,13 +3301,13 @@ sourceui.interface.widget.report = function($widget,setup){
 						reader.onload = function () {
 							var img = document.createElement('img');
 							img.src = reader.result;
-							var $p = $('<p class="figurespot"></p>');
+							var $p = $('<div class="figurespot yedt" contenteditable="true" />');
 							$p.append(img);
 							var $target = $(editor.selection.getNode());
 							var $field = $target.closest('[data-edition]');
-							if (!$target.is('p')) $target = $target.closest('p',$field);
-							if (!$target.is('p')) $target = $field.find('.figurespot, p:eq(0)');
-							if (!$target.is('p')){
+							if (!$target.is('p,.figurespot')) $target = $target.closest('p,.figurespot',$field);
+							if (!$target.is('p,.figurespot')) $target = $field.find('.figurespot, p:eq(0)');
+							if (!$target.is('p,.figurespot')){
 								if ($field.children('header,h1,h2,h3,h4').length) $field.children('h1,h2,h3,h4').after($p);
 								else if ($field.children('h5').length) $field.children('h5').before($p);
 								$field.append($p);
@@ -3332,6 +3366,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
 				$ed.trigger('edition:uploadimgs');
+				$ed.trigger('edition:tablefit');
 			});
 			editor.on('blur', function (e) {
 				if ($ed.hasClass('contentchanged')){
@@ -3358,6 +3393,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="figure"]:not(.inited)',
 		placeholder:'Paste images, pictures and glyphs here...',
 		forced_root_block : 'p',
+		object_resizing : 'img',
 		table_appearance_options: false,
 		imagetools_toolbar: 'none',
 		paste_data_images: true,
@@ -3367,31 +3403,33 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'p[class],h4[class],h5[class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
+		valid_elements: 'div[class],p[class],h4[class],h5[class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
 		valid_styles: {
 			'table': 'border,border-colapse,border-color,border-style,background-color,background,color,width,height,cellpadding,cellspacing',
 			'tr': 'style,background-color,background,height',
-			'th': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
-			'td': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
+			'th': 'rowspan,colspan,height,width,min-width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
+			'td': 'rowspan,colspan,height,width,min-width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
 			'img': 'width, height',
 		},
 		paste_preprocess : function(pl, o) {
 			var $target = $(o.target.selection.getNode());
 			var $field = $target.closest('[data-edition]');
-			var haspot = $target.is('p.figurespot') || $target.closest('p.figurespot',$field).length;
+			var haspot = $target.is('.figurespot') || $target.closest('.figurespot',$field).length;
 			var hash = $target.is('h3,h5') || $target.closest('h3,h5',$field).length;
 			var $content = $('<div>'+o.content+'</div>');
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
 			if ($td.length) $td.css('border','');
 			var $imgtable = $content.children('img,table');
 			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
+			var $tablocal = $content.children('table').addClass('nedt');
 			$imglocal.addClass('localsource');
 			if ($imgtable.length){
 				if (haspot){
-					var $p = $target.is('p') ? $target : $target.closest('p',$field);
+					var $p = $target.is('.figurespot') ? $target : $target.closest('.figurespot',$field);
 					$p.find(':not(img):not(table)').remove();
 					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
-					$imgtable.addClass('pastedelement').removeAttr('width').removeAttr('height');
+					$imgtable.addClass('pastedelement')
+					$imglocal.removeAttr('width').removeAttr('height');
 					o.content = $content.html();
 				} else {
 					$.tipster.notify('Paste only into the spot');
@@ -3440,15 +3478,20 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			});
 			editor.on('keyup', function (e) {
+				var $p = $ed.find('.figurespot');
 				if ((e.ctrlKey && e.key != 'Control' && e.key != 'c' && e.key != 'v' && e.key != 'x' && e.key != 'z') || (e.key != 'Enter' && e.key != 'Backspace' && e.key != 'Delete' && e.key != 'Escape' && e.key != 'Tab')){
-					var $p = $ed.find('.figurespot');
-					$p.find(':not(img):not(table)').remove();
+					$p.children(':not(img):not(table)').remove();
+					console.log($p.children(':not(img):not(table)'));
 					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
+				} else if (e.key == 'Delete'){
+					$ed.find('.pastedelement[data-mce-selected="1"]').replaceWith('<span class="caret-autobreak"></span>');
+					caret.focus($ed);
 				}
 			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
 				$ed.trigger('edition:uploadimgs');
+				$ed.trigger('edition:tablefit');
 			});
 			editor.on('blur', function (e) {
 				if ($ed.hasClass('contentchanged')){
@@ -3459,6 +3502,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						$ed.removeClass('contentchanged');
 					}
 				}
+				$ed.find('.pastedelement').removeAttr('data-mce-selected');
 			});
 			editor.on('NodeChange', function(e) {
 				var $elem = e.element ? $(e.element) : $();
@@ -3787,6 +3831,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 				var $sui = wdata.aux.strXQ('<document>'+suiXml+'</document>');
 				$sui.attr('paper',wdata.aux.getClassAt($elem,1));
+				$sui.attr('lang',$elem.attr('lang'));
 				return wdata.aux.xqString($sui);
 			},
 			templates: function($elem){
@@ -3857,5 +3902,28 @@ sourceui.interface.widget.report = function($widget,setup){
 		$document.find('.active, .focus').removeClass('active focus');
 		return $document.html();
 	}
+
+	if (sourceui.instances.socket){
+		var documentLocker = {
+			reportId: Report.view.data('erld'),
+			cgeId: Report.view.data('asie')
+		}
+	}
+
+	Report.locker = function(locked){
+		if (documentLocker){
+			if (!documentLocker.reportId){
+				return Console.error({ mode: 'LOCKER', title: 'ReportId is required'}).trace();
+			}
+			if (!documentLocker.cgeId){
+				return Console.error({ mode: 'LOCKER', title: 'CgeID is required'}).trace();
+			}
+			documentLocker.lock = locked;
+			var Socket = sourceui.instances.socket;
+			Socket.emit('report:locked', documentLocker);
+		}
+	}
+
+	Report.locker(true);
 
 };
