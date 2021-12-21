@@ -2542,7 +2542,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			var wt = $table.outerWidth(), we = $this.innerWidth(), zoom;
 			if (we > wt) zoom = 1;
 			else zoom = we/wt;
-			console.log('edition:tablefit',{'zoom':zoom});
 			$table.css({'zoom':zoom});
 			$table.addClass('fitted');
 		}
@@ -3481,7 +3480,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $p = $ed.find('.figurespot');
 				if ((e.ctrlKey && e.key != 'Control' && e.key != 'c' && e.key != 'v' && e.key != 'x' && e.key != 'z') || (e.key != 'Enter' && e.key != 'Backspace' && e.key != 'Delete' && e.key != 'Escape' && e.key != 'Tab')){
 					$p.children(':not(img):not(table)').remove();
-					console.log($p.children(':not(img):not(table)'));
 					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
 				} else if (e.key == 'Delete'){
 					$ed.find('.pastedelement[data-mce-selected="1"]').replaceWith('<span class="caret-autobreak"></span>');
