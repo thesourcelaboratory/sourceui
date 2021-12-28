@@ -565,6 +565,7 @@ sourceui.interface.plugins = function () {
 			Notify.timeout = setTimeout(function () {
 				Notify.close();
 			}, notify.duration);
+			$('#suiTipster').html('');
 		}
 	};
 
