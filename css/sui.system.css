@@ -1516,7 +1516,7 @@ body.debug.bugopened .sui-bug-modal > .container > p > span { display:block; }
 .sui-notify-container .sui-notify.alert,
 .sui-notify-container .sui-notify.alarm,
 .sui-notify-container .sui-notify.warn,
-.sui-notify-container .sui-notify.warning { background:rgba(221, 113, 25, 0.96); }
+.sui-notify-container .sui-notify.warning { background:rgba(220, 139, 24, 0.96); }
 .sui-notify-container .sui-notify.info { background:rgba(60, 83, 138, 0.96) }
 .sui-notify-container .sui-notify.valid { background:rgba(29, 82, 180, 0.96); }
 .sui-notify-container .sui-notify.error { background:rgba(197, 44, 51, 0.96); }

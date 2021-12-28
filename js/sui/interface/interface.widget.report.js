@@ -3235,6 +3235,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="richtext"]:not(.inited)',
 		placeholder:'Enter formatted text here...',
 		forced_root_block : 'p',
+		object_resizing : 'img',
 		table_appearance_options: false,
 		imagetools_toolbar: 'none',
 		paste_data_images: false,
