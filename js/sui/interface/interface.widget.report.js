@@ -22,6 +22,7 @@
 
 sourceui.interface.widget.report = function($widget,setup){
 
+
 	'use strict';
 
 	var Report = this;
@@ -53,6 +54,20 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.templates = Report.widget.find('.sui-templates');
 	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
+
+	Report.locker = function(locked){
+		if (documentLocker){
+			if (!documentLocker.reportId){
+				return Console.error({ mode: 'LOCKER', title: 'ReportId is required'}).trace();
+			}
+			if (!documentLocker.cgeId){
+				return Console.error({ mode: 'LOCKER', title: 'CgeID is required'}).trace();
+			}
+			documentLocker.lock = locked;
+			var Socket = sourceui.instances.socket;
+			Socket.emit('report:locked', documentLocker);
+		}
+	}
 
 	Report.view.on('view:close',function(){
 		Report.locker(false);
@@ -3094,7 +3109,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// History Events --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	Report.document.on('historyworker:add',function(event,keepStatement){
+	Report.document.on('historyworker:add',function(event, keepStatement){
 		if (Report.document.hasClass('preventhistorystack')) return true;
 		var content = Report.documentHTML();
 		historyWorker.postMessage({
@@ -3906,20 +3921,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		var documentLocker = {
 			reportId: Report.view.data('erld'),
 			cgeId: Report.view.data('asie')
-		}
-	}
-
-	Report.locker = function(locked){
-		if (documentLocker){
-			if (!documentLocker.reportId){
-				return Console.error({ mode: 'LOCKER', title: 'ReportId is required'}).trace();
-			}
-			if (!documentLocker.cgeId){
-				return Console.error({ mode: 'LOCKER', title: 'CgeID is required'}).trace();
-			}
-			documentLocker.lock = locked;
-			var Socket = sourceui.instances.socket;
-			Socket.emit('report:locked', documentLocker);
 		}
 	}
 

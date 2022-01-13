@@ -683,7 +683,7 @@ sourceui.Device = function (c) {
 								debug.expand(v.content);
 								//console.log(v.content);
 							} else {
-								console.log.apply(null, ['%c' + v.content.replace(/\n/g, "\r\n"), profile.css(csscont)]);
+								console.log.apply(null, ['%c' + decodeURIComponent(v.content).replace(/\n/g, "\r\n"), profile.css(csscont)]);
 							}
 						}
 						if (v.title) {

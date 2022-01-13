@@ -516,7 +516,7 @@ sourceui.interface.plugins = function () {
 				showimage: notify.image ? 'block' : 'none',
 				id: notify.id || '',
 				name: notify.name ? '<h2>' + notify.name + '</h2>' : '',
-				message: notify.message || '',
+				message: decodeURIComponent(notify.message) || '',
 				label: notify.label || '',
 			});
 			var $notify = $(htmlNotify);
@@ -585,7 +585,7 @@ sourceui.interface.plugins = function () {
 					showimage: notify.image ? 'block' : 'none',
 					id: notify.id || '',
 					name: notify.name ? '<h2>' + notify.name + '</h2>' : '',
-					message: notify.message || '',
+					message: decodeURIComponent(notify.message) || '',
 					label: notify.label || '',
 				});
 				var $notify = notify.jq = $(htmlNotify);
