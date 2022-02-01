@@ -685,10 +685,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				var contentNew = $contentNew.html();
 				if (contentNew){
 					///////////////////////////////////////////////////////////////////////////////////////////////
-					// MUDAR COMPORTAMENTO:
-					// precisa montar um jeito desse método pegar a próxima box do mesmo tipo se ela for a primeira.
-					// se não for a primeira, criar uma nova com o novoc ontepudo dentro.
-					///////////////////////////////////////////////////////////////////////////////////////////////
 					var $page = $edition.closest('.page');
 					var $edge = $edition.closest('.cell');
 					var $next = $page.next('.page').find('.cell.'+$edge.data('type')+' > *').first();
@@ -697,6 +693,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					} else {
 						boxFitter.appendBroken($edition,$edge,$contentNew);
 					}
+					///////////////////////////////////////////////////////////////////////////////////////////////
 					/*
 					var $page = $edition.closest('.page');
 					var $next = $page.next('.page').find('[data-edition="'+$edition.attr('data-edition')+'"]');
@@ -1354,6 +1351,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							easing: "ease-out",
 							duration:200,
 							complete: function(){
+								Report.document.trigger('document:numpage');
 								$.tipster.notify('Page was relocated');
 							}
 						});
