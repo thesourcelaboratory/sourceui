@@ -684,6 +684,20 @@ sourceui.interface.widget.report = function($widget,setup){
 			if ($contentNew.length){
 				var contentNew = $contentNew.html();
 				if (contentNew){
+					///////////////////////////////////////////////////////////////////////////////////////////////
+					// MUDAR COMPORTAMENTO:
+					// precisa montar um jeito desse método pegar a próxima box do mesmo tipo se ela for a primeira.
+					// se não for a primeira, criar uma nova com o novoc ontepudo dentro.
+					///////////////////////////////////////////////////////////////////////////////////////////////
+					var $page = $edition.closest('.page');
+					var $edge = $edition.closest('.cell');
+					var $next = $page.next('.page').find('.cell.'+$edge.data('type')+' > *').first();
+					if ($next.is('.fieldwrap.'+$edition.attr('data-edition'))){
+						$next.prepend(contentNew);
+					} else {
+						boxFitter.appendBroken($edition,$edge,$contentNew);
+					}
+					/*
 					var $page = $edition.closest('.page');
 					var $next = $page.next('.page').find('[data-edition="'+$edition.attr('data-edition')+'"]');
 					var $nextwrap = $next.parent();
@@ -692,6 +706,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					} else {
 						boxFitter.appendBroken($edition,$edge,$contentNew);
 					}
+					*/
+
 				}
 			}
 		},
@@ -1223,6 +1239,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		droppable: '.sui-report-document, .page, .content, .covered-default .side, .boxstack, .container .col, .fieldwrap, .pagedropper, .tools.top', // precisa olha isso aqui para contar a array certa dentro dos drops
 		revert: true,
 		useBoundingClientRect:true,
+		startThreshold:[5,5],
+		callIfNotStarted:['rest'],
 		start: function (ev, obj) {
 			obj.$el.addClass('dragger');
 		},
@@ -1237,6 +1255,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			if ($a.hasClass('add-page')){
 				$target = $drop[1];
 				if ($target && $target.length && $target.is('.page, .pagedropper')) {
+					$target.addClass('pep-dropping');
+				}
+			} else if ($a.hasClass('add-move')){
+				$target = $drop[4] || $drop[3] || $drop[2] || $drop[1];
+				if ($target && $target.length && $target.is('.page, .pagedropper, .fieldwrap, .cell, .boxstack, .page, .col')) {
 					$target.addClass('pep-dropping');
 				}
 			} else {
@@ -1324,6 +1347,16 @@ sourceui.interface.widget.report = function($widget,setup){
 					} else if ($allmoving.filter('.page').length){
 						if ($page && $page.length && $page.is('.page')) $page.trigger('page:active').after($allmoving);
 						else if ($page && $page.length && $page.is('.pagedropper')) $page.trigger('page:active').parent().before($allmoving);
+						$allmoving.velocity({
+							scale:[1,1.1],
+							opacity:[1,0]
+						},{
+							easing: "ease-out",
+							duration:200,
+							complete: function(){
+								$.tipster.notify('Page was relocated');
+							}
+						});
 					}
 					$allmoving.removeClass('clipboardmoved');
 					$a.addClass('empty').find('mark').text('0');
@@ -1456,6 +1489,10 @@ sourceui.interface.widget.report = function($widget,setup){
 	var $wgtooltop = Report.wgtools.filter('.top').find('li:gt(1)');
 	$wgtooltop.pep(pepObject);
 
+	$wgtooltop.filter(':last').on('dblclick',function(){
+		Report.document.trigger('document:clipboardclean');
+	});
+
 	Report.wgtools.filter('.bottom').find('[class*="zoom"]').on('mousedown mouseup',function(event){
 		event.stopPropagation();
 	});
@@ -1487,6 +1524,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li class="nedt label" contenteditable="false"></li>'+
 		'<li data-action="edit" class="nedt edit" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit page properties"></a></li>'+
 		'<li data-action="bgimg" class="nedt bgimg" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse page background image"></a></li>'+
+		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this page"></a></li>'+
 		'</ul>';
 
@@ -1579,6 +1617,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.trigger('document:change',[$page]);
 		}
 	});
+	Report.document.on('click','.page-actions .move a',function(){
+		var $this = $(this);
+		var $ctn = $this.closest('.page');
+		$ctn.trigger('page:clipboardmoved');
+	});
 
 	Report.document.on('click','.page-actions .remove a',function(){
 		var $this = $(this);
@@ -1600,7 +1643,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="addcol" class="nedt addcol" contenteditable="false"><a class="text" data-tip="Add one column at end">+1C</a></li>'+
 		'<li data-action="addline" class="nedt addline" contenteditable="false"><a class="text" data-tip="Add one line at end">+1L</a></li>'+
 		'<li data-action="reset" class="nedt reset" contenteditable="false"><a class="icon-tab" data-tip="Reset container dimension"></a></li>'+
-		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to clipboard"></a></li>'+
+		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this box"></a></li>'+
 		'</ul>';
 	var $toolsContainer = $(toolsContainer);
@@ -1689,7 +1732,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="wide" class="nedt wide" contenteditable="false"><a class="icon-box-wide-right" data-tip="Toggle wide width"></a></li>'+
 		'<li data-action="editable" class="nedt editable" contenteditable="false"><a class="icon-edit-content" data-tip="Toggle box content editable"></a></li>'+
 		'<li data-action="clone" class="nedt clone" contenteditable="false"><a class="icon-copy" data-tip="Clone this box as next"></a></li>'+
-		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to clipboard"></a></li>'+
+		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
 		'<li data-action="rearrange" class="nedt rearrange" contenteditable="false"><a class="icon-split-horizontal" data-tip="Rearrange autobreaks"></a></li>'+
 		'<li data-action="refresh" class="nedt refresh" contenteditable="false"><a class="icon-rearrange-content" data-tip="Refresh active content"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this box"></a></li>'+
@@ -2037,6 +2080,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.wgtools.filter('.bottom').find('.zoom-grab').removeClass('active');
 		}
 	});
+
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -2239,13 +2283,16 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.find('.container.active').removeClass('active');
 	});
 	Report.document.on('container:clipboardmoved','.container',function(){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
-		var $this = $(this);
-		var $tool = Report.wgtools.find('.add-move');
-		$this.toggleClass('clipboardmoved');
-		var qtmoved = Report.document.find('.clipboardmoved').length;
-		if (!qtmoved) $tool.addClass('empty').find('mark').text('0');
-		else $tool.removeClass('empty').find('mark').text(qtmoved);
+		var $moved = Report.document.find('.clipboardmoved');
+		if ($moved.length === 0 || $moved.filter('.page').length == 0){
+			Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+			var $this = $(this);
+			var $tool = Report.wgtools.find('.add-move');
+			$this.addClass('clipboardmoved');
+			$tool.removeClass('empty').find('mark').text($moved.length + 1);
+		} else {
+			$.tipster.notify('Relocate must be empty or not containing pages');
+		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2670,18 +2717,20 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 	});
 	Report.document.on('edition:clipboardmoved','[data-edition]',function(){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
-		var $this = $(this);
-		var $fieldwrap = $this.parent();
-		var $edge = $fieldwrap.parent();
-		var $tool = Report.wgtools.find('.add-move');
-		if ($fieldwrap.is('.dynamic[data-boxgroup]')){
-			$fieldwrap = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"]');
+		var $moved = Report.document.find('.clipboardmoved');
+		if ($moved.length === 0 || $moved.filter('.page').length == 0){
+			Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+			var $this = $(this);
+			var $fieldwrap = $this.parent();
+			var $tool = Report.wgtools.find('.add-move');
+			if ($fieldwrap.is('.dynamic[data-boxgroup]')){
+				$fieldwrap = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"]');
+			}
+			$fieldwrap.toggleClass('clipboardmoved');
+			$tool.removeClass('empty').find('mark').text($moved.length + 1);
+		} else {
+			$.tipster.notify('Relocate must be empty or not containing pages');
 		}
-		$fieldwrap.toggleClass('clipboardmoved');
-		var qtmoved = Report.document.find('.clipboardmoved').length;
-		if (!qtmoved) $tool.addClass('empty').find('mark').text('0');
-		else $tool.removeClass('empty').find('mark').text(qtmoved);
 	});
 	Report.document.on('edition:split','[data-edition]',function(event,y){
 		var $this = $(this);
@@ -2879,6 +2928,18 @@ sourceui.interface.widget.report = function($widget,setup){
 			Thumbnail.parse($page,$pagethumb);
 			//////////////////////////////////
 			$page.removeClass('thumbing');
+		}
+	});
+	Report.document.on('page:clipboardmoved','.page',function(){
+		var $moved = Report.document.find('.clipboardmoved');
+		if ($moved.length === 0 || $moved.filter('.page').length > 0){
+			Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+			var $this = $(this);
+			var $tool = Report.wgtools.find('.add-move');
+			$this.addClass('clipboardmoved');
+			$tool.removeClass('empty').find('mark').text($moved.length + 1);
+		} else {
+			$.tipster.notify('Relocate must be empty or containing pages');
 		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -3092,6 +3153,16 @@ sourceui.interface.widget.report = function($widget,setup){
 				$page.attr('data-changeid',changeid);
 			}
 		});
+	});
+	Report.document.on('document:clipboardclean',function(){
+		var $moved = Report.document.find('.clipboardmoved');
+		if ($moved.length > 0){
+			$moved.removeClass('clipboardmoved');
+			Report.wgtools.find('.add-move').addClass('empty').find('mark').text('0');
+			$.tipster.notify('Relocate is clean');
+		} else {
+			$.tipster.notify('Relocate is already empty');
+		}
 	});
 	Report.document.on('click',function(event){
 		Report.document.trigger('page:unactive');
