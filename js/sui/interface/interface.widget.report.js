@@ -689,22 +689,12 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $edge = $edition.closest('.cell');
 					var $next = $page.next('.page').find('.cell.'+$edge.data('type')+' > *').first();
 					if ($next.is('.fieldwrap.'+$edition.attr('data-edition'))){
-						$next.prepend(contentNew);
+						//$next.prepend(contentNew); // 02MAR22 ASDEE342 SBS - Erro no caret save
+						$next.children('[data-edition]').prepend(contentNew);
 					} else {
 						boxFitter.appendBroken($edition,$edge,$contentNew);
 					}
 					///////////////////////////////////////////////////////////////////////////////////////////////
-					/*
-					var $page = $edition.closest('.page');
-					var $next = $page.next('.page').find('[data-edition="'+$edition.attr('data-edition')+'"]');
-					var $nextwrap = $next.parent();
-					if ($nextwrap.is(':first-of-type')){
-						$next.prepend(contentNew);
-					} else {
-						boxFitter.appendBroken($edition,$edge,$contentNew);
-					}
-					*/
-
 				}
 			}
 		},
