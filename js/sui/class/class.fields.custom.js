@@ -955,18 +955,33 @@ sourceui.customField = function (element, setup) {
 						event.stopPropagation();
 						var $file = $(this).parent();
 						var label = Dom.label.text().replace('*', '');
-						Confirm.open({
-							title: 'Remover ' + label,
-							desc: 'Você está prestes a remover o arquivo <strong>' + label + '</strong> do servidor.<br>' +
-								'Se você continuar, esta ação <strong style="white-space:nowrap;">não poderá ser desfeita</strong>.',
-							button: [
-								{
-									background: '#E85348', label: 'Remover o arquivo', callback: function () {
-										Element.trigger('file:unlink', [$file]);
+						if (isPT){
+							Confirm.open({
+								title: 'Remover ' + label,
+								desc: 'Você está prestes a remover o arquivo <strong>' + label + '</strong> do servidor.<br>' +
+									'Se você continuar, esta ação <strong style="white-space:nowrap;">não poderá ser desfeita</strong>.',
+								button: [
+									{
+										background: '#E85348', label: 'Remover o arquivo', callback: function () {
+											Element.trigger('file:unlink', [$file]);
+										}
 									}
-								}
-							]
-						});
+								]
+							});
+						} else {
+							Confirm.open({
+								title: 'Remove ' + label,
+								desc: 'You are about to remove the file <strong>' + label + '</strong> from server.<br>' +
+									'If you preceed, this action <strong style="white-space:nowrap;">can not be undone</strong>.',
+								button: [
+									{
+										background: '#E85348', label: 'Remove file', callback: function () {
+											Element.trigger('file:unlink', [$file]);
+										}
+									}
+								]
+							});
+						}
 					});
 					Element.on('file:unlink', function (event, $file) {
 						var fda = $file.data();

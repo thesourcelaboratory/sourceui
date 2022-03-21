@@ -2317,20 +2317,20 @@ sourceui.Network = function () {
 		if (setup.confirm && !setup.ignoreconfirm) {
 			if (setup.confirm == '@delete-selected-lines') {
 				var qtde = setup.view.find('.sui-widget.datagrid .line.selected, .sui-widget.datagrid .line.swiped').length;
-				var name = (qtde == 1 ? qtde + ' registro selecionado' : qtde + ' registros selecionados');
+				var name = isPT ? (qtde == 1 ? qtde + ' registro selecionado' : qtde + ' registros selecionados') : (qtde == 1 ? qtde + ' selected record' : qtde + ' selected records');
 				Confirm.open({
 					trigger: setup.element,
-					title: 'Remover Registros',
-					desc: 'Você está prestes a remover <strong>' + name + '</strong>.',
-					hilite: 'Essa ação não pode ser desfeita.',
+					title: isPT ? 'Remover Registros' : 'Remove Records',
+					desc: isPT ? 'Você está prestes a remover <strong>' + name + '</strong>.' : 'You are about to remove <strong>' + name + '</strong>',
+					hilite: isPT ? 'Essa ação não pode ser desfeita.' : 'This action can\'t be undone.',
 					buttonlink: setup.trigger || setup.element
 				});
 			} else if (setup.confirm == '@delete-register') {
 				var name = setup.sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"] div strong').text() || setup.view.find('.sui-field.text:eq(0)').val();
 				Confirm.open({
 					trigger: setup.element,
-					title: 'Remover Registro',
-					desc: 'Você está prestes a remover <strong>' + name + '</strong>',
+					title: isPT ? 'Remover Registro' : 'Remove Register',
+					desc: isPT ? 'Você está prestes a remover <strong>' + name + '</strong>' : 'You are about to remove <strong>' + name + '</strong>',
 					//hilite : 'Essa ação não pode ser desfeita.',
 					buttonlink: setup.trigger || setup.element
 				});
@@ -2338,9 +2338,9 @@ sourceui.Network = function () {
 				var name = setup.sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"] div strong').text() || setup.view.find('.sui-field.text:eq(0)').val();
 				Confirm.open({
 					trigger: setup.element,
-					title: 'Remover Base',
-					desc: 'Você está prestes a remover todos os registros da Base de <strong>' + name + '</strong>',
-					hilite: 'Você poderá restaurar essa ação.',
+					title: isPT ? 'Remover Base' : 'Remove Base',
+					desc: isPT ? 'Você está prestes a remover todos os registros da Base de <strong>' + name + '</strong>' : 'You are about to remove all base records from <strong>' + name + '</strong>',
+					hilite: isPT ? 'Você poderá restaurar essa ação.' : 'You can recover this action',
 					buttonlink: setup.trigger || setup.element
 				});
 			} else {

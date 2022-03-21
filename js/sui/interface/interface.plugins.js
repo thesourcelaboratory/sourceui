@@ -936,11 +936,11 @@ sourceui.interface.plugins = function () {
 					});
 					$buttons.filter('.remove').on('click', function () {
 						Confirm.open({
-							title: 'Remover Imagem',
-							desc: 'Você está prestes a remover a imagem selecionada.',
-							hilite: 'Essa ação não pode ser desfeita.',
+							title: isPT ? 'Remover Imagem' : 'Remove Image',
+							desc: isPT ? 'Você está prestes a remover a imagem selecionada.' : 'You are about to remove selected image',
+							hilite: isPT ? 'Essa ação não pode ser desfeita.' : 'This action can\'t be undone.',
 							button: {
-								label: 'Prosseguir',
+								label: isPT ? 'Prosseguir' : 'Proceed',
 								background: '#ce3d3d',
 								callback: function () {
 									editor.close();

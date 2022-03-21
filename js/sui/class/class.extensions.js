@@ -1127,7 +1127,6 @@ $.formatSpeed = function (bytes, decimals) {
 	return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
 };
 
-
 $.colorfy = function (value, color) {
 	if (typeof value == 'undefined') return '';
 	if (color == 'auto' || !color) {

@@ -176,10 +176,15 @@ sourceui.interface.widget.map = function($widget,setup){
 				Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
 			},1000);
 		});
+		/*
 		Wap.sector.on('sector:close',function(){
-			Map.off();
-			Map.remove();
+			var $wg = $('#'+Wap.widget.attr('id'));
+			if ($wg.length){
+				Map.off();
+				Map.remove();
+			}
 		});
+		*/
 
 		Toolbar.on('click','.center:not(.disable)',function(event){
 			event.stopPropagation();
