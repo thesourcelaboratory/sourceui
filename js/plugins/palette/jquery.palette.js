@@ -76,19 +76,23 @@ $(function(){
 		if ($color){
 			if ($.isArray(options.colors)){
 				$.each(options.colors,function(k,v){
-					$palette[v] = [] ;
+					if ($.isArray(v)){
+						$palette[k] = v;
+					} else {
+						$palette[v] = [] ;
+					}
 				});
 			} else {
 				switch(options.colors){
 					case 'general':	$palette = {'#999':[],'#02C':[],'#0AA':[],'#080':[],'#FA0':[],'#F40':[],'#900':[],'#F3F':[],'#90F':[]}; break;
 				}
 			}
-			$.each($palette||[],function(c,p){
-				if (options.variations > 0){
+			if (options.variations > 0){
+				$.each($palette||[],function(c,p){
 					options.variatePercent = options.variatePercent || (1 / options.variations);
 					calc[options.algorithm][options.variateTo](c);
-				}
-			});
+				});
+			}
 			$.each($palette||[],function(c,p){
 				$html += '<ul>';
 				$.each(p||[],function(i,h){
