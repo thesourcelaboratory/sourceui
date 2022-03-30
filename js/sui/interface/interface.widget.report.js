@@ -3515,6 +3515,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			} else {
 				o.content = $content.html();
 			}
+			o.content.replace('windowtext', 'black');
 		},
 		setup: function (editor) {
 			var $ed = $(editor.getElement());
