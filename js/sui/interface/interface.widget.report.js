@@ -689,11 +689,12 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $edge = $edition.closest('.cell');
 					var $next = $page.next('.page').find('.cell.'+$edge.data('type')+' > *').first();
 					if ($next.is('.fieldwrap.'+$edition.attr('data-edition'))){
-						//$next.prepend(contentNew); // 02MAR22 ASDEE342 SBS - Erro no caret save
-						$next.children('[data-edition]').prepend(contentNew);
-					} else {
-						boxFitter.appendBroken($edition,$edge,$contentNew);
+						let $nextdit = $next.children('[data-edition]');
+						if ($edition.data('belongstogroup') === $nextdit.data('belongstogroup')){
+							return $next.children('[data-edition]').prepend(contentNew);
+						}
 					}
+					boxFitter.appendBroken($edition,$edge,$contentNew);
 					///////////////////////////////////////////////////////////////////////////////////////////////
 				}
 			}
@@ -970,6 +971,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					}
 				});
+				/*
 				if (forcestrapolate == 'jointextatcaret'){
 					var $caret = $contentAll.find('.caret-autobreak');
 					var $caretParent = $caret.parent();
@@ -994,6 +996,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					}
 				}
+				*/
 				var contentAll = $contentAll.html();
 				if (contentAll){
 					___cnsl.log('unbreakBox','contentAll',$contentAll.get(0));
@@ -1314,12 +1317,14 @@ sourceui.interface.widget.report = function($widget,setup){
 							} else if ($drop[key].is('.fieldwrap')){
 								if (!$drop[key].parent().is('.reserved')){
 									var $ref = $drop[key];
-									var boxPos = $allmoving.first().offset();
+									var boxPos = $ref.offset();
 									if (boxPos.top + 24 > this.ev.y) $allmoving.insertBefore($ref);
 									else if (boxPos.top + $ref.outerHeight(true) - 24 < this.ev.y) $allmoving.insertAfter($ref);
-									var $refed = $ref.children('[data-edition]');
-									$refed.trigger('edition:split',[this.ev.y]);
-									$refed.parent().after($allmoving);
+									else {
+										var $refed = $ref.children('[data-edition]');
+										$refed.trigger('edition:split',[this.ev.y]);
+										$refed.parent().after($allmoving);
+									}
 								} else {
 									$.tipster.notify('No more boxes allowed');
 								}
@@ -1425,14 +1430,11 @@ sourceui.interface.widget.report = function($widget,setup){
 							if (!$drop[key].parent().is('.reserved')){
 								$page.trigger('page:addedition',[$clone,$drop[key],'after']);
 								if (!$drop[key].parent().is('.col')){
-									if (edition == 'figure' || edition == 'dynamic'){
+									var boxPos = $drop[key].offset();
+									if (boxPos.top + 24 > this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'before']);
+									else if (boxPos.top + $drop[key].outerHeight(true) - 24 < this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'before']);
+									else {
 										$page.trigger('page:addedition',[$clone,$drop[key],'split',this.ev.y]);
-									} else {
-										if (this.ev.y > $drop[key].offset().top + ($drop[key].height()/3)){
-											$page.trigger('page:addedition',[$clone,$drop[key],'after']);
-										} else {
-											$page.trigger('page:addedition',[$clone,$drop[key],'before']);
-										}
 									}
 								} else {
 									$page.trigger('page:addedition',[$clone,$drop[key],'after']);
@@ -2332,7 +2334,10 @@ sourceui.interface.widget.report = function($widget,setup){
 					if ($af.is('.sui-variable')) Variable.set($af.attr('name'),content,'html');
 					else $af.html(content);
 				});
-				if ($e.text()) $autofill.removeClass('empty-content');
+				if ($e.text()) {
+					$wrap.removeClass('empty');
+					$autofill.removeClass('empty-content');
+				}
 			});
 			var $indexers = Report.document.find('[data-indexer]');
 			$indexers.each(function(){
@@ -3415,6 +3420,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $page = $ed.closest('.page');
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
+				if ($ed.is('.empty-content')){
+					$ed.closest('.fieldwrap').addClass('empty');
+				}
 			});
 			editor.on('focus', function(e){
 				$ed.removeClass('contentchanged');
@@ -3427,10 +3435,12 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ed.addClass('contentchanged');
 				$ed.addClass('keyboarded');
 				if (e.key == 'Escape'){
+					editor.undoManager.clear();
 					caret.save($ed);
 					boxFitter.testPage($page);
 					caret.focus($ed);
 				} else if (e.key == 'Delete' && caret.isAtEnd($ed) && !caret.hasSelection($ed)){
+					editor.undoManager.clear();
 					Report.document.trigger('historyworker:statehold');
 					Report.document.addClass('preventeventchange');
 					caret.save($ed,'end');
@@ -3441,6 +3451,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					Report.document.removeClass('preventeventchange');
 					Report.document.trigger('historyworker:stateadd');
 				} else if (e.key == 'Backspace' && caret.isAtBegining($ed) && !caret.hasSelection($ed)){
+					editor.undoManager.clear();
 					Report.document.trigger('historyworker:statehold');
 					Report.document.addClass('preventeventchange');
 					caret.save($ed,'begining');
@@ -3451,6 +3462,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					Report.document.removeClass('preventeventchange');
 					Report.document.trigger('historyworker:stateadd');
 				} else if (caret.isOverflew($ed)){
+					editor.undoManager.clear();
 					Report.document.trigger('historyworker:statehold');
 					Report.document.addClass('preventeventchange');
 					caret.save($ed);
