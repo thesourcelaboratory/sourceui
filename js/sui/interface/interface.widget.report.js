@@ -1432,7 +1432,7 @@ sourceui.interface.widget.report = function($widget,setup){
 								if (!$drop[key].parent().is('.col')){
 									var boxPos = $drop[key].offset();
 									if (boxPos.top + 24 > this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'before']);
-									else if (boxPos.top + $drop[key].outerHeight(true) - 24 < this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'before']);
+									else if (boxPos.top + $drop[key].outerHeight(true) - 24 < this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'after']);
 									else {
 										$page.trigger('page:addedition',[$clone,$drop[key],'split',this.ev.y]);
 									}
@@ -3181,17 +3181,22 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 		if (!keepStatement) Report.document.removeClass('historykeepstatement');
 		Report.document.data('historystateholdcontent','');
+		Report.document.data('historylatestaddition',content);
 	});
 	Report.document.on('historyworker:add',function(event, keepStatement){
 		if (Report.document.hasClass('preventhistorystack')) return true;
 		var content = Report.documentHTML();
-		historyWorker.postMessage({
-			command:'add',
-			dochash:Variable.get('docHash'),
-			content:content
-		});
-		if (!keepStatement) Report.document.removeClass('historykeepstatement');
-		Report.document.data('historystateholdcontent','');
+		var latest = Report.document.data('historylatestaddition');
+		if (content != latest){
+			historyWorker.postMessage({
+				command:'add',
+				dochash:Variable.get('docHash'),
+				content:content
+			});
+			if (!keepStatement) Report.document.removeClass('historykeepstatement');
+			Report.document.data('historystateholdcontent','');
+			Report.document.data('historylatestaddition',content);
+		}
 	});
 	Report.document.on('historyworker:back',function(event){
 		if (!Report.document.hasClass('historykeepstatement')){
