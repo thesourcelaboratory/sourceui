@@ -719,7 +719,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					} else if ($edge.is('.content')){
 						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.content'),'prepend']);
 					} else if ($edge.is('.boxstack')){
-						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.boxstack'),'prepend']);
+						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.boxstack, .cell.content'),'prepend']);
 					} else {
 						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.main > .row > .cell'),'prepend']);
 					}
@@ -732,7 +732,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					} else if ($edge.is('.content')){
 						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.content'),'prepend']);
 					} else if ($edge.is('.boxstack')){
-						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.boxstack'),'prepend']);
+						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.boxstack, .cell.content'),'prepend']);
 					} else {
 						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.main > .row > .cell'),'prepend']);
 					}
@@ -2233,9 +2233,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.removeAttr('data-style').find('[data-style]').removeAttr('data-style');
 	});
 	Report.document.on('container:remove','.container',function(){
-		/** HISTORY WORKER **********************************************/
-		Report.document.trigger('historyworker:add');
-		/****************************************************************/
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $this = $(this);
 		var $page = $this.closest('.page',Report.document);
 		var $preved = $this.prev('.fieldwrap').children('[data-edition]');
@@ -2380,13 +2378,12 @@ sourceui.interface.widget.report = function($widget,setup){
 					place: false,
 					useCSSTranslation: false,
 					start:function(ev, obj){
+						Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
 						var $d = obj.$el;
 						$this.trigger('edition:active');
 					},
 					stop:function(ev, obj){
-						/** HISTORY WORKER **********************************************/
-						Report.document.trigger('historyworker:add');
-						/****************************************************************/
+						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 						var $d = obj.$el;
 						var dpos = $d.position();
 						var wpos = $wrap.position();
@@ -2413,10 +2410,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					useCSSTranslation: false,
 					constrainTo: 'parent',
 					elementsWithInteraction: $this.is('[data-edition]') ? '.resize, .block, li[data-action]' : 'input',
+					start:function(ev, obj){
+						Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
+					},
 					stop:function(ev, obj){
-						/** HISTORY WORKER **********************************************/
-						Report.document.trigger('historyworker:add');
-						/****************************************************************/
+						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 						var oldposition = $this.attr('data-position');
 						$this.attr('data-position','top:'+($target.css('top')||0)+'; left:'+($target.css('left')||0)+'; width:'+$target.width()+'px');
 						Report.document.trigger('document:change',[$page]);
@@ -2439,11 +2437,12 @@ sourceui.interface.widget.report = function($widget,setup){
 				return !this.activeDropRegions.length || this.activeDropRegions.length == 1;
 			},
 			start: function (ev, obj) {
+				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
 				obj.$el.addClass('dragger');
 				$this.trigger('edition:active');
 			},
 			stop: function (ev, obj) {
-				Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+				Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 				var closest = $.calcSort('y', obj.$el, this.activeDropRegions);
 				if (closest.placement) {
 					if (closest.placement == 'after') obj.$el.insertAfter(closest.element);
@@ -2600,7 +2599,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		var $editgroup = $fieldwrap.find('[data-edition]');
-		var contenthash = $.md5($editgroup.html());
+		var contenthash = $.md5(($editgroup.html()||'').trim());
 		$editgroup.attr('data-contenthash',contenthash);
 	});
 	Report.document.on('edition:change','[data-edition]',function(){
@@ -2658,9 +2657,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 	});
 	Report.document.on('edition:remove','[data-edition]',function(event){
-		/** HISTORY WORKER **********************************************/
-		Report.document.trigger('historyworker:add');
-		/****************************************************************/
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		var $page, $reference;
@@ -2803,9 +2800,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	// Page Events ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('page:addcontainer','.page',function(event,$new,$ref,placement,y){
-		/** HISTORY WORKER **********************************************/
-		Report.document.trigger('historyworker:add');
-		/****************************************************************/
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $page = $(this);
 		$new.siblings('.container-actions').remove();
 		$new.removeAttr('id');
@@ -2839,9 +2834,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.trigger('document:change',[$page]);
 	});
 	Report.document.on('page:addedition','.page',function(event,$new,$ref,placement,y,nomceinit){
-		/** HISTORY WORKER **********************************************/
-		Report.document.trigger('historyworker:add');
-		/****************************************************************/
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $page = $(this);
 		var $edit = $new.children('[data-edition]');
 		$edit.removeAttr('id');
@@ -2883,9 +2876,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$(Report.document.closest('.scroll-default')).scrollTo($page,350,{ offset:{top:-50} });
 	});
 	Report.document.on('page:remove','.page',function(){
-		/** HISTORY WORKER **********************************************/
-		Report.document.trigger('historyworker:add');
-		/****************************************************************/
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $this = $(this);
 		var $next = $this.next('.page');
 		Report.document.addClass('preventeventchange');
@@ -3039,9 +3030,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		*/
 	});
 	Report.document.on('document:addpage',function(event,$new,$ref,placement){
-		/** HISTORY WORKER **********************************************/
-		Report.document.trigger('historyworker:add');
-		/****************************************************************/
+		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		$new.find('.page-actions').remove();
 		var didBoxBroken, $pageChange, $lastBoxgroupOnPrevPage, $firstBoxgroupOnNextPage, tipsterMsg;
 		$new.removeAttr('id').css('opacity','0');
@@ -3168,6 +3157,29 @@ sourceui.interface.widget.report = function($widget,setup){
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// History Events --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Report.document.on('historyworker:stateclear',function(event){
+		Report.document.data('historystateholdcontent',null);
+		console.log('statehold',content.length);
+	});
+	Report.document.on('historyworker:statehold',function(event){
+		if (Report.document.hasClass('preventhistorystack')) return true;
+		var content = Report.documentHTML();
+		Report.document.data('historystateholdcontent',content);
+		console.log('statehold',content.length);
+	});
+	Report.document.on('historyworker:stateadd',function(event, keepStatement){
+		if (Report.document.hasClass('preventhistorystack')) return true;
+		var content = Report.document.data('historystateholdcontent');
+		if (!content) return false;
+		historyWorker.postMessage({
+			command:'add',
+			dochash:Variable.get('docHash'),
+			content:content
+		});
+		if (!keepStatement) Report.document.removeClass('historykeepstatement');
+		Report.document.data('historystateholdcontent','');
+		console.log('stateadd',content.length);
+	});
 	Report.document.on('historyworker:add',function(event, keepStatement){
 		if (Report.document.hasClass('preventhistorystack')) return true;
 		var content = Report.documentHTML();
@@ -3177,6 +3189,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			content:content
 		});
 		if (!keepStatement) Report.document.removeClass('historykeepstatement');
+		Report.document.data('historystateholdcontent','');
 	});
 	Report.document.on('historyworker:back',function(event){
 		if (!Report.document.hasClass('historykeepstatement')){
@@ -3203,6 +3216,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			command:'clear',
 			dochash:Variable.get('docHash')
 		});
+		Report.document.data('historystateholdcontent','');
 	});
 	Report.document.on('historyworker:redraw',function(event,data){
 		if (data.content){
@@ -3260,6 +3274,10 @@ sourceui.interface.widget.report = function($widget,setup){
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
 			});
+			editor.on('focus', function(e){
+				$ed.removeClass('contentchanged');
+				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
+			});
 			editor.on('click', function (e) {
 				$ed.trigger('edition:nodechange',[e.target]);
 			});
@@ -3273,6 +3291,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
+						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 					}
 				}
 			});
@@ -3400,6 +3419,10 @@ sourceui.interface.widget.report = function($widget,setup){
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
 			});
+			editor.on('focus', function(e){
+				$ed.removeClass('contentchanged');
+				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
+			});
 			editor.on('click', function (e) {
 				$ed.trigger('edition:nodechange',[e.target]);
 			});
@@ -3411,6 +3434,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					boxFitter.testPage($page);
 					caret.focus($ed);
 				} else if (e.key == 'Delete' && caret.isAtEnd($ed) && !caret.hasSelection($ed)){
+					Report.document.trigger('historyworker:statehold');
 					Report.document.addClass('preventeventchange');
 					caret.save($ed,'end');
 					boxFitter.groupNext($ed);
@@ -3418,7 +3442,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					caret.focus();
 					e.preventDefault();
 					Report.document.removeClass('preventeventchange');
+					Report.document.trigger('historyworker:stateadd');
 				} else if (e.key == 'Backspace' && caret.isAtBegining($ed) && !caret.hasSelection($ed)){
+					Report.document.trigger('historyworker:statehold');
 					Report.document.addClass('preventeventchange');
 					caret.save($ed,'begining');
 					boxFitter.groupPrev($ed);
@@ -3426,12 +3452,15 @@ sourceui.interface.widget.report = function($widget,setup){
 					caret.focus();
 					e.preventDefault();
 					Report.document.removeClass('preventeventchange');
+					Report.document.trigger('historyworker:stateadd');
 				} else if (caret.isOverflew($ed)){
+					Report.document.trigger('historyworker:statehold');
 					Report.document.addClass('preventeventchange');
 					caret.save($ed);
 					boxFitter.flowText($ed);
 					caret.focus();
 					Report.document.removeClass('preventeventchange');
+					Report.document.trigger('historyworker:stateadd');
 				}
 			});
 			editor.on('input', function (e) {
@@ -3443,12 +3472,14 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ed.trigger('edition:tablefit');
 			});
 			editor.on('blur', function (e) {
-				if ($ed.hasClass('contentchanged')){
+				if ($ed.hasClass('contentchanged') && !Report.document.hasClass('preventeventchange')){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
+					console.log('contentchanged hash',contenthash, $ed.attr('data-contenthash'));
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
+						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 					}
 				}
 			});
@@ -3523,6 +3554,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
 			});
+			editor.on('focus', function(e){
+				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
+			});
 			editor.on('click', function (e) {
 				$ed.trigger('edition:nodechange',[e.target]);
 			});
@@ -3568,12 +3602,14 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ed.trigger('edition:tablefit');
 			});
 			editor.on('blur', function (e) {
-				if ($ed.hasClass('contentchanged')){
+				if ($ed.hasClass('contentchanged') && !Report.document.hasClass('preventeventchange')){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
+					console.log('contentchanged hash',contenthash, $ed.attr('data-contenthash'));
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
+						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 					}
 				}
 				$ed.find('.pastedelement').removeAttr('data-mce-selected');
@@ -3948,6 +3984,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (bg.indexOf('blob:') === -1 && bg.indexOf('data:') === -1){
 						Report.wgdata.usedimages.push($(this).css('background-image').match(/\"(.*)\"/)[1].split('/').pop());
 					}
+				});
+				Report.document.find('.covered-default .main .content [data-edition="richtext"]').each(function(){
+					Report.wgdata.firstPage = (Report.wgdata.firstPage||'')+this.innerHTML.trim();
 				});
 				var suiXml = '';
 				Report.area.children().each(function(){
