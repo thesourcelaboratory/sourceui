@@ -3159,13 +3159,11 @@ sourceui.interface.widget.report = function($widget,setup){
 	// History Events --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('historyworker:stateclear',function(event){
 		Report.document.data('historystateholdcontent',null);
-		console.log('statehold',content.length);
 	});
 	Report.document.on('historyworker:statehold',function(event){
 		if (Report.document.hasClass('preventhistorystack')) return true;
 		var content = Report.documentHTML();
 		Report.document.data('historystateholdcontent',content);
-		console.log('statehold',content.length);
 	});
 	Report.document.on('historyworker:stateadd',function(event, keepStatement){
 		if (Report.document.hasClass('preventhistorystack')) return true;
@@ -3178,7 +3176,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 		if (!keepStatement) Report.document.removeClass('historykeepstatement');
 		Report.document.data('historystateholdcontent','');
-		console.log('stateadd',content.length);
 	});
 	Report.document.on('historyworker:add',function(event, keepStatement){
 		if (Report.document.hasClass('preventhistorystack')) return true;
@@ -3475,7 +3472,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				if ($ed.hasClass('contentchanged') && !Report.document.hasClass('preventeventchange')){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
-					console.log('contentchanged hash',contenthash, $ed.attr('data-contenthash'));
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
@@ -3605,7 +3601,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				if ($ed.hasClass('contentchanged') && !Report.document.hasClass('preventeventchange')){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
-					console.log('contentchanged hash',contenthash, $ed.attr('data-contenthash'));
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
