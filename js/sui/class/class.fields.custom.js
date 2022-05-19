@@ -2694,6 +2694,7 @@ sourceui.customField = function (element, setup) {
 							mime: v.type,
 							type: Data.fieldtype,
 							ext: v.name.split('.').pop().toLowerCase(),
+							extension: v.name.split('.').pop().toLowerCase(),
 							local: v.local || 'local',
 							name: v.name,
 							size: v.size,
@@ -2755,7 +2756,8 @@ sourceui.customField = function (element, setup) {
 							});
 							*/
 						} else {
-							var html = Parser.methods.getTemplate('row', 'file', data);
+							var fdt = $.extend({},data,{name:decodeURIComponent(data.name)});
+							var html = Parser.methods.getTemplate('row', 'file', fdt);
 							var $html = $(html);
 							$html.data('file', v).hide();
 							$filelist.append($html);
