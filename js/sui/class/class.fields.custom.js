@@ -1061,6 +1061,8 @@ sourceui.customField = function (element, setup) {
 						$oldfile.hide();
 						$file.velocity({ opacity: [1, 0], scale: [1, 1.3] }, { duration: 250, display: 'block' });
 						var fda = $file.data('data');
+						fda.file = encodeURIComponent(fda.file);
+						fda.name = encodeURIComponent(fda.name);
 						$file.data('pct', 0);
 						$file.on('dash:prepare', function () {
 							var $circle = $file.find('.circle');
