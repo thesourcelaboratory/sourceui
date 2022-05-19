@@ -892,7 +892,7 @@ sourceui.templates.interface = new sourceui.Template({
 			footer:
 				'<div class="footer"@{style}@{data}>@{child:content}</div>',
 			page:
-				'<div class="page @{data:layout} @{data:structure} @{data:prop} @{data:visible}"@{data}@{style}><div class="pagedropper"></div>@{child:content}</div>',
+				'<div class="page @{data:layout} @{data:structure} @{data:breaker} @{data:prop} @{data:visible}"@{data}@{style}><div class="breakermark"><a class="delete icon-subtract"></a></div><div class="pagedropper"></div>@{child:content}</div>',
 			main:
 				'<div class="main"@{data}@{style}>@{child:content}</div>',
 			cover:
