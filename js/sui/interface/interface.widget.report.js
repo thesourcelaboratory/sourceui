@@ -2483,12 +2483,14 @@ sourceui.interface.widget.report = function($widget,setup){
 			$this.trigger('edition:active');
 		}
 	});
+	/*
 	Report.document.on('mousedown','[data-edition]',function(event){
 		var $this = $(this);
 		if ($this.is('[data-edition="dynamic"], [data-edition="toc"]')){
 			$this.trigger('edition:active');
 		}
 	});
+	*/
 	Report.document.on('dblclick','[data-edition]',function(event){
 		event.stopPropagation();
 	});
