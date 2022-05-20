@@ -686,6 +686,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		flowText: function($edition){
 			var $edge = $edition.closest('.content, .side, .boxstack');
 			var $fieldwrap = $edition.parent();
+			var $fieldsnext = $fieldwrap.nextAll('.fieldwrap');
 			var $contentNew = boxFitter.breakBox($fieldwrap,$edge,true);
 			if ($contentNew.length){
 				var contentNew = $contentNew.html();
@@ -697,10 +698,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					if ($next.is('.fieldwrap.'+$edition.attr('data-edition'))){
 						let $nextdit = $next.children('[data-edition]');
 						if ($edition.data('belongstogroup') === $nextdit.data('belongstogroup')){
+							$next.after($fieldsnext);
 							return $next.children('[data-edition]').prepend(contentNew);
 						}
 					}
-					boxFitter.appendBroken($edition,$edge,$contentNew);
+					boxFitter.appendBroken($edition,$edge,$contentNew,$fieldsnext);
 					///////////////////////////////////////////////////////////////////////////////////////////////
 				}
 			}
@@ -814,7 +816,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				let overflowed = (boxPos.top + elPos.top) + $el.outerHeight(true) > edgeHeight;
 				___cnsl[overflowed ? 'red' : 'log']('breakBox','overflowed:'+overflowed+' ('+boxPos.top+' + '+elPos.top+') + '+$el.outerHeight(true)+' > '+edgeHeight,el);
 				if (overflowed){
-					if ($el.is('table') && $edition.is('.financial-data')){
+					if ($el.is('table') && ($edition.is('.financial-data') || $edition.is('.analysts'))){
 						let $table = $el;
 						let $tbodies = $table.children('tbody');
 						let hasBreak = false;
@@ -977,32 +979,6 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					}
 				});
-				/*
-				if (forcestrapolate == 'jointextatcaret'){
-					var $caret = $contentAll.find('.caret-autobreak');
-					var $caretParent = $caret.parent();
-					var $newer = $caretParent.clone();
-					var $joiner;
-					$newer.html('');
-					if ($caret.hasClass('end')){
-						$joiner = $caretParent.next('p,h1,h2,h3,h4,h5');
-						if ($joiner.length){
-							$newer.append($caretParent.html());
-							$newer.append($joiner.html());
-							$caretParent.replaceWith($newer);
-							$joiner.remove();
-						}
-					} else if ($caret.hasClass('begining')){
-						$joiner = $caretParent.prev('p,h1,h2,h3,h4,h5');
-						if ($joiner.length){
-							$newer.append($joiner.html());
-							$newer.append($caretParent.html());
-							$caretParent.replaceWith($newer);
-							$joiner.remove();
-						}
-					}
-				}
-				*/
 				var contentAll = $contentAll.html();
 				if (contentAll){
 					___cnsl.log('unbreakBox','contentAll',$contentAll.get(0));
@@ -1010,6 +986,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $e = $b.children('[data-edition]');
 					$e.html(contentAll);
 					$boxGroup.filter(':gt(0)').remove();
+					$boxGroup.removeAttr('data-boxgroup').removeAttr('data-extrapolate').removeData('boxgroup').removeData('extrapolate');
+					$boxGroup.children('[data-edition]').removeAttr('data-belongstogroup').removeData('belongstogroup');
 					return true;
 				}
 			}
@@ -1196,13 +1174,14 @@ sourceui.interface.widget.report = function($widget,setup){
 				___cnsl.purple('testPage','each page', $page.get(0));
 
 				var $nextpages = $page.nextUntil('.breaker-before').addBack();
-				var $boxGroup = $page.find('[data-boxgroup]'), groupsIds = {};
+				var $boxGroup = $nextpages.find('[data-boxgroup]'), groupsIds = {};
 				$boxGroup.each(function(kbg, bg){
 					let $bg = $(bg);
 					groupsIds[$bg.data('boxgroup')] = true;
 				});
 				$.each(groupsIds,function(kie,vie){
-					boxFitter.unbreakBox($nextpages.find('[data-boxgroup="'+kie+'"]'),forceunbreak||false);
+					var $groupeds = $nextpages.find('[data-boxgroup="'+kie+'"]');
+					boxFitter.unbreakBox($groupeds,true||forceunbreak||false);
 				});
 
 				___cnsl.log('testPage','nextUntil breaker',$nextpages);
@@ -1211,6 +1190,10 @@ sourceui.interface.widget.report = function($widget,setup){
 				$boxcollection.content = $nextpages.find('.content > .fieldwrap, .content > .container');
 				$boxcollection.boxstack = $nextpages.find('.boxstack > .fieldwrap, .boxstack > .container');
 				$boxcollection.side = $nextpages.find('.side > .fieldwrap, .side > .container');
+
+				if ($boxcollection.boxstack.length){
+					$boxcollection.boxstack = $boxcollection.boxstack.add($nextpages.find('.content > .fieldwrap, .content > .container'));
+				}
 
 				___cnsl.log('testPage','boxcollection.content',$boxcollection.content);
 				___cnsl.log('testPage','boxcollection.boxstack',$boxcollection.boxstack);
@@ -2389,6 +2372,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (!$page.is('.active')) $page.trigger('page:active');
 		$this.removeClass('hover');
 		Report.document.find('.fieldwrap.active').removeClass('active hover focus').find('[data-edition]').blur();
+		Report.document.addClass('has-active');
 		$this.addClass('active');
 		$this.trigger('container:tools');
 		$this.find('.col').each(function(){
@@ -2400,6 +2384,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('container:unactive',function(){
 		Report.document.find('.container .col.selected').removeClass('selected');
 		Report.document.find('.container.active').removeClass('active');
+		Report.document.removeClass('has-active');
 	});
 	Report.document.on('container:clipboardmoved','.container',function(){
 		var $moved = Report.document.find('.clipboardmoved');
@@ -2451,6 +2436,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $wrap = $this.parent();
 		$wrap.removeClass('hover active focus');
+		Report.document.removeClass('has-active');
 		if ($this.hasClass('keyboarded') || $this.hasClass('contentchanged')){
 			var $autofill = $this.find('[data-autofill]');
 			if ($this.data('autofill')){
@@ -2496,12 +2482,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($this.is('[data-edition="dynamic"], [data-edition="toc"]')){
 			$this.trigger('edition:active');
 		}
-		$this.focus();
 	});
 	Report.document.on('mousedown','[data-edition]',function(event){
-		event.stopPropagation();
 		var $this = $(this);
-		$this.focus();
+		if ($this.is('[data-edition="dynamic"], [data-edition="toc"]')){
+			$this.trigger('edition:active');
+		}
 	});
 	Report.document.on('dblclick','[data-edition]',function(event){
 		event.stopPropagation();
@@ -2574,27 +2560,33 @@ sourceui.interface.widget.report = function($widget,setup){
 			axis: 'y',
 			shouldEase: false,
 			droppable: $lines,
+			shouldPreventDefault: false,
 			revert: true,
 			revertIf: function (ev, obj) {
 				return !this.activeDropRegions.length || this.activeDropRegions.length == 1;
 			},
 			start: function (ev, obj) {
+				console.log('start');
 				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
 				obj.$el.addClass('dragger');
 				$this.trigger('edition:active');
 			},
 			stop: function (ev, obj) {
-				Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
-				var closest = $.calcSort('y', obj.$el, this.activeDropRegions);
-				if (closest.placement) {
-					if (closest.placement == 'after') obj.$el.insertAfter(closest.element);
-					else if (closest.placement == 'before') obj.$el.insertBefore(closest.element);
-					var matrix = obj.matrixToArray(obj.matrixString());
-					var x = -1 * matrix[4];
-					var y = -1 * matrix[5];
-					obj.moveToUsingTransforms(x, y);
-					obj.$el.css({ position: 'relative' });
-					$this.trigger('edition:change');
+				console.log('stop');
+				if (obj.$el.hasClass('dragger')){
+					Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
+					var closest = $.calcSort('y', obj.$el, this.activeDropRegions);
+					if (closest.placement) {
+						if (closest.placement == 'after') obj.$el.insertAfter(closest.element);
+						else if (closest.placement == 'before') obj.$el.insertBefore(closest.element);
+						var matrix = obj.matrixToArray(obj.matrixString());
+						var x = -1 * matrix[4];
+						var y = -1 * matrix[5];
+						obj.moveToUsingTransforms(x, y);
+						obj.$el.css({ position: 'relative' });
+						$this.trigger('edition:change');
+					}
+					$this.trigger('edition:active');
 				}
 				obj.$el.removeClass('dragger');
 			}
@@ -2836,7 +2828,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$fieldwrap.removeClass('hover');
 		$fieldwrap.closest('.col').removeClass('selected');
 		Report.document.find('.fieldwrap.active').removeClass('active');
-		Report.document.find('.fieldlink').remove();
+		Report.document.addClass('has-active');
 		$fieldwrap.addClass('active');
 		$this.trigger('edition:tools');
 		Report.tinymceinlinetoolbar.css({
@@ -2863,8 +2855,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		var boxgroup = $this.attr('data-belongstogroup');
-		$this.removeAttr('data-belongstogroup');
-		$fieldwrap.removeAttr('data-boxgroup');
+		$this.removeAttr('data-belongstogroup').removeData('belongstogroup');
+		$fieldwrap.removeAttr('data-boxgroup').removeData('boxgroup');
 		var $clone = $this.clone();
 		var $page = $this.closest('.page');
 		var boxPos = $this.offset();
@@ -2909,8 +2901,8 @@ sourceui.interface.widget.report = function($widget,setup){
 				$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
 
 				if (boxgroup){
-					$clonewrap.nextAll('[data-belongstogroup="'+boxgroup+'"]').removeAttr('data-belongstogroup').parent().removeAttr('data-boxgroup');
-					$page.nextAll('.page').find('[data-belongstogroup="'+boxgroup+'"]').removeAttr('data-belongstogroup').parent().removeAttr('data-boxgroup');
+					$clonewrap.nextAll('[data-belongstogroup="'+boxgroup+'"]').removeAttr('data-belongstogroup').removeData('belongstogroup').parent().removeAttr('data-boxgroup').removeData('boxgroup');
+					$page.nextAll('.page').find('[data-belongstogroup="'+boxgroup+'"]').removeAttr('data-belongstogroup').removeData('belongstogroup').parent().removeAttr('data-boxgroup').removeData('boxgroup');
 				}
 				return false;
 			}
@@ -2981,6 +2973,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $edit = $new.children('[data-edition]');
 		$edit.removeAttr('id');
 		if ($ref && $ref.length){
+			if ($ref.hasClass('content')){
+				var $stack = $ref.children('.boxstack');
+				$ref = $stack.length ? $stack : $ref;
+			}
 			if (placement == 'after'){
 				$new.insertAfter($ref);
 			} else if (placement == 'before'){
@@ -3039,7 +3035,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('page:unactive',function(){
 		Report.document.find('.page.active, .fieldwrap.active, .container.active, .col.selected').removeClass('active selected');
 		Report.document.find('[data-mce-selected]').removeAttr('data-mce-selected');
-		Report.document.find('.fieldlink').remove();
+		Report.document.removeClass('has-active');
 	});
 	Report.document.on('page:thumbnail','.page',function(event){
 		var $page = $(this);
@@ -3588,6 +3584,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			var $ed = $(editor.getElement());
 			var $page = $ed.closest('.page');
+			var isEditorBoxstack = $ed.closest('.boxstack').length ? true : false;
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
 			});
@@ -3601,44 +3598,47 @@ sourceui.interface.widget.report = function($widget,setup){
 			editor.on('keyup', function (e) {
 				$ed.addClass('contentchanged');
 				$ed.addClass('keyboarded');
-				if (e.key == 'Escape'){
+				if (e.ctrlKey || e.shiftKey){
+					if (e.key == 'Delete' && caret.isAtEnd($ed) && !caret.hasSelection($ed)){
+						if (isEditorBoxstack || !editor.getContent()) return false;
+						//editor.undoManager.clear();
+						//Report.document.trigger('historyworker:statehold');
+						Report.document.addClass('preventeventchange');
+						caret.save($ed,'end');
+						boxFitter.groupNext($ed);
+						boxFitter.testPage($page,'jointextatcaret');
+						caret.focus();
+						e.preventDefault();
+						Report.document.removeClass('preventeventchange');
+						//Report.document.trigger('historyworker:stateadd');
+					} else if (e.key == 'Backspace' && caret.isAtBegining($ed) && !caret.hasSelection($ed)){
+						if (isEditorBoxstack || !editor.getContent()) return false;
+						//editor.undoManager.clear();
+						//Report.document.trigger('historyworker:statehold');
+						Report.document.addClass('preventeventchange');
+						caret.save($ed,'begining');
+						boxFitter.groupPrev($ed);
+						boxFitter.testPage($page.prev('.page'),'jointextatcaret');
+						caret.focus();
+						e.preventDefault();
+						Report.document.removeClass('preventeventchange');
+						//Report.document.trigger('historyworker:stateadd');
+					}
+				} else if (e.key == 'Escape'){
 					//editor.undoManager.clear();
-					caret.save($ed);
+					//caret.save($ed);
+					Report.document.trigger('page:unactive');
 					boxFitter.testPage($page);
-					caret.focus($ed);
-				} else if (e.key == 'Delete' && caret.isAtEnd($ed) && !caret.hasSelection($ed)){
-					if (!editor.getContent()) return false;
-					//editor.undoManager.clear();
-					Report.document.trigger('historyworker:statehold');
-					Report.document.addClass('preventeventchange');
-					caret.save($ed,'end');
-					boxFitter.groupNext($ed);
-					boxFitter.testPage($page,'jointextatcaret');
-					caret.focus();
-					e.preventDefault();
-					Report.document.removeClass('preventeventchange');
-					Report.document.trigger('historyworker:stateadd');
-				} else if (e.key == 'Backspace' && caret.isAtBegining($ed) && !caret.hasSelection($ed)){
-					if (!editor.getContent()) return false;
-					//editor.undoManager.clear();
-					Report.document.trigger('historyworker:statehold');
-					Report.document.addClass('preventeventchange');
-					caret.save($ed,'begining');
-					boxFitter.groupPrev($ed);
-					boxFitter.testPage($page.prev('.page'),'jointextatcaret');
-					caret.focus();
-					e.preventDefault();
-					Report.document.removeClass('preventeventchange');
-					Report.document.trigger('historyworker:stateadd');
+					//caret.focus($ed);
 				} else if (caret.isOverflew($ed)){
 					//editor.undoManager.clear();
-					Report.document.trigger('historyworker:statehold');
+					//Report.document.trigger('historyworker:statehold');
 					Report.document.addClass('preventeventchange');
 					caret.save($ed);
 					boxFitter.flowText($ed);
 					caret.focus();
 					Report.document.removeClass('preventeventchange');
-					Report.document.trigger('historyworker:stateadd');
+					//Report.document.trigger('historyworker:stateadd');
 				}
 			});
 			editor.on('input', function (e) {
