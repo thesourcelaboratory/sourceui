@@ -940,6 +940,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				}
 			});
+			//Report.document.find('.empty[data-boxgroup="'+bgID+'"]').remove();
 			___cnsl.log('breakBox','contentNew',$contentNew.get(0));
 			/////////////////////////////////////
 			if (returnBroken) return $contentNew;
@@ -1013,7 +1014,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				if ($nextpage.length){
 					if ($edge.is('.side')) $nextpage.find('.cell.side').prepend($boxesToPrepend);
 					else if ($edge.is('.content')) $nextpage.find('.cell.content').prepend($boxesToPrepend);
-					else if ($edge.is('.boxstack')) $nextpage.find('.boxstack').prepend($boxesToPrepend);
+					else if ($edge.is('.boxstack')) $nextpage.find('.boxstack, .cell.content').prepend($boxesToPrepend);
 					else  $nextpage.find('.main > .row > .cell').prepend($boxesToPrepend);
 					___cnsl.log('moveBox','prepend to next page',$nextpage.get(0));
 				} else {
@@ -1021,7 +1022,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					Report.document.trigger('document:addpage',[$clonepage,$page,'after']);
 					if ($edge.is('.side')) $clonepage.find('.cell.side').prepend($boxesToPrepend);
 					else if ($edge.is('.content')) $clonepage.find('.cell.content').prepend($boxesToPrepend);
-					else if ($edge.is('.boxstack')) $clonepage.find('.boxstack').prepend($boxesToPrepend);
+					else if ($edge.is('.boxstack')) $clonepage.find('.boxstack, .cell.content').prepend($boxesToPrepend);
 					else  $clonepage.find('.main > .row > .cell').prepend($boxesToPrepend);
 					___cnsl.log('moveBox','prepend to new page',$clonepage.get(0));
 				}
@@ -1062,10 +1063,14 @@ sourceui.interface.widget.report = function($widget,setup){
 				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height() + paddingTolerance;
 			}
 
-			strapolateHeight = boxPos.top > edgeHeight;
-			if (strapolateHeight) return 3;
+			strapolateHeight = boxPos.top + paddingTolerance > edgeHeight;
+			if (strapolateHeight) {
+				return 3;
+			}
 			strapolateHeight = (boxPos.top + $box.outerHeight(true)) > edgeHeight;
-			if (strapolateHeight) return 4;
+			if (strapolateHeight) {
+				return 4;
+			}
 
 			return false;
 		},
