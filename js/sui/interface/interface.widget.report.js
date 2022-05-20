@@ -2568,13 +2568,11 @@ sourceui.interface.widget.report = function($widget,setup){
 				return !this.activeDropRegions.length || this.activeDropRegions.length == 1;
 			},
 			start: function (ev, obj) {
-				console.log('start');
 				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
 				obj.$el.addClass('dragger');
 				$this.trigger('edition:active');
 			},
 			stop: function (ev, obj) {
-				console.log('stop');
 				if (obj.$el.hasClass('dragger')){
 					Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 					var closest = $.calcSort('y', obj.$el, this.activeDropRegions);
