@@ -1158,9 +1158,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (!nomceinit) Report.document.trigger('edition:init');
 
 		},
-		testPage: function($page,forceunbreak,nomceinit){
+		testPage: function($pages,forceunbreak,nomceinit){
 
-			var $pages = $page || Report.document.find('.page:eq(0), .page.breaker-before');
+			var testSinglePage = $pages && $pages.is('.page') ? true : false;
+
+			$pages = $pages || Report.document.find('.page:eq(0), .page.breaker-before');
 
 			___cnsl.stack('testPage');
 			___cnsl.purple('testPage','pages', $pages);
@@ -1256,8 +1258,16 @@ sourceui.interface.widget.report = function($widget,setup){
 
 				$boxGroup.filter(':first').children('[data-edition]').trigger('edition:contenthash');
 
-
 			});
+
+			/*
+			if (testSinglePage){
+				var $nextTest = $pages.next('.page');
+				if ($nextTest.length && !$nextTest.is('.breaker-before')){
+					//boxFitter.testPage($nextTest,forceunbreak,nomceinit); // testar a próxima página se ela não for breaker
+				}
+			}
+			*/
 
 			boxFitter.finished = true;
 
@@ -2477,6 +2487,13 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $parent = $this.parent();
 		if ($parent.data('autofill')){
 			Report.area.find('[data-autofill="'+$parent.data('autofill')+'"] date').html($this.text());
+			Report.document.trigger('field:input');
+		}
+	});
+	Report.document.on('blur','[data-autofill="sectorName"][contenteditable="true"]',function(){
+		var $this = $(this);
+		if ($this.data('autofill')){
+			Report.area.find('[data-autofill="'+$this.data('autofill')+'"]').html($this.text());
 			Report.document.trigger('field:input');
 		}
 	});
