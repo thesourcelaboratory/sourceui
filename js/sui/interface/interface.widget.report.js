@@ -940,12 +940,23 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				}
 			});
-			//Report.document.find('.empty[data-boxgroup="'+bgID+'"]').remove();
 			___cnsl.log('breakBox','contentNew',$contentNew.get(0));
+
 			/////////////////////////////////////
 			if (returnBroken) return $contentNew;
 			else boxFitter.appendBroken($edition,$edge,$contentNew,$boxNextAll);
 			/////////////////////////////////////
+
+			// anti ghostbox schema /////////////
+			var ed = tinymce.get($edition.attr('id'));
+			if (ed){
+				var cnt = ed.getContent();
+				if (cnt === '' || cnt === '<br>' || cnt === '<p></p>'){
+					$edition.parent().remove();
+				}
+			}
+
+
 			$box.removeClass('overflew toolarge');
 		},
 		unbreakBox: function($boxGroup,forcestrapolate){
@@ -2482,18 +2493,20 @@ sourceui.interface.widget.report = function($widget,setup){
 			$this.removeClass('keyboarded');
 		}
 	});
-	Report.document.on('blur','date[contenteditable="true"]',function(){
-		var $this = $(this);
-		var $parent = $this.parent();
-		if ($parent.data('autofill')){
-			Report.area.find('[data-autofill="'+$parent.data('autofill')+'"] date').html($this.text());
-			Report.document.trigger('field:input');
-		}
-	});
+	/*
 	Report.document.on('blur','[data-autofill="sectorName"][contenteditable="true"]',function(){
 		var $this = $(this);
 		if ($this.data('autofill')){
 			Report.area.find('[data-autofill="'+$this.data('autofill')+'"]').html($this.text());
+			Report.document.trigger('field:input');
+		}
+	});
+	*/
+	Report.document.on('blur','span[contenteditable="true"]',function(){
+		var $this = $(this);
+		var $parent = $this.parent();
+		if ($parent.data('autofill')){
+			Report.area.find('[data-autofill="'+$parent.data('autofill')+'"] span').html($this.text());
 			Report.document.trigger('field:input');
 		}
 	});
