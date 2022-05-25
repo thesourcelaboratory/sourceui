@@ -709,11 +709,15 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		appendBroken: function($edition,$edge,$contentNew,$boxNextAll){
 			var contentNew = $contentNew.html();
+			var $fieldwrap = $edition.parent();
 			if (contentNew){
+
+				$fieldwrap.removeClass('overflew toolarge');
+
 				var $cloneedition = $edition.clone().html('');
 				$cloneedition.html(contentNew);
 
-				var $clonewrap = $('<div class="fieldwrap '+$cloneedition.data('edition')+'" data-boxgroup="'+$edition.attr('data-belongstogroup')+'" />').append($cloneedition);
+				var $clonewrap = $('<div class="'+$fieldwrap.attr('class')+'" data-boxgroup="'+$edition.attr('data-belongstogroup')+'" />').append($cloneedition);
 
 				var $page = $edge.closest('.page'), $clonepage;
 
@@ -948,6 +952,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			/////////////////////////////////////
 
 			// anti ghostbox schema /////////////
+			var cnt = $edition.html();
+			if (cnt === '' || cnt === '<br>' || cnt === '<p></p>' || cnt === '<p><br></p>' || cnt === '<p><br data-mce-bogus="1"></p>'){
+				$edition.parent().remove();
+			}
+			/*
 			var ed = tinymce.get($edition.attr('id'));
 			if (ed){
 				var cnt = ed.getContent();
@@ -955,9 +964,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					$edition.parent().remove();
 				}
 			}
-
-
-			$box.removeClass('overflew toolarge');
+			*/
+			$edition.parent().removeClass('overflew toolarge');
 		},
 		unbreakBox: function($boxGroup,forcestrapolate){
 			var hasStrapolated = false;
@@ -2502,12 +2510,29 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	*/
-	Report.document.on('blur','span[contenteditable="true"]',function(){
-		var $this = $(this);
-		var $parent = $this.parent();
-		if ($parent.data('autofill')){
-			Report.area.find('[data-autofill="'+$parent.data('autofill')+'"] span').html($this.text());
-			Report.document.trigger('field:input');
+	Report.document.on('blur','span[contenteditable="true"], [data-autofill][contenteditable="true"]',function(){
+		var $source = $(this);
+		var $parent = $source.parent();
+		var autofill = $source.data('autofill') || $parent.data('autofill');
+		if (autofill){
+			var $targets, sourcetext;
+			if (autofill == 'reportNameFragment') {
+				sourcetext = $parent.text();
+				$targets = Report.area.find('[data-autofill="reportName"]');
+			} else {
+				sourcetext = $source.text();
+				$targets = Report.area.find('[data-autofill="'+autofill+'"] span, span[data-autofill="'+autofill+'"]');
+			}
+			var haschange = false;
+			console.log(autofill, $targets, sourcetext);
+			$targets.each(function(){
+				var $target = $(this);
+				if ($target.text() != sourcetext){
+					$target.text(sourcetext);
+					haschange = true;
+				}
+			});
+			if (haschange) Report.document.trigger('document:change');
 		}
 	});
 	Report.document.on('click','[data-edition]',function(event){
@@ -4190,12 +4215,14 @@ sourceui.interface.widget.report = function($widget,setup){
 			getAll: function(){
 				Report.wgdata.usedimages = [];
 				Report.document.find('img:not([src*="blob:"]), img:not([src*="data:"])').each(function(){
-					Report.wgdata.usedimages.push($(this).attr('src').split('/').pop());
+					var $img = $(this);
+					if ($img.attr('src')) Report.wgdata.usedimages.push($img.attr('src').split('/').pop());
 				});
 				Report.document.find('[style*="background-image"]').each(function(){
-					var bg = $(this).css('background-image');
+					var $bgi = $(this);
+					var bg = $bgi.css('background-image');
 					if (bg.indexOf('blob:') === -1 && bg.indexOf('data:') === -1){
-						Report.wgdata.usedimages.push($(this).css('background-image').match(/\"(.*)\"/)[1].split('/').pop());
+						Report.wgdata.usedimages.push($bgi.css('background-image').match(/\"(.*)\"/)[1].split('/').pop());
 					}
 				});
 				Report.document.find('.covered-default .main .content [data-edition="richtext"]').each(function(){

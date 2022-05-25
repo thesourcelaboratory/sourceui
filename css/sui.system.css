@@ -1179,7 +1179,7 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.report:first-of-type { border-bottom-color:#dbdbdb }
 .sui-widget.report > .area { height:100% !important; background:#e6e6e6; }
 .sui-widget.report > .area > .sui-report-document { height:100% !important; vertical-align:top; padding:0 3vw; overflow: hidden; }
-.sui-widget.report > .area > .sui-report-document > .page { background-color:#FFF; margin:7vh auto; box-shadow:0 6px 12px 0px rgba(0,0,0,0.1); color:#000000; font-family:'Arial','Helvetica'; font-size:12px; line-height:18px; display: flex; flex-direction: column; }
+.sui-widget.report > .area > .sui-report-document > .page { background-color:#FFF; margin:7vh auto; box-shadow:0 6px 12px 0px rgba(0,0,0,0.1); color:#000000; font-family:'Arial','Helvetica'; font-size:12px; line-height:15px; display: flex; flex-direction: column; }
 .sui-widget.report > .area > .sui-report-document > .page:first-child {margin-top:40px; }
 .sui-widget.report > .area > .sui-report-document > .page:last-child {margin-bottom:40px; }
 .sui-widget.report > .area > .sui-report-document > .page h1 { font-size:24px; }
@@ -1191,9 +1191,9 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.report > .area > .sui-report-document > .page .cover h3 { margin:0 0 5px; }
 .sui-widget.report > .area > .sui-report-document > .page .main { flex-grow: 10; }
 .sui-widget.report > .area > .sui-report-document.A4 > .page { width:210mm; height:297mm; padding:10mm 13mm; }
-.sui-widget.report > .area > .sui-report-document.A4 > .page .cover { margin: -10mm -13mm 0; padding: 10mm 13mm 6mm }
-.sui-widget.report > .area > .sui-report-document.letter > .page { width:216mm; height:279mm; padding:10mm 13mm; }
-.sui-widget.report > .area > .sui-report-document.letter > .page .cover { margin: -10mm -13mm 0; padding: 10mm 13mm 6mm }
+.sui-widget.report > .area > .sui-report-document.A4 > .page .cover { margin: -10mm -13mm 0; padding: 5mm 13mm 5mm }
+.sui-widget.report > .area > .sui-report-document.letter > .page { width:216mm; height:279mm; padding: 10mm 13mm; }
+.sui-widget.report > .area > .sui-report-document.letter > .page .cover { margin: -10mm -13mm 0; padding: 5mm 13mm 5mm }
 /* --------------------------------------------------- */
 
 /* WIZARD ------------------------------------------ */

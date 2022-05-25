@@ -2855,7 +2855,7 @@ sourceui.customField = function (element, setup) {
 					($.isArray(value) && value.length === 0) ||
 					($.isPlainObject(value) && $.isEmptyObject(value))
 				)){
-					Element.trigger('field:error', ['required', 'Campo obrigatório']);
+					Element.trigger('field:error', ['required', isPT ? 'Campo obrigatório' : 'Required field']);
 				}
 				else Element.trigger('field:valid');
 				return valueValid;
