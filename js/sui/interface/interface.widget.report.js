@@ -2524,7 +2524,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				$targets = Report.area.find('[data-autofill="'+autofill+'"] span, span[data-autofill="'+autofill+'"]');
 			}
 			var haschange = false;
-			console.log(autofill, $targets, sourcetext);
 			$targets.each(function(){
 				var $target = $(this);
 				if ($target.text() != sourcetext){
