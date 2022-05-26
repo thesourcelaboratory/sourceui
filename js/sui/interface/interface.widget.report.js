@@ -4004,6 +4004,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					else if ($this.hasClass('fieldwrap')) suiXml += wdata.suify.fieldwrap($this);
 				});
 				if ($elem.attr('style')) $elem.attr('data-style',$elem.attr('style'));
+				if ($elem.attr('colspan')) $sui.attr('colspan', $elem.attr('colspan'));
 				var $sui = wdata.aux.strXQ('<col>'+suiXml+'</col>');
 				wdata.aux.parseAttr($sui,$elem,/data\-/);
 				return wdata.aux.xqString($sui);
@@ -4015,6 +4016,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					if ($this.hasClass('col')) suiXml += wdata.suify.col($this);
 				});
 				var $sui = wdata.aux.strXQ('<line>'+suiXml+'</line>');
+				if ($elem.attr('colspan')) $sui.attr('colspan', $elem.attr('colspan'));
 				wdata.aux.parseAttr($sui,$elem,/data\-/);
 				return wdata.aux.xqString($sui);
 			},
