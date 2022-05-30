@@ -785,6 +785,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 				if ($boxNextAll) $clonewrap.after($boxNextAll);
 				//$page.trigger('page:active');
+				return $clonewrap;
 			}
 
 		},
@@ -996,7 +997,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			/////////////////////////////////////
 			if (returnBroken) return $contentNew;
-			else boxFitter.appendBroken($edition,$edge,$contentNew,$boxNextAll);
+			else var $broken = boxFitter.appendBroken($edition,$edge,$contentNew,$boxNextAll);
 			/////////////////////////////////////
 
 			// anti ghostbox schema /////////////
@@ -1014,6 +1015,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 			*/
 			$edition.parent().removeClass('overflew toolarge');
+			return $broken;
 		},
 		joinBox: function($boxGroup,forcestrapolate){
 			var hasStrapolated = false;
@@ -1182,6 +1184,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		rearrangeBoxes: function($origin, nomceinit){
 
+			var cancelAll = false;
+			var $extrapolatedBroken;
+
 			if (Report.document.hasClass('rearranging')) return false;
 			Report.document.addClass('rearranging');
 
@@ -1200,6 +1205,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			___cnsl.log('rearrangeBoxes','origin: '+origin);
 			var pdx = 0;
 			$pages.each(function(){
+
+				if (cancelAll) return false;
 
 				var $page = $(this);
 				var $pagerange = $page.nextUntil('.breaker-before').addBack();
@@ -1221,6 +1228,8 @@ sourceui.interface.widget.report = function($widget,setup){
 				var edx = 0;
 				var $lastpage = $();
 				$edgerange.each(function(){
+
+					if (cancelAll) return false;
 
 					var $edge = $(this), edgetype, edgesel;
 
@@ -1244,6 +1253,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $lastbox = $edge.find('.fieldwrap, .container').last();
 					var gap = boxFitter.hasGap($edge,$lastbox);
 					if (gap){
+						if ($lastbox.is('[data-boxgroup]')) boxFitter.joinBox($lastbox,true);
 						___cnsl.log('rearrangeBoxes', cnsl+'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
 						var $nextboxes = $edgerange.filter(edgesel).filter(':gt('+edx+')').find('.fieldwrap, .container');
 						if ($nextboxes.length){
@@ -1262,6 +1272,7 @@ sourceui.interface.widget.report = function($widget,setup){
 								___cnsl.red('rearrangeBoxes', cnsl+'has estrapolated box: true ('+extrapolate+')',$box.get(0));
 								$box.addClass('overflew'); // tint as red
 								$box.attr('data-extrapolate',extrapolate);
+								cancelAll = true;
 							} else {
 								___cnsl.log('rearrangeBoxes', cnsl+'has estrapolated box: false',$box.get(0));
 							}
@@ -1277,7 +1288,7 @@ sourceui.interface.widget.report = function($widget,setup){
 								// break box and move all next boxes to next page;
 								///////////////////////////////////////////////
 								Report.document.addClass('preventeventchange');
-								boxFitter.breakBox($box,$edge);
+								$extrapolatedBroken = boxFitter.breakBox($box,$edge);
 								Report.document.removeClass('preventeventchange');
 								return false;
 								///////////////////////////////////////////////
@@ -1297,6 +1308,15 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (!nomceinit) Report.document.trigger('edition:init');
 
 			Report.document.removeClass('rearranging');
+
+			//////////////////////////////////////////////////////////////////////
+			// hack to rearrenge all pages before breaking boxes
+			if (cancelAll && $extrapolatedBroken){
+				___cnsl.ok('rearrangeBoxes', 'hack to restart at broken', $extrapolatedBroken.get(0));
+				boxFitter.rearrangeBoxes($extrapolatedBroken, nomceinit);
+				Report.document.trigger('document:pagelist');
+			}
+			//////////////////////////////////////////////////////////////////////
 		}
 
 
@@ -3143,7 +3163,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($page.hasClass('thumbing')){
 			var $pagethumb = Report.pagelist.find('#'+$page.attr('data-thumbid'));
 			//////////////////////////////////
-			Thumbnail.parse($page,$pagethumb);
+			setTimeout(function(){Thumbnail.parse($page,$pagethumb);},1000);
 			//////////////////////////////////
 			$page.removeClass('thumbing');
 		}
@@ -3424,17 +3444,17 @@ sourceui.interface.widget.report = function($widget,setup){
 	// History Events ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('historyworker:stateclear',function(event){
 		Report.document.removeData('historystateholdcontent');
-		console.log('historyworker:stateclear');
+		___cnsl.yellow('historyworker:stateclear');
 	});
 	Report.document.on('historyworker:statehold',function(event, origin){
 		var holdcontent = Report.document.data('historystateholdcontent');
-		if (Report.document.hasClass('preventhistorystack') || holdcontent) return false;
+		if (Report.document.is('.preventhistorystack, .preventeventchange') || holdcontent) return false;
 		Report.document.data('historystateholdcontent', {origin:origin, state:Report.pagesState()});
-		console.log('historyworker:statehold',origin);
+		___cnsl.log('historyworker:statehold',origin);
 	});
 	Report.document.on('historyworker:stateadd',function(event, origin, timeout){
 		var holdcontent = Report.document.data('historystateholdcontent') || {};
-		if (Report.document.hasClass('preventhistorystack') || holdcontent.origin !== origin) return false;
+		if (Report.document.is('.preventhistorystack, .preventeventchange') || holdcontent.origin !== origin) return false;
 		var content = {
 			stateold: holdcontent.state,
 			statenew: Report.pagesState()
@@ -3447,7 +3467,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				scroll:Report.scroll.scrollTop()
 			});
 			Report.document.removeData('historystateholdcontent');
-			console.log('historyworker:stateadd',origin);
+			___cnsl.green('historyworker:stateadd',origin);
 		},timeout||10);
 	});
 	/*
@@ -3473,14 +3493,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			command:'back',
 			dochash:Variable.get('docHash')
 		});
-		//console.log('historyworker:back');
 	});
 	Report.document.on('historyworker:forward',function(event){
 		historyWorker.postMessage({
 			command:'forward',
 			dochash:Variable.get('docHash')
 		});
-		//console.log('historyworker:forward');
 	});
 	Report.document.on('historyworker:clear',function(event,data){
 		historyWorker.postMessage({
@@ -3488,7 +3506,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			dochash:Variable.get('docHash')
 		});
 		Report.document.removeData('historystateholdcontent');
-		//console.log('historyworker:clear');
+		___cnsl.yellow('historyworker:clear');
 	});
 	/*
 	Report.document.on('historyworker:redraw',function(event,data){
