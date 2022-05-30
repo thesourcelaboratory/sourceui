@@ -1943,11 +1943,18 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			if ($this.attr('data-edition') == 'dynamic') {
 				$tools.find('li.prop, li.refresh, li.wide').removeClass('allow').addClass('deny');
-				if ($this.data('name') == 'global-disclaimer' || ($this.data('name')||'').indexOf('financial-data') > -1){
+				if ($this.data('name') == 'global-disclaimer'){
 					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
+					$tools.find('li.split').removeClass('allow').addClass('deny');
+				} else if (($this.data('name')||'').indexOf('front-pages') > -1){
+					$tools.find('li.refresh').removeClass('deny').addClass('allow');
+					$tools.find('li.split, li.remove').removeClass('allow').addClass('deny');
+				} else if (($this.data('name')||'').indexOf('back-pages') > -1){
+					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
+					$tools.find('li.split').removeClass('allow').addClass('deny');
 				}
 			} else if ($this.attr('data-edition') == 'toc') {
-				$tools.find('li.prop, li.pick, li.editable, li.refresh, li.wide').removeClass('allow').addClass('deny');
+				$tools.find('li.prop, li.pick, li.editable, li.refresh, li.wide, li.split').removeClass('allow').addClass('deny');
 			} else {
 				$tools.find('li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
 			}
