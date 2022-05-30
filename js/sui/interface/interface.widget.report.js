@@ -2084,14 +2084,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
-		if (!$edit.attr('data-wide')){
+		if (!$fieldwrap.is('.wide')){
 			$edit.attr('data-wide','S');
 			$fieldwrap.addClass('wide');
-			$this.addClass('active');
 		} else {
 			$edit.removeAttr('data-wide');
 			$fieldwrap.removeClass('wide');
-			$this.removeClass('active');
 		}
 	});
 	Report.document.on('click','.edition-actions .editable a',function(){
@@ -2984,7 +2982,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$el.get(0).normalize();
 				$clone.append($el.nextAll());
 
-				var $clonewrap = $('<div class="fieldwrap '+$clone.data('edition')+' active" />').append($clone);
+				var $clonewrap = $('<div class="'+$fieldwrap.attr('class').replace(/pep-dpa|pep-dropping/g,'')+' active xxxxxxxx" />').append($clone);
 
 				$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
 
@@ -3025,10 +3023,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $field = $this.closest('[data-edition]');
 		var $page = $field.closest('.page');
 		var indexlabel = ($field.attr('data-indexlabel')+'').toLowerCase();
-		if (indexlabel == 'figure') $field.attr('data-indexlabel','Chart');
-		else if (indexlabel == 'chart') $field.attr('data-indexlabel','Image');
-		else if (indexlabel == 'image') $field.attr('data-indexlabel','Table');
-		else if (indexlabel == 'table') $field.attr('data-indexlabel','Figure');
+		if (indexlabel == 'figure') $field.attr('data-indexlabel','chart');
+		else if (indexlabel == 'chart') $field.attr('data-indexlabel','image');
+		else if (indexlabel == 'image') $field.attr('data-indexlabel','table');
+		else if (indexlabel == 'table') $field.attr('data-indexlabel','figure');
 		Report.document.trigger('document:boxcount');
 		Report.document.trigger('document:change',[$page]);
 	});
@@ -3109,6 +3107,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$new.insertAfter($ref);
 				}
 			}
+			if ($ref.is('.wide')) $new.addClass('wide');
 		} else {
 			$page.find('.main .cell:eq(0)').append($new);
 		}
@@ -3217,16 +3216,24 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('document:boxcount',function(event){
 		var idx = {};
+		var lang = Variable.get('languageId');
+		var types = {
+			figure:{ '1':'Figure', '2':'Figura', '7':'Figura'},
+			chart:{ '1':'Chart', '2':'Gráfico', '7':'Gráfico'},
+			image:{ '1':'Image', '2':'Imagem', '7':'Imagen'},
+			table:{ '1':'Table', '2':'Tabela', '7':'Tabla'},
+		};
 		Report.document.find('[data-edition="figure"]').each(function(){
 			var $this = $(this);
 			var $h4 = $this.find('h4');
 			if ($h4.length){
-				var label = $this.attr('data-indexlabel') || 'Figure';
-				if (!label) $this.attr('data-indexlabel',label = 'Figure');
+				var label = $this.attr('data-indexlabel') || 'figure';
+				if (!label) $this.attr('data-indexlabel',label = 'figure');
 				idx[label] = idx[label] ? idx[label]+1 : 1;
 				var $counter = $h4.find('.counter');
+				var litlabel = (types[label] ? (types[label][lang] || types[label]['1']) : label);
 				$this.attr('data-count',idx[label]);
-				$counter.html(label+' '+idx[label]+':');
+				$counter.html(litlabel+' '+idx[label]+':');
 			}
 		});
 	});
@@ -3839,6 +3846,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			'th': 'rowspan,colspan,height,width,min-width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,border-width,border-style,white-space',
 			'td': 'rowspan,colspan,height,width,min-width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,border-width,border-style,white-space',
 			'img': 'width, height',
+			'strong': 'font-size,font-family,color,text-decoration,text-align,background-color',
+			'span': 'font-size,font-family,color,text-decoration,text-align,background-color',
 		},
 		paste_preprocess : function(pl, o) {
 			var $target = $(o.target.selection.getNode());

@@ -42,6 +42,8 @@ sourceui.interface.widget.common = function ($widget, setup) {
 	//Common.code = this.widget.children('code');
 	Common.finder = this.widget.children('.finder');
 
+	var isPT = ($('html').attr('lang').indexOf('pt-') > -1);
+
 	/*
 
 	// interface.document.js:288 (é redundante)
@@ -589,7 +591,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 					Finder.clearEnable(true);
 					$ul.find('[data-name="search"][data-value="'+value+'"]').closest('li').remove();
 					$(Template.get('wg', 'form', 'filter', {
-						label: { name: 'Pesquisa', value: value, content: '' },
+						label: { name: isPT ? 'Pesquisa' : 'Search', value: value, content: '' },
 						data: { name: 'search', value: value }
 					})).appendTo($ul).find('a').trigger('click');
 				}
@@ -637,6 +639,9 @@ sourceui.interface.widget.common = function ($widget, setup) {
 						}
 					}
 				}
+				setup = $.extend(true,{},setup,Finder.element.link());
+				if (setup.render === false) delete setTimeout.render
+				console.log(setup, Finder.element.link());
 				Network.link.call(Finder.element, setup);
 			});
 			Finder.widget.on('filter:floatform', function (event, $el) {
