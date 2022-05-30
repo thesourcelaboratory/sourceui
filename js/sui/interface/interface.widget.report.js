@@ -76,25 +76,25 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
+		active: false,
 		stack: function(where){
-			 let stack = new Error().stack || '';
-			stack = stack.split('\n').map(function (line) { return line.trim(); });
-			___cnsl.blue('initStak',where,stack);
+			___cnsl.green('initStack',where);
 		},
 		log: function(){
-			return;
+			if (!___cnsl.active) return;
 			var a=[],l,ball;
 			if (this === 'green') ball =  '🟢';
 			else if (this === 'yellow') ball =  '🟡';
 			else if (this === 'red') ball =  '🔴';
 			else if (this === 'blue') ball =  '🔵';
 			else if (this === 'purple') ball =  '🟣';
+			else if (this === 'ok') ball =  '🤍';
 			else ball =  '⚪️';
 			$.each(arguments,function(k,v){
 				if (v instanceof HTMLElement || v instanceof jQuery || typeof v === 'object') l = v;
 				else a.push(v);
 			});
-			console.groupCollapsed(ball+' '+a.join('  '),[l]);
+			console.groupCollapsed(ball+' '+a.join('  '),l?[l]:'');
 			console.info(l);
 			console.groupEnd();
 		},
@@ -112,6 +112,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		purple: function(){
 			___cnsl.log.apply('purple',arguments);
+		},
+		ok: function(){
+			___cnsl.log.apply('ok',arguments);
 		}
 	};
 
@@ -444,6 +447,23 @@ sourceui.interface.widget.report = function($widget,setup){
 	};
 
 	var caret = {
+		offset: function($edit){
+			var $caret = caret.save($edit, 'position');
+			var offset = $caret.offset();
+			$caret.remove();
+			return offset;
+		},
+		position: function($edit){
+			var $caret = caret.save($edit, 'position');
+			var position = $caret.offset();
+			if ($edit){
+				var eposition = $edit.offset();
+				position.top = position.top - eposition.top || 0;
+				position.left = position.left - eposition.left || 0;
+			}
+			$caret.remove();
+			return position;
+		},
 		data: function($edit){
 			var data = {
 				edit: $edit,
@@ -557,20 +577,27 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (event.keyCode == 18){
 			//Report.document.addClass('grab');
 			//Report.wgtools.filter('.bottom').find('.zoom-grab').addClass('active');
-		}
-		if (event.ctrlKey){
-			if (event.keyCode == 90 || event.keyCode == 89){
-				event.preventDefault();
-				if (event.keyCode == 90) Report.document.trigger('historyworker:back');
-				else if (event.keyCode == 89) Report.document.trigger('historyworker:forward');
-				return false;
+			if (event.ctrlKey){
+				// CTRL Z OU Y =================================
+				if (event.keyCode == 90 || event.keyCode == 89){
+					event.preventDefault();
+					return false;
+				}
 			}
 		}
 	});
 	Dom.document.on('keyup', function(event){
 		if (!Report.document.is(':visible')) return;
 		if (event.ctrlKey){
-			if (event.keyCode == 86){
+			// CTRL Z OU Y =================================
+			if (event.keyCode == 90 || event.keyCode == 89){
+				event.preventDefault();
+				if (event.keyCode == 90) Report.document.trigger('historyworker:back');
+				else if (event.keyCode == 89) Report.document.trigger('historyworker:forward');
+				return false;
+			}
+			// CTRL C ====================
+			else if (event.keyCode == 86){
 				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
 				if (!$activeFieldwrap.length){
 					var $page = Report.document.find('.page.active');
@@ -669,6 +696,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var bgID = boxFitter.boxgroupID($fieldwrap);
 				boxFitter.boxgroupID($prevwrap,bgID);
 			}
+			return $prevwrap;
 		},
 		groupNext: function($box){
 			var $page = $box.closest('.page');
@@ -682,6 +710,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var bgID = boxFitter.boxgroupID($fieldwrap);
 				boxFitter.boxgroupID($nextwrap,bgID);
 			}
+			return $fieldwrap;
 		},
 		flowText: function($edition){
 			var $edge = $edition.closest('.content, .side, .boxstack');
@@ -757,6 +786,22 @@ sourceui.interface.widget.report = function($widget,setup){
 
 		},
 		breakBox: function($box,$edge,returnBroken){
+
+			if ($box.data('boxgroup')){
+				// join grouped boxes ------------------------
+				var $boxGroup = $();
+				var $foundgroup = Report.document.find('[data-boxgroup="'+$box.data('boxgroup')+'"]');
+				var idx = 0;
+				$foundgroup.each(function(){
+					if (this === $box.get(0)){
+						$boxGroup = $boxGroup.add($foundgroup.filter(':eq('+idx+')'));
+						$boxGroup = $boxGroup.add($foundgroup.filter(':gt('+idx+')'));
+						return false;
+					}
+					idx++;
+				});
+				$box = boxFitter.joinBox($boxGroup,true);
+			}
 
 			var $edition = $box.children('[data-edition]');
 			$edge = $edge || $box.parent();
@@ -967,7 +1012,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			*/
 			$edition.parent().removeClass('overflew toolarge');
 		},
-		unbreakBox: function($boxGroup,forcestrapolate){
+		joinBox: function($boxGroup,forcestrapolate){
 			var hasStrapolated = false;
 			if (!forcestrapolate){
 				$boxGroup.each(function(kb,box){
@@ -982,7 +1027,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $contentAll = $('<pre></pre>');
 				$boxGroup.each(function(kb,box){
 					var $box = $(box);
-					___cnsl.yellow('unbreakBox',box);
+					___cnsl.yellow('joinBox',box);
 					var $edition = $box.children('[data-edition]');
 					var content, $content;
 					content = $edition.html();
@@ -1001,19 +1046,35 @@ sourceui.interface.widget.report = function($widget,setup){
 				});
 				var contentAll = $contentAll.html();
 				if (contentAll){
-					___cnsl.log('unbreakBox','contentAll',$contentAll.get(0));
+					___cnsl.log('joinBox','contentAll',$contentAll.get(0));
 					var $b = $boxGroup.filter(':eq(0)');
 					var $e = $b.children('[data-edition]');
 					$e.html(contentAll);
 					$boxGroup.filter(':gt(0)').remove();
 					$boxGroup.removeAttr('data-boxgroup').removeAttr('data-extrapolate').removeData('boxgroup').removeData('extrapolate');
 					$boxGroup.children('[data-edition]').removeAttr('data-belongstogroup').removeData('belongstogroup');
-					return true;
+					return $b;
 				}
 			}
 			return false
 		},
 		moveBox: function($box,$edge){
+
+			if ($box.data('boxgroup')){
+				// join grouped boxes ------------------------
+				var $boxGroup = $();
+				var $foundgroup = Report.document.find('[data-boxgroup="'+$box.data('boxgroup')+'"]');
+				var idx = 0;
+				$foundgroup.each(function(){
+					if (this === $box.get(0)){
+						$boxGroup = $boxGroup.add($foundgroup.filter(':eq('+idx+')'));
+						$boxGroup = $boxGroup.add($foundgroup.filter(':gt('+idx+')'));
+						return false;
+					}
+					idx++;
+				});
+				$box = boxFitter.joinBox($boxGroup,true);
+			}
 
 			var $boxesToPrepend;
 			if ($box.hasClass('toolarge')){
@@ -1093,168 +1154,119 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			return false;
 		},
-		testPageOld: function($page,forceunbreak,nomceinit){
+		hasGap: function($edge,$lastbox){
 
-			$page = $page || Report.document.find('.page:eq(0)');
+			var paddingTolerance = 16; // is the box minumus height.
+			var $box = $lastbox || $edge.find('.fieldwrap, .container').last();
 
-			if (!$page.length) return false;
+			var edgeHeight = $edge.height();
 
-			if (boxFitter.finished === true){
-				//console.clear();
-				boxFitter.finished = false;
-			}
-
-			___cnsl.stack('testPage');
-			___cnsl.log('testPage',$page.get(0));
-
-			var $boxGroup = $page.find('[data-boxgroup]'), groupsIds = {};
-			$boxGroup.each(function(kbg, bg){
-				let $bg = $(bg);
-				groupsIds[$bg.data('boxgroup')] = true;
-			});
-			$.each(groupsIds,function(kie,vie){
-				boxFitter.unbreakBox($page.nextAll('.page').addBack().find('[data-boxgroup="'+kie+'"]'),forceunbreak||false);
-			});
-
-			var $edge = $page.find('.content, .side, .boxstack, .main > .row > .cell');
-			$edge.each(function(ke,e){
-				___cnsl.log('testPage','edge',e);
-				var $e = $(e);
-				///////////////////////////////////////////////
-				$e.find('.overflew, .toolarge').removeClass('overflew toolarge');
-				///////////////////////////////////////////////
-				if (boxFitter.hasOverflow($e)){
-					var $boxes = $e.children('.fieldwrap, .container');
-					$boxes.each(function(kb,b){
-						var $b = $(b);
-						var isActive = $b.is('.active');
-						if ($b.children('.block').is('.front-pages')){
-							return true;
-						}
-						var extrapolate = boxFitter.isExtrapolatedBox($b,$e);
-						___cnsl[extrapolate ? 'yellow' : 'log']('testPage','isExtrapolatedBox: ',extrapolate,extrapolate ? $b.get(0) : '');
-						if (extrapolate){
-							$b.addClass('overflew'); // tint as red
-							$b.attr('data-extrapolate',extrapolate);
-						}
-						if (extrapolate === 3){
-							// move all hidden objects to next page;
-							///////////////////////////////////////////////
-							Report.document.addClass('preventeventchange');
-							boxFitter.moveBox($b,$e);
-							Report.document.removeClass('preventeventchange');
-							return false;
-							///////////////////////////////////////////////
-						} else if (extrapolate === 4){
-							// break box and move all next boxes to next page;
-							///////////////////////////////////////////////
-							Report.document.addClass('preventeventchange');
-							boxFitter.breakBox($b,$e);
-							Report.document.removeClass('preventeventchange');
-							return false;
-							///////////////////////////////////////////////
-						}
-						if (!extrapolate){
-							$b.removeClass('overflew');
-							$b.removeAttr('data-extrapolate');
-						}
-					});
-				}
-			});
-
-			$boxGroup.filter(':first').children('[data-edition]').trigger('edition:contenthash');
-
-			var $nextPage = $page.next('.page');
-			if ($nextPage.length) {
-				if ($nextPage.hasClass('breaker-before')){
-					boxFitter.finished = true;
+			if ($box.length){
+				if ($edge.is('.content') && $edge.children('.boxstack').length) return false;
+				if ($edge.is('.content, .boxstack')){
+					var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.closest('.main').width();
 				} else {
-					boxFitter.testPage($nextPage,null,true);
+					var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width();
 				}
+				var gap = edgeHeight - (boxPos.top + $box.outerHeight(true));
+				if (gap > 0){
+					if (gap > paddingTolerance) return gap;
+					return false;
+				}
+				return null;
 			}
-			else boxFitter.finished = true;
-
-			if (!nomceinit) Report.document.trigger('edition:init');
-
+			return edgeHeight;
 		},
-		testPage: function($pages,forceunbreak,nomceinit){
+		rearrangeBoxes: function($origin, nomceinit){
 
-			var testSinglePage = $pages && $pages.is('.page') ? true : false;
+			if (Report.document.hasClass('rearranging')) return false;
+			Report.document.addClass('rearranging');
 
-			$pages = $pages || Report.document.find('.page:eq(0), .page.breaker-before');
+			___cnsl.stack('rearrangeBoxes');
 
-			___cnsl.stack('testPage');
-			___cnsl.purple('testPage','pages', $pages);
+			var $pages, $boxedge, origin;
+			if ($origin && $origin.is('.fieldwrap')){
+				origin = 'box';
+				$boxedge = $origin.closest('.content, .boxstack, .side');
+				$pages = $boxedge.closest('.page');
+			} else {
+				origin = 'page';
+				$pages = $origin || Report.document.find('.page:eq(0), .page.breaker-before');
+			}
 
+			___cnsl.log('rearrangeBoxes','origin: '+origin);
+			var pdx = 0;
 			$pages.each(function(){
 
 				var $page = $(this);
+				var $pagerange = $page.nextUntil('.breaker-before').addBack();
 
-				if (!$page.length) return false;
+				___cnsl.purple('rearrangeBoxes','pages range till breaker: '+$pagerange.length, $pagerange);
 
-				if (boxFitter.finished === true){
-					//console.clear();
-					boxFitter.finished = false;
+				var $edgerange;
+				if (origin == 'box'){
+					if ($boxedge.is('.content')) $edgerange = $pagerange.find('.content');
+					else if ($boxedge.is('.side')) $edgerange = $pagerange.find('.side');
+					else if ($boxedge.is('.boxstack')) {
+						$edgerange = $().add($boxedge);
+						$edgerange = $edgerange.add($pagerange.filter(':gt(0)').find('.content'));
+					}
+				} else {
+					$edgerange = $pagerange.find('.content, .boxstack, .side');
 				}
 
-				___cnsl.purple('testPage','each page', $page.get(0));
+				var edx = 0;
+				var $lastpage = $();
+				$edgerange.each(function(){
 
-				var $nextpages = $page.nextUntil('.breaker-before').addBack();
-				var $boxGroup = $nextpages.find('[data-boxgroup]'), groupsIds = {};
-				$boxGroup.each(function(kbg, bg){
-					let $bg = $(bg);
-					groupsIds[$bg.data('boxgroup')] = true;
-				});
-				$.each(groupsIds,function(kie,vie){
-					var $groupeds = $nextpages.find('[data-boxgroup="'+kie+'"]');
-					boxFitter.unbreakBox($groupeds,true||forceunbreak||false);
-				});
+					var $edge = $(this), edgetype, edgesel;
 
-				___cnsl.log('testPage','nextUntil breaker',$nextpages);
+					if (___cnsl.active){
+						var $page = $edge.closest('.page');
+						if ($lastpage.get(0) !== $page.get(0)){
+							$lastpage = $page;
+							___cnsl.blue('rearrangeBoxes', 'page('+$page.attr('data-pagenumber')+')' ,$page.get(0));
+						}
+					}
 
-				var $boxcollection = {};
-				$boxcollection.content = $nextpages.find('.content > .fieldwrap, .content > .container');
-				$boxcollection.boxstack = $nextpages.find('.boxstack > .fieldwrap, .boxstack > .container');
-				$boxcollection.side = $nextpages.find('.side > .fieldwrap, .side > .container');
+					if ($edge.is('.content')) { edgetype = 'content'; edgesel = '.content'; }
+					else if ($edge.is('.boxstack')) { edgetype = 'boxstack'; edgesel = '.boxstack, .content'; }
+					else if  ($edge.is('.side')) { edgetype = 'side'; edgesel = '.side'; }
 
-				if ($boxcollection.boxstack.length){
-					$boxcollection.boxstack = $boxcollection.boxstack.add($nextpages.find('.content > .fieldwrap, .content > .container'));
-				}
+					var cnsl = ___cnsl.active ? 'page('+$page.attr('data-pagenumber')+') edge('+edgetype+') ' : '';
 
-				___cnsl.log('testPage','boxcollection.content',$boxcollection.content);
-				___cnsl.log('testPage','boxcollection.boxstack',$boxcollection.boxstack);
-				___cnsl.log('testPage','boxcollection.side',$boxcollection.side);
+					___cnsl.log('rearrangeBoxes', cnsl ,$edge.get(0));
 
-				$page.find('.content').append($boxcollection.content);
-				$page.find('.boxstack').append($boxcollection.boxstack);
-				$page.find('.side').append($boxcollection.side);
-
-				var $edge = $nextpages.find('.content, .side, .boxstack');
-				$edge.each(function(ke,e){
-					___cnsl.log('testPage','edge',e);
-					var $e = $(e);
-					///////////////////////////////////////////////
-					$e.find('.overflew, .toolarge').removeClass('overflew toolarge');
-					///////////////////////////////////////////////
-					if (boxFitter.hasOverflow($e)){
-						var $boxes = $e.children('.fieldwrap, .container');
+					//////////////////////////////////
+					var $lastbox = $edge.find('.fieldwrap, .container').last();
+					var gap = boxFitter.hasGap($edge,$lastbox);
+					if (gap){
+						___cnsl.log('rearrangeBoxes', cnsl+'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
+						var $nextboxes = $edgerange.filter(edgesel).filter(':gt('+edx+')').find('.fieldwrap, .container');
+						if ($nextboxes.length){
+							$edge.append($nextboxes);
+							___cnsl.yellow('rearrangeBoxes', cnsl+'gap boxes appended: '+$nextboxes.length,$nextboxes);
+						}
+					}
+					//////////////////////////////////
+					if (boxFitter.hasOverflow($edge)){
+						var $boxes = $edge.find('.fieldwrap, .container');
 						$boxes.each(function(kb,b){
-							var $b = $(b);
-							var isActive = $b.is('.active');
-							if ($b.children('.block').is('.front-pages')){
-								return true;
-							}
-							var extrapolate = boxFitter.isExtrapolatedBox($b,$e);
-							___cnsl.log('testPage','isExtrapolatedBox: ',extrapolate,extrapolate ? $b.get(0) : '');
+							var $box = $(b);
+							if ($box.children('.block').is('.front-pages, .back-pages')) return true; // no rearrange if it is front ou nack pages
+							var extrapolate = boxFitter.isExtrapolatedBox($box,$edge);
 							if (extrapolate){
-								$b.addClass('overflew'); // tint as red
-								$b.attr('data-extrapolate',extrapolate);
+								___cnsl.red('rearrangeBoxes', cnsl+'has estrapolated box: true ('+extrapolate+')',$box.get(0));
+								$box.addClass('overflew'); // tint as red
+								$box.attr('data-extrapolate',extrapolate);
+							} else {
+								___cnsl.log('rearrangeBoxes', cnsl+'has estrapolated box: false',$box.get(0));
 							}
 							if (extrapolate === 3){
 								// move all hidden objects to next page;
 								///////////////////////////////////////////////
 								Report.document.addClass('preventeventchange');
-								boxFitter.moveBox($b,$e);
+								boxFitter.moveBox($box,$edge);
 								Report.document.removeClass('preventeventchange');
 								return false;
 								///////////////////////////////////////////////
@@ -1262,37 +1274,29 @@ sourceui.interface.widget.report = function($widget,setup){
 								// break box and move all next boxes to next page;
 								///////////////////////////////////////////////
 								Report.document.addClass('preventeventchange');
-								boxFitter.breakBox($b,$e);
+								boxFitter.breakBox($box,$edge);
 								Report.document.removeClass('preventeventchange');
 								return false;
 								///////////////////////////////////////////////
 							}
 							if (!extrapolate){
-								$b.removeClass('overflew');
-								$b.removeAttr('data-extrapolate');
+								$box.removeClass('overflew');
+								$box.removeAttr('data-extrapolate');
 							}
 						});
+					} else {
+						___cnsl.ok('rearrangeBoxes', cnsl+' has no rearreanges');
 					}
+					edx++;
 				});
-
-				$boxGroup.filter(':first').children('[data-edition]').trigger('edition:contenthash');
-
+				pdx++;
 			});
-
-			/*
-			if (testSinglePage){
-				var $nextTest = $pages.next('.page');
-				if ($nextTest.length && !$nextTest.is('.breaker-before')){
-					//boxFitter.testPage($nextTest,forceunbreak,nomceinit); // testar a próxima página se ela não for breaker
-				}
-			}
-			*/
-
-			boxFitter.finished = true;
-
 			if (!nomceinit) Report.document.trigger('edition:init');
 
+			Report.document.removeClass('rearranging');
 		}
+
+
 	};
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1650,6 +1654,18 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($(this).isDisable()) return;
 		Report.document.trigger('zoom:out');
 	});
+	Report.document.on('mousewheel', function(event){
+		if (event.ctrlKey){
+			if (event.originalEvent.wheelDelta < 0) {
+				Report.wgtools.filter('.bottom').find('.zoom-out').click();
+			} else {
+				Report.wgtools.filter('.bottom').find('.zoom-in').click();
+			}
+			event.preventDefault();
+			event.stopPropagation();
+			event.stopImmediatePropagation();
+		}
+	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1724,7 +1740,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', 'image/*');
 			input.onchange = function() {
-				Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 				var file = this.files[0];
 				var reader = new FileReader();
 				reader.onload = function () {
@@ -1834,7 +1849,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.trigger('container:addline');
 	});
 	Report.document.on('click','.container-actions .reset a',function(){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 		var $this = $(this);
 		var $ctn = $this.closest('.container');
 		$ctn.removeAttr('style');
@@ -1871,7 +1885,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="editable" class="nedt editable" contenteditable="false"><a class="icon-edit-content" data-tip="Toggle box content editable"></a></li>'+
 		'<li data-action="clone" class="nedt clone" contenteditable="false"><a class="icon-copy" data-tip="Clone this box as next"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
-		'<li data-action="rearrange" class="nedt rearrange" contenteditable="false"><a class="icon-split-horizontal" data-tip="Rearrange autobreaks"></a></li>'+
+		'<li data-action="split" class="nedt split" contenteditable="false"><a class="icon-split-horizontal" data-tip="Split box at cursor"></a></li>'+
+		'<li data-action="rearrange" class="nedt rearrange" contenteditable="false"><a class="icon-wavearrow" data-tip="Auto rearrange box stack"></a></li>'+
 		'<li data-action="refresh" class="nedt refresh" contenteditable="false"><a class="icon-rearrange-content" data-tip="Refresh active content"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this box"></a></li>'+
 		'</ul>';
@@ -1965,7 +1980,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		input.setAttribute('type', 'file');
 		input.setAttribute('accept', 'image/*');
 		input.onchange = function() {
-			Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 			var file = this.files[0];
 			var reader = new FileReader();
 			reader.onload = function () {
@@ -2095,17 +2109,23 @@ sourceui.interface.widget.report = function($widget,setup){
 		$edit.trigger('edition:clipboardmoved');
 		$page.trigger('page:active');
 	});
+	Report.document.on('click','.edition-actions .split a',function(){
+		var $this = $(this);
+		if ($this.closest('.disable').length) return;
+		var $fieldwrap = $this.closest('.fieldwrap');
+		var $edit = $fieldwrap.children('[data-edition]');
+		$edit.trigger('edition:split',[caret.offset($edit).top]);
+		$edit.trigger('edition:active');
+		$.tipster.notify('Box splitted');
+	});
 	Report.document.on('click','.edition-actions .rearrange a',function(){
 		var $this = $(this);
 		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
-		var $boxgroup = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"]');
-		var $page = $boxgroup.filter(':eq(0)').closest('.page');
-		$page = $page.length ? $page : $fieldwrap.closest('.page');
-		boxFitter.testPage($page,true);
+		boxFitter.rearrangeBoxes($fieldwrap);
 		$edit.trigger('edition:active');
-		$.tipster.notify('Box autobreak rearranged');
+		$.tipster.notify('Stacked boxes rearranged');
 	});
 	Report.document.on('click','.edition-actions .refresh a',function(){
 		var $this = $(this);
@@ -2279,7 +2299,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	Report.document.on('container:delrange','.container',function(event,$spots){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['container:delrange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $this = $(this);
 		var $page = $this.closest('.page',Report.document);
 		Report.document.addClass('preventeventchange');
@@ -2295,16 +2315,18 @@ sourceui.interface.widget.report = function($widget,setup){
 			$this.trigger('container:dimension');
 			Report.document.trigger('document:change',[$page]);
 		}
+		Report.document.trigger('historyworker:stateadd',['container:delrange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('container:addcolumn','.container',function(event){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['container:addcolumn']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $ctn = $(this);
 		$ctn.find('.col:last-of-type').css('width','').after('<td class="col"/>');
 		$ctn.trigger('container:dimension');
 		$ctn.trigger('container:resizable');
+		Report.document.trigger('historyworker:stateadd',['container:addcolumn']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('container:addline','.container',function(event){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['container:addline']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $ctn = $(this);
 		var $line = $('<tr class="line"/>');
 		var $lastline = $ctn.find('.line:last-of-type');
@@ -2313,6 +2335,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$line.append('<td class="col"/>');
 		}
 		$lastline.after($line);
+		Report.document.trigger('historyworker:stateadd',['container:addline']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('container:dimension','.container',function(event){
 		var $ctn = $(this);
@@ -2342,9 +2365,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				start:function(ev, obj){
 					var $d = obj.$el;
 					$ctn.trigger('container:active');
+					Report.document.trigger('historyworker:statehold',['container:resizable']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 				},
 				stop:function(ev, obj){
-					Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 					var $d = obj.$el;
 					var $col = $d.parent();
 					var $colthisnext = $().add($col).add($col.next('.col'));
@@ -2375,6 +2398,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						$c.innerWidth($c.innerWidth());
 					});
 					Report.document.trigger('document:change',[$page]);
+					Report.document.trigger('historyworker:stateadd',['container:resizable']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 				}
 			});
 			$nopep.addClass('haspep');
@@ -2383,7 +2407,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.removeAttr('data-style').find('[data-style]').removeAttr('data-style');
 	});
 	Report.document.on('container:remove','.container',function(){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['container:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $this = $(this);
 		var $page = $this.closest('.page',Report.document);
 		var $preved = $this.prev('.fieldwrap').children('[data-edition]');
@@ -2399,6 +2423,20 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 		Report.document.trigger('document:change',[$page]);
 		$.tipster.notify('Container removed');
+		Report.document.trigger('historyworker:stateadd',['container:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+	});
+	Report.document.on('container:clipboardmoved','.container',function(){
+		Report.document.trigger('historyworker:statehold',['container:clipboardmoved']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		var $moved = Report.document.find('.clipboardmoved');
+		if ($moved.length === 0 || $moved.filter('.page').length == 0){
+			var $this = $(this);
+			var $tool = Report.wgtools.find('.add-move');
+			$this.addClass('clipboardmoved');
+			$tool.removeClass('empty').find('mark').text($moved.length + 1);
+		} else {
+			$.tipster.notify('Relocate must be empty or not containing pages');
+		}
+		Report.document.trigger('historyworker:stateadd',['container:clipboardmoved']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('container:active','.container',function(){
 		var $this = $(this);
@@ -2419,18 +2457,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.find('.container .col.selected').removeClass('selected');
 		Report.document.find('.container.active').removeClass('active');
 		Report.document.removeClass('has-active');
-	});
-	Report.document.on('container:clipboardmoved','.container',function(){
-		var $moved = Report.document.find('.clipboardmoved');
-		if ($moved.length === 0 || $moved.filter('.page').length == 0){
-			Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
-			var $this = $(this);
-			var $tool = Report.wgtools.find('.add-move');
-			$this.addClass('clipboardmoved');
-			$tool.removeClass('empty').find('mark').text($moved.length + 1);
-		} else {
-			$.tipster.notify('Relocate must be empty or not containing pages');
-		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2567,12 +2593,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					place: false,
 					useCSSTranslation: false,
 					start:function(ev, obj){
-						Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
 						var $d = obj.$el;
 						$this.trigger('edition:active');
+						Report.document.trigger('historyworker:statehold',['edition:resizable']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					},
 					stop:function(ev, obj){
-						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 						var $d = obj.$el;
 						var dpos = $d.position();
 						var wpos = $wrap.position();
@@ -2582,6 +2607,7 @@ sourceui.interface.widget.report = function($widget,setup){
  						if ($d.hasClass('dragright')) $wrap.css({ width:wwid+(dpos.left-wwid) });
 						$this.attr('data-position','top:'+($wrap.css('top')||0)+'; left:'+($wrap.css('left')||0)+'; width:'+$wrap.width()+'px');
 						$d.attr('style','');
+						Report.document.trigger('historyworker:stateadd',['edition:resizable']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 				});
 				$this.addClass('has-resizable');
@@ -2600,13 +2626,13 @@ sourceui.interface.widget.report = function($widget,setup){
 					constrainTo: 'parent',
 					elementsWithInteraction: $this.is('[data-edition]') ? '.resize, .block, li[data-action]' : 'input',
 					start:function(ev, obj){
-						Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
+						Report.document.trigger('historyworker:statehold',['edition:draggable']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					},
 					stop:function(ev, obj){
-						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 						var oldposition = $this.attr('data-position');
 						$this.attr('data-position','top:'+($target.css('top')||0)+'; left:'+($target.css('left')||0)+'; width:'+$target.width()+'px');
 						Report.document.trigger('document:change',[$page]);
+						Report.document.trigger('historyworker:stateadd',['edition:draggable']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 				});
 				$this.addClass('has-draggable');
@@ -2627,13 +2653,12 @@ sourceui.interface.widget.report = function($widget,setup){
 				return !this.activeDropRegions.length || this.activeDropRegions.length == 1;
 			},
 			start: function (ev, obj) {
-				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
 				obj.$el.addClass('dragger');
 				$this.trigger('edition:active');
+				Report.document.trigger('historyworker:statehold',['edition:analystsdrag']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			},
 			stop: function (ev, obj) {
 				if (obj.$el.hasClass('dragger')){
-					Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 					var closest = $.calcSort('y', obj.$el, this.activeDropRegions);
 					if (closest.placement) {
 						if (closest.placement == 'after') obj.$el.insertAfter(closest.element);
@@ -2644,10 +2669,13 @@ sourceui.interface.widget.report = function($widget,setup){
 						obj.moveToUsingTransforms(x, y);
 						obj.$el.css({ position: 'relative' });
 						$this.trigger('edition:change');
+						Report.document.trigger('historyworker:stateadd',['edition:analystsdrag']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 					$this.trigger('edition:active');
 				}
 				obj.$el.removeClass('dragger');
+				Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+
 			}
 		});
 		$lines.addClass('haspep');
@@ -2790,10 +2818,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('edition:contenthash','[data-edition]',function(){
 		var $this = $(this);
-		var $fieldwrap = $this.parent();
-		var $editgroup = $fieldwrap.find('[data-edition]');
-		var contenthash = $.md5(($editgroup.html()||'').trim());
-		$editgroup.attr('data-contenthash',contenthash);
+		var contenthash = $.md5(($this.html()||'').trim());
+		$this.attr('data-contenthash',contenthash).data('contenthash',contenthash);
 	});
 	Report.document.on('edition:change','[data-edition]',function(){
 		var $this = $(this);
@@ -2814,6 +2840,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 
 	Report.document.on('edition:activecontentrefresh','[data-edition]',function(event){
+		Report.document.trigger('historyworker:statehold',['edition:activecontentrefresh']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $edit = $(this);
 		var $wrap = $edit.parent();
 		var $tool = $wrap.find('ul.edition-actions li').addClass('disable');
@@ -2836,21 +2863,24 @@ sourceui.interface.widget.report = function($widget,setup){
 				$edit.removeClass('ajax-courtain');
 				$tool.removeClass('disable');
 				Report.viewtools.enable().removeClass('ajax-courtain');
+				Report.document.trigger('historyworker:stateadd',['edition:activecontentrefresh']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			},
 			onfail: function(){
 				$edit.removeClass('ajax-courtain');
 				$tool.removeClass('disable');
 				Report.viewtools.enable().removeClass('ajax-courtain');
+				Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			},
 			oncancel: function(){
 				$edit.removeClass('ajax-courtain');
 				$tool.removeClass('disable');
 				Report.viewtools.enable().removeClass('ajax-courtain');
+				Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			}
 		});
 	});
 	Report.document.on('edition:remove','[data-edition]',function(event){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['edition:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		var $page, $reference;
@@ -2877,27 +2907,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			$.tipster.notify('Edition box removed');
 		}
 		Report.document.trigger('document:boxcount');
-	});
-	Report.document.on('edition:active','[data-edition]',function(){
-		var $this = $(this);
-		var $fieldwrap = $this.parent();
-		if ($fieldwrap.is('.active')) return;
-		var $page = $this.closest('.page',Report.document);
-		$page.trigger('page:active');
-		$fieldwrap.removeClass('hover');
-		$fieldwrap.closest('.col').removeClass('selected');
-		Report.document.find('.fieldwrap.active').removeClass('active');
-		Report.document.addClass('has-active');
-		$fieldwrap.addClass('active');
-		$this.trigger('edition:tools');
-		Report.tinymceinlinetoolbar.css({
-			'left':Report.viewtools.offset().left + Report.viewtools.width() + 15
-		});
+		Report.document.trigger('historyworker:stateadd',['edition:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('edition:clipboardmoved','[data-edition]',function(){
+		Report.document.trigger('historyworker:statehold',['edition:clipboardmoved']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $moved = Report.document.find('.clipboardmoved');
 		if ($moved.length === 0 || $moved.filter('.page').length == 0){
-			Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 			var $this = $(this);
 			var $fieldwrap = $this.parent();
 			var $tool = Report.wgtools.find('.add-move');
@@ -2909,11 +2924,14 @@ sourceui.interface.widget.report = function($widget,setup){
 		} else {
 			$.tipster.notify('Relocate must be empty or not containing pages');
 		}
+		Report.document.trigger('historyworker:stateadd',['edition:clipboardmoved']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('edition:split','[data-edition]',function(event,y){
+		Report.document.trigger('historyworker:statehold',['edition:split']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
 		var boxgroup = $this.attr('data-belongstogroup');
+		var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
 		$this.removeAttr('data-belongstogroup').removeData('belongstogroup');
 		$fieldwrap.removeAttr('data-boxgroup').removeData('boxgroup');
 		var $clone = $this.clone();
@@ -2923,7 +2941,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$this.children().each(function(){
 			var $el = $(this);
 			let elPos = $el.position();
-			if (boxPos.top + elPos.top + $el.outerHeight(true) > y){
+			if ((boxPos.top + elPos.top + $el.outerHeight(true)) * zoom > y * zoom){
 				let $econ = $el.contents();
 				$el.html('');
 				let $cl = $el.clone();
@@ -2942,7 +2960,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$el.children().each(function(){
 					let $sp = $(this);
 					let spPos = $sp.position();
-					if (boxPos.top + elPos.top + spPos.top + $sp.outerHeight(true) > y){
+					if ((boxPos.top + elPos.top + spPos.top + $sp.outerHeight(true)) * zoom > y * zoom){
 						$cl.append($sp.nextAll().addBack());
 						return false;
 					}
@@ -2966,11 +2984,30 @@ sourceui.interface.widget.report = function($widget,setup){
 				return false;
 			}
 		});
+		Report.document.trigger('historyworker:stateadd',['edition:split']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('edition:join','[data-edition]',function(event,$next){
+		Report.document.trigger('historyworker:statehold',['edition:join']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $this = $(this);
 		$this.append($next.children());
 		$next.trigger('edition:remove');
+		Report.document.trigger('historyworker:stateadd',['edition:join']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+	});
+	Report.document.on('edition:active','[data-edition]',function(){
+		var $this = $(this);
+		var $fieldwrap = $this.parent();
+		if ($fieldwrap.is('.active')) return;
+		var $page = $this.closest('.page',Report.document);
+		$page.trigger('page:active');
+		$fieldwrap.removeClass('hover');
+		$fieldwrap.closest('.col').removeClass('selected');
+		Report.document.find('.fieldwrap.active').removeClass('active');
+		Report.document.addClass('has-active');
+		$fieldwrap.addClass('active');
+		$this.trigger('edition:tools');
+		Report.tinymceinlinetoolbar.css({
+			'left':Report.viewtools.offset().left + Report.viewtools.width() + 15
+		});
 	});
 	Report.document.on('click','[data-edition] span.counter',function(event){
 		var $this = $(this);
@@ -2993,7 +3030,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	// Page Events ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('page:addcontainer','.page',function(event,$new,$ref,placement,y){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['page:addcontainer']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $page = $(this);
 		$new.siblings('.container-actions').remove();
 		$new.removeAttr('id');
@@ -3010,8 +3047,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ref.replaceWith($new);
 			} else if (placement == 'split'){
 				var boxPos = $ref.offset();
-				if (boxPos.top + 24 > y) $new.insertBefore($ref);
-				else if (boxPos.top + $ref.outerHeight(true) - 24 < y) $new.insertAfter($ref);
+				var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
+				if (boxPos.top + (24 * zoom) > y) $new.insertBefore($ref);
+				else if (boxPos.top + $ref.outerHeight(true) - (24 * zoom) < y) $new.insertAfter($ref);
 				else if ($ref.is('.fieldwrap, [data-edition]')){
 					var $refed = ($ref.is('.fieldwrap')) ? $ref.children('[data-edition]') : $ref;
 					$refed.trigger('edition:split',[y]);
@@ -3025,9 +3063,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 		$new.trigger('container:resizable');
 		Report.document.trigger('document:change',[$page]);
+		Report.document.trigger('historyworker:stateadd',['page:addcontainer']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('page:addedition','.page',function(event,$new,$ref,placement,y,nomceinit){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['page:addedition']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $page = $(this);
 		var $edit = $new.children('[data-edition]');
 		$edit.removeAttr('id');
@@ -3048,8 +3087,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ref.replaceWith($new);
 			} else if (placement == 'split'){
 				var boxPos = $ref.offset();
-				if (boxPos.top + 24 > y) $new.insertBefore($ref);
-				else if (boxPos.top + $ref.outerHeight(true) - 24 < y) $new.insertAfter($ref);
+				var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
+				if (boxPos.top + (24 * zoom) > y) $new.insertBefore($ref);
+				else if (boxPos.top + $ref.outerHeight(true) - (24 * zoom) < y) $new.insertAfter($ref);
 				else if ($ref.is('.fieldwrap, [data-edition]')){
 					var $refed = ($ref.is('.fieldwrap')) ? $ref.children('[data-edition]') : $ref;
 					$refed.trigger('edition:split',[y]);
@@ -3066,14 +3106,10 @@ sourceui.interface.widget.report = function($widget,setup){
 			$edit.trigger('edition:init');
 		}
 		Report.document.trigger('document:change',[$page]);
-		if ($new.is('[data-boxgroup]')) return;
-	});
-	Report.document.on('page:scrollto','.page',function(event,$new,$ref,placement){
-		var $page = $(this);
-		$(Report.document.closest('.scroll-default')).scrollTo($page,350,{ offset:{top:-50} });
+		Report.document.trigger('historyworker:stateadd',['page:addedition']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('page:remove','.page',function(){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['page:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $this = $(this);
 		var $next = $this.next('.page');
 		Report.document.addClass('preventeventchange');
@@ -3084,6 +3120,11 @@ sourceui.interface.widget.report = function($widget,setup){
 		$this.remove();
 		Report.document.trigger('document:change',[$next]);
 		$.tipster.notify('Page removed');
+		Report.document.trigger('historyworker:stateadd',['page:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+	});
+	Report.document.on('page:scrollto','.page',function(event,$new,$ref,placement){
+		var $page = $(this);
+		$(Report.document.closest('.scroll-default')).scrollTo($page,350,{ offset:{top:-50} });
 	});
 	Report.document.on('page:active','.page',function(event){
 		var $this = $(this);
@@ -3109,7 +3150,6 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('page:clipboardmoved','.page',function(){
 		var $moved = Report.document.find('.clipboardmoved');
 		if ($moved.length === 0 || $moved.filter('.page').length > 0){
-			Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
 			var $this = $(this);
 			var $tool = Report.wgtools.find('.add-move');
 			$this.addClass('clipboardmoved');
@@ -3120,12 +3160,16 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 
 	Report.document.on('page:addbreaker','.page',function(event){
+		Report.document.trigger('historyworker:statehold',['page:addbreaker']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $page = $(this);
 		$page.addClass('breaker-before').attr('data-breaker','breaker-before');
+		Report.document.trigger('historyworker:stateadd',['page:addbreaker']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('page:delbreaker','.page',function(event){
+		Report.document.trigger('historyworker:statehold',['page:delbreaker']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $page = $(this);
 		$page.removeClass('breaker-before breaker-undeletable').removeAttr('data-breaker');
+		Report.document.trigger('historyworker:stateadd',['page:delbreaker']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('click','.page > .breakermark > .delete',function(event){
 		event.preventDefault();
@@ -3146,7 +3190,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (Report.document.hasClass('preventeventchange')) return false;
 		/////////////////////////////////////////////////////////////////
 		Report.document.find('[data-edition="toc"]:eq(0)').trigger('edition:buildtoc');
-		if ($page) boxFitter.testPage($page);
+		if ($page) boxFitter.rearrangeBoxes($page);
 		Report.document.trigger('document:validate');
 		Report.widget.trigger('field:input');
 		Report.document.trigger('document:pagelist');
@@ -3166,7 +3210,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $this = $(this);
 			var $h4 = $this.find('h4');
 			if ($h4.length){
-				var label = $this.attr('data-indexlabel');
+				var label = $this.attr('data-indexlabel') || 'Figure';
+				if (!label) $this.attr('data-indexlabel',label = 'Figure');
 				idx[label] = idx[label] ? idx[label]+1 : 1;
 				var $counter = $h4.find('.counter');
 				$this.attr('data-count',idx[label]);
@@ -3243,7 +3288,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		*/
 	});
 	Report.document.on('document:addpage',function(event,$new,$ref,placement){
-		Report.document.trigger('historyworker:add'); /** HISTORY WORKER ***********************/
+		Report.document.trigger('historyworker:statehold',['document:addpage']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		$new.find('.page-actions').remove();
 		var didBoxBroken, $pageChange, $lastBoxgroupOnPrevPage, $firstBoxgroupOnNextPage, tipsterMsg;
 		$new.removeAttr('id').css('opacity','0');
@@ -3266,7 +3311,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			tipsterMsg = 'Page added at the end';
 		}
 		if ($lastBoxgroupOnPrevPage && $lastBoxgroupOnPrevPage.length && $lastBoxgroupOnPrevPage.attr('data-boxgroup') === $firstBoxgroupOnNextPage.attr('data-boxgroup')){
-			boxFitter.unbreakBox(Report.document.find('.fieldwrap[data-boxgroup="'+$lastBoxgroupOnPrevPage.attr('data-boxgroup')+'"]'), true);
+			boxFitter.joinBox(Report.document.find('.fieldwrap[data-boxgroup="'+$lastBoxgroupOnPrevPage.attr('data-boxgroup')+'"]'), true);
 			$pageChange = (placement == 'after') ? $ref : $new.prev('.page');
 			didBoxBroken = true;
 		} else {
@@ -3286,6 +3331,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			duration:200,
 			complete: function(){
 				if (tipsterMsg) $.tipster.notify(tipsterMsg);
+				Report.document.trigger('historyworker:stateadd',['document:addpage']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			}
 		});
 	});
@@ -3296,6 +3342,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var pgindex = $pages.index($page) + 1;
 			$page.find('[data-pagenumber] i').text(pgindex);
 			$page.find('.page-actions li.label').text('Page '+pgindex);
+			$page.attr('data-pagenumber', pgindex).data('pagenumber',pgindex);
 		});
 
 	});
@@ -3375,32 +3422,36 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	// History Events ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('historyworker:stateclear',function(event){
-		Report.document.data('historystateholdcontent',null);
+		Report.document.removeData('historystateholdcontent');
+		//console.log('historyworker:stateclear');
 	});
-	Report.document.on('historyworker:statehold',function(event){
-		if (Report.document.hasClass('preventeventchange')) return false;
-		if (Report.document.hasClass('preventhistorystack')) return true;
-		var content = Report.documentHTML();
-		Report.document.data('historystateholdcontent',content);
+	Report.document.on('historyworker:statehold',function(event, origin){
+		var holdcontent = Report.document.data('historystateholdcontent');
+		if (Report.document.hasClass('preventhistorystack') || holdcontent) return false;
+		Report.document.data('historystateholdcontent', {origin:origin, state:Report.pagesState()});
+		//console.log('historyworker:statehold',origin);
 	});
-	Report.document.on('historyworker:stateadd',function(event, keepStatement){
-		if (Report.document.hasClass('preventeventchange')) return false;
-		if (Report.document.hasClass('preventhistorystack')) return true;
-		var content = Report.document.data('historystateholdcontent');
-		if (!content) return false;
-		historyWorker.postMessage({
-			command:'add',
-			dochash:Variable.get('docHash'),
-			content:content,
-			scroll:Report.scroll.scrollTop()
-		});
-		if (!keepStatement) Report.document.removeClass('historykeepstatement');
-		Report.document.data('historystateholdcontent','');
-		Report.document.data('historylatestaddition',content);
+	Report.document.on('historyworker:stateadd',function(event, origin, timeout){
+		var holdcontent = Report.document.data('historystateholdcontent') || {};
+		if (Report.document.hasClass('preventhistorystack') || holdcontent.origin !== origin) return false;
+		var content = {
+			stateold: holdcontent.state,
+			statenew: Report.pagesState()
+		};
+		setTimeout(function(){
+			historyWorker.postMessage({
+				command:'add',
+				dochash:Variable.get('docHash'),
+				content:content,
+				scroll:Report.scroll.scrollTop()
+			});
+			Report.document.removeData('historystateholdcontent');
+			//console.log('historyworker:stateadd',origin);
+		},timeout||10);
 	});
-	Report.document.on('historyworker:add',function(event, keepStatement){
-		if (Report.document.hasClass('preventeventchange')) return false;
-		if (Report.document.hasClass('preventhistorystack')) return true;
+	/*
+	Report.document.on('historyworker:add',function(event){
+		if (Report.document.hasClass('preventhistorystack')) return false;
 		var content = Report.documentHTML();
 		var latest = Report.document.data('historylatestaddition');
 		if (content != latest){
@@ -3410,38 +3461,35 @@ sourceui.interface.widget.report = function($widget,setup){
 				content:content,
 				scroll:Report.scroll.scrollTop()
 			});
-			if (!keepStatement) Report.document.removeClass('historykeepstatement');
 			Report.document.data('historystateholdcontent','');
 			Report.document.data('historylatestaddition',content);
 		}
+		console.trace('historyworker:add', content != latest);
 	});
+	*/
 	Report.document.on('historyworker:back',function(event){
-		if (!Report.document.hasClass('historykeepstatement')){
-			Report.document.trigger('historyworker:add',[true]);
-			Report.document.addClass('historykeepstatement');
-		}
 		historyWorker.postMessage({
 			command:'back',
 			dochash:Variable.get('docHash')
 		});
+		//console.log('historyworker:back');
 	});
 	Report.document.on('historyworker:forward',function(event){
-		if (!Report.document.hasClass('historykeepstatement')){
-			Report.document.trigger('historyworker:add',[true]);
-			Report.document.addClass('historykeepstatement');
-		}
 		historyWorker.postMessage({
 			command:'forward',
 			dochash:Variable.get('docHash')
 		});
+		//console.log('historyworker:forward');
 	});
 	Report.document.on('historyworker:clear',function(event,data){
 		historyWorker.postMessage({
 			command:'clear',
 			dochash:Variable.get('docHash')
 		});
-		Report.document.data('historystateholdcontent','');
+		Report.document.removeData('historystateholdcontent');
+		//console.log('historyworker:clear');
 	});
+	/*
 	Report.document.on('historyworker:redraw',function(event,data){
 		if (data.content){
 			Report.document.find('[data-edition]').trigger('edition:cleanmce');
@@ -3450,6 +3498,33 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.trigger('edition:init',[true]);
 			Report.document = Report.widget.find('.sui-report-document');
 			Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
+		}
+	});
+	*/
+	Report.document.on('historyworker:redraw',function(event,refstate){
+		if (refstate){
+			var curstate = Report.pagesState();
+			$.each(curstate, function(k,v){
+				if (!refstate[k]){
+					$('#'+k).trigger('page:remove');
+				};
+			});
+			var lastid;
+			$.each(refstate, function(k,v){
+				if (curstate[k]){
+					var $page = $('#'+k);
+					if (refstate[k].hash !== curstate[k].hash){
+						$page.html($(refstate[k].html).html());
+						var $edit = $page.find('[data-edition]');
+						$edit.trigger('edition:cleanmce');
+						$edit.trigger('edition:init');
+						Report.document.trigger('document:boxcount');
+					}
+				} else {
+					Report.document.trigger('document:addpage', [$(v.html), $('#'+lastid),'after']);
+				}
+				lastid = k;
+			});
 		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -3503,7 +3578,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('focus', function(e){
 				$ed.removeClass('contentchanged');
-				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
 			});
 			editor.on('click', function (e) {
 				$ed.trigger('edition:nodechange',[e.target]);
@@ -3518,7 +3592,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
-						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
 					}
 				}
 			});
@@ -3644,64 +3717,60 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $ed = $(editor.getElement());
 			var $page = $ed.closest('.page');
 			var isEditorBoxstack = $ed.closest('.boxstack').length ? true : false;
+			editor.on('BeforeAddUndo', function(e) {
+				return false;
+			});
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
+				$ed.attr('contenteditable',false);
 			});
 			editor.on('focus', function(e){
 				$ed.removeClass('contentchanged');
-				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
+				$ed.attr('contenteditable',true);
+				//Report.document.trigger('historyworker:statehold',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('click', function (e) {
 				$ed.trigger('edition:nodechange',[e.target]);
 			});
+			editor.on('mousedown', function (e) {
+				$ed.attr('contenteditable',true);
+				$ed.trigger('edition:nodechange',[e.target]);
+			});
 			editor.on('keyup', function (e) {
-				$ed.addClass('contentchanged');
-				$ed.addClass('keyboarded');
 				if (e.ctrlKey || e.shiftKey){
 					if (e.key == 'Delete' && caret.isAtEnd($ed) && !caret.hasSelection($ed)){
-						if (isEditorBoxstack || !editor.getContent()) return false;
-						//editor.undoManager.clear();
-						//Report.document.trigger('historyworker:statehold');
+						if (isEditorBoxstack || !editor.getContent()) { $.tipster.notify('Unable joining bullets'); return false; }
 						Report.document.addClass('preventeventchange');
 						caret.save($ed,'end');
-						boxFitter.groupNext($ed);
-						boxFitter.testPage($page,'jointextatcaret');
+						boxFitter.rearrangeBoxes(boxFitter.groupNext($ed));
 						caret.focus();
 						e.preventDefault();
 						Report.document.removeClass('preventeventchange');
-						//Report.document.trigger('historyworker:stateadd');
 					} else if (e.key == 'Backspace' && caret.isAtBegining($ed) && !caret.hasSelection($ed)){
-						if (isEditorBoxstack || !editor.getContent()) return false;
-						//editor.undoManager.clear();
-						//Report.document.trigger('historyworker:statehold');
+						if (isEditorBoxstack || !editor.getContent()) { $.tipster.notify('Unable joining bullets'); return false; }
 						Report.document.addClass('preventeventchange');
 						caret.save($ed,'begining');
-						boxFitter.groupPrev($ed);
-						boxFitter.testPage($page.prev('.page'),'jointextatcaret');
+						boxFitter.rearrangeBoxes(boxFitter.groupPrev($ed));
 						caret.focus();
 						e.preventDefault();
 						Report.document.removeClass('preventeventchange');
-						//Report.document.trigger('historyworker:stateadd');
 					}
 				} else if (e.key == 'Escape'){
-					//editor.undoManager.clear();
 					//caret.save($ed);
 					Report.document.trigger('page:unactive');
-					boxFitter.testPage($page);
+					boxFitter.rearrangeBoxes($ed.parent());
 					//caret.focus($ed);
-				} else if (caret.isOverflew($ed)){
-					//editor.undoManager.clear();
-					//Report.document.trigger('historyworker:statehold');
-					Report.document.addClass('preventeventchange');
-					caret.save($ed);
-					boxFitter.flowText($ed);
-					caret.focus();
-					Report.document.removeClass('preventeventchange');
-					//Report.document.trigger('historyworker:stateadd');
+				} else if (e.key != 'Control' && e.key != 'Shift' && e.key != 'Alt') {
+					$ed.addClass('contentchanged');
+					$ed.addClass('keyboarded');
+					if (caret.isOverflew($ed)){
+						Report.document.addClass('preventeventchange');
+						caret.save($ed);
+						boxFitter.flowText($ed);
+						caret.focus();
+						Report.document.removeClass('preventeventchange');
+					}
 				}
-			});
-			editor.on('input', function (e) {
-				$ed.addClass('contentchanged');
 			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
@@ -3715,9 +3784,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
-						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
+						//Report.document.trigger('historyworker:stateadd',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 				}
+				$ed.attr('contenteditable',false);
+				//Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('NodeChange', function(e) {
 				var $elem = e.element ? $(e.element) : $();
@@ -3787,11 +3858,19 @@ sourceui.interface.widget.report = function($widget,setup){
 		setup: function (editor) {
 			var $ed = $(editor.getElement());
 			var $page = $ed.closest('.page');
+			editor.on('BeforeAddUndo', function(e) {
+				return false;
+			});
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
+				$ed.attr('contenteditable',false);
 			});
 			editor.on('focus', function(e){
-				Report.document.trigger('historyworker:statehold'); /** HISTORY WORKER ***********************/
+				$ed.attr('contenteditable',true);
+				//Report.document.trigger('historyworker:statehold',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+			});
+			editor.on('mousedown', function (e) {
+				$ed.attr('contenteditable',true);
 			});
 			editor.on('click', function (e) {
 				$ed.trigger('edition:nodechange',[e.target]);
@@ -3844,10 +3923,12 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
-						Report.document.trigger('historyworker:stateadd'); /** HISTORY WORKER ***********************/
+						//Report.document.trigger('historyworker:stateadd',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 				}
 				$ed.find('.pastedelement').removeAttr('data-mce-selected');
+				$ed.attr('contenteditable',false);
+				//Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('NodeChange', function(e) {
 				var $elem = e.element ? $(e.element) : $();
@@ -3921,7 +4002,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			setTimeout(function(){
 				Report.document.removeClass('preventhistorystack');
 				Report.document.trigger('document:hasinited');
-				boxFitter.testPage();
+				Report.document.trigger('document:numpage');
+				boxFitter.rearrangeBoxes();
 				Report.document.trigger('document:numpage');
 			},250);
 		}
@@ -4250,11 +4332,31 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	Report.documentHTML = function(){
 		var $document = Report.document.clone();
-		var $editions = $document.find('[data-edition]');
 		$document.removeClass('loaded');
 		$document.find('.haspep, .pep-dpa, .pep-dropping, .pep-active, .pep-ease').removeClass('haspep pep-dpa pep-dropping pep-active pep-ease');
 		$document.find('.active, .focus').removeClass('active focus');
 		return $document.html();
+	}
+	Report.pagesState = function(){
+		var pagesstate = {};
+		var $pages = Report.document.children('.page');
+		$pages.each(function(){
+			var $page = $(this);
+			var pid = $page.attr('id');
+			if (!pid) {
+				pid = Math.unique(12);
+				$page.attr('id', pid);
+			}
+			var content = '';
+			$page.find('[contenteditable]').each(function(){	content += this.innerHTML; });
+			var hash = $.md5(content);
+			var html = $page.get(0).outerHTML.replace(/pep-dpa|pep-dropping|haspep/g,'');
+			pagesstate[pid] = {
+				hash: hash,
+				html: html,
+			}
+		});
+		return pagesstate;
 	}
 
 	if (sourceui.instances.socket){
