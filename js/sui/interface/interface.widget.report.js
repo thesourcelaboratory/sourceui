@@ -3514,7 +3514,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				if (curstate[k]){
 					var $page = $('#'+k);
 					if (refstate[k].hash !== curstate[k].hash){
-						$page.html($(refstate[k].html).html());
+						var $content = $(refstate[k].html);
+						$content.find('.caret-autobreak').remove();
+						$page.html($content.html());
 						var $edit = $page.find('[data-edition]');
 						$edit.trigger('edition:cleanmce');
 						$edit.trigger('edition:init');
