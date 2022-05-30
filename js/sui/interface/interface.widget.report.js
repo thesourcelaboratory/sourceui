@@ -1628,7 +1628,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							$clone.find('[data-edition]').addClass('empty-content').trigger('edition:tools').click();
 							$clone.children('.edition-actions').find('.pick a').click();
 						} else if (edition == 'figure'){
-							$clone.find('[data-edition]').attr('data-indexlabel', Report.figuretypes.figure[Variable.get('languageId')]);
+							$clone.find('[data-edition]').attr('data-indexlabel', 'figure');
 						} else if (edition == 'toc'){
 							$clone.find('[data-edition]').trigger('edition:tools').click();
 						} else {
@@ -3237,7 +3237,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $h4 = $this.find('h4');
 			if ($h4.length){
 				var label = $this.attr('data-indexlabel') || 'figure';
-				if (!label) $this.attr('data-indexlabel',label = 'figure');
+				$this.attr('data-indexlabel',label);
 				idx[label] = idx[label] ? idx[label]+1 : 1;
 				var $counter = $h4.find('.counter');
 				var litlabel = (types[label] ? (types[label][lang] || types[label]['1']) : label);
