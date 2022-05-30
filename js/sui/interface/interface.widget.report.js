@@ -3722,7 +3722,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
-				$ed.attr('contenteditable',false);
 			});
 			editor.on('focus', function(e){
 				$ed.removeClass('contentchanged');
