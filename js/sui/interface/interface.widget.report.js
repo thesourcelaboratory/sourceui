@@ -3106,7 +3106,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$edit.trigger('edition:init');
 		}
 		Report.document.trigger('document:change',[$page]);
-		Report.document.trigger('historyworker:stateadd',['page:addedition']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		Report.document.trigger('historyworker:stateadd',['page:addedition',500]);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('page:remove','.page',function(){
 		Report.document.trigger('historyworker:statehold',['page:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
@@ -3772,6 +3772,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				}
 			});
+			editor.on('paste', function (e) {
+				$ed.addClass('contentchanged');
+			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
 				$ed.trigger('edition:uploadimgs');
@@ -3910,6 +3913,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					$ed.find('.pastedelement[data-mce-selected="1"]').replaceWith('<span class="caret-autobreak"></span>');
 					caret.focus($ed);
 				}
+			});
+			editor.on('paste', function (e) {
+				$ed.addClass('contentchanged');
 			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
