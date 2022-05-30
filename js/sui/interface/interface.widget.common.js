@@ -641,7 +641,6 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				}
 				setup = $.extend(true,{},setup,Finder.element.link());
 				if (setup.render === false) delete setTimeout.render
-				console.log(setup, Finder.element.link());
 				Network.link.call(Finder.element, setup);
 			});
 			Finder.widget.on('filter:floatform', function (event, $el) {
