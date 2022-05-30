@@ -55,6 +55,13 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
 
+	Report.figuretypes = {
+		figure:{ '1':'Figure', '2':'Figura', '7':'Figura'},
+		chart:{ '1':'Chart', '2':'Gráfico', '7':'Gráfico'},
+		image:{ '1':'Image', '2':'Imagem', '7':'Imagen'},
+		table:{ '1':'Table', '2':'Tabela', '7':'Tabla'},
+	};
+
 	Report.locker = function(locked){
 		if (documentLocker){
 			if (!documentLocker.reportId){
@@ -1621,7 +1628,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							$clone.find('[data-edition]').addClass('empty-content').trigger('edition:tools').click();
 							$clone.children('.edition-actions').find('.pick a').click();
 						} else if (edition == 'figure'){
-							$clone.find('[data-edition]').attr('data-indexlabel','Figure');
+							$clone.find('[data-edition]').attr('data-indexlabel', Report.figuretypes.figure[Variable.get('languageId')]);
 						} else if (edition == 'toc'){
 							$clone.find('[data-edition]').trigger('edition:tools').click();
 						} else {
@@ -3224,12 +3231,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('document:boxcount',function(event){
 		var idx = {};
 		var lang = Variable.get('languageId');
-		var types = {
-			figure:{ '1':'Figure', '2':'Figura', '7':'Figura'},
-			chart:{ '1':'Chart', '2':'Gráfico', '7':'Gráfico'},
-			image:{ '1':'Image', '2':'Imagem', '7':'Imagen'},
-			table:{ '1':'Table', '2':'Tabela', '7':'Tabla'},
-		};
+		var types = Report.figuretypes;
 		Report.document.find('[data-edition="figure"]').each(function(){
 			var $this = $(this);
 			var $h4 = $this.find('h4');
