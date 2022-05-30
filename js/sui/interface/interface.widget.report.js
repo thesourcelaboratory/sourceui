@@ -740,8 +740,10 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		},
 		appendBroken: function($edition,$edge,$contentNew,$boxNextAll){
+
 			var contentNew = $contentNew.html();
 			var $fieldwrap = $edition.parent();
+
 			if (contentNew){
 
 				$fieldwrap.removeClass('overflew toolarge');
@@ -749,7 +751,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $cloneedition = $edition.clone().html('');
 				$cloneedition.html(contentNew);
 
-				var $clonewrap = $('<div class="'+$fieldwrap.attr('class')+'" data-boxgroup="'+$edition.attr('data-belongstogroup')+'" />').append($cloneedition);
+				var $clonewrap = $('<div class="'+$fieldwrap.attr('class')+'" data-boxgroup="'+$fieldwrap.attr('data-boxgroup')+'" />').append($cloneedition);
 
 				var $page = $edge.closest('.page'), $clonepage;
 
@@ -791,21 +793,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		breakBox: function($box,$edge,returnBroken){
 
-			if ($box.data('boxgroup')){
-				// join grouped boxes ------------------------
-				var $boxGroup = $();
-				var $foundgroup = Report.document.find('[data-boxgroup="'+$box.data('boxgroup')+'"]');
-				var idx = 0;
-				$foundgroup.each(function(){
-					if (this === $box.get(0)){
-						$boxGroup = $boxGroup.add($foundgroup.filter(':eq('+idx+')'));
-						$boxGroup = $boxGroup.add($foundgroup.filter(':gt('+idx+')'));
-						return false;
-					}
-					idx++;
-				});
-				$box = boxFitter.joinBox($boxGroup,true);
-			}
+			boxFitter.boxgroupID($box);
+			$box = boxFitter.groupBellow($box);
 
 			var $edition = $box.children('[data-edition]');
 			$edge = $edge || $box.parent();
@@ -1017,69 +1006,68 @@ sourceui.interface.widget.report = function($widget,setup){
 			$edition.parent().removeClass('overflew toolarge');
 			return $broken;
 		},
-		joinBox: function($boxGroup,forcestrapolate){
-			var hasStrapolated = false;
-			if (!forcestrapolate){
-				$boxGroup.each(function(kb,box){
-					var $box = $(box);
-					if (boxFitter.isExtrapolatedBox($box)){
-						hasStrapolated = true;
-						return false
-					}
-				});
-			}
-			if (hasStrapolated || forcestrapolate){
-				var $contentAll = $('<pre></pre>');
-				$boxGroup.each(function(kb,box){
-					var $box = $(box);
-					___cnsl.yellow('joinBox',box);
-					var $edition = $box.children('[data-edition]');
-					var content, $content;
-					content = $edition.html();
-					if (content){
-						var $sourcemovedcontent = $contentAll.find('.sourcemovedcontent:eq(0)');
-						if ($sourcemovedcontent.length){
-							$content = $('<pre>'+content+'</pre>');
-							var $wrappedmovedcontent = $content.find('.wrappedmovedcontent:eq(0)');
-							if ($sourcemovedcontent.is('.movedafter')) $sourcemovedcontent.after($wrappedmovedcontent.html() || content);
-							else $sourcemovedcontent.html($wrappedmovedcontent.html() || content);
-							$sourcemovedcontent.removeClass('sourcemovedcontent movedafter');
-						} else {
-							$contentAll.append(content);
+		groupBellow: function($box){
+			// join grouped boxes ------------------------
+			if ($box.data('boxgroup')){
+				var $boxGroup = $();
+				var $foundgroup = Report.document.find('[data-boxgroup="'+$box.data('boxgroup')+'"]');
+				var idx = 0;
+				if ($foundgroup.length > 1) {
+					$foundgroup.each(function(){
+						if (this === $box.get(0)){
+							$boxGroup = $boxGroup.add($foundgroup.filter(':eq('+idx+')'));
+							$boxGroup = $boxGroup.add($foundgroup.filter(':gt('+idx+')'));
+							return false;
 						}
-					}
-				});
-				var contentAll = $contentAll.html();
-				if (contentAll){
-					___cnsl.log('joinBox','contentAll',$contentAll.get(0));
-					var $b = $boxGroup.filter(':eq(0)');
-					var $e = $b.children('[data-edition]');
-					$e.html(contentAll);
-					$boxGroup.filter(':gt(0)').remove();
-					$boxGroup.removeAttr('data-boxgroup').removeAttr('data-extrapolate').removeData('boxgroup').removeData('extrapolate');
-					$boxGroup.children('[data-edition]').removeAttr('data-belongstogroup').removeData('belongstogroup');
-					return $b;
+						idx++;
+					});
+					$box = $boxGroup.length > 1 ? boxFitter.joinBox($boxGroup,true) : $box;
+				} else {
+					$box = boxFitter.ungroupBox($box);
 				}
+			}
+			return $box;
+		},
+		ungroupBox: function($box){
+			$box.removeAttr('data-boxgroup').removeAttr('data-extrapolate').removeData('boxgroup').removeData('extrapolate');
+			$box.children('[data-edition]').removeAttr('data-belongstogroup').removeData('belongstogroup');
+			return $box;
+		},
+		joinBox: function($boxGroup){
+			var $contentAll = $('<pre></pre>');
+			$boxGroup.each(function(kb,box){
+				var $box = $(box);
+				___cnsl.yellow('joinBox',box);
+				var $edition = $box.children('[data-edition]');
+				var content, $content;
+				content = $edition.html();
+				if (content){
+					var $sourcemovedcontent = $contentAll.find('.sourcemovedcontent:eq(0)');
+					if ($sourcemovedcontent.length){
+						$content = $('<pre>'+content+'</pre>');
+						var $wrappedmovedcontent = $content.find('.wrappedmovedcontent:eq(0)');
+						if ($sourcemovedcontent.is('.movedafter')) $sourcemovedcontent.after($wrappedmovedcontent.html() || content);
+						else $sourcemovedcontent.html($wrappedmovedcontent.html() || content);
+						$sourcemovedcontent.removeClass('sourcemovedcontent movedafter');
+					} else {
+						$contentAll.append(content);
+					}
+				}
+			});
+			var contentAll = $contentAll.html();
+			if (contentAll){
+				___cnsl.log('joinBox','contentAll',$contentAll.get(0));
+				var $b = $boxGroup.filter(':eq(0)');
+				var $e = $b.children('[data-edition]');
+				$e.html(contentAll);
+				$boxGroup.filter(':gt(0)').remove();
+				return $b;
 			}
 			return false
 		},
 		moveBox: function($box,$edge){
 
-			if ($box.data('boxgroup')){
-				// join grouped boxes ------------------------
-				var $boxGroup = $();
-				var $foundgroup = Report.document.find('[data-boxgroup="'+$box.data('boxgroup')+'"]');
-				var idx = 0;
-				$foundgroup.each(function(){
-					if (this === $box.get(0)){
-						$boxGroup = $boxGroup.add($foundgroup.filter(':eq('+idx+')'));
-						$boxGroup = $boxGroup.add($foundgroup.filter(':gt('+idx+')'));
-						return false;
-					}
-					idx++;
-				});
-				$box = boxFitter.joinBox($boxGroup,true);
-			}
+			$box = boxFitter.groupBellow($box);
 
 			var $boxesToPrepend;
 			if ($box.hasClass('toolarge')){
@@ -1253,8 +1241,10 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $lastbox = $edge.find('.fieldwrap, .container').last();
 					var gap = boxFitter.hasGap($edge,$lastbox);
 					if (gap){
-						if ($lastbox.is('[data-boxgroup]')) boxFitter.joinBox($lastbox,true);
 						___cnsl.log('rearrangeBoxes', cnsl+'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
+						if ($lastbox.is('[data-boxgroup]')) {
+							boxFitter.joinBox(boxFitter.groupBellow($lastbox));
+						}
 						var $nextboxes = $edgerange.filter(edgesel).filter(':gt('+edx+')').find('.fieldwrap, .container');
 						if ($nextboxes.length){
 							$edge.append($nextboxes);
@@ -3163,7 +3153,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($page.hasClass('thumbing')){
 			var $pagethumb = Report.pagelist.find('#'+$page.attr('data-thumbid'));
 			//////////////////////////////////
-			setTimeout(function(){Thumbnail.parse($page,$pagethumb);},1000);
+			setTimeout(function(){Thumbnail.parse($page,$pagethumb);},1234);
 			//////////////////////////////////
 			$page.removeClass('thumbing');
 		}
@@ -3332,7 +3322,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			tipsterMsg = 'Page added at the end';
 		}
 		if ($lastBoxgroupOnPrevPage && $lastBoxgroupOnPrevPage.length && $lastBoxgroupOnPrevPage.attr('data-boxgroup') === $firstBoxgroupOnNextPage.attr('data-boxgroup')){
-			boxFitter.joinBox(Report.document.find('.fieldwrap[data-boxgroup="'+$lastBoxgroupOnPrevPage.attr('data-boxgroup')+'"]'), true);
+			boxFitter.joinBox(Report.document.find('.fieldwrap[data-boxgroup="'+$lastBoxgroupOnPrevPage.attr('data-boxgroup')+'"]'));
 			$pageChange = (placement == 'after') ? $ref : $new.prev('.page');
 			didBoxBroken = true;
 		} else {
