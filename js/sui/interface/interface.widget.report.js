@@ -447,6 +447,9 @@ sourceui.interface.widget.report = function($widget,setup){
 	};
 
 	var caret = {
+		cleanup: function($edit){
+			$edit.find('.data-mce-caret, .mce-visual-caret, .caret-autobreak').remove();
+		},
 		offset: function($edit){
 			var $caret = caret.save($edit, 'position');
 			var offset = $caret.offset();
@@ -2653,9 +2656,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				return !this.activeDropRegions.length || this.activeDropRegions.length == 1;
 			},
 			start: function (ev, obj) {
+				//Report.document.trigger('historyworker:statehold',['edition:analystsdrag']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 				obj.$el.addClass('dragger');
 				$this.trigger('edition:active');
-				Report.document.trigger('historyworker:statehold',['edition:analystsdrag']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			},
 			stop: function (ev, obj) {
 				if (obj.$el.hasClass('dragger')){
@@ -2669,13 +2672,12 @@ sourceui.interface.widget.report = function($widget,setup){
 						obj.moveToUsingTransforms(x, y);
 						obj.$el.css({ position: 'relative' });
 						$this.trigger('edition:change');
-						Report.document.trigger('historyworker:stateadd',['edition:analystsdrag']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+						//Report.document.trigger('historyworker:stateadd',['edition:analystsdrag']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 					$this.trigger('edition:active');
 				}
 				obj.$el.removeClass('dragger');
-				Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
-
+				//Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			}
 		});
 		$lines.addClass('haspep');
@@ -2755,7 +2757,6 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('edition:uploadimgs','[data-edition]',function(){
 		var $this = $(this);
-		//return true;
 		setTimeout(function(){
 			var $imgsBlob = $this.find('img.localsource[src*="blob:"]:not(.uploading)');
 			$imgsBlob.each(function(){
@@ -3423,13 +3424,13 @@ sourceui.interface.widget.report = function($widget,setup){
 	// History Events ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('historyworker:stateclear',function(event){
 		Report.document.removeData('historystateholdcontent');
-		//console.log('historyworker:stateclear');
+		console.log('historyworker:stateclear');
 	});
 	Report.document.on('historyworker:statehold',function(event, origin){
 		var holdcontent = Report.document.data('historystateholdcontent');
 		if (Report.document.hasClass('preventhistorystack') || holdcontent) return false;
 		Report.document.data('historystateholdcontent', {origin:origin, state:Report.pagesState()});
-		//console.log('historyworker:statehold',origin);
+		console.log('historyworker:statehold',origin);
 	});
 	Report.document.on('historyworker:stateadd',function(event, origin, timeout){
 		var holdcontent = Report.document.data('historystateholdcontent') || {};
@@ -3446,7 +3447,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				scroll:Report.scroll.scrollTop()
 			});
 			Report.document.removeData('historystateholdcontent');
-			//console.log('historyworker:stateadd',origin);
+			console.log('historyworker:stateadd',origin);
 		},timeout||10);
 	});
 	/*
@@ -3775,6 +3776,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('paste', function (e) {
 				$ed.addClass('contentchanged');
+				$ed.trigger('edition:uploadimgs');
+				$ed.trigger('edition:tablefit');
 			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
@@ -3782,6 +3785,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ed.trigger('edition:tablefit');
 			});
 			editor.on('blur', function (e) {
+				caret.cleanup($ed);
 				if ($ed.hasClass('contentchanged') && !Report.document.hasClass('preventeventchange')){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
@@ -3789,9 +3793,10 @@ sourceui.interface.widget.report = function($widget,setup){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
 						//Report.document.trigger('historyworker:stateadd',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+						$ed.attr('contenteditable',false);
+						caret.cleanup($ed);
 					}
 				}
-				$ed.attr('contenteditable',false);
 				//Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('NodeChange', function(e) {
@@ -3917,6 +3922,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('paste', function (e) {
 				$ed.addClass('contentchanged');
+				$ed.trigger('edition:uploadimgs');
+				$ed.trigger('edition:tablefit');
 			});
 			editor.on('change', function (e) {
 				$ed.addClass('contentchanged');
@@ -3924,6 +3931,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ed.trigger('edition:tablefit');
 			});
 			editor.on('blur', function (e) {
+				caret.cleanup($ed);
 				if ($ed.hasClass('contentchanged') && !Report.document.hasClass('preventeventchange')){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
@@ -3931,10 +3939,11 @@ sourceui.interface.widget.report = function($widget,setup){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
 						//Report.document.trigger('historyworker:stateadd',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+						$ed.attr('contenteditable',false);
+						caret.cleanup($ed);
 					}
 				}
 				$ed.find('.pastedelement').removeAttr('data-mce-selected');
-				$ed.attr('contenteditable',false);
 				//Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('NodeChange', function(e) {
