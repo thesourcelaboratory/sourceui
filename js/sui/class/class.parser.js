@@ -1487,10 +1487,10 @@ sourceui.Parser = function () {
 				var cfg = Components.libs.confirmg(sui);
 				if (cfg.pattern == 'session-invalid') {
 					cfg.type = cfg.type || 'alert';
-					cfg.title = cfg.title || isPT ? 'Sessão inválida' : 'Invalid Session';
-					cfg.desc = cfg.desc || isPT ? 'Você precisa ter uma sessão autenticada válida para acessar essa área do sistema.<br/><br/>Uma nova autenticação é requerida.' : 'You need a valid authenticated session to access this system area.<br/><br/>A new login is required.';
+					cfg.title = cfg.title || (isPT ? 'Sessão inválida' : 'Invalid Session');
+					cfg.desc = cfg.desc || (isPT ? 'Você precisa ter uma sessão autenticada válida para acessar essa área do sistema.<br/><br/>Uma nova autenticação é requerida.' : 'You need a valid authenticated session to access this system area.<br/><br/>A new login is required.');
 					cfg.button = {
-						label: 'Recarregar',
+						label: isPT ? 'Recarregar' : 'Reload',
 						background: '#c35043',
 						callback: function () {
 							setTimeout(function () { window.location.reload(true); }, 300);

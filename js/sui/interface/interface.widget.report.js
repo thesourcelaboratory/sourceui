@@ -390,7 +390,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					spanwidth:'.main .reportTitle',
 					contents: {
 						'.block[data-edition]':{
-							elements:'h1,h2,h3,h4,h5,p,table',
+							elements:'h1,h2,h3,h4,h5,p,table,ul,ol',
 							spanwidth:'h1,h2,h3,h4',
 						}
 					}
@@ -412,7 +412,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					spanwidth:'.main .reportTitle',
 					contents: {
 						'.block[data-edition]:not(.financial-data)':{
-							elements:'h1,h2,h3,h4,h5,p,table',
+							elements:'h1,h2,h3,h4,h5,p,table,ul,ol',
 							spanwidth:'h1,h2,h3,h4',
 						},
 						'.financial-data':{
@@ -455,7 +455,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	var caret = {
 		cleanup: function($edit){
-			$edit.find('.data-mce-caret, .mce-visual-caret, .caret-autobreak').remove();
+			$edit.parent().find('.data-mce-caret, .mce-visual-caret, .caret-autobreak').remove();
 		},
 		offset: function($edit){
 			var $caret = caret.save($edit, 'position');
@@ -584,29 +584,54 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Dom.document.on('keydown', function(event){
 		if (!Report.document.is(':visible')) return;
-		if (event.keyCode == 18){
-			//Report.document.addClass('grab');
-			//Report.wgtools.filter('.bottom').find('.zoom-grab').addClass('active');
-			if (event.ctrlKey){
-				// CTRL Z OU Y =================================
-				if (event.keyCode == 90 || event.keyCode == 89){
-					event.preventDefault();
-					return false;
+		if (event.ctrlKey){
+			// CTRL Z OU Y =================================
+			if (event.keyCode == 90 || event.keyCode == 89){
+				var node = document.getSelection().anchorNode;
+				var element = (node.nodeType == 3 ? node.parentNode : node);
+				if (element){
+					var $edition = $(element).closest('[data-edition]');
+					if ($edition.length){
+						return true; // escape historystack
+					}
 				}
+				if (event.keyCode == 90) Report.document.trigger('historyworker:back');
+				else if (event.keyCode == 89) Report.document.trigger('historyworker:forward');
+				event.preventDefault();
+				return false;
 			}
 		}
 	});
 	Dom.document.on('keyup', function(event){
 		if (!Report.document.is(':visible')) return;
 		if (event.ctrlKey){
+			// normalize boxes =============================
+			if (event.altKey && event.keyCode == 78){
+				$.tipster.notify('Normalizing. Wait...');
+				setTimeout(function(){
+					boxFitter.normalizeBoxes();
+					$.tipster.notify('All boxes were normalized');
+				},150);
+			}
 			// CTRL Z OU Y =================================
-			if (event.keyCode == 90 || event.keyCode == 89){
+			else if (event.keyCode == 90 || event.keyCode == 89){
+				/*
+				var $activeFieldwrap = Report.document.find('[data-edition].mce-edit-focus');
+				if (!$activeFieldwrap.length){
+					var $activeEdition = $activeFieldwrap.find('[data-edition*="text"], [data-edition="figure"]');
+					if (!$activeEdition.length || !$edition.is('.contentchanged')){
+							if (event.keyCode == 90) Report.document.trigger('historyworker:back');
+						else if (event.keyCode == 89) Report.document.trigger('historyworker:forward');
+					}
+				}
+
 				event.preventDefault();
 				if (event.keyCode == 90) Report.document.trigger('historyworker:back');
 				else if (event.keyCode == 89) Report.document.trigger('historyworker:forward');
 				return false;
+				*/
 			}
-			// CTRL C ====================
+			// CTRL C =======================================
 			else if (event.keyCode == 86){
 				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
 				if (!$activeFieldwrap.length){
@@ -803,6 +828,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			boxFitter.boxgroupID($box);
 			$box = boxFitter.groupBellow($box);
 
+			if (!$box.length){
+				___cnsl.red('breakBox','groupBellow','No grouped box',$box);
+				return $();
+			}
+
 			var $edition = $box.children('[data-edition]');
 			$edge = $edge || $box.parent();
 
@@ -940,6 +970,33 @@ sourceui.interface.widget.report = function($widget,setup){
 							$contentNew.append($el.nextAll());
 							return false;
 						}
+					}
+					if ($edition.data('edition') == 'richtext' && $el.is('ul, ol')){
+						let hasBreak = false;
+						let $nextall = $el.nextAll();
+						$el.children('li').each(function(kli,li){
+							let $li = $(li);
+							let liPos = $li.position();
+							let liHeight = $li.outerHeight(true);
+							let calc = (boxPos.top + elPos.top + liPos.top + liHeight);
+							___cnsl.log('breakBox','li','overflowed:'+(calc > edgeHeight)+', index:'+kli,li);
+							if (calc > edgeHeight){
+								if (kli === 1){
+									$contentNew.append($el);
+									hasBreak = true;
+									return false;
+								} else {
+									let $elClone = $el.clone();
+									$contentNew.append($elClone.html($li.nextAll().addBack()));
+									hasBreak = true;
+									return false;
+								}
+							}
+						});
+						if (hasBreak){
+							$contentNew.append($nextall);
+							return false;
+						}
 					} else {
 						if (($edition.data('edition') == 'richtext' || $edition.data('name') == 'global-disclaimer') && $el.is('p')){
 							let $econ = $el.contents();
@@ -997,9 +1054,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			/////////////////////////////////////
 
 			// anti ghostbox schema /////////////
-			var cnt = $edition.html();
-			if (cnt === '' || cnt === '<br>' || cnt === '<p></p>' || cnt === '<p><br></p>' || cnt === '<p><br data-mce-bogus="1"></p>'){
-				$edition.parent().remove();
+			var contentText = $edition.text().trim();
+			if (contentText === ''){
+				if ($edition.find('img').length === 0){
+					$edition.parent().remove();
+				}
 			}
 			/*
 			var ed = tinymce.get($edition.attr('id'));
@@ -1041,11 +1100,16 @@ sourceui.interface.widget.report = function($widget,setup){
 			return $box;
 		},
 		joinBox: function($boxGroup){
+
 			var $contentAll = $('<pre></pre>');
-			$boxGroup.each(function(kb,box){
+
+			($boxGroup||$()).each(function(kb,box){
+
 				var $box = $(box);
 				___cnsl.yellow('joinBox',box);
 				var $edition = $box.children('[data-edition]');
+				var $contentChild = $edition.children();
+
 				var content, $content;
 				content = $edition.html();
 				if (content){
@@ -1061,6 +1125,16 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				}
 			});
+			// UL-OL hack to join
+			var $allul = $contentAll.find('ul,ol').each(function(){
+				var $ul = $(this);
+				var $ulnext = $ul.next();
+				if ($ulnext.is('ul,ol')){
+					$ul.append($ulnext.children());
+				}
+			});
+			$allul.filter(':empty').remove();
+
 			var contentAll = $contentAll.html();
 			if (contentAll){
 				___cnsl.log('joinBox','contentAll',$contentAll.get(0));
@@ -1177,39 +1251,45 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 			return edgeHeight;
 		},
-		rearrangeBoxes: function($origin, nomceinit){
+		normalizeBoxes: function($origin, nomceinit){
 
-			var cancelAll = false;
-			var $extrapolatedBroken;
+			var $extrapolatedEdge;
 
 			if (Report.document.hasClass('rearranging')) return false;
 			Report.document.addClass('rearranging');
 
-			___cnsl.stack('rearrangeBoxes');
+			___cnsl.stack('normalizeBoxes');
 
 			var $pages, $boxedge, origin;
 			if ($origin && $origin.is('.fieldwrap')){
 				origin = 'box';
 				$boxedge = $origin.closest('.content, .boxstack, .side');
 				$pages = $boxedge.closest('.page');
+				if ($origin.is('[data-boxgroup]')) {
+					boxFitter.joinBox(boxFitter.groupBellow($origin));
+				}
+			} else if ($origin && $origin.is('.content, .boxstack, .side')){
+				origin = 'edge';
+				$boxedge = $origin;
+				$pages = $boxedge.closest('.page');
 			} else {
 				origin = 'page';
 				$pages = $origin || Report.document.find('.page:eq(0), .page.breaker-before');
 			}
 
-			___cnsl.log('rearrangeBoxes','origin: '+origin);
+			___cnsl.log('normalizeBoxes','origin: '+origin, $origin);
 			var pdx = 0;
 			$pages.each(function(){
 
-				if (cancelAll) return false;
+				if ($extrapolatedEdge) return false;
 
 				var $page = $(this);
 				var $pagerange = $page.nextUntil('.breaker-before').addBack();
 
-				___cnsl.purple('rearrangeBoxes','pages range till breaker: '+$pagerange.length, $pagerange);
+				___cnsl.purple('normalizeBoxes','pages range till breaker: '+$pagerange.length, $pagerange);
 
 				var $edgerange;
-				if (origin == 'box'){
+				if (origin == 'box' || origin == 'edge'){
 					if ($boxedge.is('.content')) $edgerange = $pagerange.find('.content');
 					else if ($boxedge.is('.side')) $edgerange = $pagerange.find('.side');
 					else if ($boxedge.is('.boxstack')) {
@@ -1224,7 +1304,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $lastpage = $();
 				$edgerange.each(function(){
 
-					if (cancelAll) return false;
+					if ($extrapolatedEdge) return false;
 
 					var $edge = $(this), edgetype, edgesel;
 
@@ -1232,7 +1312,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						var $page = $edge.closest('.page');
 						if ($lastpage.get(0) !== $page.get(0)){
 							$lastpage = $page;
-							___cnsl.blue('rearrangeBoxes', 'page('+$page.attr('data-pagenumber')+')' ,$page.get(0));
+							___cnsl.blue('normalizeBoxes', 'page('+$page.attr('data-pagenumber')+')' ,$page.get(0));
 						}
 					}
 
@@ -1242,20 +1322,20 @@ sourceui.interface.widget.report = function($widget,setup){
 
 					var cnsl = ___cnsl.active ? 'page('+$page.attr('data-pagenumber')+') edge('+edgetype+') ' : '';
 
-					___cnsl.log('rearrangeBoxes', cnsl ,$edge.get(0));
+					___cnsl.log('normalizeBoxes', cnsl ,$edge.get(0));
 
 					//////////////////////////////////
 					var $lastbox = $edge.find('.fieldwrap, .container').last();
 					var gap = boxFitter.hasGap($edge,$lastbox);
 					if (gap){
-						___cnsl.log('rearrangeBoxes', cnsl+'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
+						___cnsl.log('normalizeBoxes', cnsl+'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
 						if ($lastbox.is('[data-boxgroup]')) {
 							boxFitter.joinBox(boxFitter.groupBellow($lastbox));
 						}
 						var $nextboxes = $edgerange.filter(edgesel).filter(':gt('+edx+')').find('.fieldwrap, .container');
 						if ($nextboxes.length){
 							$edge.append($nextboxes);
-							___cnsl.yellow('rearrangeBoxes', cnsl+'gap boxes appended: '+$nextboxes.length,$nextboxes);
+							___cnsl.yellow('normalizeBoxes', cnsl+'gap boxes appended: '+$nextboxes.length,$nextboxes);
 						}
 					}
 					//////////////////////////////////
@@ -1263,15 +1343,15 @@ sourceui.interface.widget.report = function($widget,setup){
 						var $boxes = $edge.find('.fieldwrap, .container');
 						$boxes.each(function(kb,b){
 							var $box = $(b);
-							if ($box.children('.block').is('.front-pages, .back-pages')) return true; // no rearrange if it is front ou nack pages
+							if ($box.children('.block').is('.front-pages, .back-pages')) return true; // no normalize if it is front ou nack pages
 							var extrapolate = boxFitter.isExtrapolatedBox($box,$edge);
 							if (extrapolate){
-								___cnsl.red('rearrangeBoxes', cnsl+'has estrapolated box: true ('+extrapolate+')',$box.get(0));
+								___cnsl.red('normalizeBoxes', cnsl+'has estrapolated box: true ('+extrapolate+')',$box.get(0));
 								$box.addClass('overflew'); // tint as red
 								$box.attr('data-extrapolate',extrapolate);
-								cancelAll = true;
+								$extrapolatedEdge = $edge; ////////////////////////////////////////////////////////////////////////////////////////
 							} else {
-								___cnsl.log('rearrangeBoxes', cnsl+'has estrapolated box: false',$box.get(0));
+								___cnsl.log('normalizeBoxes', cnsl+'has estrapolated box: false',$box.get(0));
 							}
 							if (extrapolate === 3){
 								// move all hidden objects to next page;
@@ -1285,7 +1365,7 @@ sourceui.interface.widget.report = function($widget,setup){
 								// break box and move all next boxes to next page;
 								///////////////////////////////////////////////
 								Report.document.addClass('preventeventchange');
-								$extrapolatedBroken = boxFitter.breakBox($box,$edge);
+								boxFitter.breakBox($box,$edge);
 								Report.document.removeClass('preventeventchange');
 								return false;
 								///////////////////////////////////////////////
@@ -1296,7 +1376,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							}
 						});
 					} else {
-						___cnsl.ok('rearrangeBoxes', cnsl+' has no rearreanges');
+						___cnsl.ok('normalizeBoxes', cnsl+' has no normalizations');
 					}
 					edx++;
 				});
@@ -1307,21 +1387,19 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.removeClass('rearranging');
 
 			//////////////////////////////////////////////////////////////////////
-			// hack to rearrenge all pages before breaking boxes
-			if (cancelAll && $extrapolatedBroken){
-				___cnsl.ok('rearrangeBoxes', 'hack to restart at broken', $extrapolatedBroken.get(0));
-				boxFitter.rearrangeBoxes($extrapolatedBroken, nomceinit);
-				Report.document.trigger('document:pagelist');
+			// hack to normalize all pages before breaking boxes
+			if ($extrapolatedEdge){
+				___cnsl.log('normalizeBoxes', 'hack to restart at estrapolated edge', $extrapolatedEdge.get(0));
+				boxFitter.normalizeBoxes($extrapolatedEdge.closest('.page').next('.page').find('[class="'+$extrapolatedEdge.attr('class')+'"]'), nomceinit);
 			}
 			//////////////////////////////////////////////////////////////////////
-		}
 
+			Report.document.trigger('document:pagelist');
+
+		}
 
 	};
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
 
 	if (!Report.tinymceinlinetoolbar.length){
 		Report.tinymceinlinetoolbar = $('<div id="tinymceinlinetoolbar"/>').appendTo(Dom.body);
@@ -1370,7 +1448,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $v = $(this);
 			data[$v.attr('name')] = $v.attr('value') || $v.html();
 		});
-		if (data.reportSummary) data.reportSummary = encodeURIComponent(data.reportSummary);
+		if (data.reportSummary) data.reportSummary = btoa(encodeURIComponent(data.reportSummary));
 		data.usecover = Report.document.find('.page.fullcovered').attr('data-visible');
 		data.reportName = $.trim(Report.document.find('.page.covered-default .block.reportName, .page.covered-default .cell.reportName .block').first().text());
 		Report.document.trigger('document:openfloat',[Report.document, $.extend(data,{
@@ -1906,7 +1984,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="clone" class="nedt clone" contenteditable="false"><a class="icon-copy" data-tip="Clone this box as next"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
 		'<li data-action="split" class="nedt split" contenteditable="false"><a class="icon-split-horizontal" data-tip="Split box at cursor"></a></li>'+
-		'<li data-action="rearrange" class="nedt rearrange" contenteditable="false"><a class="icon-wavearrow" data-tip="Auto rearrange box stack"></a></li>'+
+		'<li data-action="normalize" class="nedt normalize" contenteditable="false"><a class="icon-wavearrow" data-tip="Normalize box stack"></a></li>'+
 		'<li data-action="refresh" class="nedt refresh" contenteditable="false"><a class="icon-rearrange-content" data-tip="Refresh active content"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this box"></a></li>'+
 		'</ul>';
@@ -2143,14 +2221,14 @@ sourceui.interface.widget.report = function($widget,setup){
 		$edit.trigger('edition:active');
 		$.tipster.notify('Box splitted');
 	});
-	Report.document.on('click','.edition-actions .rearrange a',function(){
+	Report.document.on('click','.edition-actions .normalize a',function(){
 		var $this = $(this);
 		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
-		boxFitter.rearrangeBoxes($fieldwrap);
+		boxFitter.normalizeBoxes($fieldwrap);
 		$edit.trigger('edition:active');
-		$.tipster.notify('Stacked boxes rearranged');
+		$.tipster.notify('Box normalized');
 	});
 	Report.document.on('click','.edition-actions .refresh a',function(){
 		var $this = $(this);
@@ -2501,6 +2579,10 @@ sourceui.interface.widget.report = function($widget,setup){
 			$this.removeClass('activecontentinputed')
 		}
 	});
+	Report.document.on('blur','[data-edition].reportSummary',function(){
+		Variable.set('reportSummary',tinymce.get(this.id).getContent(), 'html');
+	});
+
 
 	Report.document.on('mouseenter','[data-edition]',function(){
 		var $this = $(this);
@@ -3042,7 +3124,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		else if (indexlabel == 'image') $field.attr('data-indexlabel','table');
 		else if (indexlabel == 'table') $field.attr('data-indexlabel','figure');
 		Report.document.trigger('document:boxcount');
-		Report.document.trigger('document:change',[$page]);
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -3214,7 +3295,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (Report.document.hasClass('preventeventchange')) return false;
 		/////////////////////////////////////////////////////////////////
 		Report.document.find('[data-edition="toc"]:eq(0)').trigger('edition:buildtoc');
-		if ($page) boxFitter.rearrangeBoxes($page);
+		if ($page) boxFitter.normalizeBoxes($page);
 		Report.document.trigger('document:validate');
 		Report.widget.trigger('field:input');
 		Report.document.trigger('document:pagelist');
@@ -3557,6 +3638,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// MCE Setup --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//let allowedRegEX = /[^\x00-\xFF€]/g;
+	let allowedRegEX = false;
 	var mceSetup = {
 		menubar: false,
 		inline: true,
@@ -3594,31 +3677,50 @@ sourceui.interface.widget.report = function($widget,setup){
 			"874ba7", "Purple",
 			"d053af", "Pink",
 		],
+		paste_preprocess : function(pl, o) {
+			o.content = allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content;
+		},
 		setup: function (editor) {
 			var $ed = $(editor.getElement());
 			var $page = $ed.closest('.page');
+			/*
 			editor.on('BeforeAddUndo', function(e) {
 				return false;
 			});
+			*/
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
 			});
 			editor.on('focus', function(e){
 				$ed.removeClass('contentchanged');
+				$ed.attr('contenteditable',true);
 			});
 			editor.on('click', function (e) {
+				$ed.trigger('edition:nodechange',[e.target]);
+			});
+			editor.on('mousedown', function (e) {
+				$ed.attr('contenteditable',true);
 				$ed.trigger('edition:nodechange',[e.target]);
 			});
 			editor.on('input', function (e) {
 				$ed.addClass('contentchanged');
 			});
+			editor.on('undo', function (e) {
+				$.tipster.notify('Undo edition');
+			});
+			editor.on('redo', function (e) {
+				$.tipster.notify('Redo edition');
+			});
 			editor.on('blur', function (e) {
+				editor.undoManager.clear();
 				if ($ed.hasClass('contentchanged')){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
+						$ed.attr('contenteditable',false);
+						Report.document.trigger('historyworker:clear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 				}
 			});
@@ -3637,7 +3739,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="plaintext"]:not(.inited)',
 		forced_root_block : false,
 		toolbar: 'undo redo | removeformat',
-		valid_elements: 'br',
+		valid_elements: 'span[style],br',
 		valid_styles: {
 			'*': 'color'
 		},
@@ -3649,7 +3751,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		valid_elements: 'p[style],h1[style|class],h2[style|class],h3[style|class],h4[style|class],strong[style]/b[style],em,span[style|class],a[href],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align,font-style'
-		}
+		},
 	});
 	var mceSetupRichtext = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="richtext"]:not(.inited)',
@@ -3692,7 +3794,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			{title: 'Legend', block: 'h5'},
 		],
 		paste_preprocess : function(pl, o) {
-			var $content = $('<div>'+o.content+'</div>');
+			var $content = $('<div>'+(allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content)+'</div>');
 			var $imgtable = $content.children('img,table');
 			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
 			$imgtable.addClass('pastedelement');
@@ -3744,16 +3846,17 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $ed = $(editor.getElement());
 			var $page = $ed.closest('.page');
 			var isEditorBoxstack = $ed.closest('.boxstack').length ? true : false;
+			/*
 			editor.on('BeforeAddUndo', function(e) {
 				return false;
 			});
+			*/
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
 			});
 			editor.on('focus', function(e){
 				$ed.removeClass('contentchanged');
 				$ed.attr('contenteditable',true);
-				//Report.document.trigger('historyworker:statehold',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('click', function (e) {
 				$ed.trigger('edition:nodechange',[e.target]);
@@ -3762,29 +3865,37 @@ sourceui.interface.widget.report = function($widget,setup){
 				$ed.attr('contenteditable',true);
 				$ed.trigger('edition:nodechange',[e.target]);
 			});
+			editor.on('undo', function (e) {
+				$.tipster.notify('Undo edition');
+			});
+			editor.on('redo', function (e) {
+				$.tipster.notify('Redo edition');
+			});
 			editor.on('keyup', function (e) {
 				if (e.ctrlKey || e.shiftKey){
 					if (e.key == 'Delete' && caret.isAtEnd($ed) && !caret.hasSelection($ed)){
 						if (isEditorBoxstack || !editor.getContent()) { $.tipster.notify('Unable joining bullets'); return false; }
 						Report.document.addClass('preventeventchange');
 						caret.save($ed,'end');
-						boxFitter.rearrangeBoxes(boxFitter.groupNext($ed));
+						boxFitter.normalizeBoxes(boxFitter.groupNext($ed));
 						caret.focus();
 						e.preventDefault();
 						Report.document.removeClass('preventeventchange');
+						editor.undoManager.clear();
 					} else if (e.key == 'Backspace' && caret.isAtBegining($ed) && !caret.hasSelection($ed)){
 						if (isEditorBoxstack || !editor.getContent()) { $.tipster.notify('Unable joining bullets'); return false; }
 						Report.document.addClass('preventeventchange');
 						caret.save($ed,'begining');
-						boxFitter.rearrangeBoxes(boxFitter.groupPrev($ed));
+						boxFitter.normalizeBoxes(boxFitter.groupPrev($ed));
 						caret.focus();
 						e.preventDefault();
 						Report.document.removeClass('preventeventchange');
+						editor.undoManager.clear();
 					}
 				} else if (e.key == 'Escape'){
 					//caret.save($ed);
 					Report.document.trigger('page:unactive');
-					boxFitter.rearrangeBoxes($ed.parent());
+					boxFitter.normalizeBoxes($ed.parent());
 					//caret.focus($ed);
 				} else if (e.key != 'Control' && e.key != 'Shift' && e.key != 'Alt') {
 					$ed.addClass('contentchanged');
@@ -3810,18 +3921,19 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('blur', function (e) {
 				caret.cleanup($ed);
+				editor.undoManager.clear();
 				if ($ed.hasClass('contentchanged') && !Report.document.hasClass('preventeventchange')){
+					if (editor.getContent() == '') editor.setContent('<p></p>');
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
-						//Report.document.trigger('historyworker:stateadd',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 						$ed.attr('contenteditable',false);
 						caret.cleanup($ed);
+						Report.document.trigger('historyworker:clear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 				}
-				//Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('NodeChange', function(e) {
 				var $elem = e.element ? $(e.element) : $();
@@ -3863,7 +3975,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $field = $target.closest('[data-edition]');
 			var haspot = $target.is('.figurespot') || $target.closest('.figurespot',$field).length;
 			var hash = $target.is('h3,h5') || $target.closest('h3,h5',$field).length;
-			var $content = $('<div>'+o.content+'</div>');
+			var $content = $('<div>'+(allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content)+'</div>');
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
 			if ($td.length) $td.css('border','');
 			var $imgtable = $content.children('img,table');
@@ -3893,16 +4005,17 @@ sourceui.interface.widget.report = function($widget,setup){
 		setup: function (editor) {
 			var $ed = $(editor.getElement());
 			var $page = $ed.closest('.page');
+			/*
 			editor.on('BeforeAddUndo', function(e) {
 				return false;
 			});
+			*/
 			editor.on('init', function (e) {
 				$ed.addClass('inited');
 				$ed.attr('contenteditable',false);
 			});
 			editor.on('focus', function(e){
 				$ed.attr('contenteditable',true);
-				//Report.document.trigger('historyworker:statehold',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('mousedown', function (e) {
 				$ed.attr('contenteditable',true);
@@ -3912,6 +4025,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('input', function (e) {
 				$ed.addClass('contentchanged');
+			});
+			editor.on('undo', function (e) {
+				$.tipster.notify('Undo edition');
+			});
+			editor.on('redo', function (e) {
+				$.tipster.notify('Redo edition');
 			});
 			editor.on('keydown', function (e) {
 				if (e.key == 'Enter'){
@@ -3958,19 +4077,19 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('blur', function (e) {
 				caret.cleanup($ed);
+				editor.undoManager.clear();
 				if ($ed.hasClass('contentchanged') && !Report.document.hasClass('preventeventchange')){
 					var contenthash = $ed.attr('data-contenthash');
 					$ed.trigger('edition:contenthash');
 					if (contenthash !== $ed.attr('data-contenthash')){
 						$ed.trigger('edition:change');
 						$ed.removeClass('contentchanged');
-						//Report.document.trigger('historyworker:stateadd',['mce:fakechange']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 						$ed.attr('contenteditable',false);
 						caret.cleanup($ed);
+						Report.document.trigger('historyworker:clear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 				}
 				$ed.find('.pastedelement').removeAttr('data-mce-selected');
-				//Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 			});
 			editor.on('NodeChange', function(e) {
 				var $elem = e.element ? $(e.element) : $();
@@ -4044,10 +4163,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			setTimeout(function(){
 				Report.document.removeClass('preventhistorystack');
 				Report.document.trigger('document:hasinited');
+				if (Report.viewtools.find('.save > a').data('link-process') == 'insert'){
+					boxFitter.normalizeBoxes(Report.document.children('.page.breaker-disclaimer'));
+				}
 				Report.document.trigger('document:numpage');
-				boxFitter.rearrangeBoxes();
-				Report.document.trigger('document:numpage');
-			},250);
+			},50);
 		}
 
 	});
