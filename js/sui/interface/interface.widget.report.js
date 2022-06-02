@@ -85,7 +85,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
-		active: true,
+		active: false,
 		stack: function(where){
 			___cnsl.green('initStack',where);
 		},
@@ -1079,7 +1079,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			// join grouped boxes ------------------------
 			if ($box.data('boxgroup')){
 				var $boxGroup = $();
-				var $foundgroup = Report.document.find('[data-boxgroup="'+$box.data('boxgroup')+'"]');
+				var $foundgroup = Report.document.find('.cell > [data-boxgroup="'+$box.data('boxgroup')+'"], .boxstack > [data-boxgroup="'+$box.data('boxgroup')+'"]');
 				var idx = 0;
 				if ($foundgroup.length > 1) {
 					$foundgroup.each(function(){
@@ -1329,14 +1329,14 @@ sourceui.interface.widget.report = function($widget,setup){
 					___cnsl.log('normalizeBoxes', cnsl ,$edge.get(0));
 
 					//////////////////////////////////
-					var $lastbox = $edge.find('.fieldwrap, .container').last();
+					var $lastbox = $edge.children('.fieldwrap, .container').last();
 					var gap = boxFitter.hasGap($edge,$lastbox);
 					if (gap){
 						___cnsl.log('normalizeBoxes', cnsl+'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
 						if ($lastbox.is('[data-boxgroup]')) {
 							boxFitter.joinBox(boxFitter.groupBellow($lastbox));
 						}
-						var $nextboxes = $edgerange.filter(edgesel).filter(':gt('+edx+')').find('.fieldwrap, .container');
+						var $nextboxes = $edgerange.filter(edgesel).filter(':gt('+edx+')').children('.fieldwrap, .container');
 						if ($nextboxes.length){
 							$edge.append($nextboxes);
 							___cnsl.yellow('normalizeBoxes', cnsl+'gap boxes appended: '+$nextboxes.length,$nextboxes);
@@ -1344,7 +1344,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 					//////////////////////////////////
 					if (boxFitter.hasOverflow($edge)){
-						var $boxes = $edge.find('.fieldwrap, .container');
+						var $boxes = $edge.children('.fieldwrap, .container');
 						$boxes.each(function(kb,b){
 							var $box = $(b);
 							if ($box.children('.block').is('.front-pages, .back-pages')) return true; // no normalize if it is front ou nack pages
@@ -1522,6 +1522,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$clone = Report.templates.children('.page[data-layout="splited"]').clone();
 					if ($target && $target.length) {
 						if ($target.is('.page')){
+							console.log(this.ev.y, $target.offset().top + ($target.height()/3));
 							if (this.ev.y > $target.offset().top + ($target.height()/3)){
 								Report.document.trigger('document:addpage',[$clone,$target,'after']);
 							} else {
@@ -2734,7 +2735,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($this.is('[data-edition="dynamic"], [data-edition="toc"]')){
 			$this.trigger('edition:active');
 		} else {
-			console.log(event.target);
 			var $target = $(event.target);
 			if (!$target.is('img,.pastedelement td')){
 				Report.scaler.removeClass('active');
@@ -2926,6 +2926,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('edition:uploadimgs','[data-edition]',function(){
 		var $this = $(this);
+		var $wrap = $this.parent();
 		setTimeout(function(){
 			var $imgsBlob = $this.find('img.localsource[src*="blob:"]:not(.uploading)');
 			$imgsBlob.each(function(){
@@ -2941,15 +2942,18 @@ sourceui.interface.widget.report = function($widget,setup){
 						$img.addClass('uploaded');
 						$.tipster.notify('Image auto uploaded');
 						if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
+						$wrap.removeClass('error');
 					},function(){
 						$img.addClass('localsource error');
 						$.tipster.notify('Image upload not allowed');
-						$this.removeClass('ajax-courtain');
+						$this.removeClass('ajax-courtain')
+						$wrap.addClass('error');
 					});
 				},function(){
 					$img.addClass('localsource error');
 					$.tipster.notify('Image data not converted');
 					$this.removeClass('ajax-courtain');
+					$wrap.addClass('error');
 				});
 				/////////////////////////////////////////////////
 			});
@@ -2965,11 +2969,15 @@ sourceui.interface.widget.report = function($widget,setup){
 					$img.removeClass('localsource');
 					$img.addClass('uploaded');
 					$.tipster.notify('Image auto uploaded');
-					if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
+					if ($this.find('img.localsource').length === 0) {
+						$this.removeClass('ajax-courtain');
+						$wrap.removeClass('error');
+					}
 				},function(){
 					$img.addClass('localsource error');
 					$.tipster.notify('Image upload not allowed');
 					$this.removeClass('ajax-courtain');
+					$wrap.addClass('error');
 				});
 				/////////////////////////////////////////////////
 			});
@@ -3526,7 +3534,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 		$new.find('[data-edition]').trigger('edition:cleanmce');
 		$new.trigger('edition:init');
-		Report.document.trigger('document:change',[$pageChange]);
+		//Report.document.trigger('document:change',[$pageChange]);
 		Report.document.trigger('document:numpage');
 		$new.trigger('page:active');
 		$new.trigger('page:scrollto');
@@ -4585,6 +4593,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			},
 			getAll: function(){
 				Report.wgdata.usedimages = [];
+				var $notupload = Report.document.find('img.localsource.error');
+				if ($notupload.length){
+					$notupload.remove();
+					$.tipster.notify('Not uploaded images removed');
+				}
 				Report.document.find('img:not([src*="blob:"]), img:not([src*="data:"])').each(function(){
 					var $img = $(this);
 					if ($img.attr('src')) Report.wgdata.usedimages.push($img.attr('src').split('/').pop());
