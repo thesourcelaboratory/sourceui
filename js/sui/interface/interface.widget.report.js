@@ -54,6 +54,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.templates = Report.widget.find('.sui-templates');
 	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
+	Report.scaler = $('<div class="sui-scaler"></div>').appendTo(Report.document);
+
 
 	Report.figuretypes = {
 		figure:{ '1':'Figure', '2':'Figura', '7':'Figura'},
@@ -2028,6 +2030,9 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			if ($this.attr('data-edition') == 'figure') {
 				$tools.find('li.img').removeClass('deny').addClass('allow');
+				$tools.find('li.split').removeClass('allow').addClass('deny');
+			} else if ($this.attr('data-edition') !== 'richtext') {
+				$tools.find('li.split').removeClass('allow').addClass('deny');
 			} else {
 				$tools.find('li.img').removeClass('allow').addClass('deny');
 			}
@@ -2182,6 +2187,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
+		Report.scaler.removeClass('active');
 		if (!$fieldwrap.is('.wide')){
 			$edit.attr('data-wide','S');
 			$fieldwrap.addClass('wide');
@@ -2318,7 +2324,6 @@ sourceui.interface.widget.report = function($widget,setup){
 
 
 	// Element Scaler ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	Report.scaler = $('<div class="sui-scaler"></div>').appendTo(Report.document);
 	Report.document.on('edition:elementscaler','[data-edition]',function(event, $elem){
 		var isimg = $elem.is('img');
 		if (isimg && ($elem.attr('style')||'').indexOf('height') > -1){
@@ -2962,8 +2967,12 @@ sourceui.interface.widget.report = function($widget,setup){
 				$table.addClass('scaled');
 			} else {
 				var wt = $table.outerWidth(), we = $wrap.innerWidth(), zoom;
-				if (we > wt) zoom = 1;
-				else zoom = we/wt;
+				if (we > wt) {
+					zoom = 1;
+					$table.css({'min-width':we});
+				} else {
+					zoom = we/wt;
+				}
 				$table.css({'zoom':zoom});
 				$table.addClass('fitted');
 			}
