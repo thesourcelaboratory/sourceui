@@ -198,13 +198,13 @@ $(function () {
                             opacity: 0,
                             display: 'none'
                         }, {
-                                delay: duration||100,
-                                duration: 3000,
-                                easing: "easeInSine",
-                                complete: function () {
-                                    $tipster.remove();
-                                }
-                            });
+							delay: duration||100,
+							duration: 3000,
+							easing: "easeInSine",
+							complete: function () {
+								$tipster.remove();
+							}
+						});
                     }
                 });
 
