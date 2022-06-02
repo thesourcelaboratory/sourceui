@@ -54,7 +54,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.templates = Report.widget.find('.sui-templates');
 	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
-	Report.scaler = $('<div class="sui-scaler"></div>').appendTo(Report.document);
+	Report.scaler = $('<mark class="sui-scaler"></mark>').appendTo(Report.document);
 
 
 	Report.figuretypes = {
@@ -85,7 +85,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
-		active: false,
+		active: true,
 		stack: function(where){
 			___cnsl.green('initStack',where);
 		},
@@ -1158,6 +1158,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$boxesToPrepend = $box.nextAll();
 			} else {
 				$boxesToPrepend = $box.nextAll().addBack();
+				$box.removeClass('overflew');
 			}
 
 			if ($boxesToPrepend.length){
@@ -2325,6 +2326,7 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	// Element Scaler ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('edition:elementscaler','[data-edition]',function(event, $elem){
+		Report.scaler.data('element', $elem);
 		var isimg = $elem.is('img');
 		if (isimg && ($elem.attr('style')||'').indexOf('height') > -1){
 			$elem.removeAttr('style');
@@ -2376,6 +2378,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					Report.scaler.addClass('active');
 				},30);
 				$editor.trigger('edition:change');
+				$elem.addClass('scaled');
 			}
 		});
 		/*
@@ -2391,6 +2394,11 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.scaler.on('click',function(event){
 		event.preventDefault();
 		event.stopPropagation();
+	});
+	Report.scaler.on('dblclick',function(event){
+		var $elem = Report.scaler.data('element');
+		$elem.css('width','').removeClass('scaled');
+		setTimeout(function(){ Report.scaler.removeClass('active'); }, 30);
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2501,9 +2509,11 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('container:resizable','.container',function(event){
 		var $ctn = $(this);
-		var $page = $ctn.closest('.page',Report.document);
+		var $main = $ctn.closest('.main',Report.document);
+		var $page = $main.closest('.page',Report.document);
 		var $cols = $ctn.find('.line:eq(0) > .col');
 		var $nopep = $cols.filter(':not(.haspep)');
+		var mainwidth = $main.innerWidth();
 		if ($nopep.length){
 			$nopep.prepend('<a class="resize" />');
 			var $resizes = $nopep.find('.resize');
@@ -2516,14 +2526,14 @@ sourceui.interface.widget.report = function($widget,setup){
 				start:function(ev, obj){
 					var $d = obj.$el;
 					$ctn.trigger('container:active');
-					Report.document.trigger('historyworker:statehold',['container:resizable']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+					Report.document.trigger('historyworker:statehold',['container:resizable']); /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 				},
 				stop:function(ev, obj){
 					var $d = obj.$el;
 					var $col = $d.parent();
 					var $colthisnext = $().add($col).add($col.next('.col'));
 					var dpos = $d.position();
-					$colthisnext.find('img').css({width:'', height:''});
+					$colthisnext.find('img:not(.scaled)').css({width:'', height:''});
 					if (!$ctn.is('[style*="width"]')){
 						$ctn.css('width',$ctn.outerWidth());
 					}
@@ -2532,7 +2542,9 @@ sourceui.interface.widget.report = function($widget,setup){
 							var $c = $(this);
 							$c.innerWidth($c.innerWidth());
 						});
-						$ctn.css('width', ($ctn.outerWidth() - ($col.innerWidth() - dpos.left)));
+						var basewidth = ($ctn.outerWidth() - ($col.innerWidth() - dpos.left));
+						basewidth = (basewidth > mainwidth) ? mainwidth + (parseInt($ctn.css('border-width')) * 4) : basewidth;
+						$ctn.css('width', basewidth);
 						$col.css({ width: '' });
 					} else {
 						$col.innerWidth(dpos.left);
@@ -2721,6 +2733,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $wrap = $this.parent();
 		if ($this.is('[data-edition="dynamic"], [data-edition="toc"]')){
 			$this.trigger('edition:active');
+		} else {
+			console.log(event.target);
+			var $target = $(event.target);
+			if (!$target.is('img,.pastedelement td')){
+				Report.scaler.removeClass('active');
+			}
 		}
 	});
 	/*
@@ -2964,7 +2982,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($wrap.is('.tablewrap')){
 			if ($table.attr('data-zoom')){
 				$table.css({'zoom':$wrap.attr('data-zoom')});
-				$table.addClass('scaled');
 			} else {
 				var wt = $table.outerWidth(), we = $wrap.innerWidth(), zoom;
 				if (we > wt) {
@@ -2974,8 +2991,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					zoom = we/wt;
 				}
 				$table.css({'zoom':zoom});
-				$table.addClass('fitted');
 			}
+			$table.addClass('fitted');
 		}
 	});
 	Report.document.on('edition:contenthash','[data-edition]',function(){
@@ -4206,7 +4223,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				if ($elem.is('img')){
 					$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').show();
 				} else {
-					Report.scaler.removeClass('active');
 					$toolroot.find('[aria-label="Edit image"], [aria-label="Image options"]').hide();
 				}
 			});
