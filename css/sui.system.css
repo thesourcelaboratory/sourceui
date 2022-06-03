@@ -1190,10 +1190,14 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.report > .area > .sui-report-document > .page .cover h2,
 .sui-widget.report > .area > .sui-report-document > .page .cover h3 { margin:0 0 5px; }
 .sui-widget.report > .area > .sui-report-document > .page .main { flex-grow: 10; }
-.sui-widget.report > .area > .sui-report-document.A4 > .page { width:210mm; height:297mm; padding:10mm 13mm; }
-.sui-widget.report > .area > .sui-report-document.A4 > .page .cover { margin: -10mm -13mm 0; padding: 5mm 13mm 5mm }
+.sui-widget.report > .area > .sui-report-document.A4 > .page { width:210mm; height:297mm; /*padding:10mm 13mm;*/ }
+.sui-widget.report > .area > .sui-report-document.A4 > .page .cover { margin: -10mm -13mm 0; /*padding: 5mm 13mm 5mm*/ }
+.sui-widget.report > .area > .sui-report-document.A4 > .page > .bleed { padding:10mm 13mm; }
+.sui-widget.report > .area > .sui-report-document.A4 > .page > .bleed .cover { padding: 5mm 13mm 5mm;}
+/*
 .sui-widget.report > .area > .sui-report-document.letter > .page { width:216mm; height:279mm; padding: 10mm 13mm; }
 .sui-widget.report > .area > .sui-report-document.letter > .page .cover { margin: -10mm -13mm 0; padding: 5mm 13mm 5mm }
+*/
 /* --------------------------------------------------- */
 
 /* WIZARD ------------------------------------------ */

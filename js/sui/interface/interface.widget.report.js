@@ -297,10 +297,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					var dim = Thumbnail.dimensions($e);
 					var classarray = ($e.attr('class')||'').split(' ');
 					var classname = classarray[0] !== $e.attr('data-name') ? classarray[0]+' '+($e.attr('data-name') || '' ) : classarray[0] || $e.attr('data-name');
+					var error = $e.is('.error, .overflew, .toolarge') ? ' error' : ''
 					if ($e.is('table')) {
-						var $floater = $('<div class="floater flt-table '+classname+'"/>');
+						var $floater = $('<div class="floater flt-table '+classname+error+'"/>');
 					} else {
-						var $floater = $('<div class="floater flt-'+$e.tag()+' '+classname+'" />');
+						var $floater = $('<div class="floater flt-'+$e.tag()+' '+classname+error+'" />');
 						var color = $e.css('color')||'inherit';
 						if ($e.is('.logo')){
 							Thumbnail.dom.logo($floater,color);
@@ -317,6 +318,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							css['background-image'] = $e.css('background-image');
 						} else if ($e.is('[src]')){
 							css['background-image'] = 'url("'+$e.attr('src')+'")';
+							if (error) css['opacity'] = 0.6;
 						}
 					}
 					$floater.css($.extend({top:dim.top,left:dim.left,width:dim.width,height:dim.height},css));
@@ -1332,30 +1334,30 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $lastbox = $edge.children('.fieldwrap, .container').last();
 					var gap = boxFitter.hasGap($edge,$lastbox);
 					if (gap){
-						___cnsl.log('normalizeBoxes', cnsl+'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
+						___cnsl.log('normalizeBoxes', cnsl, 'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
 						if ($lastbox.is('[data-boxgroup]')) {
 							boxFitter.joinBox(boxFitter.groupBellow($lastbox));
 						}
 						var $nextboxes = $edgerange.filter(edgesel).filter(':gt('+edx+')').children('.fieldwrap, .container');
 						if ($nextboxes.length){
 							$edge.append($nextboxes);
-							___cnsl.yellow('normalizeBoxes', cnsl+'gap boxes appended: '+$nextboxes.length,$nextboxes);
+							___cnsl.yellow('normalizeBoxes', cnsl, 'gap boxes appended: '+$nextboxes.length,$nextboxes);
 						}
 					}
 					//////////////////////////////////
 					if (boxFitter.hasOverflow($edge)){
 						var $boxes = $edge.children('.fieldwrap, .container');
+						___cnsl.red('normalizeBoxes', cnsl, 'has overflow: true',$edge.get(0));
 						$boxes.each(function(kb,b){
 							var $box = $(b);
-							if ($box.children('.block').is('.front-pages, .back-pages')) return true; // no normalize if it is front ou nack pages
 							var extrapolate = boxFitter.isExtrapolatedBox($box,$edge);
 							if (extrapolate){
-								___cnsl.red('normalizeBoxes', cnsl+'has estrapolated box: true ('+extrapolate+')',$box.get(0));
+								___cnsl.red('normalizeBoxes', cnsl, 'estrapolated box: true ('+extrapolate+')',$box.get(0));
 								$box.addClass('overflew'); // tint as red
 								$box.attr('data-extrapolate',extrapolate);
 								$extrapolatedEdge = $edge; ////////////////////////////////////////////////////////////////////////////////////////
 							} else {
-								___cnsl.log('normalizeBoxes', cnsl+'has estrapolated box: false',$box.get(0));
+								___cnsl.log('normalizeBoxes', cnsl, 'has estrapolated box: false',$box.get(0));
 							}
 							if (extrapolate === 3){
 								// move all hidden objects to next page;
@@ -1375,12 +1377,12 @@ sourceui.interface.widget.report = function($widget,setup){
 								///////////////////////////////////////////////
 							}
 							if (!extrapolate){
-								$box.removeClass('overflew');
+								$box.removeClass('overflew toolarge');
 								$box.removeAttr('data-extrapolate');
 							}
 						});
 					} else {
-						___cnsl.ok('normalizeBoxes', cnsl+' has no normalizations');
+						___cnsl.ok('normalizeBoxes', cnsl, ' has no normalizations');
 					}
 					edx++;
 				});
@@ -1522,7 +1524,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					$clone = Report.templates.children('.page[data-layout="splited"]').clone();
 					if ($target && $target.length) {
 						if ($target.is('.page')){
-							console.log(this.ev.y, $target.offset().top + ($target.height()/3));
 							if (this.ev.y > $target.offset().top + ($target.height()/3)){
 								Report.document.trigger('document:addpage',[$clone,$target,'after']);
 							} else {
@@ -4517,7 +4518,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			},
 			page: function($elem){
 				var suiXml = '';
-				$elem.children().each(function(){
+				$elem.children('.bleed').children().each(function(){
 					var $this = $(this);
 					if ($this.hasClass('cover')) suiXml += wdata.suify.cover($this);
 					else if ($this.hasClass('header')) suiXml += wdata.suify.header($this,true);
