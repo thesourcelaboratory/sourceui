@@ -297,7 +297,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					var dim = Thumbnail.dimensions($e);
 					var classarray = ($e.attr('class')||'').split(' ');
 					var classname = classarray[0] !== $e.attr('data-name') ? classarray[0]+' '+($e.attr('data-name') || '' ) : classarray[0] || $e.attr('data-name');
-					var error = $e.is('.error, .overflew, .toolarge') ? ' error' : ''
+					var error = $e.closest('.error, .overflew, .toolarge').length ? ' error' : ''
 					if ($e.is('table')) {
 						var $floater = $('<div class="floater flt-table '+classname+error+'"/>');
 					} else {
@@ -1197,6 +1197,18 @@ sourceui.interface.widget.report = function($widget,setup){
 			el.style.overflow = curOverf;
 			return isOverflowing;
 		},
+		documentOverflow: function(){
+			var hasany = false;
+			var $edgerange = Report.document.find('.content, .boxstack, .side');
+			$edgerange.each(function(){
+				var $edge = $(this);
+				if (boxFitter.hasOverflow($edge)){
+					hasany = $edge.closest('.page');
+					return false;
+				}
+			});
+			return hasany;
+		},
 		isTooBigBox: function($box,$edge){
 			$edge = $edge || $box.parent();
 			var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height();
@@ -2034,6 +2046,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			if ($this.attr('data-edition') == 'figure') {
 				$tools.find('li.img').removeClass('deny').addClass('allow');
 				$tools.find('li.split').removeClass('allow').addClass('deny');
+			} else if ($this.attr('data-edition') == 'dynamic') {
+				$tools.find('li.split, li.img').removeClass('allow').addClass('deny');
 			} else if ($this.attr('data-edition') !== 'richtext') {
 				$tools.find('li.split').removeClass('allow').addClass('deny');
 			} else {
@@ -4300,6 +4314,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				Report.document.trigger('document:hasinited');
 				if (Report.viewtools.find('.save > a').data('link-process') == 'insert'){
 					boxFitter.normalizeBoxes(Report.document.children('.page.breaker-disclaimer'));
+				} else {
+					var $page = boxFitter.documentOverflow();
+					if ($page) boxFitter.normalizeBoxes($page);
 				}
 				Report.document.trigger('document:numpage');
 			},50);
