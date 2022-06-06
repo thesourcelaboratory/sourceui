@@ -2560,7 +2560,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							$c.innerWidth($c.innerWidth());
 						});
 						var basewidth = ($ctn.outerWidth() - ($col.innerWidth() - dpos.left));
-						basewidth = (basewidth > mainwidth) ? mainwidth + (parseInt($ctn.css('border-width')) * 4) : basewidth;
+						basewidth = (basewidth > mainwidth) ? /*mainwidth + (parseInt($ctn.css('border-width')) * 6)*/ parseInt($ctn.css('max-width')) : basewidth;
 						$ctn.css('width', basewidth);
 						$col.css({ width: '' });
 					} else {
