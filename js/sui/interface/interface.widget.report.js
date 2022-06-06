@@ -635,7 +635,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				return false;
 				*/
 			}
-			// CTRL C =======================================
+			// CTRL V =======================================
 			else if (event.keyCode == 86){
 				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
 				if (!$activeFieldwrap.length){
@@ -677,7 +677,7 @@ sourceui.interface.widget.report = function($widget,setup){
 											clearInterval(intval);
 											if (content.image){
 												var $clone = Report.templates.children('[data-edition="figure"]').clone();
-												$clone.find('.figurespot').append('<img src="'+content.image+'">');
+												$clone.find('.figurespot').append('<img class="localsource" src="'+content.image+'">');
 												$clone = $('<div class="fieldwrap figure" />').append($clone);
 											} else if (content.html){
 												var $clone = Report.templates.children('[data-edition="richtext"]').clone();
@@ -2000,6 +2000,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="prop" class="nedt prop" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit box properties"></a></li>'+
 		'<li data-action="pick" class="nedt pick" contenteditable="false"><a class="icon-picker-gd" data-tip="Pick box data"></a></li>'+
 		'<li data-action="img" class="nedt img" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse a local image"></a></li>'+
+		'<li data-action="upload" class="nedt upload" contenteditable="false"><a class="icon-cloud-upload" data-tip="Try to upload images again"></a></li>'+
 		//'<li data-action="margin" class="nedt margin" contenteditable="false"><a class="icon-box-margin-y" data-tip="Toggle box extra margin"></a></li>'+
 		'<li data-action="wide" class="nedt wide" contenteditable="false"><a class="icon-box-wide-right" data-tip="Toggle wide width"></a></li>'+
 		'<li data-action="editable" class="nedt editable" contenteditable="false"><a class="icon-edit-content" data-tip="Toggle box content editable"></a></li>'+
@@ -2040,6 +2041,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				} else {
 					$li.addClass('allow');
 				}
+				if (a == 'upload'){
+					$li.removeClass('allow').addClass('deny');
+				}
 			});
 
 			if ($this.attr('data-edition') == 'figure') {
@@ -2070,6 +2074,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			} else {
 				$tools.find('li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
 			}
+
+
 			$wrap.prepend($tools);
 			$tools.find('[data-tip]').tip();
 		}
@@ -2182,6 +2188,13 @@ sourceui.interface.widget.report = function($widget,setup){
 			keys: keys,
 			vars:Variable.getAll()
 		}]);
+	});
+	Report.document.on('click','.edition-actions .upload a',function(){
+		var $this = $(this);
+		if ($this.closest('.disable').length) return;
+		var $fieldwrap = $this.closest('.fieldwrap');
+		var $edit = $fieldwrap.children('[data-edition]');
+		$edit.trigger('edition:uploadimgs');
 	});
 	Report.document.on('click','.edition-actions .margin a',function(){
 		var $this = $(this);
@@ -2941,6 +2954,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('edition:uploadimgs','[data-edition]',function(){
 		var $this = $(this);
 		var $wrap = $this.parent();
+		var $action = $wrap.find('.edition-actions .upload');
+		$action.removeClass('deny').addClass('allow');
 		setTimeout(function(){
 			var $imgsBlob = $this.find('img.localsource[src*="blob:"]:not(.uploading)');
 			$imgsBlob.each(function(){
@@ -2951,22 +2966,26 @@ sourceui.interface.widget.report = function($widget,setup){
 				Figure.base64($img.attr('src'),function(base64){
 					Figure.post(base64, null, function(data){
 						$img.attr('src',data.src);
+						$img.removeClass('error');
 						$img.removeClass('uploading');
 						$img.removeClass('localsource');
 						$img.addClass('uploaded');
-						$.tipster.notify('Image auto uploaded');
+						$.tipster.notify('Image uploaded');
 						if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
 						$wrap.removeClass('error');
+						$action.removeClass('allow').addClass('deny');
 					},function(){
 						$img.addClass('localsource error');
 						$.tipster.notify('Image upload not allowed');
 						$this.removeClass('ajax-courtain')
+						$img.removeClass('uploading');
 						$wrap.addClass('error');
 					});
 				},function(){
 					$img.addClass('localsource error');
 					$.tipster.notify('Image data not converted');
 					$this.removeClass('ajax-courtain');
+					$img.removeClass('uploading');
 					$wrap.addClass('error');
 				});
 				/////////////////////////////////////////////////
@@ -2979,18 +2998,21 @@ sourceui.interface.widget.report = function($widget,setup){
 				/////////////////////////////////////////////////
 				Figure.post($img.attr('src'), null, function(data){
 					$img.attr('src',data.src);
+					$img.removeClass('error');
 					$img.removeClass('uploading');
 					$img.removeClass('localsource');
 					$img.addClass('uploaded');
-					$.tipster.notify('Image auto uploaded');
+					$.tipster.notify('Image uploaded');
 					if ($this.find('img.localsource').length === 0) {
 						$this.removeClass('ajax-courtain');
 						$wrap.removeClass('error');
+						$action.removeClass('allow').addClass('deny');
 					}
 				},function(){
 					$img.addClass('localsource error');
 					$.tipster.notify('Image upload not allowed');
 					$this.removeClass('ajax-courtain');
+					$img.removeClass('uploading');
 					$wrap.addClass('error');
 				});
 				/////////////////////////////////////////////////
@@ -4610,11 +4632,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			},
 			getAll: function(){
 				Report.wgdata.usedimages = [];
-				var $notupload = Report.document.find('img.localsource.error');
-				if ($notupload.length){
-					$notupload.remove();
-					$.tipster.notify('Not uploaded images removed');
-				}
 				Report.document.find('img:not([src*="blob:"]), img:not([src*="data:"])').each(function(){
 					var $img = $(this);
 					if ($img.attr('src')) Report.wgdata.usedimages.push($img.attr('src').split('/').pop());
