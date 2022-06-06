@@ -81,7 +81,6 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.view.on('view:close',function(){
 		Report.locker(false);
 	});
-
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
