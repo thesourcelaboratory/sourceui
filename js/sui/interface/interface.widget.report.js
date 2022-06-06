@@ -2000,7 +2000,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="prop" class="nedt prop" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit box properties"></a></li>'+
 		'<li data-action="pick" class="nedt pick" contenteditable="false"><a class="icon-picker-gd" data-tip="Pick box data"></a></li>'+
 		'<li data-action="img" class="nedt img" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse a local image"></a></li>'+
-		'<li data-action="upload" class="nedt upload" contenteditable="false"><a class="icon-cloud-upload" data-tip="Try to upload images again"></a></li>'+
 		//'<li data-action="margin" class="nedt margin" contenteditable="false"><a class="icon-box-margin-y" data-tip="Toggle box extra margin"></a></li>'+
 		'<li data-action="wide" class="nedt wide" contenteditable="false"><a class="icon-box-wide-right" data-tip="Toggle wide width"></a></li>'+
 		'<li data-action="editable" class="nedt editable" contenteditable="false"><a class="icon-edit-content" data-tip="Toggle box content editable"></a></li>'+
@@ -2040,9 +2039,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					$li.addClass('deny');
 				} else {
 					$li.addClass('allow');
-				}
-				if (a == 'upload'){
-					$li.removeClass('allow').addClass('deny');
 				}
 			});
 
@@ -2188,13 +2184,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			keys: keys,
 			vars:Variable.getAll()
 		}]);
-	});
-	Report.document.on('click','.edition-actions .upload a',function(){
-		var $this = $(this);
-		if ($this.closest('.disable').length) return;
-		var $fieldwrap = $this.closest('.fieldwrap');
-		var $edit = $fieldwrap.children('[data-edition]');
-		$edit.trigger('edition:uploadimgs');
 	});
 	Report.document.on('click','.edition-actions .margin a',function(){
 		var $this = $(this);
@@ -2954,8 +2943,6 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('edition:uploadimgs','[data-edition]',function(){
 		var $this = $(this);
 		var $wrap = $this.parent();
-		var $action = $wrap.find('.edition-actions .upload');
-		$action.removeClass('deny').addClass('allow');
 		setTimeout(function(){
 			var $imgsBlob = $this.find('img.localsource[src*="blob:"]:not(.uploading)');
 			$imgsBlob.each(function(){
@@ -2973,7 +2960,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						$.tipster.notify('Image uploaded');
 						if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
 						$wrap.removeClass('error');
-						$action.removeClass('allow').addClass('deny');
+						Report.document.trigger('document:change');
 					},function(){
 						$img.addClass('localsource error');
 						$.tipster.notify('Image upload not allowed');
@@ -3006,7 +2993,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					if ($this.find('img.localsource').length === 0) {
 						$this.removeClass('ajax-courtain');
 						$wrap.removeClass('error');
-						$action.removeClass('allow').addClass('deny');
+						Report.document.trigger('document:change');
 					}
 				},function(){
 					$img.addClass('localsource error');
