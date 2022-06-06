@@ -4316,18 +4316,37 @@ sourceui.interface.widget.report = function($widget,setup){
 			tinymce.init(v);
 		});
 
+		var initFN = function(){
+			Report.document.removeClass('preventhistorystack');
+			Report.document.trigger('document:hasinited');
+			if (Report.viewtools.find('.save > a').data('link-process') == 'insert'){
+				boxFitter.normalizeBoxes(Report.document.children('.page.breaker-disclaimer'));
+			} else {
+				var $page = boxFitter.documentOverflow();
+				if ($page) boxFitter.normalizeBoxes($page);
+			}
+			Report.document.trigger('document:numpage');
+		};
+
 		if ($elem.is('.sui-report-document') && firstload){
-			setTimeout(function(){
-				Report.document.removeClass('preventhistorystack');
-				Report.document.trigger('document:hasinited');
-				if (Report.viewtools.find('.save > a').data('link-process') == 'insert'){
-					boxFitter.normalizeBoxes(Report.document.children('.page.breaker-disclaimer'));
-				} else {
-					var $page = boxFitter.documentOverflow();
-					if ($page) boxFitter.normalizeBoxes($page);
-				}
-				Report.document.trigger('document:numpage');
-			},50);
+			var timeinc = 0;
+			var timeout = 5000;
+			var imagesloaded = 0;
+			var $images = Report.document.find('img');
+			if ($images.length){
+				var itv = setInterval(function(){
+					$images.each(function(){
+						timeinc += 150;
+						if (this.naturalHeight !== 0) imagesloaded++;
+						if (imagesloaded == $images.length || timeinc >= timeout){
+							clearInterval(itv);
+							initFN();
+						}
+					});
+				},150);
+			} else {
+				setTimeout(initFN,150);
+			}
 		}
 
 	});
