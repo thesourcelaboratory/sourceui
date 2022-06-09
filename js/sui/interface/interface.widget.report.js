@@ -1916,6 +1916,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="addcol" class="nedt addcol" contenteditable="false"><a class="text" data-tip="Add one column at end">+1C</a></li>'+
 		'<li data-action="addline" class="nedt addline" contenteditable="false"><a class="text" data-tip="Add one line at end">+1L</a></li>'+
 		'<li data-action="reset" class="nedt reset" contenteditable="false"><a class="icon-tab" data-tip="Reset container dimension"></a></li>'+
+		'<li data-action="sidenote" class="nedt sidenote" contenteditable="false"><a class="icon-input" data-tip="Resize as side note container"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this box"></a></li>'+
 		'</ul>';
@@ -1974,6 +1975,13 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.removeAttr('style');
 		$ctn.find('.line > .col').removeAttr('style');
 		$ctn.trigger('container:dimension');
+	});
+	Report.document.on('click','.container-actions .sidenote a',function(){
+		var $this = $(this);
+		var $ctn = $this.closest('.container');
+		$ctn.removeAttr('style');
+		$ctn.find('.line > .col').removeAttr('style');
+		$ctn.trigger('container:dimension',['sidenote']);
 	});
 	Report.document.on('click','.container-actions .move a',function(){
 		var $this = $(this);
@@ -2513,12 +2521,22 @@ sourceui.interface.widget.report = function($widget,setup){
 		$lastline.after($line);
 		Report.document.trigger('historyworker:stateadd',['container:addline']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
-	Report.document.on('container:dimension','.container',function(event){
+	Report.document.on('container:dimension','.container',function(event, type){
 		var $ctn = $(this);
 		var $cols = $ctn.find('.line > .col');
+		if (type == 'sidenote'){
+			if (!$ctn.hasClass('sidenoted')){
+				$cols.removeAttr('style');
+				$ctn.addClass('sidenoted').attr('data-type','sidenoted');
+			} else {
+				$ctn.removeClass('sidenoted');
+			}
+		} else {
+			$ctn.removeClass('sidenoted').removeAttr('data-type');
+		}
 		$cols.each(function(){
 			var $c = $(this);
-			$c.innerWidth($c.innerWidth());
+			$c.innerWidth($ctn.hasClass('sidenoted') ? parseInt($c.css('min-width'))-8 : $c.innerWidth());
 		});
 		$ctn.css('width',$ctn.outerWidth());
 		$cols.find('.resize').height($ctn.outerHeight());
@@ -4649,9 +4667,14 @@ sourceui.interface.widget.report = function($widget,setup){
 						Report.wgdata.usedimages.push($bgi.css('background-image').match(/\"(.*)\"/)[1].split('/').pop());
 					}
 				});
-				Report.document.find('.covered-default .main .content [data-edition="richtext"]').each(function(){
-					Report.wgdata.firstPage = (Report.wgdata.firstPage||'')+this.innerHTML.trim();
-				});
+				Report.wgdata.firstPage = '';
+				var $firstPage = Report.document.find('.covered-default .main .content [data-edition="richtext"], .covered-default .main .content .reportSummary');
+				if ($firstPage.length){
+					$firstPage.each(function(){
+						var $fp = $();
+						Report.wgdata.firstPage = Report.wgdata.firstPage+$fp.html();
+					});
+				}
 				var suiXml = '';
 				Report.area.children().each(function(){
 					var $this = $(this);

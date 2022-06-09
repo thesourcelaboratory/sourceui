@@ -158,12 +158,12 @@ sourceui.interface.widget.map = function($widget,setup){
 		});
 		Wap.widget.on('widget:resize',function(){
 			setTimeout(function(){
-				Map.invalidateSize();
+				if (Wap.widget.is(':visible')) Map.invalidateSize();
 			},300);
 		});
 		Dom.window.on('resize',function(){
 			setTimeout(function(){
-				Map.invalidateSize();
+				if (Wap.widget.is(':visible')) Map.invalidateSize();
 			},100);
 		});
 
@@ -171,10 +171,12 @@ sourceui.interface.widget.map = function($widget,setup){
 			if (Heatmap) Map.removeLayer(Heatmap);
 		});
 		Wap.sector.on('sector:show',function(){
-			Map.invalidateSize();
 			setTimeout(function(){
-				Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
-			},1000);
+				if (Wap.widget.is(':visible')) {
+					Map.invalidateSize();
+					Heatmap = Leaf.heatmap(Wap.cfg.heatmap);
+				}
+			},2000);
 		});
 		/*
 		Wap.sector.on('sector:close',function(){

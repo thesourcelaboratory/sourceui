@@ -206,6 +206,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                     }
                     if ($.isEmptyObject(Handson.invalid[row])){
                         Handson.widget.trigger('widget:validrow',[hot, row]);
+						delete Handson.invalid[row];
                     }
                 } else {
                     Handson.invalid[row] = Handson.invalid[row] || {};

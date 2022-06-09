@@ -933,7 +933,7 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.datagrid.files > .area .list .line.file > .col.fsimage { display:block; width:100%; text-align:center; padding:12px 6px 0 6px; }
 .sui-widget.datagrid.files > .area .list .line > .col.name { display:block; width:100%; max-width:140px; text-align:center; color:#555; font-size:10px; font-weight:500; padding:0 5px; margin-bottom:5px; height: 28px; overflow: hidden; }
 .sui-widget.datagrid.files.check > .area .list .line > .col.check { display:block !important; opacity:1 !important; width:18px; height:18px; line-height:18px; padding:0; text-align:center; color:rgba(32,30,30,0.285); position:absolute; left:50%; top:50%; margin:-20px 0 0 -48px; z-index:10; background:rgba(255,255,255,.2); border-radius:24px; }
-.sui-widget.datagrid.files.check > .area .list .line > .col.check:before { font-size:20px; margin:-1px 0 0 -1px; }
+.sui-widget.datagrid.files.check > .area .list .line > .col.check:before { font-size:20px; margin:-1px 0 0 -1px; line-height:0 !important; }
 .sui-widget.datagrid.files.check > .area .list .line > .col.fsimage { filter:grayscale(50%); }
 .sui-widget.datagrid.files.check > .area .list .line.image > .col.check { left:12px; top:12px; margin:0; }
 .sui-widget.datagrid.files.check > .area .list .line.selected > .col { opacity:1 !important; }
@@ -1404,6 +1404,9 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.thumb.check > .area .list .line.selected .col.check { background:#FFF !important; box-shadow:0 0 2px #FFF; }
 .sui-widget.check.checktoggle > .title > .toolbar a.checktoggle { color:#FFF; background:rgba(0,0,0,.35) !important; }
 .sui-widget.check.checktoggle > .title > .toolbar a.checktoggle.focus { color:#FFF; background:rgba(0,44,125,.65) !important; }
+.sui-widget.check li.imgeditor,
+.sui-widget.check li.upload,
+.sui-widget.check li.refresh  { display:none !important; }
 .sui-widget.reord > .title > .toolbar a.reord { color:#FFF; background:rgba(0,0,0,.35) !important; }
 .sui-widget.reord > .area .list { padding-bottom:inherit !important; }
 .sui-widget.reord > .area .list .header .col.reord { display:table-cell !important; }

@@ -213,11 +213,10 @@ body { background-size: 175% 100%; font-size:15px; }
 .sui-widget > .title .badge span { min-width:20px; line-height:20px; font-size:11px; padding:0 6px; margin-top:-1px; }
 
 @media (min-width: 400px){
-	.sui-widget.check > .title .label { min-width:calc(100% - 227px); }
+	.sui-widget.check > .title .label { min-width:calc(100% - 280px); }
 }
 @media (max-width: 399px){
-	.sui-widget > .title .label { min-width:calc(100% - 192px); }
-	.sui-widget.check > .title .label { min-width:calc(100% - 227px); }
+	.sui-widget > .title .label { min-width:calc(100% - 260px); }
 }
 
 
@@ -438,7 +437,7 @@ body { background-size: 175% 100%; font-size:15px; }
 
 /* FILES ------------------------------------------- */
 .sui-widget.datagrid.files > .area { padding:1px; }
-.sui-widget.datagrid.files > .area .list .line { max-width:80px; width:80px; height:80px; padding:0; margin:1px; overflow: hidden; background:#f2f2f2; border:none; }
+.sui-widget.datagrid.files > .area .list .line { max-width:80px; width:80px; height:80px; padding:0; margin:1px !important; overflow: hidden; background:#f2f2f2; border:none; }
 .sui-widget.datagrid.files > .area .list .line > .col.image { transform: scale(1); left:0; top: 0px; width:100% !important; height:100% !important; }
 .sui-widget.datagrid.files > .area .list .line > .col.visualidentifier ~ .col:not(.visualidentifier) { display:none; }
 .sui-widget.datagrid.files > .area .list .line.image > .col.fsimage img { display:none; }

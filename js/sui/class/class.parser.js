@@ -910,7 +910,7 @@ sourceui.templates.interface = new sourceui.Template({
 			line:
 				'<tr class="line"@{data}@{style}>@{child:content}</tr>',
 			container:
-				'<table cellspacing="0" class="container"@{data}@{style}><tbody>@{child:content}</tbody></table>',
+				'<table cellspacing="0" class="container @{data:type}"@{data}@{style}><tbody>@{child:content}</tbody></table>',
 			stack:
 				'<div class="stack @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 		},
