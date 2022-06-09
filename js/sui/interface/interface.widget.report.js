@@ -4671,7 +4671,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $firstPage = Report.document.find('.covered-default .main .content [data-edition="richtext"], .covered-default .main .content .reportSummary');
 				if ($firstPage.length){
 					$firstPage.each(function(){
-						var $fp = $();
+						var $fp = $(this);
 						Report.wgdata.firstPage = Report.wgdata.firstPage+$fp.html();
 					});
 				}
