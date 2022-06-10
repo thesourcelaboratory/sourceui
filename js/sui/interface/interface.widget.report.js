@@ -1003,7 +1003,9 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					} else {
 						if (($edition.data('edition') == 'richtext' || $edition.data('name') == 'global-disclaimer') && $el.is('p')){
+							$el.removeAttr('data-joiner').removeData('joiner');
 							let $econ = $el.contents();
+							let joiner = Math.unique(8);
 							$el.html('');
 							let $cl = $el.clone();
 							$.each($econ, function(ie, ve) {
@@ -1032,11 +1034,13 @@ sourceui.interface.widget.report = function($widget,setup){
 							$cl.find('.wordwrap-autobreak:last').text($.trim($cl.find('.wordwrap-autobreak:last').text()));
 							$cl.find('.wordwrap-autobreak').contents().unwrap();
 							$cl.get(0).normalize();
+							$cl.attr('data-joiner',joiner);
 							if ($cl.text() !== '' || $cl.children('img,table,figure').length) $contentNew.append($cl);
 
 							$el.find('.wordwrap-autobreak:first').text($el.find('.wordwrap-autobreak:first').text());
 							$el.find('.wordwrap-autobreak').contents().unwrap();
 							$el.get(0).normalize();
+							$el.attr('data-joiner',joiner);
 							$contentNew.append($el.nextAll());
 							if (false === ($el.text() !== '' || $el.children('img,table,figure').length > 0)) $el.remove();
 						} else {
@@ -1112,7 +1116,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $box = $(box);
 				___cnsl.yellow('joinBox',box);
 				var $edition = $box.children('[data-edition]');
-				var $contentChild = $edition.children();
 
 				var content, $content;
 				content = $edition.html();
@@ -1125,7 +1128,28 @@ sourceui.interface.widget.report = function($widget,setup){
 						else $sourcemovedcontent.html($wrappedmovedcontent.html() || content);
 						$sourcemovedcontent.removeClass('sourcemovedcontent movedafter');
 					} else {
-						$contentAll.append(content);
+						var $contentChild = $edition.children();
+						var $joiner = $contentChild.filter('[data-joiner]');
+						if ($joiner.length){
+							$joiner.each(function(){
+								var $join = $(this);
+								var $next = $join.next();
+								if ($next.length && $next.attr('data-joiner') == $join.attr('data-joiner')) {
+									$join.append($next.html()).removeAttr('data-joiner').removeData('joiner');
+									$next.remove();
+								} else if ($join.is(':first-child')) {
+									var $joinall = $contentAll.find('[data-joiner="'+$join.attr('data-joiner')+'"]:last-child');
+									if ($joinall.length){
+										$joinall.append($join.html()).removeAttr('data-joiner').removeData('joiner');
+										$join.remove();
+									}
+								}
+							});
+							content = $edition.html();
+							$contentAll.append(content);
+						} else {
+							$contentAll.append(content);
+						}
 					}
 				}
 			});
@@ -1141,10 +1165,11 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			var contentAll = $contentAll.html();
 			if (contentAll){
-				___cnsl.log('joinBox','contentAll',$contentAll.get(0));
+				___cnsl.log('joinBox','contentAll',$contentAll.get(0).childNodes);
 				var $b = $boxGroup.filter(':eq(0)');
 				var $e = $b.children('[data-edition]');
 				$e.html(contentAll);
+				//$e.find('[data-joiner]').removeAttr('data-joiner').removeData('joiner');
 				$boxGroup.filter(':gt(0)').remove();
 				return $b;
 			}
@@ -3938,7 +3963,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'p[style|class],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],figure[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
+		valid_elements: 'p[style|class|data-joiner],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],figure[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
 		valid_styles: {
 			'h1': 'font-size,font-family,color,text-decoration,text-align',
 			'h2': 'font-size,font-family,color,text-decoration,text-align',
