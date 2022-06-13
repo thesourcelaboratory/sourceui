@@ -4155,7 +4155,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		table_appearance_options: false,
 		imagetools_toolbar: 'none',
 		paste_data_images: true,
-		toolbar: 'undo redo | forecolor | bold italic underline | removeformat | link | table ',
+		toolbar: 'undo redo | forecolor | bold italic underline | alignleft aligncenter alignjustify alignright | removeformat | link | table ',
 		automatic_uploads: false,
 		file_picker_types: 'image',
 		powerpaste_allow_local_images: true,
