@@ -2,8 +2,10 @@
 
 	$.calendar = function (jq, o) {
 
+		var isPT = ($('html').attr('lang').indexOf('pt-') > -1);
+
 		this.defaults = {
-			lang: 'pt',
+			lang: isPT ? 'pt' : 'eng',
 			mode: 'date',
 			modeTabs: false,
 			navBar: true,

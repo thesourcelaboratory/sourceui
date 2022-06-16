@@ -360,6 +360,8 @@ sourceui.parserField = function (element, setup) {
 
 	Field.setup = setup || {};
 
+	var isPT = ($('html').attr('lang').indexOf('pt-') > -1);
+
 
 	this.fetch = {
 		list: function (fd, field) {
@@ -1264,10 +1266,10 @@ sourceui.parserField = function (element, setup) {
 			simple: function () {
 				Field.setup.setval = 'caller';
 				Field.setup.getval = 'caller';
-				Field.setup.placeholder = '99/99/9999';
-				Field.setup.mask = 'date';
+				Field.setup.placeholder = Field.setup.placeholder || '99/99/9999';
+				Field.setup.mask = Field.setup.mask || 'date';
 				Field.setup.list.class = 'plugin';
-				Field.setup.value = $.toDate(Field.setup.value, 'd/m/Y');
+				Field.setup.value = $.toDate(Field.setup.value, isPT ? 'd/m/Y' : 'Y-m-d');
 				Field.setup.buttons.after = [{ icon: 'icon-insert-invitation', alias: 'droplist', options: [] }];
 				return HTML.common.field({ input: 'tel', addon: 'simple', droplist: 'plugin', options: 'calendar' });
 			},
