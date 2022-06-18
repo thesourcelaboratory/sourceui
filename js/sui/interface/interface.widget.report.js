@@ -3396,7 +3396,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $page = $(this);
 		$(Report.document.closest('.scroll-default')).scrollTo($page,350,{ offset:{top:-50} });
 	});
-	Report.document.on('page:active','.page',function(event){
+	Report.document.on('page:active','.page',function(event,preventScrollThumb){
 		var $this = $(this);
 		Report.document.trigger('page:unactive');
 		$this.addClass('active');
@@ -3405,7 +3405,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($thumb.length) {
 			Report.pagelist.find('.selected').removeClass('selected');
 			$thumb.addClass('selected');
-			Report.pagelist.scrollTo($thumb,{ offset:{top:-15} });
+			if (!preventScrollThumb) Report.pagelist.scrollTo($thumb,{ offset:{top:-15} });
 		}
 	});
 	Report.document.on('page:unactive',function(){
@@ -4393,7 +4393,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						if (imagesloaded == $images.length || timeinc >= timeout){
 							clearInterval(itv);
 							initFN();
-							if (timeinc >= timeout) $.tipster.notify('Images were not properly loaded to normalize boxes');
+							if (timeinc >= timeout) $.tipster.notify('Images not properly loaded to normalize boxes');
 							return false;
 						}
 					});
