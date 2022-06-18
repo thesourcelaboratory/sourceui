@@ -3405,7 +3405,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($thumb.length) {
 			Report.pagelist.find('.selected').removeClass('selected');
 			$thumb.addClass('selected');
-			if (!preventScrollThumb) Report.pagelist.scrollTo($thumb,{ offset:{top:-15} });
+			if (!preventScrollThumb) Report.pagelist.scrollTo($thumb,200,{ offset:{top: -(Report.scroll.height()/2) + ($thumb.height()/2)} });
 		}
 	});
 	Report.document.on('page:unactive',function(){
