@@ -287,7 +287,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				});
 			},
 			floaters:function(f){
-				var $thumb = Thumbnail.current.thumb;
 				var $return = $('<pre>');
 				var $elems = typeof f.elements == 'string' ? Thumbnail.current.page.find(f.elements) : f.elements;
 				$elems.each(function(){
@@ -321,7 +320,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					}
 					$floater.css($.extend({top:dim.top,left:dim.left,width:dim.width,height:dim.height},css));
-					$thumb.append($floater);
+					Thumbnail.current.bleed.append($floater);
 					$return.append($floater.clone());
 					if (f.contents){
 						$.each(f.contents,function(k,c){
@@ -403,7 +402,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				Thumbnail.current.thumb.removeClass('fullcovered covered-default');
 				Thumbnail.current.thumb.addClass('splited');
 				if (Thumbnail.current.pageheader){
-					Thumbnail.current.thumb.append(Thumbnail.current.pageheader.html());
+					Thumbnail.current.bleed.append(Thumbnail.current.pageheader.html());
 				} else {
 					Thumbnail.current.pageheader = Thumbnail.dom.floaters({
 						elements:'.header, .header .autofilltitle, .header [data-autofill="documentType"], .header [data-autofill="documentDate"], .header [data-autofill="documentLabel"], .header [data-autofill="documentSublabel"]',
@@ -428,7 +427,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				});
 				if (Thumbnail.current.pagefooter){
-					Thumbnail.current.thumb.append(Thumbnail.current.pagefooter.html());
+					Thumbnail.current.bleed.append(Thumbnail.current.pagefooter.html());
 				} else {
 					Thumbnail.current.pagefooter = Thumbnail.dom.floaters({
 						elements:'.footer, .footer .reportName, .footer .cell.right',
@@ -445,9 +444,10 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		},
 		parse : function($page,$thumb){
-			$thumb.html('');
+			$thumb.html('<div class="bleed" />');
 			Thumbnail.current.page = $page;
 			Thumbnail.current.thumb = $thumb;
+			Thumbnail.current.bleed = $thumb.children('.bleed');
 			Thumbnail.current.offset = $page.offset();
 			if ($page.is('.fullcovered')) Thumbnail.dom.fullcovered();
 			if ($page.is('.covered-default')) Thumbnail.dom.covereddefault();
@@ -2097,6 +2097,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				} else if (($this.data('name')||'').indexOf('back-pages') > -1){
 					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
 					$tools.find('li.split').removeClass('allow').addClass('deny');
+				} else if (($this.data('name')||'').indexOf('financial-data-summary') > -1){
+					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
+					$tools.find('li.split').removeClass('allow').addClass('deny');
 				}
 			} else if ($this.attr('data-edition') == 'toc') {
 				$tools.find('li.prop, li.pick, li.editable, li.refresh, li.wide, li.split').removeClass('allow').addClass('deny');
@@ -3486,17 +3489,20 @@ sourceui.interface.widget.report = function($widget,setup){
 		var idx = {};
 		var lang = Variable.get('languageId');
 		var types = Report.figuretypes;
-		Report.document.find('[data-edition="figure"]').each(function(){
+		var $editions = Report.document.find('[data-edition="figure"]');
+		console.log($editions);
+		$editions.each(function(){
 			var $this = $(this);
 			var $h4 = $this.find('h4');
 			if ($h4.length){
 				var label = $this.attr('data-indexlabel') || 'figure';
-				$this.attr('data-indexlabel',label);
-				idx[label] = idx[label] ? idx[label]+1 : 1;
+				var lowerlabel = label.toLowerCase();
+				$this.attr('data-indexlabel',lowerlabel);
+				idx[lowerlabel] = idx[lowerlabel] ? idx[lowerlabel]+1 : 1;
 				var $counter = $h4.find('.counter');
-				var litlabel = (types[label] ? (types[label][lang] || types[label]['1']) : label);
-				$this.attr('data-count',idx[label]);
-				$counter.html(litlabel+' '+idx[label]+':');
+				var litlabel = (types[lowerlabel] ? (types[lowerlabel][lang] || types[lowerlabel]['1']) : label);
+				$this.attr('data-count',idx[lowerlabel]);
+				$counter.html(litlabel+' '+idx[lowerlabel]+':');
 			}
 		});
 	});
@@ -3657,7 +3663,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $pagethumb = Report.pagelist.find('#'+thumbid);
 			var pgindex = $pagesVisibles.index($page) + 1;
 			if (!$pagethumb.length){
-				$pagethumb = $('<div class="pagethumb" id="'+thumbid+'" data-page="'+pgindex+'" />');
+				$pagethumb = $('<div class="pagethumb" id="'+thumbid+'" data-page="'+pgindex+'"><div class="bleed"></div></div>');
 				if (pgindex === 1) Report.pagelist.prepend($pagethumb);
 				else Report.pagelist.find('.pagethumb:eq('+(pgindex-2)+')').after($pagethumb);
 			} else {
@@ -4381,12 +4387,14 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $images = Report.document.find('img');
 			if ($images.length){
 				var itv = setInterval(function(){
+					timeinc += 150;
 					$images.each(function(){
-						timeinc += 150;
 						if (this.naturalHeight !== 0) imagesloaded++;
 						if (imagesloaded == $images.length || timeinc >= timeout){
 							clearInterval(itv);
 							initFN();
+							if (timeinc >= timeout) $.tipster.notify('Images were not properly loaded to normalize boxes');
+							return false;
 						}
 					});
 				},150);
