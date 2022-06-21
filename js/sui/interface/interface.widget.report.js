@@ -2710,6 +2710,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('mouseenter','[data-edition]',function(){
 		var $this = $(this);
 		var $wrap = $this.parent().addClass('hover');
+		$this.trigger('edition:init');
 	});
 	Report.document.on('mouseleave','[data-edition]',function(){
 		var $this = $(this);
@@ -4313,41 +4314,35 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 
 
-	Report.widget.on('edition:init','.sui-report-document, .page, [data-edition]',function(event,firstload){
+	Report.widget.on('edition:init','[data-edition]',function(event){
 
 		event.stopPropagation();
 		event.stopImmediatePropagation();
 
 		var $elem = $(this);
 		var id = $elem.attr('id') || 'sui' + $.md5(Math.rand()).substring(0, 16);
-		var $edits = $();
 		var setup = {}
-		var selector;
 
+		if ($elem.length && $elem.is('[data-edition]') && !$elem.is('.inited')){
 
-		if ($elem.is('[data-edition]')){
-			if (!$elem.is('.inited')){
-				$edits = $elem;
-				selector = id;
-				$elem.attr('id',id);
-			}
-		} else {
 			$elem.attr('id',id);
-			$edits = $elem.find('[data-edition]:not(.inited)');
-			$elem.find('.block.logo, .block.info, .block.reportName').trigger('edition:draggable');
-			$elem.find('.block.analysts').trigger('edition:analystsdrag');
+
+				 if ($elem.is('[data-edition="text"]')) setup = $.extend(true, {}, mceSetupText);
+			else if ($elem.is('[data-edition="plaintext"]')) setup = $.extend(true, {}, mceSetupPlaintext);
+			else if ($elem.is('[data-edition="tinytext"]')) setup = $.extend(true, {}, mceSetupTinytext);
+			else if ($elem.is('[data-edition="richtext"]')) setup = $.extend(true, {}, mceSetupRichtext);
+			else if ($elem.is('[data-edition="figure"]')) setup = $.extend(true, {}, mceSetupFigure);
+
+			if (!$.isEmptyObject(setup)){
+
+				setup.selector = '#'+id;
+				tinymce.init(setup); //////////////////////////////////////////////////////////////
+
+			}
+
+			$elem.trigger('edition:jscode');
+
 		}
-
-		if (!$edits.length) return;
-
-		if ($edits.filter('[data-edition="text"]').length) setup.text = $.extend(true, {}, mceSetupText);
-		if ($edits.filter('[data-edition="plaintext"]').length) setup.tinytext = $.extend(true, {}, mceSetupPlaintext);
-		if ($edits.filter('[data-edition="tinytext"]').length) setup.tinytext = $.extend(true, {}, mceSetupTinytext);
-		if ($edits.filter('[data-edition="richtext"]').length) setup.richtext = $.extend(true, {}, mceSetupRichtext);
-		if ($edits.filter('[data-edition="figure"]').length) setup.figure = $.extend(true, {}, mceSetupFigure);
-
-		$edits.trigger('edition:wrapfield');
-		$edits.trigger('edition:jscode');
 
 
 		/*
@@ -4362,10 +4357,28 @@ sourceui.interface.widget.report = function($widget,setup){
 			$e.addClass('binded')
 		});
 		*/
-
+		/*
 		$.each(setup,function(k,v){
 			v.selector = '#'+(selector || id+' '+v.selector);
 			tinymce.init(v);
+		});
+		*/
+
+		//Report.document.data('mcesetup',setup);
+
+	});
+	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Report.widget.on('document:init','.sui-report-document',function(event){
+
+		var $elem = Report.document.find('[data-edition]');
+		$elem.trigger('edition:wrapfield');
+
+		$elem.filter('[data-edition="text"],[data-edition="plaintext"],[data-edition="tinytext"]').each(function(){
+			$(this).trigger('edition:init');
+		});
+		$elem.filter('[data-edition="richtext"]').each(function(){
+			var $e = $(this);
+			$e.find('p:empty').html('<br>');
 		});
 
 		var initFN = function(){
@@ -4378,35 +4391,37 @@ sourceui.interface.widget.report = function($widget,setup){
 				if ($page) boxFitter.normalizeBoxes($page);
 			}
 			Report.document.trigger('document:numpage');
+			Report.document.find('.block.logo, .block.info, .block.reportName').trigger('edition:draggable');
+			Report.document.find('.block.analysts').trigger('edition:analystsdrag');
+
 		};
 
-		if ($elem.is('.sui-report-document') && firstload){
-			var timeinc = 0;
-			var timeout = 5000;
-			var imagesloaded = 0;
-			var $images = Report.document.find('img');
-			if ($images.length){
-				var itv = setInterval(function(){
-					timeinc += 150;
-					$images.each(function(){
-						if (this.naturalHeight !== 0) imagesloaded++;
-						if (imagesloaded == $images.length || timeinc >= timeout){
-							clearInterval(itv);
-							initFN();
-							if (timeinc >= timeout) $.tipster.notify('Images not properly loaded to normalize boxes');
-							return false;
-						}
-					});
-				},150);
-			} else {
-				setTimeout(initFN,150);
-			}
+		var timeinc = 0;
+		var timeout = 5000;
+		var imagesloaded = 0;
+		var $images = Report.document.find('img');
+		if ($images.length){
+			var itv = setInterval(function(){
+				timeinc += 150;
+				$images.each(function(){
+					if (this.naturalHeight !== 0) imagesloaded++;
+					if (imagesloaded == $images.length || timeinc >= timeout){
+						clearInterval(itv);
+						initFN();
+						if (timeinc >= timeout) $.tipster.notify('Images not properly loaded to normalize boxes');
+						return false;
+					}
+				});
+			},150);
+		} else {
+			setTimeout(initFN,50);
 		}
 
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	Report.document.trigger('edition:init',[true]);
+	Report.document.trigger('document:init');
+	//Report.document.trigger('edition:init',[true]);
 	Report.document.trigger('historyworker:clear');
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
