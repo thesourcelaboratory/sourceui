@@ -4373,7 +4373,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $elem = Report.document.find('[data-edition]');
 		$elem.trigger('edition:wrapfield');
 
-		$elem.filter('[data-edition="text"],[data-edition="plaintext"],[data-edition="tinytext"]').each(function(){
+		$elem.filter('[data-edition="text"],[data-edition="plaintext"],[data-edition="tinytext"], .financial-data-summary').each(function(){
 			$(this).trigger('edition:init');
 		});
 		$elem.filter('[data-edition="richtext"]').each(function(){
