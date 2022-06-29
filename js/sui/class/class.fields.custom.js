@@ -1047,7 +1047,7 @@ sourceui.customField = function (element, setup) {
 						if (!$.isEmptyObject(Data.vars.postprocess)){
 							setTimeout(function(){
 								Network.link.call(Element, Data.vars.postprocess);
-							},100);
+							},225);
 						}
 					});
 					Element.on('queue:add', function (event, $file) {
