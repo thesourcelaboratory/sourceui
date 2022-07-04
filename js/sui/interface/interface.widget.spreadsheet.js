@@ -215,7 +215,6 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                 }
                 Handson.valid = $.isEmptyObject(Handson.invalid);
             },
-			/*
             afterLoadData: function(initialLoad){
                 var data = this.getData();
                 Handson.area.children('.empty').remove();
@@ -230,8 +229,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                 } else {
                     Handson.widget.trigger('widget:dataload',[data]);
                 }
-            }
-			*/
+            },
 			beforeRefreshDimensions: function () { return false; }
         }));
         //setTimeout(hot.render,10);
