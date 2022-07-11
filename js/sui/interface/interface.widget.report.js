@@ -46,6 +46,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.variables = Report.area.children('.sui-variable');
 	Report.wgtools = Report.widget.children('.toolbar').find('.tools');
 	Report.view = Report.widget.closest('.sui-view');
+	Report.replacer = Report.widget.find('.sui-report-replacer');
+	Report.foundmap = Report.widget.find('.sui-report-foundmap');
 	Report.pagelist = Report.widget.find('.sui-report-pagelist');
 	Report.scroll = Report.view.children('.scroll-default, .scroll-all');
 	Report.viewtools = Report.view.children('.toolbar').children('.tools.left');
@@ -125,7 +127,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			___cnsl.log.apply('ok',arguments);
 		}
 	};
-
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	var Mouse = {
 		axis: function(event,$ref){
 			var roffset = $ref.offset();
@@ -135,7 +137,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			return Math.floor(Math.sqrt(Math.pow(event.pageX - ref[0], 2) + Math.pow(event.pageY - ref[1], 2)));
 		}
 	}
-
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	var Variable = Report.variable = {
 		init: function(){
 			Report.variables.each(function(){
@@ -181,7 +183,254 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	};
 	Variable.init();
-
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	var Replacer = {
+		prop: {},
+		init: function(){
+			//-------------------------------------
+			var $input = Report.replacer.find('input');
+			$input.on('focus',function(){
+				$(this).closest('.field').addClass('focus');
+			});
+			$input.on('blur',function(){
+				$(this).closest('.field').removeClass('focus');
+			});
+			//-------------------------------------
+			Replacer.prop.matches = $();
+			Report.replacer.on('mousedown click', function(event){
+				event.stopPropagation();
+			});
+			//-------------------------------------
+			var $trigger = Report.view.children('.toolbar').children('.tools.right').find('[data-alias="replacer"]');
+			$trigger.on('click',function(){
+				Replacer.visibility();
+			});
+			//-------------------------------------
+			var $toggler = Report.replacer.find('.toggler');
+			$toggler.on('click',function(){
+				Report.replacer.toggleClass('can-replace');
+			});
+			//-------------------------------------
+			var $clear = Report.replacer.find('a.clear');
+			$clear.on('click',function(){
+				var $input = $(this).siblings('input').val('');
+				if ($input.is('.strfind')) Replacer.clear();
+			});
+			//-------------------------------------
+			var $case = Report.replacer.find('a.case');
+			$case.on('click',function(){
+				$case.toggleClass('selected');
+				Replacer.prop.case = $case.is('.selected');
+				Replacer.find();
+			});
+			//-------------------------------------
+			var $word = Report.replacer.find('a.word');
+			$word.on('click',function(){
+				$word.toggleClass('selected');
+				Replacer.prop.word = $word.is('.selected');
+				Replacer.find();
+			});
+			//-------------------------------------
+			var $prev = Report.replacer.find('a.prev');
+			$prev.on('click',function(){
+				Replacer.navigateMark('prev');
+			});
+			//-------------------------------------
+			var $next = Report.replacer.find('a.next');
+			$next.on('click',function(){
+				Replacer.navigateMark('next');
+			});
+			//-------------------------------------
+			var $close = Report.replacer.find('a.close');
+			$close.on('click',function(){
+				Replacer.visibility();
+			});
+			//-------------------------------------
+			var $once = Report.replacer.find('a.once');
+			$once.on('click',function(){
+				Replacer.replaceOnce();
+			});
+			//-------------------------------------
+			var $all = Report.replacer.find('a.all');
+			$all.on('click',function(){
+				Replacer.replaceAll();
+			});
+			//-------------------------------------
+			var $fdFind = Report.replacer.find('.strfind');
+			$fdFind.on('keydown', function(event){
+				if (event.key == 'Enter'){
+					Replacer.find();
+					event.stopImmediatePropagation();
+					event.preventDefault();
+				}
+			});
+			//-------------------------------------
+			var $fdFind = Report.replacer.find('.strfind');
+			$fdFind.on('keyup', function(event){
+				var val = $fdFind.val();
+				if (val.length > 3 || val.length == 0) Replacer.find();
+			});
+			//-------------------------------------
+		},
+		visibility: function(){
+			if (Report.view.is('.replacer-visible')) {
+				Report.view.removeClass('replacer-visible');
+				Replacer.clear();
+			} else {
+				Report.view.addClass('replacer-visible');
+				Replacer.find();
+			}
+		},
+		clear: function(){
+			var $matches = Report.document.find('.replacer-match').contents();
+			$matches.unwrap();
+			Replacer.results();
+		},
+		foundmap: function($found){
+			var top = ($found.offset().top + Report.scroll.scrollTop() - Report.scroll.offset().top) / Report.document.height();
+			Report.foundmap.append('<div class="dot" style="top:'+((top * Report.foundmap.height()) - 15)+'px"/>');
+		},
+		results: function(){
+			Report.foundmap.html('');
+			Replacer.prop.matches = Report.document.find('.replacer-match');
+			Replacer.prop.matches.each(function(k,v){
+				Replacer.foundmap($(this).attr('data-index',k+1));
+			});
+			Replacer.resultLabel();
+		},
+		resultLabel: function(index){
+			if (Replacer.prop.matches.length > 0) {
+				if (!index) index = Replacer.prop.matches.filter('.current').data('index');
+				if (!index) Report.replacer.find('.result').html('<b style="color:#FD6800">?</b> of <b style="color:#FD6800">'+Replacer.prop.matches.length+'</b>');
+				else Report.replacer.find('.result').html('<b style="color:#389aff">'+index+'</b> of <b style="color:#FD6800">'+Replacer.prop.matches.length+'</b>');
+			} else Report.replacer.find('.result').html('No results');
+		},
+		markContent: function(contentNode, strlow, regex, flag){
+			if (contentNode.nodeType == 3){
+				contentNode.normalize();
+				if (contentNode.nodeValue.toLowerCase().indexOf(strlow) > -1){
+					$(contentNode).replaceWith(contentNode.nodeValue.replace(new RegExp(regex, flag), '<span class="replacer-match">$&</span>'));
+				}
+			} else {
+				$(contentNode).contents().each(function() {
+					Replacer.markContent(this, strlow, regex, flag);
+				});
+			}
+		},
+		find: function(str, $edits){
+			if (!$edits){
+				Replacer.clear();
+			}
+			if (!Report.view.is('.replacer-visible')) return;
+			str = str || Report.replacer.find('.strfind').val();
+			if (str.length > 1){
+				$edits = $edits || Report.document.find('[data-edition]:visible');
+				var strlow = str.toLowerCase();
+				var regex;
+				var flag = 'gm'
+				if (Replacer.prop.word) regex = '\\b'+str+'\\b';
+				else regex = str;
+				if (!Replacer.prop.case) flag += 'i';
+				$edits.each(function(){
+					this.normalize();
+					var $edition = $(this);
+					$edition.contents().each(function(){
+						Replacer.markContent(this, strlow, regex, flag);
+					});
+				});
+				Replacer.results();
+			}
+		},
+		replace: function($match, str){
+			Report.document.trigger('historyworker:statehold',['replacer']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+			$match.each(function(){
+				$(this).replaceWith(str);
+			})
+			Replacer.find();
+			Report.document.trigger('document:change');
+			Report.document.trigger('historyworker:stateadd',['replacer']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		},
+		replaceOnce: function(){
+			var str = Report.replacer.find('.strrepl').val();
+			var $current = Replacer.prop.matches.filter('.current');
+			if (!$current.length) $current = Replacer.currentMark('next');
+			var $next = Replacer.currentMark('next');
+			Replacer.replace($current, str);
+			Replacer.navigateMark('next');
+		},
+		replaceAll: function(){
+			var str = Report.replacer.find('.strrepl').val();
+			Replacer.replace(Replacer.prop.matches, str);
+		},
+		currentMarkByBoxToPrev: function($refbox, direction){
+			var $boxes = $();
+			var $pages = $();
+			$boxes = $boxes.add($refbox.parent().prevAll('.fieldwrap').children('[data-edition]'));
+			$pages = $pages.add($boxes.closest('.page'));
+			$pages = $pages.add($pages.prevAll('.page:visible'));
+			$boxes = $boxes.add($pages.find('[data-edition]'));
+			return $boxes.find('.replacer-match').last();
+		},
+		currentMarkByBoxToNext: function($refbox, direction){
+			var $boxes = $();
+			var $pages = $();
+			$boxes = $boxes.add($refbox);
+			$boxes = $boxes.add($refbox.parent().nextAll('.fieldwrap').children('[data-edition]'));
+			$pages = $pages.add($boxes.closest('.page'));
+			$pages = $pages.add($pages.nextAll('.page:visible'));
+			$boxes = $boxes.add($pages.find('[data-edition]'));
+			return $boxes.find('.replacer-match').first();
+		},
+		currentMarkByPageToPrev: function($refpage, direction){
+			var $boxes = $();
+			var $pages = $();
+			$pages = $pages.add($refpage.prevAll('.page:visible'));
+			$boxes = $boxes.add($pages.find('[data-edition]'));
+			return $boxes.find('.replacer-match').last();
+		},
+		currentMarkByPageToNext: function($refpage, direction){
+			var $boxes = $();
+			var $pages = $();
+			$pages = $boxes.add($refpage);
+			$pages = $pages.add($refpage.nextAll('.page:visible'));
+			$boxes = $boxes.add($pages.find('[data-edition]'));
+			return $boxes.find('.replacer-match').first();
+		},
+		currentMark: function(direction){
+			var $current = $();
+			if (Report.lastfocusedbox) $current = direction == 'prev' ? Replacer.currentMarkByBoxToPrev(Report.lastfocusedbox) : Replacer.currentMarkByBoxToNext(Report.lastfocusedbox);
+			var $currentpage = Report.document.children('.page.active');
+			if (!$current.length && $currentpage.length) $current = direction == 'prev' ? Replacer.currentMarkByPageToPrev($currentpage) : Replacer.currentMarkByPageToNext($currentpage);
+			if (!$current.length) $current = direction == 'prev' ? Report.document.find('.replacer-match:last') : Report.document.find('.replacer-match:first');
+			$current.addClass('current');
+			return $current;
+		},
+		resetCurrentMark: function(){
+			Replacer.prop.matches = Report.document.find('.replacer-match');
+			Replacer.prop.matches.filter('.current').removeClass('current');
+			Replacer.resultLabel();
+		},
+		navigateMark: function(direction){
+			var $current = Replacer.prop.matches.filter('.current');
+			if ($current.length){
+				$current.removeClass('current');
+				$current = Replacer.prop.matches.filter('[data-index="'+(direction == 'prev' ? $current.data('index') - 1 : $current.data('index') + 1)+'"]');
+				if (!$current.length) $current = Replacer.prop.matches.filter(direction == 'prev' ? ':last' : ':first');
+				$current.addClass('current');
+			} else {
+				$current = Replacer.currentMark(direction);
+			}
+			if ($current.length) {
+				Replacer.resultLabel($current.data('index'));
+				var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
+				var scrolltop = ($current.offset().top * zoom) + Report.scroll.scrollTop() - Report.scroll.offset().top - (Report.scroll.height()/2.5);
+				Report.scroll.scrollTo(scrolltop,150);
+				//Report.scroll.scrollTo(scrolltop,150,{ offset:{top:parseInt(-(Report.scroll.height()/2.5))} });
+			}
+		},
+	};
+	Replacer.init();
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	var Figure = {
 		base64: function(url,callback,failback){
 			var xhr = new XMLHttpRequest();
@@ -216,7 +465,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 		}
 	};
-
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	var Thumbnail = {
 		current: {
 			page:null,
@@ -455,7 +704,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			Thumbnail.dom.breaker();
 		},
 	};
-
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	var caret = {
 		cleanup: function($edit){
 			var $todel = $edit.parent().find('[data-mce-caret], .mce-visual-caret, .caret-autobreak');
@@ -566,6 +815,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		}
 	};
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Dom.document.on('directpaste', function(event,$clone,$page,$container){
@@ -603,6 +853,22 @@ sourceui.interface.widget.report = function($widget,setup){
 				else if (event.keyCode == 89) Report.document.trigger('historyworker:forward');
 				event.preventDefault();
 				return false;
+			}
+			// CTRL F ======================================
+			else if (event.keyCode == 70){
+				event.preventDefault();
+				//Report.view.children('.toolbar').children('.tools.right').find('[data-alias="replacer"]').trigger('click');
+				Report.view.addClass('replacer-visible');
+				Report.replacer.removeClass('can-replace');
+				Report.replacer.find('.strfind').focus();
+			}
+			// CTRL H ======================================
+			else if (event.keyCode == 72){
+				event.preventDefault();
+				//Report.view.children('.toolbar').children('.tools.right').find('[data-alias="replacer"]').trigger('click');
+				Report.view.addClass('replacer-visible');
+				Report.replacer.addClass('can-replace');
+				Report.replacer.find('.strfind').focus();
 			}
 		}
 	});
@@ -3088,6 +3354,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$page = $boxgroup.length ? $boxgroup.filter(':eq(0)').closest('.page') : $page;
 		}
 		Report.document.trigger('document:change',[$page]);
+		Replacer.find();
 	});
 	Report.document.on('edition:nodechange','[data-edition]',function(event,node){
 		var $this = $(this);
@@ -3265,6 +3532,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.tinymceinlinetoolbar.css({
 			'left':Report.viewtools.offset().left + Report.viewtools.width() + 15
 		});
+		Report.lastfocusedbox = $this;
+		Replacer.find();
 	});
 	Report.document.on('click','[data-edition] span.counter',function(event){
 		var $this = $(this);
@@ -3408,6 +3677,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$thumb.addClass('selected');
 			if (!preventScrollThumb) Report.pagelist.scrollTo($thumb,200,{ offset:{top: -(Report.scroll.height()/2) + ($thumb.height()/2)} });
 		}
+		Replacer.find();
 	});
 	Report.document.on('page:unactive',function(){
 		Report.document.find('.page.active, .fieldwrap.active, .container.active, .col.selected').removeClass('active selected');
@@ -3810,6 +4080,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				lastid = k;
 			});
 			Report.document.removeClass('preventhistorystack');
+			Replacer.find();
 		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -3933,8 +4204,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetupText = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="text"]:not(.inited)',
 		forced_root_block : false,
-		toolbar: 'undo redo | forecolor | bold italic underline | removeformat',
-		valid_elements: 'p,strong[style],em,span[style],a[href],br',
+		toolbar: 'undo redo | forecolor | superscript subscript | bold italic underline | removeformat',
+		valid_elements: 'p,strong[style],em,span[style],a[href],sup[style],sub[style],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align'
 		},
@@ -3942,7 +4213,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetupPlaintext = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="plaintext"]:not(.inited)',
 		forced_root_block : false,
-		toolbar: 'undo redo | removeformat',
+		toolbar: 'undo redo | removeformat | superscript subscript',
 		valid_elements: 'span[style],br',
 		valid_styles: {
 			'*': 'color'
@@ -3951,8 +4222,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetupTinytext = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="tinytext"]:not(.inited)',
 		forced_root_block : 'p',
-		toolbar: 'undo redo | removeformat | bold italic underline | forecolor | alignleft aligncenter alignjustify alignright',
-		valid_elements: 'p[style],h1[style|class],h2[style|class],h3[style|class],h4[style|class],strong[style]/b[style],em,span[style|class],a[href],br',
+		toolbar: 'undo redo | removeformat | bold italic underline | superscript subscript | forecolor | alignleft aligncenter alignjustify alignright',
+		valid_elements: 'p[style],h1[style|class],h2[style|class],h3[style|class],h4[style|class],strong[style]/b[style],em,span[style|class],a[href],sup[style],sub[style],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align,font-style'
 		},
@@ -3966,14 +4237,14 @@ sourceui.interface.widget.report = function($widget,setup){
 		imagetools_toolbar: 'none',
 		paste_data_images: false,
 		toolbar: [
-			'removeformat | bold italic underline | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignjustify alignright | numlist bullist outdent indent | link | table | editimage imageoptions '
+			'removeformat | bold italic underline | superscript subscript | styleselect | fontsizeselect forecolor backcolor cellcolor | alignleft aligncenter alignjustify alignright | numlist bullist outdent indent | link | table | editimage imageoptions '
 		],
 		automatic_uploads: false,
 		file_picker_types: 'image',
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'p[style|class|data-joiner],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],figure[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
+		valid_elements: 'p[style|class|data-joiner],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],figure[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
 		valid_styles: {
 			'h1': 'font-size,font-family,color,text-decoration,text-align',
 			'h2': 'font-size,font-family,color,text-decoration,text-align',
@@ -3987,6 +4258,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			'th': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
 			'td': 'rowspan,colspan,height,width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,white-space',
 			'img': 'zoom,width,float,display,margin-left,margin-right',
+			'sup': 'font-size,font-family,color,text-decoration,text-align,background-color',
+			'sub': 'font-size,font-family,color,text-decoration,text-align,background-color',
 			'strong': 'font-size,font-family,color,text-decoration,text-align,background-color',
 			'span': 'font-size,font-family,color,text-decoration,text-align,background-color',
 		},
@@ -4162,13 +4435,13 @@ sourceui.interface.widget.report = function($widget,setup){
 		table_appearance_options: false,
 		imagetools_toolbar: 'none',
 		paste_data_images: true,
-		toolbar: 'undo redo | forecolor | bold italic underline | alignleft aligncenter alignjustify alignright | removeformat | link | table ',
+		toolbar: 'undo redo | forecolor | bold italic underline | superscript subscript | alignleft aligncenter alignjustify alignright | removeformat | link | table ',
 		automatic_uploads: false,
 		file_picker_types: 'image',
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'div[class],p[class],h4[class],h5[class],figure[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
+		valid_elements: 'div[class],p[class],h4[class],h5[class],figure[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
 		valid_styles: {
 			'figure': 'width',
 			'table': 'zoom,float,display,margin-left,margin-right,border,border-colapse,border-color,border-style,background-color,background,color,width,height,cellpadding,cellspacing',
@@ -4176,6 +4449,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			'th': 'rowspan,colspan,height,width,min-width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,border-width,border-style,white-space',
 			'td': 'rowspan,colspan,height,width,min-width,font-weight,text-align,background,background-color,padding-top,padding-bottom,padding-right,padding-left,color,font-size,font-style,text-decoration,font-family,vertical-align,border,border-top,border-left,border-right,border-bottom,border-color,border-image,border-width,border-style,white-space',
 			'img': 'zoom,width,float,display,margin-left,margin-right',
+			'sup': 'font-size,font-family,color,text-decoration,text-align,background-color',
+			'sub': 'font-size,font-family,color,text-decoration,text-align,background-color',
 			'strong': 'font-size,font-family,color,text-decoration,text-align,background-color',
 			'span': 'font-size,font-family,color,text-decoration,text-align,background-color',
 		},

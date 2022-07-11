@@ -882,7 +882,34 @@ sourceui.templates.interface = new sourceui.Template({
 		},
 		report: {
 			document:
-				'<div class="sui-report-pagelist scroll-custom"></div><div class="sui-report-document @{paper}" lang="@{lang}">@{child:content}</div>',
+				'<div class="sui-report-pagelist scroll-custom"></div>'+
+				'<div class="sui-report-replacer">'+
+					'<div class="toggler icon-arrow-right2"></div>'+
+					'<div class="form">'+
+						'<div class="find">'+
+							'<div class="field">'+
+								'<input class="strfind" type="text" placeholder="Find..."/>'+
+								'<a class="clear icon-close2" data-tip="Clear Term"></a>'+
+								'<a class="case" data-tip="Match Case">Aa</a>'+
+								'<a class="word" data-tip="Match Whole Word">ab</a>'+
+							'</div>'+
+							'<span class="result">No results</span>'+
+							'<a class="prev icon-lite-up" data-tip="Previous Match"></a>'+
+							'<a class="next icon-lite-down" data-tip="Next Match"></a>'+
+							'<a class="close icon-close3" data-tip="Close"></a>'+
+						'</div>'+
+						'<div class="repl">'+
+							'<div class="field">'+
+								'<input class="strrepl" type="text" placeholder="Replace..."/>'+
+								'<a class="clear icon-close2" data-tip="Clear Term"></a>'+
+							'</div>'+
+							'<a class="once" data-tip="Replace Current Match">Curr</a>'+
+							'<a class="all" data-tip="Replace All Matches">All</a>'+
+						'</div>'+
+					'</div>'+
+				'</div>'+
+				'<div class="sui-report-foundmap"></div>'+
+				'<div class="sui-report-document @{paper}" lang="@{lang}">@{child:content}</div>',
 			validations:
 				'<div class="sui-validations">@{child:content}</div>',
 			templates:
