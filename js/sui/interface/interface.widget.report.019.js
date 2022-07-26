@@ -56,7 +56,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.templates = Report.widget.find('.sui-templates');
 	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
-	Report.scaler = $('<mark class="sui-scaler"></mark>').appendTo(Report.area);
+	Report.scaler = $('<mark class="sui-scaler"></mark>').appendTo(Report.document);
 
 
 	Report.figuretypes = {
@@ -1350,7 +1350,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			if ($box.data('boxgroup')){
 				var $boxGroup = $();
 				var $foundgroup = Report.document.find('.cell > [data-boxgroup="'+$box.data('boxgroup')+'"], .boxstack > [data-boxgroup="'+$box.data('boxgroup')+'"]');
-				//var $foundgroup = $box.next('[data-boxgroup="'+$box.data('boxgroup')+'"]');
 				var idx = 0;
 				if ($foundgroup.length > 1) {
 					$foundgroup.each(function(){
@@ -2651,32 +2650,23 @@ sourceui.interface.widget.report = function($widget,setup){
 			$elem.removeAttr('style');
 			$elem.removeAttr('data-mce-style');
 		}
-		var doczoom = $.toNumber(Report.document.attr('data-zoom') || 1);
-		var inizoom = $.toNumber($elem.attr('data-zoom') || $elem.attr('data-inizoom')) || 1;
 		var $editor = $(this);
+		var $table = $elem.children('table');
 		var editoroffset = $editor.offset();
-		editoroffset.top = editoroffset.top;
-		editoroffset.left = editoroffset.left;
 		var editorwidth = $editor.innerWidth();
 		var scalerwidth = Report.scaler.width();
 		var scrolloffset = Report.scroll.offset();
-		scrolloffset.top = scrolloffset.top;
-		scrolloffset.left = scrolloffset.left;
-		var scrolltop = Report.scroll.scrollTop();
-		var scrollleft = Report.scroll.scrollLeft();
-		var elemwidth = $elem.outerWidth(true) * inizoom;
+		var elemwidth = (isimg?$elem:$table).outerWidth(true);
 		var elemoffset = $elem.offset();
-		elemoffset.top = elemoffset.top * inizoom;
-		elemoffset.left = elemoffset.left * inizoom;
 		var zoom;
 		var inipos;
 		var initialcss = {};
 		var constrainTo;
 		initialcss = {
-			top: elemoffset.top * doczoom + scrolltop - scrolloffset.top,
-			left: (elemoffset.left + elemwidth) * doczoom + scrollleft - scalerwidth - scrolloffset.left,
+			top: elemoffset.top + Report.scroll.scrollTop() - scrolloffset.top,
+			left: (elemoffset.left + $elem.width()) - scalerwidth - scrolloffset.left,
 		};
-		constrainTo = [initialcss.top, ((elemoffset.left + editorwidth) * doczoom - scalerwidth - scrolloffset.left + scrollleft), initialcss.top, editoroffset.left * doczoom - scrolloffset.left + scrollleft];
+		constrainTo = [initialcss.top, (elemoffset.left + editorwidth) - scalerwidth - scrolloffset.left, initialcss.top, editoroffset.left - scrolloffset.left];
 		Report.scaler.css(initialcss);
 		$.pep.unbind( Report.scaler );
 		var $pep = Report.scaler.pep({
@@ -2686,31 +2676,38 @@ sourceui.interface.widget.report = function($widget,setup){
 			useCSSTranslation: false,
 			constrainTo: constrainTo,
 			start:function(ev, obj){
-				inipos = obj.$el.offset().left;
+				inipos = elemoffset.left;
 			},
+			//drag:function(ev, obj){
+			//},
 			stop:function(ev, obj){
 				$elem.removeAttr('data-mce-style');
 				var endpos = obj.$el.offset().left;
-				if (isimg){
-					var basewidth = $elem.outerWidth() - (inipos/doczoom - endpos/doczoom);
-					var newcss = { width: basewidth };
-					$elem.css(newcss);
-				} else {
-					var $tablewrap = $elem.closest('.tablewrap');
-					var totalwidth = ((endpos+scalerwidth)/doczoom) - editoroffset.left;
-					var tablewidth = $elem.outerWidth();
-					zoom = totalwidth/tablewidth;
-					$tablewrap.outerWidth(parseInt($elem.outerWidth() * zoom));
-					$elem.css({ zoom: zoom }).attr('data-zoom',zoom);
+				var basewidth;
+				basewidth = editorwidth - ((inipos - endpos) + editorwidth - scalerwidth);
+				var newcss = { width: basewidth };
+				if (!isimg){
+					zoom = basewidth/elemwidth;
+					$table.css({ zoom: zoom }).attr('data-zoom',zoom);
 				}
+				$elem.css(newcss);
 				setTimeout(function(){
-					$elem.attr('data-mce-selected','1');
+					(isimg?$elem:$table).attr('data-mce-selected','1');
 					Report.scaler.addClass('active');
 				},30);
 				$editor.trigger('edition:change');
 				$elem.addClass('scaled');
 			}
 		});
+		/*
+		if (editorwidth > elemwidth) zoom = 1;
+		else zoom = editorwidth/elemwidth;
+		initialcss = {
+			top: (elemoffset.top * zoom) + Report.scroll.scrollTop() - scrolloffset.top,
+			left: ((elemoffset.left + $elem.outerWidth(true)) * zoom) - scalerwidth - scrolloffset.left,
+		};
+		constrainTo = [initialcss.top, ((elemoffset.left * zoom) + editorwidth) - scalerwidth - scrolloffset.left, initialcss.top, editoroffset.left - scrolloffset.left];
+		*/
 	});
 	Report.scaler.on('click',function(event){
 		event.preventDefault();
@@ -2718,13 +2715,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.scaler.on('dblclick',function(event){
 		var $elem = Report.scaler.data('element');
-		var isimg = $elem.is('img');
-		if (isimg) {
-			$elem.css('width','').removeClass('scaled');
-		} else {
-			$elem.removeAttr('data-zoom');
-			$elem.closest('[data-edition]').trigger('edition:tablefit');
-		}
+		$elem.css('width','').removeClass('scaled');
 		setTimeout(function(){ Report.scaler.removeClass('active'); }, 30);
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2983,7 +2974,12 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	Report.document.on('mouseenter','[data-edition]',function(){
 		var $this = $(this);
+		var $wrap = $this.parent().addClass('hover');
 		$this.trigger('edition:init');
+		/*
+		if ($wrap.attr('data-boxgroup')) $wrap.attr('title',$wrap.attr('data-boxgroup'));
+		else $wrap.removeAttr('title');
+		*/
 	});
 	Report.document.on('mouseleave','[data-edition]',function(){
 		var $this = $(this);
@@ -3331,19 +3327,18 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $table = $this.find('table.pastedelement');
 		var $wrap = $table.parent();
 		if ($wrap.is('.tablewrap')){
-			var wt = $table.outerWidth(), we = $wrap.innerWidth(), zoom;
-			if (we > wt) {
-				zoom = 1;
-				$table.css({'min-width':we});
-			} else {
-				zoom = we/wt;
-			}
 			if ($table.attr('data-zoom')){
 				$table.css({'zoom':$wrap.attr('data-zoom')});
 			} else {
+				var wt = $table.outerWidth(), we = $wrap.innerWidth(), zoom;
+				if (we > wt) {
+					zoom = 1;
+					$table.css({'min-width':we});
+				} else {
+					zoom = we/wt;
+				}
 				$table.css({'zoom':zoom});
 			}
-			$table.attr('data-inizoom', zoom);
 			$table.addClass('fitted');
 		}
 	});
@@ -3559,16 +3554,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		$this.closest('[data-edition]').trigger('edition:active');
 		event.preventDefault();
 	});
-
-	Report.document.on('mouseup','[data-edition] img, [data-edition] table',function(event){
+	Report.document.on('mouseup','[data-edition] img, [data-edition] .tablewrap',function(event){
 		var $this = $(this);
-		if ($this.is('table.pastedelement') && !$this.parent().is('.tablewrap')) $this.wrap('<figure class="tablewrap"/>'); // verificar a existencia do tablewrap e dar o wrap se não tiver
 		Report.scaler.addClass('active');
 		$this.closest('[data-edition]').trigger('edition:elementscaler', [$this]);
-	});
-	Report.document.on('dragstart drop','[data-edition] img, [data-edition] table, [data-edition] td',function(event){
-		event.preventDefault();
-		event.stopPropagation();
 	});
 	Report.document.on('click','[data-edition] img, [data-edition] table',function(event){
 		Report.scaler.addClass('active');
@@ -4258,7 +4247,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'p[style|class|data-joiner],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
+		valid_elements: 'p[style|class|data-joiner],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],figure[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
 		valid_styles: {
 			'h1': 'font-size,font-family,color,text-decoration,text-align',
 			'h2': 'font-size,font-family,color,text-decoration,text-align',
@@ -4287,7 +4276,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		],
 		paste_preprocess : function(pl, o) {
 			var $content = $('<div>'+(allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content)+'</div>');
-			var $imgtable = $content.children('img,table').first().attr('draggable','false');
+			var $imgtable = $content.children('img,table');
 			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
 			var $tablocal = $imgtable.filter('table').addClass('nedt');
 			$imgtable.addClass('pastedelement');
@@ -4455,7 +4444,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'div[class],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
+		valid_elements: 'div[class],p[class],h4[class],h5[class],figure[style|class],img[style|src|class],table[style|border|cellpadding|cellspacing|class],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
 		valid_styles: {
 			'figure': 'width',
 			'table': 'zoom,float,display,margin-left,margin-right,border,border-colapse,border-color,border-style,background-color,background,color,width,height,cellpadding,cellspacing',
@@ -4472,13 +4461,13 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $target = $(o.target.selection.getNode());
 			var $field = $target.closest('[data-edition]');
 			var haspot = $target.is('.figurespot') || $target.closest('.figurespot',$field).length;
-			var hash = $target.is('h3,h4,h5') || $target.closest('h3,h4,h5',$field).length;
+			var hash = $target.is('h3,h5') || $target.closest('h3,h5',$field).length;
 			var $content = $('<div>'+(allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content)+'</div>');
 			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
 			if ($td.length) $td.css('border','');
-			var $imgtable = $content.children('img,table').first().attr('draggable','false');
+			var $imgtable = $content.children('img,table');
 			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
-			var $tablocal = $imgtable.filter('table')/*.addClass('nedt')*/;
+			var $tablocal = $imgtable.filter('table').addClass('nedt');
 			$tablocal = $tablocal.wrap('<figure class="tablewrap"/>');
 			$imglocal.addClass('localsource');
 			if ($imgtable.length){
@@ -4486,15 +4475,15 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $p = $target.is('.figurespot') ? $target : $target.closest('.figurespot',$field);
 					$p.find(':not(img):not(.tablewrap),.tablewrap:empty').remove();
 					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
-					$imgtable.addClass('pastedelement');
+					$imgtable.addClass('pastedelement')
 					$imglocal.removeAttr('width').removeAttr('height');
 					o.content = $content.html();
-					if ($imglocal.length){
-						$field.addClass('ajax-courtain');
-					}
 				} else {
-					$.tipster.notify('Paste image only into the spot');
+					$.tipster.notify('Paste only into the spot');
 					o.content = hash ? '' : '<p></p>';
+				}
+				if ($imglocal.length){
+					$field.addClass('ajax-courtain');
 				}
 			} else {
 				o.content = $content.html();
@@ -4515,11 +4504,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 			editor.on('focus', function(e){
 				$ed.attr('contenteditable',true);
-				if (!$ed.find('.figurespot').length) {
-					if (!$ed.find('h3,h4').length) $ed.after('<div class="figurespot yedt" contenteditable="true"/>');
-					else if (!$ed.find('h5').length) $ed.before('<div class="figurespot yedt" contenteditable="true"/>');
-					else  $ed.append('<div class="figurespot yedt" contenteditable="true"/>');
-				}
 			});
 			editor.on('mousedown', function (e) {
 				$ed.attr('contenteditable',true);
@@ -4564,18 +4548,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				if ((e.ctrlKey && e.key != 'Control' && e.key != 'c' && e.key != 'v' && e.key != 'x' && e.key != 'z') || (e.key != 'Enter' && e.key != 'Backspace' && e.key != 'Delete' && e.key != 'Escape' && e.key != 'Tab')){
 					$p.children(':not(img):not(.tablewrap),.tablewrap:empty').remove();
 					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
-				} else if (e.key == 'Delete' || e.key == 'Backspace'){
-					var $sel = $ed.find('.pastedelement[data-mce-selected="1"]');
-					if ($sel.is('img')){
-						$sel.replaceWith('<span class="caret-autobreak"></span>');
-						caret.focus($ed);
-					} else {
-						if ($sel.find('td[data-mce-selected="1"]').length){
-							$sel.replaceWith('<span class="caret-autobreak"></span>');
-							caret.focus($ed);
-						}
-					}
-
+				} else if (e.key == 'Delete'){
+					$ed.find('.pastedelement[data-mce-selected="1"]').replaceWith('<span class="caret-autobreak"></span>');
+					caret.focus($ed);
 				}
 			});
 			editor.on('paste', function (e) {
@@ -4602,7 +4577,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						Report.document.trigger('historyworker:clear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 					}
 				}
-				setTimeout(function(){$ed.find('.pastedelement').removeAttr('data-mce-selected');},100);
+				$ed.find('.pastedelement').removeAttr('data-mce-selected');
 			});
 			editor.on('NodeChange', function(e) {
 				var $elem = e.element ? $(e.element) : $();

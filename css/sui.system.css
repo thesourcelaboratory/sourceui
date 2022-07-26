@@ -891,7 +891,7 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.datagrid > .area .list .line.done .col:not(.swiper):not(.check) { opacity:0.3; filter:grayscale(40%); border-bottom-color: rgba(0,0,0,0.125); }
 
 .sui-widget.datagrid > .area .list .line.removed { background:#fafafa; }
-.sui-widget.datagrid > .area .list .line.removed .col:not(.swiper):not(.check) { opacity:0.4; filter:grayscale(95%); }
+.sui-widget.datagrid > .area .list .line.removed .col:not(.swiper):not(.check) { opacity:0.3; filter:grayscale(95%); }
 .sui-widget.datagrid > .area .list .line.removed .col.rounded:not(.visualidentifier) { filter:grayscale(25%) !important; }
 .sui-widget.datagrid > .area .list .line.removed .col:not(.rounded):not(.visualidentifier) { color:#AAA !important; text-decoration:line-through !important; }
 .sui-widget.datagrid > .area .list .line.removed .col:not(.rounded):not(.visualidentifier) *:not(.rounded) { color:#AAA !important; }
@@ -1262,7 +1262,7 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.timeline > .area > .timeline > .post > .content > .description,
 .sui-widget.timeline > .area > .timeline > .post > .content > .image,
 .sui-widget.timeline > .area > .timeline > .post > .content > .opengraph { width:100%; }
-.sui-widget.timeline > .area > .timeline > .post > .content :empty { display:none; }
+.sui-widget.timeline > .area > .timeline > .post > .content :empty:not(br) { display:none; }
 /* --------------------------------------------------- */
 
 
