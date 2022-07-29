@@ -1349,15 +1349,20 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		groupBellow: function($box){
 			// join grouped boxes ------------------------
+			/*
 			var $boxsequence = $();
+			var $allboxes = $();
 			var datagroup = $box.data('boxgroup');
 			if (datagroup){
 				$boxsequence = $boxsequence.add($box);
-				var $allboxes = Report.document.find('.fieldwrap');
+				$allboxes = $allboxes.add(Report.document.find('.boxstack > .fieldwrap'));
+				$allboxes = $allboxes.add(Report.document.find('.content > .fieldwrap'));
+				$allboxes = $allboxes.add(Report.document.find('.side > .fieldwrap'));
 				var $allgroup = $allboxes.filter('[data-boxgroup="'+datagroup+'"]');
 				var hasbefore = false;
 				var isnext = false;
 				var lastindex = -1;
+				console.log($allgroup);
 				$allgroup.each(function(){
 					var $bg = $(this);
 					if (this === $box.get(0)) {
@@ -1366,6 +1371,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					} else {
 						hasbefore = true;
 					}
+					console.log(isnext,hasbefore,lastindex,$allboxes.index($bg.get(0)));
 					if (isnext){
 						if (lastindex == $allboxes.index($bg.get(0))){
 							$boxsequence = $boxsequence.add($bg);
@@ -1380,7 +1386,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				else if (!hasbefore) $box = boxFitter.ungroupBox($box);
 			}
 			return $box;
-			/*
+			*/
 			if ($box.data('boxgroup')){
 				var $boxGroup = $();
 				var $foundgroup = Report.document.find('.cell > [data-boxgroup="'+$box.data('boxgroup')+'"], .boxstack > [data-boxgroup="'+$box.data('boxgroup')+'"]');
@@ -1401,7 +1407,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			}
 			return $box;
-			*/
 		},
 		ungroupBox: function($box){
 			___cnsl.log('ungroupBox','group: '+$box.data('boxgroup'),$box);
