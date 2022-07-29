@@ -1045,51 +1045,54 @@ sourceui.interface.widget.report = function($widget,setup){
 			var contentNew = $contentNew.html();
 			var $fieldwrap = $edition.parent();
 
-			if (contentNew){
+			$fieldwrap.removeClass('overflew toolarge');
 
-				$fieldwrap.removeClass('overflew toolarge');
+			var $cloneedition = $edition.clone().html('');
+			$cloneedition.html(contentNew);
 
-				var $cloneedition = $edition.clone().html('');
-				$cloneedition.html(contentNew);
+			var $clonewrap = $('<div class="'+$fieldwrap.attr('class')+'" data-boxgroup="'+$fieldwrap.attr('data-boxgroup')+'" />').append($cloneedition);
 
-				var $clonewrap = $('<div class="'+$fieldwrap.attr('class')+'" data-boxgroup="'+$fieldwrap.attr('data-boxgroup')+'" />').append($cloneedition);
+			var $page = $edge.closest('.page'), $clonepage;
 
-				var $page = $edge.closest('.page'), $clonepage;
+			var pagelayout = $page.data('layout');
+			if (pagelayout == 'covered-default') pagelayout = 'splited';
 
-				var pagelayout = $page.data('layout');
-				if (pagelayout == 'covered-default') pagelayout = 'splited';
+			var $nextpage = $page.next('.page[data-layout="'+pagelayout+'"]:not(.breaker-before)');
 
-				var $nextpage = $page.next('.page[data-layout="'+pagelayout+'"]:not(.breaker-before)');
-
-				if ($nextpage.length){
-					if ($edge.is('.side')) {
-						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.side'),'prepend']);
-					} else if ($edge.is('.content')){
-						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.content'),'prepend']);
-					} else if ($edge.is('.boxstack')){
-						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.boxstack, .cell.content'),'prepend']);
-					} else {
-						$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.main > .row > .cell'),'prepend']);
-					}
-					___cnsl.log('appendBroken','contentNew','prepend to next page',$nextpage.get(0));
+			if ($nextpage.length){
+				if ($edge.is('.side')) {
+					$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.side'),'prepend']);
+				} else if ($edge.is('.content')){
+					$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.cell.content'),'prepend']);
+				} else if ($edge.is('.boxstack')){
+					$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.boxstack, .cell.content'),'prepend']);
 				} else {
-					$clonepage = Report.templates.children('.page[data-layout="'+pagelayout+'"]').clone();
-					Report.document.trigger('document:addpage',[$clonepage,$page,'after']);
-					if ($edge.is('.side')){
-						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.side'),'prepend']);
-					} else if ($edge.is('.content')){
-						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.content'),'prepend']);
-					} else if ($edge.is('.boxstack')){
-						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.boxstack, .cell.content'),'prepend']);
-					} else {
-						$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.main > .row > .cell'),'prepend']);
-					}
-					___cnsl.log('appendBroken','contentNew','prepend to new page',$clonepage.get(0));
+					$nextpage.trigger('page:addedition',[$clonewrap,$nextpage.find('.main > .row > .cell'),'prepend']);
 				}
-				if ($boxNextAll) $clonewrap.after($boxNextAll);
-				//$page.trigger('page:active');
-				return $clonewrap;
+				___cnsl.log('appendBroken','contentNew','prepend to next page',$nextpage.get(0));
+			} else {
+				$clonepage = Report.templates.children('.page[data-layout="'+pagelayout+'"]').clone();
+				Report.document.trigger('document:addpage',[$clonepage,$page,'after']);
+				if ($edge.is('.side')){
+					$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.side'),'prepend']);
+				} else if ($edge.is('.content')){
+					$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.cell.content'),'prepend']);
+				} else if ($edge.is('.boxstack')){
+					$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.boxstack, .cell.content'),'prepend']);
+				} else {
+					$clonepage.trigger('page:addedition',[$clonewrap,$clonepage.find('.main > .row > .cell'),'prepend']);
+				}
+				___cnsl.log('appendBroken','contentNew','prepend to new page',$clonepage.get(0));
 			}
+			if ($boxNextAll) $clonewrap.after($boxNextAll);
+
+			if ((contentNew.trim()+'') === ''){
+				$clonewrap.remove();
+				if ($boxNextAll && $boxNextAll.length) return $boxNextAll.first();
+				return $();
+			}
+
+			return $clonewrap;
 
 		},
 		breakBox: function($box,$edge,returnBroken){
@@ -1677,7 +1680,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						if ($lastbox.is('[data-boxgroup]')) {
 							boxFitter.joinBox(boxFitter.groupBellow($lastbox));
 						}
-						var $nextboxes = $edgerange.filter(edgesel).filter(':gt('+edx+')').children('.fieldwrap, .container');
+						var $nextboxes = $edgerange.filter(':gt('+edx+')').filter(edgesel).children('.fieldwrap, .container');
 						if ($nextboxes.length){
 							$edge.append($nextboxes);
 							___cnsl.yellow('normalizeBoxes', cnsl, 'gap boxes appended: '+$nextboxes.length,$nextboxes);
