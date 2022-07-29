@@ -2684,13 +2684,11 @@ sourceui.interface.widget.report = function($widget,setup){
 		$.tipster.notify(selectlen+' selected boxes joined');
 	});
 	Report.document.on('click','.selection-actions .removeall a',function(){
-		console.log('removeall');
 		Report.document.trigger('historyworker:statehold',['edition:removeall']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		Report.document.addClass('preventhistorystack');
 		var $selected = Report.document.find('.fieldwrap.selected > .edition-actions .remove:not(.deny) a');
 		var $page = $selected.first().closest('.page');
 		var selectlen = $selected.length;
-		console.log($selected);
 		$selected.trigger('click');
 		Report.document.removeClass('preventhistorystack');
 		Report.document.trigger('document:change',[$page]);
@@ -3644,7 +3642,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 		} else {
 			var $el = y;
-			console.warn($el.is(':first-child'), $el.is(':last-child'),placement);
 			if (placement == 'after') $clone.append($el.nextAll());
 			else $clone.append($el.nextAll().addBack());
 			var $clonewrap = $fieldwrap.clone().removeClass('pep-dpa pep-dropping').html($clone);
@@ -3778,7 +3775,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				} else {
 					var $el = y;
-					console.warn($el.is(':first-child'), $el.is(':last-child'),placement);
 					if ($el.is(':first-child')){
 						if (placement == 'split-before') $refed.parent().before($new);
 						else {
@@ -3844,7 +3840,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				} else {
 					var $el = y;
-					console.warn($el.is(':first-child'), $el.is(':last-child'),placement);
 					if ($el.is(':first-child')){
 						if (placement == 'split-before') $refed.parent().before($new);
 						else {
