@@ -1811,9 +1811,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			'.boxstack',
 			'.container .col',
 			'.fieldwrap',
-			'.fieldwrap p',
-			'.fieldwrap img',
-			'.fieldwrap table',
+			'.fieldwrap.richtext p',
+			'.fieldwrap.richtext img',
+			'.fieldwrap.richtext table',
 			'.pagedropper',
 			'.tools.top', // precisa olha isso aqui para contar a array certa dentro dos drops
 		].join(','),
@@ -2067,7 +2067,7 @@ sourceui.interface.widget.report = function($widget,setup){
 								if (!$drop[key].parent().is('.col')){
 									var $ref = $drop[key];
 									var boxPos = $ref.offset();
-									if (boxPos.top + ($ref.height/2) > this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'before']);
+									if (boxPos.top + ($ref.height()/2) > this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'before']);
 									else  $page.trigger('page:addedition',[$clone,$drop[key],'after']);
 								} else {
 									$page.trigger('page:addedition',[$clone,$drop[key],'after']);
