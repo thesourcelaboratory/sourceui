@@ -58,7 +58,6 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
 	Report.scaler = $('<mark class="sui-scaler"></mark>').appendTo(Report.area);
 
-
 	Report.figuretypes = {
 		figure:{ '1':'Figure', '2':'Figura', '7':'Figura'},
 		chart:{ '1':'Chart', '2':'Gráfico', '7':'Gráfico'},
@@ -1347,6 +1346,38 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		groupBellow: function($box){
 			// join grouped boxes ------------------------
+			var $boxsequence = $();
+			var datagroup = $box.data('boxgroup');
+			if (datagroup){
+				$boxsequence = $boxsequence.add($box);
+				var $allboxes = Report.document.find('.fieldwrap');
+				var $allgroup = $allboxes.filter('[data-boxgroup="'+datagroup+'"]');
+				var hasbefore = false;
+				var isnext = false;
+				var lastindex = -1;
+				$allgroup.each(function(){
+					var $bg = $(this);
+					if (this === $box.get(0)) {
+						isnext = true;
+						lastindex = $allboxes.index(this);
+					} else {
+						hasbefore = true;
+					}
+					if (isnext){
+						if (lastindex == $allboxes.index($bg.get(0))){
+							$boxsequence = $boxsequence.add($bg);
+							lastindex++;
+						} else {
+							boxFitter.ungroupBox($bg);
+						}
+					}
+				});
+				___cnsl.log('groupBellow', 'group: '+datagroup+' ('+$boxsequence.length+'):',$boxsequence);
+				if ($boxsequence.length > 1) $box = boxFitter.joinBox($boxsequence);
+				else if (!hasbefore) $box = boxFitter.ungroupBox($box);
+			}
+			return $box;
+			/*
 			if ($box.data('boxgroup')){
 				var $boxGroup = $();
 				var $foundgroup = Report.document.find('.cell > [data-boxgroup="'+$box.data('boxgroup')+'"], .boxstack > [data-boxgroup="'+$box.data('boxgroup')+'"]');
@@ -1367,79 +1398,84 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			}
 			return $box;
+			*/
 		},
 		ungroupBox: function($box){
+			___cnsl.log('ungroupBox','group: '+$box.data('boxgroup'),$box);
 			$box.removeAttr('data-boxgroup').removeAttr('data-extrapolate').removeData('boxgroup').removeData('extrapolate');
 			$box.children('[data-edition]').removeAttr('data-belongstogroup').removeData('belongstogroup');
 			return $box;
 		},
 		joinBox: function($boxGroup){
 
-			var $contentAll = $('<pre></pre>');
+			if ($boxGroup.length > 1) {
 
-			($boxGroup||$()).each(function(kb,box){
+				var $contentAll = $('<pre></pre>');
 
-				var $box = $(box);
-				___cnsl.yellow('joinBox',box);
-				var $edition = $box.children('[data-edition]');
+				($boxGroup||$()).each(function(kb,box){
 
-				var content, $content;
-				content = $edition.html();
-				if (content){
-					var $sourcemovedcontent = $contentAll.find('.sourcemovedcontent:eq(0)');
-					if ($sourcemovedcontent.length){
-						$content = $('<pre>'+content+'</pre>');
-						var $wrappedmovedcontent = $content.find('.wrappedmovedcontent:eq(0)');
-						if ($sourcemovedcontent.is('.movedafter')) $sourcemovedcontent.after($wrappedmovedcontent.html() || content);
-						else $sourcemovedcontent.html($wrappedmovedcontent.html() || content);
-						$sourcemovedcontent.removeClass('sourcemovedcontent movedafter');
-					} else {
-						var $contentChild = $edition.children();
-						var $joiner = $contentChild.filter('[data-joiner]');
-						if ($joiner.length){
-							$joiner.each(function(){
-								var $join = $(this);
-								var $next = $join.next();
-								if ($next.length && $next.attr('data-joiner') == $join.attr('data-joiner')) {
-									$join.append($next.html()).removeAttr('data-joiner').removeData('joiner');
-									$next.remove();
-								} else if ($join.is(':first-child')) {
-									var $joinall = $contentAll.find('[data-joiner="'+$join.attr('data-joiner')+'"]:last-child');
-									if ($joinall.length){
-										$joinall.append($join.html()).removeAttr('data-joiner').removeData('joiner');
-										$join.remove();
-									}
-								}
-							});
-							content = $edition.html();
-							$contentAll.append(content);
+					var $box = $(box);
+					___cnsl.yellow('joinBox',box);
+					var $edition = $box.children('[data-edition]');
+
+					var content, $content;
+					content = $edition.html();
+					if (content){
+						var $sourcemovedcontent = $contentAll.find('.sourcemovedcontent:eq(0)');
+						if ($sourcemovedcontent.length){
+							$content = $('<pre>'+content+'</pre>');
+							var $wrappedmovedcontent = $content.find('.wrappedmovedcontent:eq(0)');
+							if ($sourcemovedcontent.is('.movedafter')) $sourcemovedcontent.after($wrappedmovedcontent.html() || content);
+							else $sourcemovedcontent.html($wrappedmovedcontent.html() || content);
+							$sourcemovedcontent.removeClass('sourcemovedcontent movedafter');
 						} else {
-							$contentAll.append(content);
+							var $contentChild = $edition.children();
+							var $joiner = $contentChild.filter('[data-joiner]');
+							if ($joiner.length){
+								$joiner.each(function(){
+									var $join = $(this);
+									var $next = $join.next();
+									if ($next.length && $next.attr('data-joiner') == $join.attr('data-joiner')) {
+										$join.append($next.html()).removeAttr('data-joiner').removeData('joiner');
+										$next.remove();
+									} else if ($join.is(':first-child')) {
+										var $joinall = $contentAll.find('[data-joiner="'+$join.attr('data-joiner')+'"]:last-child');
+										if ($joinall.length){
+											$joinall.append($join.html()).removeAttr('data-joiner').removeData('joiner');
+											$join.remove();
+										}
+									}
+								});
+								content = $edition.html();
+								$contentAll.append(content);
+							} else {
+								$contentAll.append(content);
+							}
 						}
 					}
-				}
-			});
-			// UL-OL hack to join
-			var $allul = $contentAll.find('ul,ol').each(function(){
-				var $ul = $(this);
-				var $ulnext = $ul.next();
-				if ($ulnext.is('ul,ol')){
-					$ul.append($ulnext.children());
-				}
-			});
-			$allul.filter(':empty').remove();
+				});
+				// UL-OL hack to join
+				var $allul = $contentAll.find('ul,ol').each(function(){
+					var $ul = $(this);
+					var $ulnext = $ul.next();
+					if ($ulnext.is('ul,ol')){
+						$ul.append($ulnext.children());
+					}
+				});
+				$allul.filter(':empty').remove();
 
-			var contentAll = $contentAll.html();
-			if (contentAll){
-				___cnsl.log('joinBox','contentAll',$contentAll.get(0).childNodes);
-				var $b = $boxGroup.filter(':eq(0)');
-				var $e = $b.children('[data-edition]');
-				$e.html(contentAll);
-				//$e.find('[data-joiner]').removeAttr('data-joiner').removeData('joiner');
-				$boxGroup.filter(':gt(0)').remove();
-				return $b;
+				var contentAll = $contentAll.html();
+				if (contentAll){
+					___cnsl.log('joinBox','contentAll',$contentAll.get(0).childNodes);
+					var $b = $boxGroup.filter(':eq(0)');
+					var $e = $b.children('[data-edition]');
+					$e.html(contentAll);
+					//$e.find('[data-joiner]').removeAttr('data-joiner').removeData('joiner');
+					$boxGroup.filter(':gt(0)').remove();
+					return $b;
+				}
 			}
-			return false
+			return $boxGroup || $();
 		},
 		moveBox: function($box,$edge){
 
@@ -1483,7 +1519,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			var el = $edge.get(0);
 			var curOverf = el.style.overflow;
 			if ( !curOverf || curOverf === "visible" ) el.style.overflow = "hidden";
-			var isOverflowing = el.clientWidth+20 < el.scrollWidth || el.clientHeight+20 < el.scrollHeight;
+			var isOverflowing = el.clientHeight+20 < el.scrollHeight;
+			//var isOverflowing = el.clientWidth+20 < el.scrollWidth || el.clientHeight+20 < el.scrollHeight;
 			el.style.overflow = curOverf;
 			return isOverflowing;
 		},
@@ -1766,7 +1803,20 @@ sourceui.interface.widget.report = function($widget,setup){
 	var pepObject = {
 		place: false,
 		shouldEase: false,
-		droppable: '.sui-report-document, .page, .content, .covered-default .side, .boxstack, .container .col, .fieldwrap, .pagedropper, .tools.top', // precisa olha isso aqui para contar a array certa dentro dos drops
+		droppable: [
+			'.sui-report-document',
+			'.page',
+			'.content',
+			'.covered-default .side',
+			'.boxstack',
+			'.container .col',
+			'.fieldwrap',
+			'.fieldwrap p',
+			'.fieldwrap img',
+			'.fieldwrap table',
+			'.pagedropper',
+			'.tools.top', // precisa olha isso aqui para contar a array certa dentro dos drops
+		].join(','),
 		revert: true,
 		useBoundingClientRect:true,
 		startThreshold:[5,5],
@@ -1794,13 +1844,13 @@ sourceui.interface.widget.report = function($widget,setup){
 					$target.addClass('pep-dropping');
 				}
 			} else if ($a.hasClass('add-move')){
-				$target = $drop[4] || $drop[3] || $drop[2] || $drop[1];
-				if ($target && $target.length && $target.is('.page, .fieldwrap, .cell, .boxstack, .page, .col')) {
+				$target = $drop[5] || $drop[4] || $drop[3] || $drop[2] || $drop[1];
+				if ($target && $target.length && $target.is('.fieldwrap p, .fieldwrap img, .fieldwrap table, .fieldwrap, .cell, .boxstack, .page, .col')) {
 					$target.addClass('pep-dropping');
 				}
 			} else {
-				$target = $drop[4] || $drop[3] || $drop[2] || $drop[1];
-				if ($target && $target.length && $target.is('.fieldwrap, .cell, .boxstack, .page, .col')){
+				$target = $drop[5] || $drop[4] || $drop[3] || $drop[2] || $drop[1];
+				if ($target && $target.length && $target.is('.fieldwrap p, .fieldwrap img, .fieldwrap table, .fieldwrap, .cell, .boxstack, .page, .col')){
 					$target.addClass('pep-dropping');
 				}
 			}
@@ -1876,12 +1926,20 @@ sourceui.interface.widget.report = function($widget,setup){
 								if (!$drop[key].parent().is('.reserved')){
 									var $ref = $drop[key];
 									var boxPos = $ref.offset();
-									if (boxPos.top + 24 > this.ev.y) $allmoving.insertBefore($ref);
-									else if (boxPos.top + $ref.outerHeight(true) - 24 < this.ev.y) $allmoving.insertAfter($ref);
-									else {
-										var $refed = $ref.children('[data-edition]');
-										$refed.trigger('edition:split',[this.ev.y]);
-										$refed.parent().after($allmoving);
+									if (boxPos.top + ($ref.height()/2) > this.ev.y) $allmoving.insertBefore($ref);
+									else $allmoving.insertAfter($ref);
+								} else {
+									$.tipster.notify('No more boxes allowed');
+								}
+							} else if ($drop[key].is('p,img,table')){
+								if (!$drop[key].closest('.reserved').length){
+									var $ref = $drop[key];
+									var cntPos = $ref.offset();
+									var $refed = $ref.closest('[data-edition]');
+									if (cntPos.top + ($ref.outerHeight(true)/2) > this.ev.y){
+										$page.trigger('page:addedition',[$allmoving,$refed,'split-before',$ref]);
+									} else {
+										$page.trigger('page:addedition',[$allmoving,$refed,'split-after',$ref]);
 									}
 								} else {
 									$.tipster.notify('No more boxes allowed');
@@ -1911,8 +1969,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 					$allmoving.removeClass('clipboardmoved');
 					$a.addClass('empty').find('mark').text('0');
-					Report.document.trigger('document:change',[$page]);
+
 					Report.document.trigger('document:boxcount');
+					boxFitter.normalizeBoxes($page);
 				}
 			} else if ($a.hasClass('add-container')){
 				var $page = $drop[1];
@@ -1932,7 +1991,23 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					} else if ($drop[key].is('.fieldwrap')){
 						if (!$drop[key].parent().is('.reserved')){
-							$page.trigger('page:addcontainer',[$clone,$drop[key],'split',this.ev.y]);
+							var $ref = $drop[key];
+							var boxPos = $ref.offset();
+							if (boxPos.top + ($ref.height()/2) > this.ev.y) $clone.insertBefore($ref);
+							else $clone.insertAfter($ref);
+						} else {
+							$.tipster.notify('No more boxes allowed');
+						}
+					} else if ($drop[key].is('p,img,table')){
+						if (!$drop[key].closest('.reserved').length){
+							var $ref = $drop[key];
+							var cntPos = $ref.offset();
+							var $refed = $ref.closest('[data-edition]');
+							if (cntPos.top + ($ref.outerHeight(true)/2) > this.ev.y){
+								$page.trigger('page:addedition',[$clone,$refed,'split-before',$ref]);
+							} else {
+								$page.trigger('page:addedition',[$clone,$refed,'split-after',$ref]);
+							}
 						} else {
 							$.tipster.notify('No more boxes allowed');
 						}
@@ -1944,6 +2019,8 @@ sourceui.interface.widget.report = function($widget,setup){
 						$page.trigger('page:addcontainer',[$clone]);
 					}
 					$clone.trigger('container:dimension');
+
+					boxFitter.normalizeBoxes($page);
 				}
 			} else {
 				var edition;
@@ -1988,18 +2065,29 @@ sourceui.interface.widget.report = function($widget,setup){
 							if (!$drop[key].parent().is('.reserved')){
 								$page.trigger('page:addedition',[$clone,$drop[key],'after']);
 								if (!$drop[key].parent().is('.col')){
-									var boxPos = $drop[key].offset();
-									if (boxPos.top + 24 > this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'before']);
-									else if (boxPos.top + $drop[key].outerHeight(true) - 24 < this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'after']);
-									else {
-										$page.trigger('page:addedition',[$clone,$drop[key],'split',this.ev.y]);
-									}
+									var $ref = $drop[key];
+									var boxPos = $ref.offset();
+									if (boxPos.top + ($ref.height/2) > this.ev.y) $page.trigger('page:addedition',[$clone,$drop[key],'before']);
+									else  $page.trigger('page:addedition',[$clone,$drop[key],'after']);
 								} else {
 									$page.trigger('page:addedition',[$clone,$drop[key],'after']);
 									//$.tipster.notify('Spot already has a box');
 								}
 							} else {
 								$.tipster.notify('No more boxes allowed');
+							}
+						} else if ($drop[key].is('p,img,table')){
+							if (!$drop[key].closest('.col').length){
+								var $ref = $drop[key];
+								var cntPos = $ref.offset();
+								var $refed = $ref.closest('[data-edition]');
+								if (cntPos.top + ($ref.outerHeight(true)/2) > this.ev.y){
+									$page.trigger('page:addedition',[$clone,$refed,'split-before',$ref]);
+								} else {
+									$page.trigger('page:addedition',[$clone,$refed,'split-after',$ref]);
+								}
+							} else {
+								$page.trigger('page:addedition',[$clone,$drop[key].closest('.fieldwrap'),'after']);
 							}
 						} else if ($drop[key].is('.cell')){
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
@@ -2020,7 +2108,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						} else {
 							//$clone.find('[data-edition]').focus(); // comentado para verificar se esse é o bug do focus+placeholder
 						}
-						Report.document.trigger('document:boxcount');
+
 
 						// Para sempre manter as frontpages por ultimo na lista de DOM
 						var $reduced = $clone.closest('.reduced');
@@ -2032,6 +2120,9 @@ sourceui.interface.widget.report = function($widget,setup){
 							$.tipster.notify('Use the "'+edition+'" label on yellow bar to drag this box over the page', 3000);
 							$clone.find('[data-edition]').attr('data-position','top:'+$clone.position().top+'px; left:'+$clone.position().left+'px; width:'+$clone.outerWidth()+'px');
 						}
+
+						Report.document.trigger('document:boxcount');
+						boxFitter.normalizeBoxes($page);
 					}
 				}
 			}
@@ -2294,6 +2385,11 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	// Edition Tools ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	var toolsEdition = ''+
+		'<ul class="selection-actions nedt" contenteditable="false">'+
+		'<li class="nedt name" contenteditable="false">Box Selection</li>'+
+		'<li data-action="join" class="nedt join" contenteditable="false"><a class="icon-split-horizontal-box" data-tip="Join selected boxes"></a></li>'+
+		'<li data-action="removeall" class="nedt removeall" contenteditable="false"><a class="icon-subtract" data-tip="Remove selected boxes"></a></li>'+
+		'</ul>'+
 		'<ul class="edition-actions nedt" contenteditable="false">'+
 		'<li class="nedt label" contenteditable="false"></li>'+
 		'<li data-action="prop" class="nedt prop" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit box properties"></a></li>'+
@@ -2311,19 +2407,19 @@ sourceui.interface.widget.report = function($widget,setup){
 		'</ul>';
 
 	var $toolsEdition = $(toolsEdition);
-	Report.document.on('mousedown click','.edition-actions',function(event){
+	Report.document.on('mousedown click','.selection-actions, .edition-actions',function(event){
 		event.preventDefault();
 		event.stopPropagation();
 	});
 	Report.document.on('edition:tools','[data-edition]',function(event){
 		var $this = $(this);
-		var $tools = $this.siblings('.edition-actions');
+		var $tools = $this.siblings('.selection-actions, .edition-actions');
 		var $wrap = $this.parent();
 		if (!$tools.length){
 			$tools = $toolsEdition.clone();
 			var allowActions = $this.data('actions-allow') || '';
 			var denyActions = $this.data('actions-deny') || '';
-			$tools.find('li.label').text($this.attr('data-edition').charAt(0).toUpperCase() + $this.attr('data-edition').slice(1));
+			$tools.find('li.label:last').text($this.attr('data-edition').charAt(0).toUpperCase() + $this.attr('data-edition').slice(1));
 			$tools.find('li[data-action]').each(function(){
 				var $li = $(this).removeClass('deny allow');
 				var a = $li.data('action');
@@ -2373,6 +2469,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$tools.find('li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
 			}
 
+			$tools.find('li.join, li.removeall').removeClass('deny').addClass('allow');
 
 			$wrap.prepend($tools);
 			$tools.find('[data-tip]').tip();
@@ -2575,6 +2672,30 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		$edit.trigger('edition:remove');
+	});
+	// -------------------------------------------------------------------
+	Report.document.on('click','.selection-actions .join a',function(){
+		Report.document.trigger('historyworker:statehold',['edition:join']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		var $selected = Report.document.find('.fieldwrap.selected');
+		var selectlen = $selected.length;
+		var $box = boxFitter.joinBox($selected);
+		boxFitter.normalizeBoxes($box);
+		Report.document.trigger('historyworker:stateadd',['edition:join']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		$.tipster.notify(selectlen+' selected boxes joined');
+	});
+	Report.document.on('click','.selection-actions .removeall a',function(){
+		console.log('removeall');
+		Report.document.trigger('historyworker:statehold',['edition:removeall']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		Report.document.addClass('preventhistorystack');
+		var $selected = Report.document.find('.fieldwrap.selected > .edition-actions .remove:not(.deny) a');
+		var $page = $selected.first().closest('.page');
+		var selectlen = $selected.length;
+		console.log($selected);
+		$selected.trigger('click');
+		Report.document.removeClass('preventhistorystack');
+		Report.document.trigger('document:change',[$page]);
+		Report.document.trigger('historyworker:stateadd',['edition:removeall']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		$.tipster.notify(selectlen+' selected allowing boxes removed');
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -3088,6 +3209,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('dblclick','[data-edition]',function(event){
 		event.stopPropagation();
 	});
+
 	Report.document.on('edition:resizable','[data-edition]',function(event){
 		var $this = $(this);
 		if (!$this.hasClass('has-resizable')){
@@ -3244,6 +3366,17 @@ sourceui.interface.widget.report = function($widget,setup){
 		$this.removeClass('mce-content-body inited content-placeholder mce-edit-focus');
 		$this.removeAttr('id')
 		$this.removeAttr('contenteditable');
+	});
+	Report.document.on('edition:cleanempty','[data-edition]',function(event){
+		var $this = $(this);
+		var $child = $this.children();
+		$child.each(function(k,el){
+			let $el = $(el);
+			if (!$el.is('img') && ($el.is(':empty') || $el.html() === '<br>')) {
+				$el.remove();
+			}
+		});
+		$child.filter('.pep-dpa').removeClass('pep-dpa pep-dropping');
 	});
 	Report.document.on('edition:wrapfield','[data-edition]',function(event){
 		var $this = $(this);
@@ -3431,9 +3564,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			$page = $this.closest('.page');
 			$fieldwrap.remove();
 		}
-		if ($preved.length && $nexted.length && $preved.data('edition') === $nexted.data('edition') && $preved.data('name') === $nexted.data('name')){
-			$preved.trigger('edition:join',[$nexted]);
-		}
 		if (!Report.document.hasClass('preventeventchange')){
 			Report.document.trigger('document:change',[$page]);
 			$.tipster.notify('Edition box removed');
@@ -3458,64 +3588,69 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 		Report.document.trigger('historyworker:stateadd',['edition:clipboardmoved']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
-	Report.document.on('edition:split','[data-edition]',function(event,y){
+	Report.document.on('edition:split','[data-edition]',function(event,y,placement){
 		Report.document.trigger('historyworker:statehold',['edition:split']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
-		var boxgroup = $this.attr('data-belongstogroup');
 		var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
-		$this.removeAttr('data-belongstogroup').removeData('belongstogroup');
-		$fieldwrap.removeAttr('data-boxgroup').removeData('boxgroup');
 		var $clone = $this.clone();
 		var $page = $this.closest('.page');
 		var boxPos = $this.offset();
 		$clone.html('');
-		$this.children().each(function(){
-			var $el = $(this);
-			let elPos = $el.position();
-			if ((boxPos.top + elPos.top + $el.outerHeight(true)) * zoom > y * zoom){
-				let $econ = $el.contents();
-				$el.html('');
-				let $cl = $el.clone();
-				$.each($econ, function(ie, ve) {
-					if (this.nodeType == 3){
-						let $wwab;
-						let words = this.nodeValue.split(' ');
-						$.each(words,function(iw,vw){
-							$wwab = $('<span class="wordwrap-split">').text(vw+' ');
-							$el.append($wwab);
-						});
-					} else {
-						$el.append(ve);
-					}
-				});
-				$el.children().each(function(){
-					let $sp = $(this);
-					let spPos = $sp.position();
-					if ((boxPos.top + elPos.top + spPos.top + $sp.outerHeight(true)) * zoom > y * zoom){
-						$cl.append($sp.nextAll().addBack());
-						return false;
-					}
-				});
-				$cl.find('.wordwrap-split').contents().unwrap();
-				$cl.get(0).normalize();
-				if (!$cl.is(':empty')) $clone.append($cl);
+		if (typeof y == 'number'){
+			$this.children().each(function(){
+				var $el = $(this);
+				let elPos = $el.position();
+				if ((boxPos.top + elPos.top + $el.outerHeight(true)) * zoom > y * zoom){
+					let $econ = $el.contents();
+					$el.html('');
+					let $cl = $el.clone();
+					$.each($econ, function(ie, ve) {
+						if (this.nodeType == 3){
+							let $wwab;
+							let words = this.nodeValue.split(' ');
+							$.each(words,function(iw,vw){
+								$wwab = $('<span class="wordwrap-split">').text(vw+' ');
+								$el.append($wwab);
+							});
+						} else {
+							$el.append(ve);
+						}
+					});
+					$el.children().each(function(){
+						let $sp = $(this);
+						let spPos = $sp.position();
+						if ((boxPos.top + elPos.top + spPos.top + $sp.outerHeight(true)) * zoom > y * zoom){
+							$cl.append($sp.nextAll().addBack());
+							return false;
+						}
+					});
+					$cl.find('.wordwrap-split').contents().unwrap();
+					$cl.get(0).normalize();
+					if (!$cl.is(':empty')) $clone.append($cl);
 
-				$el.find('.wordwrap-split').contents().unwrap();
-				$el.get(0).normalize();
-				$clone.append($el.nextAll());
+					$el.find('.wordwrap-split').contents().unwrap();
+					$el.get(0).normalize();
+					$clone.append($el.nextAll());
 
-				var $clonewrap = $('<div class="'+$fieldwrap.attr('class').replace(/pep-dpa|pep-dropping/g,'')+' active xxxxxxxx" />').append($clone);
+					var $clonewrap = $fieldwrap.clone().removeClass('pep-dpa pep-dropping').html($clone);
 
-				$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
+					boxFitter.ungroupBox($fieldwrap);
 
-				if (boxgroup){
-					$clonewrap.nextAll('[data-belongstogroup="'+boxgroup+'"]').removeAttr('data-belongstogroup').removeData('belongstogroup').parent().removeAttr('data-boxgroup').removeData('boxgroup');
-					$page.nextAll('.page').find('[data-belongstogroup="'+boxgroup+'"]').removeAttr('data-belongstogroup').removeData('belongstogroup').parent().removeAttr('data-boxgroup').removeData('boxgroup');
+					$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
+
+					return false;
 				}
-				return false;
-			}
-		});
+			});
+		} else {
+			var $el = y;
+			console.warn($el.is(':first-child'), $el.is(':last-child'),placement);
+			if (placement == 'after') $clone.append($el.nextAll());
+			else $clone.append($el.nextAll().addBack());
+			var $clonewrap = $fieldwrap.clone().removeClass('pep-dpa pep-dropping').html($clone);
+			boxFitter.ungroupBox($fieldwrap);
+			$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
+		}
 		Report.document.trigger('historyworker:stateadd',['edition:split']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('edition:join','[data-edition]',function(event,$next){
@@ -3560,7 +3695,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		event.preventDefault();
 	});
 
-	Report.document.on('mouseup','[data-edition] img, [data-edition] table',function(event){
+	Report.document.on('mouseup','[data-edition="figure"] img, [data-edition="richtext"] img, [data-edition="figure"] table, [data-edition="richtext"] table',function(event){
 		var $this = $(this);
 		if ($this.is('table.pastedelement') && !$this.parent().is('.tablewrap')) $this.wrap('<figure class="tablewrap"/>'); // verificar a existencia do tablewrap e dar o wrap se não tiver
 		Report.scaler.addClass('active');
@@ -3573,7 +3708,37 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('click','[data-edition] img, [data-edition] table',function(event){
 		Report.scaler.addClass('active');
 	});
-
+	// -------------------------------------------------------------------------------------
+	Report.document.on('mousedown','.fieldwrap',function(event){
+		if (event.ctrlKey){
+			event.preventDefault();
+			event.stopPropagation();
+			var $wrap = $(this);
+			$wrap.removeClass('active focus');
+			Report.document.find('.fieldwrap.active:not(.selected)').removeClass('active focus').addClass('selected');
+			Report.document.find('.fieldwrap.currentselect').removeClass('currentselect');
+			$wrap.addClass('selected currentselect');
+			$wrap.children('[data-edition]').trigger('edition:tools');
+			var $selected = Report.document.find('.fieldwrap.selected');
+			var allsame = null;
+			$selected.each(function(){
+				var $s = $(this);
+				var edition = $s.children('[data-edition]').attr('data-edition');
+				if (allsame != null && allsame != edition){
+					allsame = false;
+					return false;
+				}
+				allsame = edition;
+			});
+			if (allsame === false) $wrap.find('.selection-actions li.join').removeClass('allow').addClass('deny');
+			else $wrap.find('.selection-actions li.join').removeClass('deny').addClass('allow');
+			$wrap.children('ul.selection-actions').find('li.name').text(Report.document.find('.fieldwrap.selected').length+' box(es) selected');
+		}
+	});
+	Report.document.on('mousedown',function(event){
+		Report.document.find('.fieldwrap.currentselect').removeClass('currentselect');
+		Report.document.find('.fieldwrap.selected').removeClass('selected');
+	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -3598,19 +3763,45 @@ sourceui.interface.widget.report = function($widget,setup){
 				$new.prependTo($ref);
 			} else if (placement == 'replace'){
 				$ref.replaceWith($new);
-			} else if (placement == 'split'){
+			} else if (placement.indexOf('split') > -1){
 				var boxPos = $ref.offset();
 				var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
-				if (boxPos.top + (24 * zoom) > y) $new.insertBefore($ref);
-				else if (boxPos.top + $ref.outerHeight(true) - (24 * zoom) < y) $new.insertAfter($ref);
-				else if ($ref.is('.fieldwrap, [data-edition]')){
-					var $refed = ($ref.is('.fieldwrap')) ? $ref.children('[data-edition]') : $ref;
-					$refed.trigger('edition:split',[y]);
-					$refed.parent().after($new);
+				var $refed = ($ref.is('.fieldwrap')) ? $ref.children('[data-edition]') : $ref;
+				if (typeof y == 'number'){
+					if (boxPos.top + (24 * zoom) > y) $new.insertBefore($ref);
+					else if (boxPos.top + $ref.outerHeight(true) - (24 * zoom) < y) $new.insertAfter($ref);
+					else if ($ref.is('.fieldwrap, [data-edition]')){
+						$refed.trigger('edition:split',[y]);
+						$refed.parent().after($new);
+					} else {
+						$new.insertAfter($ref);
+					}
 				} else {
-					$new.insertAfter($ref);
+					var $el = y;
+					console.warn($el.is(':first-child'), $el.is(':last-child'),placement);
+					if ($el.is(':first-child')){
+						if (placement == 'split-before') $refed.parent().before($new);
+						else {
+							$refed.trigger('edition:split',[$el,'after']);
+							$refed.parent().after($new);
+						}
+					}
+					else if ($el.is(':last-child')) {
+						if (placement == 'split-after') $refed.parent().after($new);
+						else {
+							$refed.trigger('edition:split',[$el,'before']);
+							$refed.parent().after($new);
+						}
+					}
+					else {
+						if (placement == 'split-before') $refed.trigger('edition:split',[$el,'before']);
+						else if (placement == 'split-after') $refed.trigger('edition:split',[$el,'after']);
+						$refed.parent().after($new);
+					}
 				}
+				$refed.trigger('edition:cleanempty');
 			}
+			$new.find('.pep-dpa').removeClass('pep-dpa pep-dropping');
 		} else {
 			$page.find('.main .cell:eq(0)').append($new);
 		}
@@ -3638,20 +3829,46 @@ sourceui.interface.widget.report = function($widget,setup){
 				$new.prependTo($ref);
 			} else if (placement == 'replace'){
 				$ref.replaceWith($new);
-			} else if (placement == 'split'){
+			} else if (placement.indexOf('split') > -1){
 				var boxPos = $ref.offset();
 				var zoom = $.toNumber(Report.document.attr('data-zoom') || 1);
-				if (boxPos.top + (24 * zoom) > y) $new.insertBefore($ref);
-				else if (boxPos.top + $ref.outerHeight(true) - (24 * zoom) < y) $new.insertAfter($ref);
-				else if ($ref.is('.fieldwrap, [data-edition]')){
-					var $refed = ($ref.is('.fieldwrap')) ? $ref.children('[data-edition]') : $ref;
-					$refed.trigger('edition:split',[y]);
-					$refed.parent().after($new);
+				var $refed = ($ref.is('.fieldwrap')) ? $ref.children('[data-edition]') : $ref;
+				if (typeof y == 'number'){
+					if (boxPos.top + (24 * zoom) > y) $new.insertBefore($ref);
+					else if (boxPos.top + $ref.outerHeight(true) - (24 * zoom) < y) $new.insertAfter($ref);
+					else if ($ref.is('.fieldwrap, [data-edition]')){
+						$refed.trigger('edition:split',[y]);
+						$refed.parent().after($new);
+					} else {
+						$new.insertAfter($ref);
+					}
 				} else {
-					$new.insertAfter($ref);
+					var $el = y;
+					console.warn($el.is(':first-child'), $el.is(':last-child'),placement);
+					if ($el.is(':first-child')){
+						if (placement == 'split-before') $refed.parent().before($new);
+						else {
+							$refed.trigger('edition:split',[$el,'after']);
+							$refed.parent().after($new);
+						}
+					}
+					else if ($el.is(':last-child')) {
+						if (placement == 'split-after') $refed.parent().after($new);
+						else {
+							$refed.trigger('edition:split',[$el,'before']);
+							$refed.parent().after($new);
+						}
+					}
+					else {
+						if (placement == 'split-before') $refed.trigger('edition:split',[$el,'before']);
+						else if (placement == 'split-after') $refed.trigger('edition:split',[$el,'after']);
+						$refed.parent().after($new);
+					}
 				}
+				$refed.trigger('edition:cleanempty');
 			}
 			if ($ref.is('.wide')) $new.addClass('wide');
+			$new.find('.pep-dpa').removeClass('pep-dpa pep-dropping');
 		} else {
 			$page.find('.main .cell:eq(0)').append($new);
 		}
@@ -3775,7 +3992,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		var lang = Variable.get('languageId');
 		var types = Report.figuretypes;
 		var $editions = Report.document.find('[data-edition="figure"]');
-		console.log($editions);
 		$editions.each(function(){
 			var $this = $(this);
 			var $h4 = $this.find('h4');
@@ -4286,19 +4502,25 @@ sourceui.interface.widget.report = function($widget,setup){
 			{title: 'Legend', block: 'h5'},
 		],
 		paste_preprocess : function(pl, o) {
-			var $content = $('<div>'+(allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content)+'</div>');
-			var $imgtable = $content.children('img,table').first().attr('draggable','false');
-			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
-			var $tablocal = $imgtable.filter('table').addClass('nedt');
-			$imgtable.addClass('pastedelement');
-			$imglocal.addClass('localsource');
-			$tablocal = $tablocal.wrap('<figure class="tablewrap"/>');
-			$content.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
-			o.content = $content.html();
-			if ($imglocal.length){
-				var $target = $(o.target.selection.getNode());
-				var $field = $target.closest('[data-edition]');
-				$field.addClass('ajax-courtain');
+			var $target = $(o.target.selection.getNode());
+			var $field = $target.closest('[data-edition]');
+			if (!$field.hasClass('pasting')){
+				$field.addClass('pasting');
+				var $content = $('<div>'+(allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content)+'</div>');
+				var $imgtable = $content.children('img,table').first().attr('draggable','false');
+				var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
+				var $tablocal = $imgtable.filter('table').addClass('nedt');
+				$imgtable.addClass('pastedelement');
+				$imglocal.addClass('localsource');
+				$tablocal = $tablocal.wrap('<figure class="tablewrap"/>');
+				$content.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
+				o.content = $content.html();
+				if ($imglocal.length){
+					$field.addClass('ajax-courtain');
+				}
+				setTimeout(function(){ $field.removeClass('pasting'); },200);
+			} else {
+				o.content = '';
 			}
 		},
 		setup: function (editor) {
@@ -4444,7 +4666,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	var mceSetupFigure = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="figure"]:not(.inited)',
 		placeholder:'Paste images, pictures and glyphs here...',
-		forced_root_block : 'p',
+		forced_root_block : false,
 		object_resizing : false,
 		table_appearance_options: false,
 		imagetools_toolbar: 'none',
@@ -4471,35 +4693,46 @@ sourceui.interface.widget.report = function($widget,setup){
 		paste_preprocess : function(pl, o) {
 			var $target = $(o.target.selection.getNode());
 			var $field = $target.closest('[data-edition]');
-			var haspot = $target.is('.figurespot') || $target.closest('.figurespot',$field).length;
-			var hash = $target.is('h3,h4,h5') || $target.closest('h3,h4,h5',$field).length;
-			var $content = $('<div>'+(allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content)+'</div>');
-			var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
-			if ($td.length) $td.css('border','');
-			var $imgtable = $content.children('img,table').first().attr('draggable','false');
-			var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
-			var $tablocal = $imgtable.filter('table')/*.addClass('nedt')*/;
-			$tablocal = $tablocal.wrap('<figure class="tablewrap"/>');
-			$imglocal.addClass('localsource');
-			if ($imgtable.length){
-				if (haspot){
-					var $p = $target.is('.figurespot') ? $target : $target.closest('.figurespot',$field);
-					$p.find(':not(img):not(.tablewrap),.tablewrap:empty').remove();
-					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
-					$imgtable.addClass('pastedelement');
-					$imglocal.removeAttr('width').removeAttr('height');
-					o.content = $content.html();
-					if ($imglocal.length){
-						$field.addClass('ajax-courtain');
+			if (!$field.hasClass('pasting')){
+				$field.addClass('pasting');
+				var haspot = $target.is('.figurespot') || $target.closest('.figurespot',$field).length;
+				var hash = $target.is('h3,h4,h5') || $target.closest('h3,h4,h5',$field).length;
+				var $content = $('<div>'+(allowedRegEX ? o.content.replace(allowedRegEX, "") : o.content)+'</div>');
+				var $td = $content.find('td[style*="border:none"], td[style*="border: none"]');
+				if ($td.length) $td.css('border','');
+				var $imgtable = $content.children('img,table').first().attr('draggable','false');
+				var $imglocal = $imgtable.filter('img[src*="blob:"],img[src*="data:"]');
+				var $tablocal = $imgtable.filter('table')/*.addClass('nedt')*/;
+				$tablocal = $tablocal.wrap('<figure class="tablewrap"/>');
+				$imglocal.addClass('localsource');
+				if ($imgtable.length){
+					if (haspot){
+						var $p = $target.is('.figurespot') ? $target : $target.closest('.figurespot',$field);
+						$p.find(':not(img):not(.tablewrap),.tablewrap:empty').remove();
+						$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
+						$imgtable.addClass('pastedelement');
+						$imglocal.removeAttr('width').removeAttr('height');
+						o.content = $content.html();
+						if ($imglocal.length){
+							$field.addClass('ajax-courtain');
+						}
+					} else {
+						$.tipster.notify('Paste only images or tables into the spot');
+						o.content = hash ? '' : '<p></p>';
 					}
 				} else {
-					$.tipster.notify('Paste image only into the spot');
-					o.content = hash ? '' : '<p></p>';
+					if (hash){
+						o.content = $content.find('p,h1,h2,h3,h4,h5').unwrap().html();
+					} else {
+						$.tipster.notify('Paste only images or tables into the spot');
+						o.content = '';
+					}
 				}
+				o.content.replace('windowtext', 'black');
+				setTimeout(function(){ $field.removeClass('pasting'); },200);
 			} else {
-				o.content = $content.html();
+				o.content = '';
 			}
-			o.content.replace('windowtext', 'black');
 		},
 		setup: function (editor) {
 			var $ed = $(editor.getElement());
@@ -4536,29 +4769,22 @@ sourceui.interface.widget.report = function($widget,setup){
 			editor.on('redo', function (e) {
 				$.tipster.notify('Redo edition');
 			});
+			/*
 			editor.on('keydown', function (e) {
 				if (e.key == 'Enter'){
-					var $caret = caret.save($ed,'begining');
+					var $caret = caret.save($ed,'end');
 					if ($caret.closest('.figurespot').length){
 						e.preventDefault();
 						var $p = $('<p></p>');
 						$p.insertAfter($ed.find('.figurespot')).append($caret);
 						caret.focus();
 						$p.append('<br>');
-					} else if ($caret.closest('h4').length){
-						e.preventDefault();
-						var $p = $('<p></p>');
-						$p.insertAfter($ed.find('h4')).append($caret);
-						caret.focus();
-						$p.append('<br>');
-					} else if ($caret.closest('h5').length){
-						e.preventDefault();
-						caret.focus();
 					} else {
 						caret.focus();
-					}editor
+					}
 				}
 			});
+			*/
 			editor.on('keyup', function (e) {
 				var $p = $ed.find('.figurespot');
 				if ((e.ctrlKey && e.key != 'Control' && e.key != 'c' && e.key != 'v' && e.key != 'x' && e.key != 'z') || (e.key != 'Enter' && e.key != 'Backspace' && e.key != 'Delete' && e.key != 'Escape' && e.key != 'Tab')){
@@ -4575,7 +4801,6 @@ sourceui.interface.widget.report = function($widget,setup){
 							caret.focus($ed);
 						}
 					}
-
 				}
 			});
 			editor.on('paste', function (e) {
