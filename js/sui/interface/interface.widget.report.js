@@ -4725,8 +4725,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				} else {
 					if (hash){
-						$content.find('p,h1,h2,h3,h4,h5').unwrap();
-						o.content = $content.html();
+						o.content = $content.text();
 					} else {
 						$.tipster.notify('Paste only images or tables into the spot');
 						o.content = '';
