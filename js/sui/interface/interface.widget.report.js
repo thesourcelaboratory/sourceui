@@ -1742,8 +1742,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			//////////////////////////////////////////////////////////////////////
 			// hack to normalize all pages before breaking boxes
 			if ($extrapolatedEdge){
-				___cnsl.log('normalizeBoxes', 'hack to restart at estrapolated edge', $extrapolatedEdge.get(0));
-				boxFitter.normalizeBoxes($extrapolatedEdge.closest('.page').next('.page').find('[class="'+$extrapolatedEdge.attr('class')+'"]'), nomceinit);
+				___cnsl.log('normalizeBoxes', 'hack to restart from estrapolated edge', $extrapolatedEdge.get(0));
+				var nextedgeselector = $extrapolatedEdge.attr('class').split(' ').slice(0,2).join(' ');
+				boxFitter.normalizeBoxes($extrapolatedEdge.closest('.page').next('.page').find('[class="'+nextedgeselector+'"]'), nomceinit);
 			}
 			//////////////////////////////////////////////////////////////////////
 
@@ -2189,6 +2190,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="edit" class="nedt edit" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit page properties"></a></li>'+
 		'<li data-action="bgimg" class="nedt bgimg" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse page background image"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
+		'<li data-action="normalize" class="nedt normalize" contenteditable="false"><a class="icon-wavearrow" data-tip="Normalize page boxes"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this page"></a></li>'+
 		'</ul>';
 
@@ -2207,6 +2209,9 @@ sourceui.interface.widget.report = function($widget,setup){
 				if (denyActions === 'all' || denyActions.indexOf(a) > -1 || (allowActions && allowActions.indexOf(a) === -1)){
 					$li.addClass('deny');
 				} else {
+					$li.addClass('allow');
+				}
+				if (a == 'normalize' && $this.parent().children('.page').index($this) > 0){
 					$li.addClass('allow');
 				}
 			});
@@ -2285,7 +2290,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $ctn = $this.closest('.page');
 		$ctn.trigger('page:clipboardmoved');
 	});
-
+	Report.document.on('click','.page-actions .normalize a',function(){
+		var $this = $(this);
+		var $page = $this.closest('.page');
+		boxFitter.normalizeBoxes($page);
+		$.tipster.notify('Pages boxes normalized untill next session breaker');
+	});
 	Report.document.on('click','.page-actions .remove a',function(){
 		var $this = $(this);
 		var $page = $this.closest('.page');
@@ -2665,7 +2675,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $edit = $fieldwrap.children('[data-edition]');
 		boxFitter.normalizeBoxes($fieldwrap);
 		$edit.trigger('edition:active');
-		$.tipster.notify('Box normalized');
+		$.tipster.notify('Boxes normalized untill next session breaker');
 	});
 	Report.document.on('click','.edition-actions .refresh a',function(){
 		var $this = $(this);
