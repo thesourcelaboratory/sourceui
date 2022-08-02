@@ -1311,11 +1311,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							$contentNew.append($el.nextAll());
 							if (false === ($el.text() !== '' || $el.children('img,table,figure').length > 0)) $el.remove();
 						} else {
-							if ($el.is(':first-child')){
-								boxFitter.moveBox($box,$edge);
-							} else {
-								$contentNew.append($el.nextAll().addBack());
-							}
+							$contentNew.append($el.nextAll().addBack());
 						}
 						return false;
 					}
@@ -1401,7 +1397,8 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 						idx++;
 					});
-					$box = $boxGroup.length > 1 ? boxFitter.joinBox($boxGroup,true) : $box;
+					$box = $boxGroup.length > 1 ? boxFitter.joinBox($boxGroup) : $box;
+					___cnsl.log('groupBellow', 'group: '+$box.data('boxgroup')+' ('+$boxGroup.length+'):',$boxGroup);
 				} else {
 					$box = boxFitter.ungroupBox($box);
 				}
@@ -1570,6 +1567,11 @@ sourceui.interface.widget.report = function($widget,setup){
 				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height() + paddingTolerance;
 			}
 
+			if ($box.is('table')) {
+				console.log(boxPos.top,paddingTolerance,edgeHeight, boxPos.top + paddingTolerance > edgeHeight, 3);
+				console.log(boxPos.top,$box.outerHeight(true),edgeHeight, (boxPos.top + $box.outerHeight(true)) > edgeHeight, 4);
+			}
+
 			strapolateHeight = boxPos.top + paddingTolerance > edgeHeight;
 			if (strapolateHeight) {
 				return 3;
@@ -1619,7 +1621,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$boxedge = $origin.closest('.content, .boxstack, .side');
 				$pages = $boxedge.closest('.page');
 				if ($origin.is('[data-boxgroup]')) {
-					boxFitter.joinBox(boxFitter.groupBellow($origin));
+					boxFitter.groupBellow($origin);
 				}
 			} else if ($origin && $origin.is('.content, .boxstack, .side')){
 				origin = 'edge';
@@ -1669,9 +1671,9 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					}
 
-					if ($edge.is('.content')) { edgetype = 'content'; edgesel = '.content'; }
-					else if ($edge.is('.boxstack')) { edgetype = 'boxstack'; edgesel = '.boxstack, .content'; }
-					else if  ($edge.is('.side')) { edgetype = 'side'; edgesel = '.side'; }
+					if ($edge.is('.content')) { edgetype = 'content'; edgesel = '.cell.content'; }
+					else if ($edge.is('.boxstack')) { edgetype = 'boxstack'; edgesel = '.boxstack, .cell.content'; }
+					else if  ($edge.is('.side')) { edgetype = 'side'; edgesel = '.cell.side'; }
 
 					var cnsl = ___cnsl.active ? 'page('+$page.attr('data-pagenumber')+') edge('+edgetype+') ' : '';
 
@@ -1683,8 +1685,20 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (gap){
 						___cnsl.log('normalizeBoxes', cnsl, 'has gap: '+(gap ? gap+'px' : 'true'),$edge.get(0));
 						if ($lastbox.is('[data-boxgroup]')) {
-							boxFitter.joinBox(boxFitter.groupBellow($lastbox));
+							boxFitter.groupBellow($lastbox);
 						}
+						/*
+						var $nextboxes = $();
+						$edgerange.filter(':gt('+edx+')').filter(edgesel).each(function(){
+							console.log('edge', this);
+							var $fe = $(this);
+							$fe.children('.fieldwrap, .container').each(function(){
+								console.log('box', this);
+								var $fb = $(this);
+								$nextboxes = $nextboxes.add($fb)
+							});
+						});
+						*/
 						var $nextboxes = $edgerange.filter(':gt('+edx+')').filter(edgesel).children('.fieldwrap, .container');
 						if ($nextboxes.length){
 							$edge.append($nextboxes);
@@ -1697,6 +1711,9 @@ sourceui.interface.widget.report = function($widget,setup){
 						___cnsl.red('normalizeBoxes', cnsl, 'has overflow: true',$edge.get(0));
 						$boxes.each(function(kb,b){
 							var $box = $(b);
+							if ($box.is('[data-boxgroup]')) {
+								boxFitter.groupBellow($box);
+							}
 							var extrapolate = boxFitter.isExtrapolatedBox($box,$edge);
 							if (extrapolate){
 								___cnsl.red('normalizeBoxes', cnsl, 'estrapolated box: true ('+extrapolate+')',$box.get(0));
@@ -1729,7 +1746,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							}
 						});
 					} else {
-						___cnsl.ok('normalizeBoxes', cnsl, ' has no normalizations');
+						___cnsl.ok('normalizeBoxes', cnsl, ' has no overflowing boxes', $edge);
 					}
 					edx++;
 				});
@@ -1742,9 +1759,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			//////////////////////////////////////////////////////////////////////
 			// hack to normalize all pages before breaking boxes
 			if ($extrapolatedEdge){
-				___cnsl.log('normalizeBoxes', 'hack to restart from estrapolated edge', $extrapolatedEdge.get(0));
-				var nextedgeselector = $extrapolatedEdge.attr('class').split(' ').slice(0,2).join(' ');
-				boxFitter.normalizeBoxes($extrapolatedEdge.closest('.page').next('.page').find('[class="'+nextedgeselector+'"]'), nomceinit);
+				var nextedgeselector = '.content';
+				if ($extrapolatedEdge.is('.content')) nextedgeselector = '.cell.content';
+				else if ($extrapolatedEdge.is('.boxstack')) nextedgeselector = '.boxstack, .cell.content';
+				else if  ($extrapolatedEdge.is('.side')) nextedgeselector = '.cell.side';
+				___cnsl.log('normalizeBoxes', 'hack to restart from estrapolated edge to the next ('+nextedgeselector+')', $extrapolatedEdge.get(0));
+				boxFitter.normalizeBoxes($extrapolatedEdge.closest('.page').next('.page').find(nextedgeselector), nomceinit);
 			}
 			//////////////////////////////////////////////////////////////////////
 
@@ -1908,7 +1928,8 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			} else if ($a.hasClass('add-move')){
 				if (!$a.hasClass('empty')){
-					var $allmoving = Report.document.find('.clipboardmoved');
+					var willnormalize = true;
+					var $allmoving = Report.document.find('.clipboardmoved').removeClass('clipboardmoved');
 					var $page = $drop[1];
 					if ($allmoving.filter('.fieldwrap, .container').length){
 						if ($page && $page.length && $page.is('.page')){
@@ -1950,6 +1971,7 @@ sourceui.interface.widget.report = function($widget,setup){
 									} else {
 										$page.trigger('page:addedition',[$allmoving,$refed,'split-after',$ref]);
 									}
+									willnormalize = false;
 								} else {
 									$.tipster.notify('No more boxes allowed');
 								}
@@ -1976,15 +1998,17 @@ sourceui.interface.widget.report = function($widget,setup){
 							}
 						});
 					}
-					$allmoving.removeClass('clipboardmoved');
 					$a.addClass('empty').find('mark').text('0');
 
 					Report.document.trigger('document:boxcount');
-					boxFitter.normalizeBoxes($page);
+					//--------------------------------------------------------------------------------
+					if (willnormalize) setTimeout(function(){ boxFitter.normalizeBoxes($page); },150);
+					//--------------------------------------------------------------------------------
 				}
 			} else if ($a.hasClass('add-container')){
 				var $page = $drop[1];
 				if ($page && $page.length && $page.is('.page')){
+					var willnormalize = true;
 					$page.trigger('page:active');
 					$clone = Report.templates.children('.container').clone();
 					if (!$clone.length){
@@ -2017,24 +2041,32 @@ sourceui.interface.widget.report = function($widget,setup){
 							} else {
 								$page.trigger('page:addedition',[$clone,$refed,'split-after',$ref]);
 							}
+							willnormalize = false;
 						} else {
 							$.tipster.notify('No more boxes allowed');
 						}
 					} else if ($drop[key].is('.cell')){
 						$page.trigger('page:addcontainer',[$clone,$drop[key],'append']);
+						willnormalize = false;
 					} else if ($drop[key].is('.boxstack')){
 						$page.trigger('page:addcontainer',[$clone,$drop[key],'append']);
+						willnormalize = false;
 					} else {
 						$page.trigger('page:addcontainer',[$clone]);
+						willnormalize = false;
 					}
 					$clone.trigger('container:dimension');
 
-					boxFitter.normalizeBoxes($page);
+					//--------------------------------------------------------------------------------
+					if (willnormalize) setTimeout(function(){ boxFitter.normalizeBoxes($page); },150);
+					//--------------------------------------------------------------------------------
 				}
 			} else {
 				var edition;
 				var $page = $drop[1];
 				if ($page && $page.length && $page.is('.page')){
+
+					willnormalize = true;
 
 					$page.trigger('click');
 
@@ -2082,6 +2114,7 @@ sourceui.interface.widget.report = function($widget,setup){
 									$page.trigger('page:addedition',[$clone,$drop[key],'after']);
 									//$.tipster.notify('Spot already has a box');
 								}
+								willnormalize = false;
 							} else {
 								$.tipster.notify('No more boxes allowed');
 							}
@@ -2095,15 +2128,19 @@ sourceui.interface.widget.report = function($widget,setup){
 								} else {
 									$page.trigger('page:addedition',[$clone,$refed,'split-after',$ref]);
 								}
+								willnormalize = false;
 							} else {
 								$page.trigger('page:addedition',[$clone,$drop[key].closest('.fieldwrap'),'after']);
 							}
 						} else if ($drop[key].is('.cell')){
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
+							willnormalize = false;
 						} else if ($drop[key].is('.boxstack')){
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
+							willnormalize = false;
 						} else {
 							$page.trigger('page:addedition',[$clone]);
+							willnormalize = false;
 						}
 
 						// autoclick dynamic insertion
@@ -2131,7 +2168,10 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 
 						Report.document.trigger('document:boxcount');
-						boxFitter.normalizeBoxes($page);
+
+						//--------------------------------------------------------------------------------
+						if (willnormalize) setTimeout(function(){ boxFitter.normalizeBoxes($page); },150);
+						//--------------------------------------------------------------------------------
 					}
 				}
 			}
@@ -2658,6 +2698,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $page = $fieldwrap.closest('.page',Report.document);
 		$edit.trigger('edition:clipboardmoved');
 		$page.trigger('page:active');
+		boxFitter.normalizeBoxes($page);
 	});
 	Report.document.on('click','.edition-actions .split a',function(){
 		var $this = $(this);
@@ -3986,7 +4027,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (Report.document.hasClass('preventeventchange')) return false;
 		/////////////////////////////////////////////////////////////////
 		Report.document.find('[data-edition="toc"]:eq(0)').trigger('edition:buildtoc');
-		if ($page) boxFitter.normalizeBoxes($page);
+		if ($page) setTimeout(function(){ boxFitter.normalizeBoxes($page); },100);
 		Report.document.trigger('document:validate');
 		Report.widget.trigger('field:input');
 		Report.document.trigger('document:pagelist');
