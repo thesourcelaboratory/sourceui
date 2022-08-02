@@ -85,7 +85,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
-		active: true,
+		active: false,
 		stack: function(where){
 			___cnsl.green('initStack',where);
 		},
