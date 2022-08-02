@@ -1776,7 +1776,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			___cnsl.stack('normalizeBoxes');
 
 			var $page, $boxedge, origin;
-			if ($origin && $origin.is('.fieldwrap')){
+			if ($origin && $origin.is('.fieldwrap, .container')){
 				origin = 'box';
 				$boxedge = $origin.closest('.content, .boxstack, .side');
 				$page = $boxedge.closest('.page');
@@ -2522,11 +2522,13 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $ctn = $this.closest('.container');
 		$ctn.trigger('container:addcolumn');
+		boxFitter.normalizeBoxes($ctn);
 	});
 	Report.document.on('click','.container-actions .addline a',function(){
 		var $this = $(this);
 		var $ctn = $this.closest('.container');
 		$ctn.trigger('container:addline');
+		boxFitter.normalizeBoxes($ctn);
 	});
 	Report.document.on('click','.container-actions .reset a',function(){
 		var $this = $(this);
@@ -2534,6 +2536,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.removeAttr('style');
 		$ctn.find('.line > .col').removeAttr('style');
 		$ctn.trigger('container:dimension');
+		boxFitter.normalizeBoxes($ctn);
 	});
 	Report.document.on('click','.container-actions .sidenote a',function(){
 		var $this = $(this);
@@ -2541,6 +2544,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.removeAttr('style');
 		$ctn.find('.line > .col').removeAttr('style');
 		$ctn.trigger('container:dimension',['sidenote']);
+		boxFitter.normalizeBoxes($ctn);
 	});
 	Report.document.on('click','.container-actions .move a',function(){
 		var $this = $(this);
@@ -2548,7 +2552,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $page = $ctn.closest('.page',Report.document);
 		$ctn.trigger('container:clipboardmoved');
 		$page.trigger('page:active');
-		boxFitter.normalizeBoxes($page);
+		boxFitter.normalizeBoxes($ctn);
 	});
 	Report.document.on('click','.container-actions .remove a',function(){
 		var $this = $(this);
@@ -2790,6 +2794,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$edit.removeAttr('data-wide');
 			$fieldwrap.removeClass('wide');
 		}
+		boxFitter.normalizeBoxes($fieldwrap);
 	});
 	Report.document.on('click','.edition-actions .editable a',function(){
 		var $this = $(this);
@@ -2818,7 +2823,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $page = $fieldwrap.closest('.page',Report.document);
 		$edit.trigger('edition:clipboardmoved');
 		$page.trigger('page:active');
-		boxFitter.normalizeBoxes($page);
+		boxFitter.normalizeBoxes($fieldwrap);
 	});
 	Report.document.on('click','.edition-actions .split a',function(){
 		var $this = $(this);
