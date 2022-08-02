@@ -85,7 +85,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
-		active: false,
+		active: true,
 		stack: function(where){
 			___cnsl.green('initStack',where);
 		},
@@ -103,7 +103,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				if (v instanceof HTMLElement || v instanceof jQuery || typeof v === 'object') l = v;
 				else a.push(v);
 			});
-			console.groupCollapsed(ball+' '+a.join('  '),l?[l]:'');
+			console.groupCollapsed(ball+' '+a.join('  '),l?' ['+(l.length)+']':'');
 			console.info(l);
 			console.groupEnd();
 		},
@@ -1567,11 +1567,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.width(), edgeHeight = $edge.height() + paddingTolerance;
 			}
 
-			if ($box.is('table')) {
-				console.log(boxPos.top,paddingTolerance,edgeHeight, boxPos.top + paddingTolerance > edgeHeight, 3);
-				console.log(boxPos.top,$box.outerHeight(true),edgeHeight, (boxPos.top + $box.outerHeight(true)) > edgeHeight, 4);
-			}
-
 			strapolateHeight = boxPos.top + paddingTolerance > edgeHeight;
 			if (strapolateHeight) {
 				return 3;
@@ -1606,7 +1601,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 			return edgeHeight;
 		},
-		normalizeBoxes: function($origin, nomceinit){
+		normalizeBoxesOld: function($origin, nomceinit){
 
 			var $extrapolatedEdge;
 
@@ -1770,6 +1765,144 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			Report.document.trigger('document:pagelist');
 
+		},
+		normalizeBoxes: function($origin){
+
+			var $extrapolatedEdge;
+
+			if (Report.document.hasClass('normalizing')) return false;
+			Report.document.addClass('normalizing');
+
+			___cnsl.stack('normalizeBoxes');
+
+			var $page, $boxedge, origin;
+			if ($origin && $origin.is('.fieldwrap')){
+				origin = 'box';
+				$boxedge = $origin.closest('.content, .boxstack, .side');
+				$page = $boxedge.closest('.page');
+				if ($origin.is('[data-boxgroup]')) {
+					boxFitter.groupBellow($origin);
+				}
+			} else if ($origin && $origin.is('.content, .boxstack, .side')){
+				origin = 'edge';
+				$boxedge = $origin;
+				$page = $boxedge.closest('.page');
+			} else {
+				origin = 'page';
+				$page = $origin || Report.document.find('.page:eq(0)');
+				$boxedge = $page.find('.content, .boxstack, .side');
+			}
+
+			___cnsl.log('normalizeBoxes','origin: '+origin, $origin);
+
+			var edx = 0;
+			var $lastpage = $();
+			$boxedge.each(function(){
+
+				var $edge = $(this), edgetype, edgesel, $nextboxes;
+
+				if ($edge.is('.content')) { edgetype = 'content'; edgesel = '.cell.content:eq(0)'; }
+				else if ($edge.is('.boxstack')) { edgetype = 'boxstack'; edgesel = '.boxstack:eq(0), .cell.content:eq(0)'; }
+				else if  ($edge.is('.side')) { edgetype = 'side'; edgesel = '.cell.side:eq(0)'; }
+
+				var cnsl = ___cnsl.active ? 'page('+$page.attr('data-pagenumber')+') edge('+edgetype+') ' : '';
+
+				___cnsl.log('normalizeBoxes', cnsl ,$edge);
+
+				//////////////////////////////////
+				var $lastbox = $edge.children('.fieldwrap, .container').last();
+				if ($lastbox.is('[data-boxgroup]')) {
+					$lastbox = boxFitter.groupBellow($lastbox);
+				}
+				//////////////////////////////
+				var gap = boxFitter.hasGap($edge,$lastbox);
+				if (gap){
+					___cnsl.log('normalizeBoxes', cnsl, 'has gap: '+(gap ? gap+'px' : 'true'),$edge);
+					$nextboxes = $page.nextUntil('.page.breaker-before').find(edgesel).children('.fieldwrap, .container');
+					var nextheights = 0;
+					$nextboxes.each(function(i,v){
+						var $nextbox = $(this);
+						$edge.append($nextbox);
+						var outerheight = $nextbox.outerHeight(true);
+						nextheights += outerheight;
+						if (nextheights >= gap){
+							___cnsl.yellow('normalizeBoxes', cnsl, 'gap boxes appended: '+(i+1)+' - total height:'+nextheights,$nextboxes);
+							return false;
+						}
+					});
+				}
+				//////////////////////////////////
+				if (boxFitter.hasOverflow($edge)){
+					var $boxes = $edge.children('.fieldwrap, .container');
+					___cnsl.red('normalizeBoxes', cnsl, 'has overflow: true',$edge);
+					$boxes.each(function(kb,b){
+						var $box = $(b);
+						if ($box.is('[data-boxgroup]')) {
+							boxFitter.groupBellow($box);
+						}
+						var extrapolate = boxFitter.isExtrapolatedBox($box,$edge);
+						if (extrapolate){
+							___cnsl.red('normalizeBoxes', cnsl, 'estrapolated box: true ('+extrapolate+')',$box);
+							$box.addClass('overflew'); // tint as red
+							$box.attr('data-extrapolate',extrapolate);
+							$extrapolatedEdge = $edge; ////////////////////////////////////////////////////////////////////////////////////////
+						} else {
+							___cnsl.log('normalizeBoxes', cnsl, 'has estrapolated box: false',$box);
+						}
+						if (extrapolate === 3){
+							// move all hidden objects to next page;
+							///////////////////////////////////////////////
+							Report.document.addClass('preventeventchange');
+							boxFitter.moveBox($box,$edge);
+							Report.document.removeClass('preventeventchange');
+							return false;
+							///////////////////////////////////////////////
+						} else if (extrapolate === 4){
+							// break box and move all next boxes to next page;
+							///////////////////////////////////////////////
+							Report.document.addClass('preventeventchange');
+							boxFitter.breakBox($box,$edge);
+							Report.document.removeClass('preventeventchange');
+							return false;
+							///////////////////////////////////////////////
+						}
+						if (!extrapolate){
+							$box.removeClass('overflew toolarge');
+							$box.removeAttr('data-extrapolate');
+						}
+					});
+				} else {
+					___cnsl.ok('normalizeBoxes', cnsl, ' has no overflowing boxes', $edge);
+				}
+				edx++;
+			});
+
+			Report.document.removeClass('normalizing');
+
+			///////////////////////////////////////////////////////////////////
+			var edgesel;
+			var $nextpage = $page.next('.page');
+			if ($nextpage.length && !$nextpage.is('.page.breaker-before')){
+				if (origin == 'box' || origin == 'edge'){
+					if ($boxedge.is('.content')) { edgesel = '.cell.content:eq(0)'; }
+					else if ($boxedge.is('.boxstack')) { edgesel = '.boxstack:eq(0), .cell.content:eq(0)'; }
+					else if  ($boxedge.is('.side')) { edgesel = '.cell.side:eq(0)'; }
+					var $nextedge = $nextpage.find(edgesel);
+					if ($nextedge.length){
+						___cnsl.log('normalizeBoxes', 'recursive nomrmalize next edge ('+edgesel+')', $boxedge);
+						boxFitter.normalizeBoxes($nextedge);
+					}
+				} else {
+					___cnsl.log('normalizeBoxes', 'recursive nomrmalize next page ('+$nextpage.attr('data-pagenumber')+')', $nextpage);
+					boxFitter.normalizeBoxes($nextpage);
+				}
+
+			} else {
+				Report.document.trigger('edition:init');
+				Report.document.trigger('document:pagelist');
+			}
+			///////////////////////////////////////////////////////////////////
+
 		}
 
 	};
@@ -1886,12 +2019,17 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		stop: function (ev, obj) {
 
+			///////////////////////////////////////////////
+			Report.document.addClass('preventeventchange');
+			///////////////////////////////////////////////
+
 			var $a = obj.$el.children('a');
 			var $drop = this.activeDropRegions;
 			var key = $drop.length-1;
 
 			var $clone;
 			var $target;
+			var $page;
 
 			if (!$drop[0]) return;
 
@@ -1928,9 +2066,8 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 			} else if ($a.hasClass('add-move')){
 				if (!$a.hasClass('empty')){
-					var willnormalize = true;
 					var $allmoving = Report.document.find('.clipboardmoved').removeClass('clipboardmoved');
-					var $page = $drop[1];
+					$page = $drop[1];
 					if ($allmoving.filter('.fieldwrap, .container').length){
 						if ($page && $page.length && $page.is('.page')){
 							$page.trigger('page:active');
@@ -1971,7 +2108,6 @@ sourceui.interface.widget.report = function($widget,setup){
 									} else {
 										$page.trigger('page:addedition',[$allmoving,$refed,'split-after',$ref]);
 									}
-									willnormalize = false;
 								} else {
 									$.tipster.notify('No more boxes allowed');
 								}
@@ -2001,14 +2137,10 @@ sourceui.interface.widget.report = function($widget,setup){
 					$a.addClass('empty').find('mark').text('0');
 
 					Report.document.trigger('document:boxcount');
-					//--------------------------------------------------------------------------------
-					if (willnormalize) setTimeout(function(){ boxFitter.normalizeBoxes($page); },150);
-					//--------------------------------------------------------------------------------
 				}
 			} else if ($a.hasClass('add-container')){
-				var $page = $drop[1];
+				$page = $drop[1];
 				if ($page && $page.length && $page.is('.page')){
-					var willnormalize = true;
 					$page.trigger('page:active');
 					$clone = Report.templates.children('.container').clone();
 					if (!$clone.length){
@@ -2041,32 +2173,22 @@ sourceui.interface.widget.report = function($widget,setup){
 							} else {
 								$page.trigger('page:addedition',[$clone,$refed,'split-after',$ref]);
 							}
-							willnormalize = false;
 						} else {
 							$.tipster.notify('No more boxes allowed');
 						}
 					} else if ($drop[key].is('.cell')){
 						$page.trigger('page:addcontainer',[$clone,$drop[key],'append']);
-						willnormalize = false;
 					} else if ($drop[key].is('.boxstack')){
 						$page.trigger('page:addcontainer',[$clone,$drop[key],'append']);
-						willnormalize = false;
 					} else {
 						$page.trigger('page:addcontainer',[$clone]);
-						willnormalize = false;
 					}
 					$clone.trigger('container:dimension');
-
-					//--------------------------------------------------------------------------------
-					if (willnormalize) setTimeout(function(){ boxFitter.normalizeBoxes($page); },150);
-					//--------------------------------------------------------------------------------
 				}
 			} else {
 				var edition;
-				var $page = $drop[1];
+				$page = $drop[1];
 				if ($page && $page.length && $page.is('.page')){
-
-					willnormalize = true;
 
 					$page.trigger('click');
 
@@ -2114,7 +2236,6 @@ sourceui.interface.widget.report = function($widget,setup){
 									$page.trigger('page:addedition',[$clone,$drop[key],'after']);
 									//$.tipster.notify('Spot already has a box');
 								}
-								willnormalize = false;
 							} else {
 								$.tipster.notify('No more boxes allowed');
 							}
@@ -2128,19 +2249,15 @@ sourceui.interface.widget.report = function($widget,setup){
 								} else {
 									$page.trigger('page:addedition',[$clone,$refed,'split-after',$ref]);
 								}
-								willnormalize = false;
 							} else {
 								$page.trigger('page:addedition',[$clone,$drop[key].closest('.fieldwrap'),'after']);
 							}
 						} else if ($drop[key].is('.cell')){
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
-							willnormalize = false;
 						} else if ($drop[key].is('.boxstack')){
 							$page.trigger('page:addedition',[$clone,$drop[key],'append']);
-							willnormalize = false;
 						} else {
 							$page.trigger('page:addedition',[$clone]);
-							willnormalize = false;
 						}
 
 						// autoclick dynamic insertion
@@ -2168,15 +2285,17 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 
 						Report.document.trigger('document:boxcount');
-
-						//--------------------------------------------------------------------------------
-						if (willnormalize) setTimeout(function(){ boxFitter.normalizeBoxes($page); },150);
-						//--------------------------------------------------------------------------------
 					}
 				}
 			}
+
 			$.each($drop||[],function(k,v){ v.removeClass('pep-dpa pep-dropping'); });
 			obj.$el.removeClass('dragger');
+
+			///////////////////////////////////////////////
+			Report.document.removeClass('preventeventchange');
+			Report.document.trigger('document:change',[$page]);
+			///////////////////////////////////////////////
 		}
 	};
 	var $wgtooltop = Report.wgtools.filter('.top').find('li:gt(1)');
@@ -2429,6 +2548,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $page = $ctn.closest('.page',Report.document);
 		$ctn.trigger('container:clipboardmoved');
 		$page.trigger('page:active');
+		boxFitter.normalizeBoxes($page);
 	});
 	Report.document.on('click','.container-actions .remove a',function(){
 		var $this = $(this);
@@ -4731,8 +4851,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'div[class],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
+		valid_elements: 'div[class|style],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
 		valid_styles: {
+			'div': 'height',
 			'figure': 'width',
 			'table': 'zoom,float,display,margin-left,margin-right,border,border-colapse,border-color,border-style,background-color,background,color,width,height,cellpadding,cellspacing',
 			'tr': 'style,background-color,background,height',
