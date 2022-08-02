@@ -2155,26 +2155,24 @@ sourceui.interface.widget.report = function($widget,setup){
 							$page.trigger('page:addcontainer',[$clone,$ctn,'before']);
 						}
 					} else if ($drop[key].is('.fieldwrap')){
-						if (!$drop[key].parent().is('.reserved')){
-							var $ref = $drop[key];
-							var boxPos = $ref.offset();
+						var $ctn = $drop[key].closest('.container');
+						var $ref = $ctn.length ? $ctn : $drop[key];
+						var boxPos = $ref.offset();
+						if (boxPos.top + ($ref.height()/2) > this.ev.y) $clone.insertBefore($ref);
+						else $clone.insertAfter($ref);
+					} else if ($drop[key].is('p,img,table')){
+						var $ctn = $drop[key].closest('.container');
+						var $ref = $ctn.length ? $ctn : $drop[key];
+						var boxPos = $ref.offset();
+						if ($ctn.length){
 							if (boxPos.top + ($ref.height()/2) > this.ev.y) $clone.insertBefore($ref);
 							else $clone.insertAfter($ref);
 						} else {
-							$.tipster.notify('No more boxes allowed');
-						}
-					} else if ($drop[key].is('p,img,table')){
-						if (!$drop[key].closest('.reserved').length){
-							var $ref = $drop[key];
-							var cntPos = $ref.offset();
-							var $refed = $ref.closest('[data-edition]');
-							if (cntPos.top + ($ref.outerHeight(true)/2) > this.ev.y){
+							if (boxPos.top + ($ref.outerHeight(true)/2) > this.ev.y){
 								$page.trigger('page:addedition',[$clone,$refed,'split-before',$ref]);
 							} else {
 								$page.trigger('page:addedition',[$clone,$refed,'split-after',$ref]);
 							}
-						} else {
-							$.tipster.notify('No more boxes allowed');
 						}
 					} else if ($drop[key].is('.cell')){
 						$page.trigger('page:addcontainer',[$clone,$drop[key],'append']);
