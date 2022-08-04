@@ -11,7 +11,6 @@
  * Dual licensed under the MIT and GPL licenses.
  * Copyright (c) 2006-2015 - SourceLab Tecnologia Ltda
  * --------------------------------------------------------- */
-
 /**
  * INTERFACE - AUTH
  * @description Interface do autenticador do sistema
