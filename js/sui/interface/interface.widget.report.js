@@ -3909,7 +3909,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 				allsame = edition;
 			});
-			if (allsame === false) $wrap.find('.selection-actions li.join').removeClass('allow').addClass('deny');
+			if (allsame === false || allsame !== 'richtext') $wrap.find('.selection-actions li.join').removeClass('allow').addClass('deny');
 			else $wrap.find('.selection-actions li.join').removeClass('deny').addClass('allow');
 			$wrap.children('ul.selection-actions').find('li.name').text(Report.document.find('.fieldwrap.selected').length+' box(es) selected');
 		}
@@ -4801,6 +4801,17 @@ sourceui.interface.widget.report = function($widget,setup){
 						caret.focus();
 						Report.document.removeClass('preventeventchange');
 					}
+				} else if (e.key == 'Delete' || e.key == 'Backspace'){
+					var $sel = $ed.find('.pastedelement[data-mce-selected="1"], img[data-mce-selected="1"], table[data-mce-selected="1"]');
+					if ($sel.is('img')){
+						$sel.replaceWith('<span class="caret-autobreak"></span>');
+						caret.focus($ed);
+					} else {
+						if ($sel.find('td[data-mce-selected="1"]').length){
+							$sel.replaceWith('<span class="caret-autobreak"></span>');
+							caret.focus($ed);
+						}
+					}
 				}
 			});
 			editor.on('paste', function (e) {
@@ -4848,7 +4859,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		table_appearance_options: false,
 		imagetools_toolbar: 'none',
 		paste_data_images: true,
-		toolbar: 'undo redo | forecolor | bold italic underline | superscript subscript | alignleft aligncenter alignjustify alignright | removeformat | link | table ',
+		toolbar: 'undo redo | forecolor backcolor cellcolor | bold italic underline | superscript subscript | alignleft aligncenter alignjustify alignright | removeformat | link | table ',
 		automatic_uploads: false,
 		file_picker_types: 'image',
 		powerpaste_allow_local_images: true,
@@ -4969,7 +4980,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$p.children(':not(img):not(.tablewrap),.tablewrap:empty').remove();
 					$p.contents().filter(function(){ return this.nodeType == 3; }).remove(); //delete text
 				} else if (e.key == 'Delete' || e.key == 'Backspace'){
-					var $sel = $ed.find('.pastedelement[data-mce-selected="1"]');
+					var $sel = $ed.find('.pastedelement[data-mce-selected="1"], img[data-mce-selected="1"], table[data-mce-selected="1"]');
 					if ($sel.is('img')){
 						$sel.replaceWith('<span class="caret-autobreak"></span>');
 						caret.focus($ed);

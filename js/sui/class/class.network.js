@@ -12,6 +12,8 @@
  * Copyright (c) 2006-2015 - SourceLab Tecnologia Ltda
  * --------------------------------------------------------- */
 
+window.unescape = window.unescape || window.decodeURI; // hack para o deprected
+
 sourceui.Network = function () {
 
 	'use strict';
@@ -1593,7 +1595,8 @@ sourceui.Network = function () {
 						// ==========================================================================
 						// AJAX REQUEST HEADER ASSIGNMENT ===========================================
 						xhr.setRequestHeader('X-Sui-Request-Engine', setup.engine || 'default');
-						xhr.setRequestHeader('X-Sui-Request-Payload', btoa(JSON.stringify(requestHeaderPayload)));
+						//xhr.setRequestHeader('X-Sui-Request-Payload', btoa(JSON.stringify(requestHeaderPayload)));
+						xhr.setRequestHeader('X-Sui-Request-Payload', btoa(unescape(encodeURIComponent(JSON.stringify(requestHeaderPayload)))));
 						// ==========================================================================
 					};
 					/////////////////////////////////////
