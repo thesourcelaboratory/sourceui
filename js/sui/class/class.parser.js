@@ -874,7 +874,7 @@ sourceui.templates.interface = new sourceui.Template({
 				'@{child:fields}' +
 				'</div>',
 			buttonset:
-				'<div class="sui-buttonset @{class:orient} @{class:mode} @{class:align} @{class:size} @{class:prop}"@{data}>' +
+				'<div class="sui-buttonset @{class:orient} @{class:mode} @{class:align} @{class:size} @{class:prop}"@{data}@{style}>' +
 				'<ul class="group">@{child:buttons}</ul>' +
 				'</div>',
 			button:

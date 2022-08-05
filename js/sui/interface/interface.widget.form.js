@@ -36,6 +36,7 @@ sourceui.interface.widget.form = function ($widget, setup) {
 	Form.valid = true;
 	Form.widget = $widget;
 	Form.common = new Interface.widget.common($widget, setup);
+	Form.buttons = this.widget.find('.sui-buttonset .sui-button a');
 	Form.fields = this.widget.find('.sui-field');
 	Form.fields.customField();
 
@@ -57,6 +58,14 @@ sourceui.interface.widget.form = function ($widget, setup) {
 		Form.common.toggleTools('field:keyboard');
 		Form.widget.trigger('widget:keyboard',[$field]);
 		Form.hasValue($field);
+	});
+	Form.buttons.filter('[data-alias="submit"]').on('click', function(){
+		var $a = $(this), data = $a.data(), link = $a.link();
+		if ($a.isDisable()) return;
+		Form.widgetData();
+		if (Form.valid){
+			Network.link.call($a, Form.wgdata);
+		}
 	});
 	// ------------------------------------------------------
 

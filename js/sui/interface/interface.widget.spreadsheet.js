@@ -220,10 +220,10 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                 Handson.area.children('.empty').remove();
                 if (!data.length){
                     if (initialLoad){
-                        if (cfg.searchRequiredInfo) Handson.area.prepend('<div class="empty icon-lens-blocked">Você precisa realizar uma pesquisa para mostrar dados nessa grade.</info>');
-                        else if (cfg.filterRequiredInfo) Handson.area.prepend('<div class="empty icon-funnel-blocked">Você precisa realizar uma pesquisa ou filtrar dados para que sejam mostrados nessa grade.</info>');
+                        if (cfg.searchRequiredInfo) Handson.area.prepend('<div class="empty icon-lens-blocked">'+(isPT ? 'Você precisa realizar uma pesquisa para mostrar dados nessa grade.' : 'You will need to do a search to show data into the datagrid.')+'</div>');
+                        else if (cfg.filterRequiredInfo) Handson.area.prepend('<div class="empty icon-funnel-blocked">'+(isPT ? 'Você precisa realizar uma pesquisa ou filtrar dados para que sejam mostrados nessa grade.' : 'You will need to do a search or filter data to show them into the datagrid')+'</div>');
                     } else {
-                        Handson.area.prepend('<div class="empty icon-table-blocked">Não ha dados para serem exibidos nessa grade.</info>');
+                        Handson.area.prepend('<div class="empty icon-table-blocked">'+(isPT ? 'Não ha dados para serem mostrados nessa grade.' : 'There is no data to be shown into this datagrid')+'</div>');
                     }
                     Handson.widget.trigger('widget:emptyload');
                 } else {

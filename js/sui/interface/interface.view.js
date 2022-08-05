@@ -733,7 +733,7 @@ sourceui.interface.view = function ($view, setup) {
 				}
 				var footname = $sector.find('.sui-sector-title .tabs li[data-view="' + view.attr('id') + '"] strong').text() || $sector.find('.sui-sector-title .name').text();
 				if (footname) $footer.find('#footName').text(footname);
-				$footer.find('#footStat').html('<strong id="footBytes">' + $.formatBytes(metric.bytesTotal) + '</strong> processados em <strong id="footTime">' + metric.totalTime + 'ms</strong>');
+				$footer.find('#footStat').html('<strong id="footBytes">' + $.formatBytes(metric.bytesTotal) + '</strong>'+(isPT ? ' processados em ' : ' proceessed in ')+'<strong id="footTime">' + metric.totalTime + 'ms</strong>');
 			}
 		}
 	};

@@ -24,14 +24,14 @@ sourceui.templates.fields = new sourceui.Template({
 	},
 	field: {
 		simple:
-			'<div class="sui-field @{class}" id="@{id}"@{data}@{async}>' +
+			'<div class="sui-field @{class}" id="@{id}"@{data}@{async} style="@{style:padding}">' +
 			'@{child:vars}' +
 			'@{child:label}' +
 			'@{child:wrap}' +
 			'@{child:code}' +
 			'</div>',
 		code:
-			'<pre class="sui-field @{class}" id="@{id}"@{data}@{async}>' +
+			'<pre class="sui-field @{class}" id="@{id}"@{data}@{async} style="@{style:padding}">' +
 			'@{child:vars}' +
 			'@{child:label}' +
 			'@{child:wrap}' +
@@ -571,6 +571,7 @@ sourceui.parserField = function (element, setup) {
 				return Template.get('field', tpl.field, {
 					id: setup.id,
 					class: setup.class + (setup.list && setup.list.selected && setup.list.selected.length > 0 ? ' selected' : '') + (setup.help ? ' helped' : ''),
+					style: setup.style,
 					data: $.extend(setup.data || {}, {
 						name: setup.name,
 						initval: setup.initval,

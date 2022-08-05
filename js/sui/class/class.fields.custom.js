@@ -2424,10 +2424,10 @@ sourceui.customField = function (element, setup) {
 		date: {
 			setval: function (val) {
 				if (Data.mode == 'simple') {
-					Dom.input.val($.toDate(val, 'd/m/Y'));
+					Dom.input.val($.toDate(val, isPT ? 'd/m/Y' : 'Y-m-d'));
 				} else if (Data.mode == 'full') {
 					if (val !== '') {
-						var html = Parser.methods.getTemplate('input', 'fulldate', { value: $.toDate(val, 'Y-m-d'), label: $.toFullDate(val, 'br', 'unpreposited') });
+						var html = Parser.methods.getTemplate('input', 'fulldate', { value: $.toDate(val, 'Y-m-d'), label: $.toFullDate(val, isPT ? 'br' : 'us', 'unpreposited') });
 						var $html = $(html);
 						Element.addClass('selected');
 						Dom.options.html($html);
@@ -2437,8 +2437,8 @@ sourceui.customField = function (element, setup) {
 					}
 					Dom.input = Dom.value.find('.input');
 				} else if (Data.mode == 'range') {
-					Dom.input.filter('.ini').val($.toDate(val[0] || '', 'd/m/Y'));
-					Dom.input.filter('.end').val($.toDate(val[1] || '', 'd/m/Y'));
+					Dom.input.filter('.ini').val($.toDate(val[0] || '', isPT ? 'd/m/Y' : 'Y-m-d'));
+					Dom.input.filter('.end').val($.toDate(val[1] || '', isPT ? 'd/m/Y' : 'Y-m-d'));
 				}
 				return true;
 			},
