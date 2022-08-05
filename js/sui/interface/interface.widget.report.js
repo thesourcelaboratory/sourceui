@@ -4149,10 +4149,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (Report.document.hasClass('preventeventchange')) return false;
 		/////////////////////////////////////////////////////////////////
 		Report.document.find('[data-edition="toc"]:eq(0)').trigger('edition:buildtoc');
-		if ($page) setTimeout(function(){ boxFitter.normalizeBoxes($page); },100);
-		Report.document.trigger('document:validate');
-		Report.widget.trigger('field:input');
-		Report.document.trigger('document:pagelist');
+		if ($page) setTimeout(function(){
+			boxFitter.normalizeBoxes($page);
+			Report.document.trigger('document:validate');
+			Report.widget.trigger('field:input');
+			Report.document.trigger('document:pagelist');
+		},100);
 		setTimeout(function(){ Report.document.trigger('document:disclaimerrefpage'); },350);
 	});
 	Report.document.on('document:disclaimerrefpage',function(event){
