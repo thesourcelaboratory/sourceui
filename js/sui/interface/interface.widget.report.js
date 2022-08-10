@@ -102,8 +102,15 @@ sourceui.interface.widget.report = function($widget,setup){
 				if (v instanceof HTMLElement || v instanceof jQuery || typeof v === 'object') l = v;
 				else a.push(v);
 			});
-			console.groupCollapsed(ball+' '+a.join('  '),l?' ['+(l.length)+']':'');
-			console.info(l);
+			console.groupCollapsed(ball+' '+a.join('  '),l?' ['+(l.length||0)+']':'');
+			console.info('[OBJECT]',l);
+			if (l instanceof NodeList){
+				console.info('[PLAINTEXT]');
+				for(var i in l) console.info(l[i].outerHTML);
+			} else if (l instanceof jQuery){
+				console.info('[PLAINTEXT]');
+				l.each(function(k,v){ console.info(v.outerHTML); });
+			}
 			console.groupEnd();
 		},
 		green: function(){
@@ -1344,7 +1351,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 		groupBellow: function($box){
 			// join grouped boxes ------------------------
-			/*
+
 			var $boxsequence = $();
 			var $allboxes = $();
 			var datagroup = $box.data('boxgroup');
@@ -1376,12 +1383,13 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					}
 				});
-				___cnsl.log('groupBellow', 'group: '+datagroup+' ('+$boxsequence.length+'):',$boxsequence);
+				___cnsl.log('groupBellow (NEW)', 'group: '+datagroup+' ('+$boxsequence.length+'):',$boxsequence);
 				if ($boxsequence.length > 1) $box = boxFitter.joinBox($boxsequence);
 				else if (!hasbefore) $box = boxFitter.ungroupBox($box);
 			}
 			return $box;
-			*/
+
+			/*
 			if ($box.data('boxgroup')){
 				var $boxGroup = $();
 				var $foundgroup = Report.document.find('.cell > [data-boxgroup="'+$box.data('boxgroup')+'"], .boxstack > [data-boxgroup="'+$box.data('boxgroup')+'"]');
@@ -1402,6 +1410,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$box = boxFitter.ungroupBox($box);
 				}
 			}
+			*/
 			return $box;
 		},
 		ungroupBox: function($box){
@@ -1416,10 +1425,11 @@ sourceui.interface.widget.report = function($widget,setup){
 
 				var $contentAll = $('<pre></pre>');
 
+				___cnsl.yellow('joinBox',$boxGroup);
+
 				($boxGroup||$()).each(function(kb,box){
 
 					var $box = $(box);
-					___cnsl.yellow('joinBox',box);
 					var $edition = $box.children('[data-edition]');
 
 					var content, $content;
@@ -2163,6 +2173,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						var $ctn = $drop[key].closest('.container');
 						var $ref = $ctn.length ? $ctn : $drop[key];
 						var boxPos = $ref.offset();
+						var $refed = $ref.closest('[data-edition]');
 						if ($ctn.length){
 							if (boxPos.top + ($ref.height()/2) > this.ev.y) $clone.insertBefore($ref);
 							else $clone.insertAfter($ref);
