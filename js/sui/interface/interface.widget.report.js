@@ -1355,16 +1355,16 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $boxsequence = $();
 			var $allboxes = $();
 			var datagroup = $box.data('boxgroup');
+			var joiner = $box.find('[data-joiner]:last-child').attr('data-joiner');
 			if (datagroup){
 				$boxsequence = $boxsequence.add($box);
-				$allboxes = $allboxes.add(Report.document.find('.boxstack > .fieldwrap'));
-				$allboxes = $allboxes.add(Report.document.find('.content > .fieldwrap'));
-				$allboxes = $allboxes.add(Report.document.find('.side > .fieldwrap'));
-				var $allgroup = $allboxes.filter('[data-boxgroup="'+datagroup+'"]');
+				$allboxes = $allboxes.add(Report.document.find('.boxstack > .fieldwrap, .boxstack > .container'));
+				$allboxes = $allboxes.add(Report.document.find('.content > .fieldwrap, .content > .container'));
+				$allboxes = $allboxes.add(Report.document.find('.side > .fieldwrap, .side > .container'));
+				var $allgroup = joiner ? $allboxes.filter('[data-boxgroup="'+datagroup+'"], .fieldwrap:has([data-joiner="'+joiner+'"]:first-child)') : $allboxes.filter('[data-boxgroup="'+datagroup+'"]');
 				var hasbefore = false;
 				var isnext = false;
 				var lastindex = -1;
-				console.log($allgroup);
 				$allgroup.each(function(){
 					var $bg = $(this);
 					if (this === $box.get(0)) {
@@ -1373,7 +1373,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					} else {
 						hasbefore = true;
 					}
-					console.log(isnext,hasbefore,lastindex,$allboxes.index($bg.get(0)));
 					if (isnext){
 						if (lastindex == $allboxes.index($bg.get(0))){
 							$boxsequence = $boxsequence.add($bg);
@@ -1383,7 +1382,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 					}
 				});
-				___cnsl.log('groupBellow (NEW)', 'group: '+datagroup+' ('+$boxsequence.length+'):',$boxsequence);
+				___cnsl.log('groupBellow (NEW)', 'group: '+datagroup+(joiner?' (joiner: '+joiner+')':'')+':',$boxsequence);
 				if ($boxsequence.length > 1) $box = boxFitter.joinBox($boxsequence);
 				else if (!hasbefore) $box = boxFitter.ungroupBox($box);
 			}
@@ -1450,12 +1449,12 @@ sourceui.interface.widget.report = function($widget,setup){
 									var $join = $(this);
 									var $next = $join.next();
 									if ($next.length && $next.attr('data-joiner') == $join.attr('data-joiner')) {
-										$join.append($next.html()).removeAttr('data-joiner').removeData('joiner');
+										$join.append(' '+$next.html()).removeAttr('data-joiner').removeData('joiner');
 										$next.remove();
 									} else if ($join.is(':first-child')) {
 										var $joinall = $contentAll.find('[data-joiner="'+$join.attr('data-joiner')+'"]:last-child');
 										if ($joinall.length){
-											$joinall.append($join.html()).removeAttr('data-joiner').removeData('joiner');
+											$joinall.append(' '+$join.html()).removeAttr('data-joiner').removeData('joiner');
 											$join.remove();
 										}
 									}
