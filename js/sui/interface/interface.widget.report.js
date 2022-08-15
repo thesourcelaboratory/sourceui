@@ -3677,8 +3677,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (placement == 'after') $clone.append($el.nextAll());
 			else $clone.append($el.nextAll().addBack());
 			var $clonewrap = $fieldwrap.clone().removeClass('pep-dpa pep-dropping').html($clone);
-			//boxFitter.ungroupBox($fieldwrap);
 			$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
+			if (!$fieldwrap.attr('boxgroup')){
+				var id = boxFitter.boxgroupID($fieldwrap);
+				boxFitter.boxgroupID($clonewrap, id);
+			}
 		}
 		Report.document.trigger('historyworker:stateadd',['edition:split']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
