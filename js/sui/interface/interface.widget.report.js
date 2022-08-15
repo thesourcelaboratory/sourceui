@@ -84,7 +84,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
-		active: false,
+		active: true,
 		stack: function(where){
 			___cnsl.green('initStack',where);
 		},
@@ -1377,14 +1377,11 @@ sourceui.interface.widget.report = function($widget,setup){
 						if (lastindex == $allboxes.index($bg.get(0))){
 							$boxsequence = $boxsequence.add($bg);
 							lastindex++;
-						} else {
-							boxFitter.ungroupBox($bg);
 						}
 					}
 				});
 				___cnsl.log('groupBellow (NEW)', 'group: '+datagroup+(joiner?' (joiner: '+joiner+')':'')+':',$boxsequence);
 				if ($boxsequence.length > 1) $box = boxFitter.joinBox($boxsequence);
-				else if (!hasbefore) $box = boxFitter.ungroupBox($box);
 			}
 			return $box;
 
@@ -1623,9 +1620,6 @@ sourceui.interface.widget.report = function($widget,setup){
 				origin = 'box';
 				$boxedge = $origin.closest('.content, .boxstack, .side');
 				$pages = $boxedge.closest('.page');
-				if ($origin.is('[data-boxgroup]')) {
-					boxFitter.groupBellow($origin);
-				}
 			} else if ($origin && $origin.is('.content, .boxstack, .side')){
 				origin = 'edge';
 				$boxedge = $origin;
@@ -2178,9 +2172,9 @@ sourceui.interface.widget.report = function($widget,setup){
 							else $clone.insertAfter($ref);
 						} else {
 							if (boxPos.top + ($ref.outerHeight(true)/2) > this.ev.y){
-								$page.trigger('page:addedition',[$clone,$refed,'split-before',$ref]);
+								$page.trigger('page:addcontainer',[$clone,$refed,'split-before',$ref]);
 							} else {
-								$page.trigger('page:addedition',[$clone,$refed,'split-after',$ref]);
+								$page.trigger('page:addcontainer',[$clone,$refed,'split-after',$ref]);
 							}
 						}
 					} else if ($drop[key].is('.cell')){
@@ -3228,11 +3222,15 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 		Report.document.removeClass('preventeventchange');
 		$this.remove();
-		if ($preved.data('edition') === $nexted.data('edition')){
+		///////////////////////////////////
+		if ($preved.attr('data-belongstogroup') && $preved.attr('data-belongstogroup') === $nexted.attr('data-belongstogroup')){
 			$preved.trigger('edition:join',[$nexted]);
 		}
-		Report.document.trigger('document:change',[$page]);
-		$.tipster.notify('Container removed');
+		///////////////////////////////////
+		if (!Report.document.hasClass('preventeventchange')){
+			Report.document.trigger('document:change',[$page]);
+			$.tipster.notify('Container removed');
+		}
 		Report.document.trigger('historyworker:stateadd',['container:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 	});
 	Report.document.on('container:clipboardmoved','.container',function(){
@@ -3739,8 +3737,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $fieldwrap = $this.parent();
 		var $page, $reference;
 		var editiontype = $this.data('edition');
-		var $preved = (editiontype === 'dynamic' || editiontype === 'figure') ? $fieldwrap.prev('.fieldwrap').children('[data-edition]') : '';
-		var $nexted = (editiontype === 'dynamic' || editiontype === 'figure') ? $fieldwrap.next('.fieldwrap').children('[data-edition]') : '';
+		var $preved = $fieldwrap.prev('.fieldwrap').children('[data-edition]');
+		var $nexted = $fieldwrap.next('.fieldwrap').children('[data-edition]');
 		if ($fieldwrap.is('.dynamic[data-boxgroup]')){
 			Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"] [data-edition]').each(function(ke, e){
 				var $e = $(e);
@@ -3753,6 +3751,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			$page = $this.closest('.page');
 			$fieldwrap.remove();
 		}
+		///////////////////////////////////
+		if ($preved.attr('data-belongstogroup') && $preved.attr('data-belongstogroup') === $nexted.attr('data-belongstogroup')){
+			$preved.trigger('edition:join',[$nexted]);
+		}
+		///////////////////////////////////
 		if (!Report.document.hasClass('preventeventchange')){
 			Report.document.trigger('document:change',[$page]);
 			$.tipster.notify('Edition box removed');
@@ -3836,7 +3839,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (placement == 'after') $clone.append($el.nextAll());
 			else $clone.append($el.nextAll().addBack());
 			var $clonewrap = $fieldwrap.clone().removeClass('pep-dpa pep-dropping').html($clone);
-			boxFitter.ungroupBox($fieldwrap);
+			//boxFitter.ungroupBox($fieldwrap);
 			$page.trigger('page:addedition',[$clonewrap,$fieldwrap,'after']);
 		}
 		Report.document.trigger('historyworker:stateadd',['edition:split']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
@@ -3966,7 +3969,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				} else {
 					var $el = y;
-					if ($el.is(':first-child')){
+					if ($el.is(':only-child')){
+						if (placement == 'split-before') $refed.parent().before($new);
+						else $refed.parent().after($new);
+					}
+					else if ($el.is(':first-child')){
 						if (placement == 'split-before') $refed.parent().before($new);
 						else {
 							$refed.trigger('edition:split',[$el,'after']);
@@ -4031,7 +4038,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					}
 				} else {
 					var $el = y;
-					if ($el.is(':first-child')){
+					if ($el.is(':only-child')){
+						if (placement == 'split-before') $refed.parent().before($new);
+						else $refed.parent().after($new);
+					}
+					else if ($el.is(':first-child')){
 						if (placement == 'split-before') $refed.parent().before($new);
 						else {
 							$refed.trigger('edition:split',[$el,'after']);
@@ -5070,7 +5081,14 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			$elem.trigger('edition:jscode');
 
+
+
 		}
+
+		var altTitle = 'Composer '+$elem.data('edition')+' box';
+		altTitle += ($elem.data('belongstogroup')) ? ' (grouped: '+$elem.data('belongstogroup')+')' : ' (standalone)';
+
+		$elem.attr('title', altTitle);
 
 
 		/*
