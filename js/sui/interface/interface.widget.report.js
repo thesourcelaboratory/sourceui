@@ -84,7 +84,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
-		active: false,
+		active: true,
 		stack: function(where){
 			___cnsl.green('initStack',where);
 		},
@@ -1357,10 +1357,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			var datagroup = $box.data('boxgroup');
 			var joiner = $box.find('[data-joiner]:last-child').attr('data-joiner');
 			if (datagroup){
+				var $pages = $box.closest('.page');
+				$pages = $pages.add($pages.nextUntil('.page.breaker-before'));
 				$boxsequence = $boxsequence.add($box);
-				$allboxes = $allboxes.add(Report.document.find('.boxstack > .fieldwrap, .boxstack > .container'));
-				$allboxes = $allboxes.add(Report.document.find('.content > .fieldwrap, .content > .container'));
-				$allboxes = $allboxes.add(Report.document.find('.side > .fieldwrap, .side > .container'));
+				$allboxes = $allboxes.add($pages.find('.boxstack > .fieldwrap, .boxstack > .container'));
+				$allboxes = $allboxes.add($pages.find('.content > .fieldwrap, .content > .container'));
+				$allboxes = $allboxes.add($pages.find('.side > .fieldwrap, .side > .container'));
 				var $allgroup = joiner ? $allboxes.filter('[data-boxgroup="'+datagroup+'"], .fieldwrap:has([data-joiner="'+joiner+'"]:first-child)') : $allboxes.filter('[data-boxgroup="'+datagroup+'"]');
 				var hasbefore = false;
 				var isnext = false;
