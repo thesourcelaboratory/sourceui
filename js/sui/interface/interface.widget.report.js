@@ -3515,10 +3515,12 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $fieldwrap = $this.parent();
 		var $page = $this.closest('.page');
 		Report.document.trigger('field:input');
+		/*
 		if ($this.is('[data-edition*="text"]')){
 			var $boxgroup = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"]');
 			$page = $boxgroup.length ? $boxgroup.filter(':eq(0)').closest('.page') : $page;
 		}
+		*/
 		Report.document.trigger('document:change',[$page]);
 		Replacer.find();
 	});
