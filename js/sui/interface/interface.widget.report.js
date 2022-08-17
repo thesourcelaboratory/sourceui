@@ -84,7 +84,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
-		active: true,
+		active: false,
 		stack: function(where){
 			___cnsl.green('initStack',where);
 		},
@@ -1792,17 +1792,20 @@ sourceui.interface.widget.report = function($widget,setup){
 		}]);
 	});
 	Report.wgtools.filter('.top').find('li:eq(1)').on('click',function(){
-		var data = {}
+		var data = {}, post = {};
 		Report.variables.each(function(){
 			var $v = $(this);
 			data[$v.attr('name')] = $v.attr('value') || $v.html();
 		});
-		if (data.reportSummary) data.reportSummary = btoa(encodeURIComponent(data.reportSummary));
+		if (data.reportSummary) {
+			post.reportSummary = btoa(encodeURIComponent(data.reportSummary));
+			delete data.reportSummary;
+		}
 		data.usecover = Report.document.find('.page.fullcovered').attr('data-visible');
 		data.reportName = $.trim(Report.document.find('.page.covered-default .block.reportName, .page.covered-default .cell.reportName .block').first().text());
 		Report.document.trigger('document:openfloat',[Report.document, $.extend(data,{
 			form:'metadata',
-		})]);
+		}),post]);
 	});
 	var pepObject = {
 		place: false,
@@ -4051,11 +4054,12 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		});
 	});
-	Report.document.on('document:openfloat',function(event,$origin,json){
+	Report.document.on('document:openfloat',function(event,$origin,json,post){
 		var data = $origin.link();
 		var id = $origin.attr('id') || 'sui' + $.md5(Math.rand()).substring(0, 16);
 		data.id = id;
 		data.json = $.extend(true, json, Report.view.link('json') || {});
+		data.data = post;
 		Network.link(data);
 		$origin.attr('id',id);
 	});
