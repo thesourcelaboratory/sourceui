@@ -2415,11 +2415,21 @@ sourceui.Network = function () {
 			////////////////////////////////////
 			promiseDB().then(function (r) {
 				if (ActiveRequests[setup.rid]) {
+					$.tipster.notify(isPT ? 'Aguarde, a requisição ainda está ativa...' : 'Wait, the request is still active...');
+				} else {
+					ActiveRequests[setup.rid] = new Ajax(setup);
+					ActiveRequests[setup.rid].exec();
+				}
+			});
+			/*
+			promiseDB().then(function (r) {
+				if (ActiveRequests[setup.rid]) {
 					ActiveRequests[setup.rid].abort(true);
 				}
 				ActiveRequests[setup.rid] = new Ajax(setup);
 				ActiveRequests[setup.rid].exec();
 			});
+			*/
 		} else {
 			console.warn('There is no file to link');
 		}
