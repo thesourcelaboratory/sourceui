@@ -2827,6 +2827,7 @@ sourceui.Parser = function () {
 						else if (!sui.attr('type') && sui.attr('data:type')) sui.attr('type',sui.attr('data:type'));
 						if (!sui.attr('data:edition') && sui.attr('data:position')) sui.attr('style',sui.attr('data:position'));
 						if (sui.attr('data:background')) sui.attr('style','background:'+sui.attr('data:background')+'; '+sui.attr('style'));
+						if (sui.attr('data:bordercolor')||sui.attr('data:borderwidth')) sui.attr('style','border: solid '+(sui.attr('data:borderwidth')||'2px')+'px '+(sui.attr('data:bordercolor')||'#333333')+'; '+sui.attr('style'));
 						return sui.toHTML('wg', 'report', 'block', { child: { content: htmlContent }},  Template.get);
 					},
 					col : function(sui){

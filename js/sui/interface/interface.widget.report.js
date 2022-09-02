@@ -572,6 +572,12 @@ sourceui.interface.widget.report = function($widget,setup){
 							css['background-image'] = 'url("'+$e.attr('src')+'")';
 							if (error) css['opacity'] = 0.6;
 						}
+						if ($e.is('[style*="background:"]')){
+							css['background-color'] = $e.css('background-color');
+						}
+						if ($e.is('[style*="border"]')){
+							css['border'] = 'solid '+Math.round(parseInt($e.css('border-width'))/10)+'px '+$e.css('border-color');
+						}
 					}
 					$floater.css($.extend({top:dim.top,left:dim.left,width:dim.width,height:dim.height},css));
 					Thumbnail.current.bleed.append($floater);
@@ -2526,6 +2532,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			titles: titles.length ? titles : [{indexer:'',type:'',text:''}],
 			legend: $edit.find('h5').text(),
 			background: $edit.attr('data-background'),
+			bordercolor: $edit.attr('data-bordercolor'),
+			borderwidth: $edit.attr('data-borderwidth'),
 			margin: $edit.attr('data-extramargin') || 'N',
 			editable: $edit.attr('contenteditable'),
 		}]);
