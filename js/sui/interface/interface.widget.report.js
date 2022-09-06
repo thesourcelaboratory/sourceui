@@ -576,7 +576,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							css['background-color'] = $e.css('background-color');
 						}
 						if ($e.is('[style*="border"]')){
-							css['border'] = 'solid '+Math.round(parseInt($e.css('border-width'))/10)+'px '+$e.css('border-color');
+							css['border'] = 'solid '+Math.ceil(parseInt($e.css('border-width'))/10)+'px '+$e.css('border-color');
 						}
 					}
 					$floater.css($.extend({top:dim.top,left:dim.left,width:dim.width,height:dim.height},css));

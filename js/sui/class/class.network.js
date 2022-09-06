@@ -1028,7 +1028,7 @@ sourceui.Network = function () {
 						if ($orig) $orig = $orig.closest('.sui-fieldset, .sui-widget, .sui-view, .sui-sector');
 						if (v.indexOf('#') > -1) {
 							$t = $(v);
-						} else if (v.indexOf('@') > -1) {
+						} else if (v.indexOf('@') > -1 && v.indexOf('@')+3 < v.length && v.indexOf('.') === -1) {
 							$t = $.ache('field', v, [($orig.length ? $orig : setup.view || setup.sector), $(document)]);
 						}
 						if ($t && $t.length){
