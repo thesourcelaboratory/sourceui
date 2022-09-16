@@ -56,6 +56,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.editors = Report.document.find('[data-edition*="text"],[data-edition*="figure"]');
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
 	Report.scaler = $('<mark class="sui-scaler"></mark>').appendTo(Report.area);
+	Report.sizer = $('<mark class="sui-sizer"></mark>').appendTo(Report.area);
 
 	Report.figuretypes = {
 		figure:{ '1':'Figure', '2':'Figura', '7':'Figura'},
@@ -2639,6 +2640,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		Report.scaler.removeClass('active');
+		Report.sizer.removeClass('active');
 		if (!$fieldwrap.is('.wide')){
 			$edit.attr('data-wide','S');
 			$fieldwrap.addClass('wide');
@@ -2794,6 +2796,96 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (event.originalEvent.deltaY > 0) Report.wgtools.filter('.bottom').find('.zoom-out').trigger('click');
 			else  Report.wgtools.filter('.bottom').find('.zoom-in').trigger('click');
 		}
+	});
+	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	// Element sizer ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Report.document.on('edition:elementsizer','[data-edition]',function(event, $elem){
+		Report.sizer.data('element', $elem);
+		var $table = $elem.closest('table');
+		var doczoom = $.toNumber(Report.document.attr('data-zoom') || 1);
+		var inizoom = $.toNumber($table.attr('data-zoom') || $table.attr('data-inizoom')) || 1;
+		var $editor = $(this);
+		var editoroffset = $editor.offset();
+		editoroffset.top = editoroffset.top;
+		editoroffset.left = editoroffset.left;
+		var editorwidth = $editor.innerWidth();
+		var sizerwidth = Report.sizer.width();
+		var scrolloffset = Report.scroll.offset();
+		scrolloffset.top = scrolloffset.top;
+		scrolloffset.left = scrolloffset.left;
+		var scrolltop = Report.scroll.scrollTop();
+		var scrollleft = Report.scroll.scrollLeft();
+		var elemwidth = $elem.outerWidth(true) * inizoom;
+		var elemheight = $elem.outerHeight(true) * inizoom;
+		var lineoffset = $elem.closest('table').offset();
+		var elemoffset = $elem.offset();
+		elemoffset.top = (elemoffset.top) * inizoom;
+		elemoffset.left = (elemoffset.left) * inizoom;
+		var zoom;
+		var inipos;
+		var initialcss = {};
+		var constrainTo;
+		initialcss = {
+			top: (elemoffset.top) * doczoom + scrolltop - scrolloffset.top,
+			left: ((elemoffset.left + elemwidth) * doczoom + scrollleft - sizerwidth - scrolloffset.left) + sizerwidth/2,
+			height: elemheight
+		};
+		constrainTo = [initialcss.top, ((elemoffset.left + editorwidth) * doczoom - sizerwidth - scrolloffset.left + scrollleft), initialcss.top, editoroffset.left * doczoom - scrolloffset.left + scrollleft];
+		Report.sizer.css(initialcss);
+		$.pep.unbind( Report.sizer );
+		var $pep = Report.sizer.pep({
+			axis: 'x',
+			shouldEase: false,
+			place: false,
+			useCSSTranslation: false,
+			constrainTo: constrainTo,
+			start:function(ev, obj){
+				inipos = obj.$el.offset().left;
+				$editor.addClass('sizing');
+			},
+			stop:function(ev, obj){
+				$elem.removeAttr('data-mce-style');
+				var $next = $elem.next();
+				var $siblings = $elem.siblings();
+				var endpos = obj.$el.offset().left;
+				var curwidth = $elem.width();
+				var sumwidth = curwidth + ($next.width()||0);
+				var newwidth = curwidth - (inipos/inizoom/doczoom - endpos/inizoom/doczoom);
+				$elem.width(newwidth);
+				$next.width(sumwidth - newwidth);
+				/*
+				$elem.siblings(':not([style*="width"])').each(function(){
+					var $sib = $(this);
+					$sib.width(this.offsetWidth);
+				});
+				setTimeout(function(){
+					$siblings.removeAttr('data-mce-selected');
+					$elem.attr('data-mce-selected','1');
+					Report.sizer.removeClass('active');
+				},30);
+				*/
+				$editor.trigger('edition:change');
+				$elem.addClass('sized');
+				$editor.removeClass('sizing');
+			}
+		});
+	});
+	Report.sizer.on('click',function(event){
+		event.preventDefault();
+		event.stopPropagation();
+	});
+	Report.sizer.on('dblclick',function(event){
+		var $elem = Report.sizer.data('element');
+		var isimg = $elem.is('img');
+		if (isimg) {
+			$elem.css('width','').removeClass('scaled');
+		} else {
+			$elem.removeAttr('data-zoom');
+			$elem.closest('[data-edition]').trigger('edition:tablefit');
+		}
+		setTimeout(function(){ Report.sizer.removeClass('active'); }, 30);
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -3160,6 +3252,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$wrap.removeClass('hover active focus');
 		Report.document.removeClass('has-active');
 		Report.scaler.removeClass('active');
+		Report.sizer.removeClass('active');
 		if ($this.hasClass('keyboarded') || $this.hasClass('contentchanged')){
 			var $autofill = $this.find('[data-autofill]');
 			if ($this.data('autofill')){
@@ -3518,6 +3611,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$table.addClass('fitted');
 		}
 	});
+
 	Report.document.on('edition:contenthash','[data-edition]',function(){
 		var $this = $(this);
 		var contenthash = $.md5(($this.html()||'').trim());
@@ -3747,6 +3841,13 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($this.is('table.pastedelement') && !$this.parent().is('.tablewrap')) $this.wrap('<figure class="tablewrap"/>'); // verificar a existencia do tablewrap e dar o wrap se não tiver
 		Report.scaler.addClass('active');
 		$this.closest('[data-edition]').trigger('edition:elementscaler', [$this]);
+	});
+	Report.document.on('mouseenter','[data-edition] tbody:first-of-type th:not(:last-of-type), [data-edition] tbody:first-of-type tr:first-of-type td:not(:last-of-type)',function(event){
+		var $this = $(this);
+		if (!$this.closest('[data-edition]').hasClass('sizing')){
+			Report.sizer.addClass('active');
+			$this.closest('[data-edition]').trigger('edition:elementsizer', [$this]);
+		}
 	});
 	Report.document.on('dragstart drop','[data-edition] img, [data-edition] table, [data-edition] td',function(event){
 		event.preventDefault();
@@ -5247,7 +5348,11 @@ sourceui.interface.widget.report = function($widget,setup){
 						if (!Report.wgdata.reportName){
 							var eid = $elem.find('.reportName [data-edition*="text"]:eq(0), .reportName[data-edition]:eq(0)').attr('id');
 							if (eid) Report.wgdata.reportName = $('<pre>'+tinymce.get(eid).getContent()+'</pre>').text();
-							else Report.wgdata.reportName = $elem.find('.reportName').text();
+							else {
+								var $sec = $elem.find('.flag, .sector');
+								if ($sec.length) Report.wgdata.reportName = $elem.find('.reportName').contents().filter(function() { return this.nodeType == 3; }).text()+($sec.filter('.flag').length ? '' : ' - ')+$sec.text();
+								else Report.wgdata.reportName = $elem.find('.reportName').text();
+							}
 						}
 						if (!Report.wgdata.reportTitle){
 							var eid = $elem.find('.reportTitle [data-edition*="text"]:eq(0), .reportTitle[data-edition]:eq(0)').attr('id');
@@ -5393,4 +5498,88 @@ sourceui.interface.widget.report = function($widget,setup){
 
 	Report.locker(true);
 
+	Report.view.find('[data-alias="doc2clipboard_text"]').on('click',function(){
+		if(typeof ClipboardItem === "undefined") {
+			$.tipster.notify('ClipboardItem is not available');
+			return;
+		}
+		var $droplist = $(this).closest('.sui-droplist');
+		$droplist.trigger('droplist:close');
+		Report.document.css('opacity','0.6');
+		var $pages = Report.document.children('.page:visible');
+		var content = '';
+		$pages.each(function(){
+			var $page = $(this);
+			var $els = $page.find('.cover .reportName');
+			$els = $els.add($page.find('.main').find('h1,h2,h3,h4,h5,p'));
+			$els.each(function(){
+				var $el = $(this);
+				content += $el.text()+"\r\n\r\n";
+			});
+		});
+		const type = "text/plain";
+		const blob = new Blob([content], {type});
+		const data = [new ClipboardItem({[type]: blob})];
+		navigator.clipboard.write(data).then(function () {
+			setTimeout(function () {
+				Report.document.css('opacity','1');
+				$.tipster.notify('Document content copied to clipboard');
+			}, 80)
+
+		}, function () {
+			$.tipster.notify('ClipboardItem sadlly not working');
+		});
+	});
+
+	Report.view.find('[data-alias="doc2clipboard_html"]').on('click',function(){
+		if(typeof ClipboardItem === "undefined") {
+			$.tipster.notify('ClipboardItem is not available');
+			return;
+		}
+		var $droplist = $(this).closest('.sui-droplist');
+		$droplist.trigger('droplist:close');
+		Report.document.css('opacity','0.6');
+		var $pages = Report.document.children('.page:visible');
+		var $content = $('<div/>');
+		$pages.each(function(){
+			var $page = $(this);
+			var $clone = $('<div class="page"/>');
+			var $els = $page.find('.cover .reportName');
+			$els = $els.add($page.find('.main').find('h1,h2,h3,h4,h5,p, img:visible, table'));
+			$els.each(function(){
+				var $el = $(this);
+				var $cl = $el.clone();
+				$cl.css({
+					'font-family':$el.css('font-family'),
+					'font-size':$el.css('font-size'),
+					'color':$el.css('color'),
+					'padding':$el.css('padding'),
+					'text-align':$el.css('text-align'),
+					'line-heigth':$el.css('line-heigth'),
+					'background':$el.css('background'),
+					'width':this.offsetWidth,
+				});
+				if ($cl.is('table')){
+					$cl.css({
+						'border': 'solid 1px #aaaaaa'
+					});
+					$cl.find('img').remove();
+				}
+				$clone.append($cl);
+			});
+			$content.append($clone);
+		});
+		const type = "text/html";
+		const blob = new Blob([$content.html()], {type});
+		const data = [new ClipboardItem({[type]: blob})];
+		navigator.clipboard.write(data).then(function () {
+			setTimeout(function () {
+				Report.document.css('opacity','1');
+				$.tipster.notify('Document content copied to clipboard');
+			}, 80)
+
+		}, function () {
+			$.tipster.notify('ClipboardItem sadlly not working');
+		});
+	});
 };

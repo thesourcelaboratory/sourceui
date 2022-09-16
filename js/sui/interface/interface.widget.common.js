@@ -228,6 +228,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				setup.filter.sortBy = false;
 				setup.filter.sortOrd = false;
 			}
+			setup.filter = $.extend(true, setup.filter, Finder.getFilters());
 			if (data.area.length && data.area.link().sui) {
 				Network.link.call(data.col, setup);
 			}
