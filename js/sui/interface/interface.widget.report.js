@@ -2444,67 +2444,73 @@ sourceui.interface.widget.report = function($widget,setup){
 		event.preventDefault();
 		event.stopPropagation();
 	});
+	Report.document.on('edition:allowtools','[data-edition]',function(event){
+		var $this = $(this);
+		var $tools = $this.siblings('.selection-actions, .edition-actions');
+
+		var allowActions = $this.data('actions-allow') || '';
+		var denyActions = $this.data('actions-deny') || '';
+		$tools.find('li.label:last').text($this.attr('data-edition').charAt(0).toUpperCase() + $this.attr('data-edition').slice(1));
+		$tools.find('li[data-action]').each(function(){
+			var $li = $(this).removeClass('deny allow');
+			var a = $li.data('action');
+			if (a == 'margin'){
+				if ($this.is('[data-extramargin]')) $li.children('a').addClass('active');
+				else $li.children('a').removeClass('active');
+			} else if (a == 'editable'){
+				if ($this.attr('contenteditable') == "true") $li.children('a').addClass('active');
+				else $li.children('a').removeClass('active');
+			}
+			if (denyActions === 'all' || denyActions.indexOf(a) > -1 || (allowActions && allowActions.indexOf(a) === -1)){
+				$li.addClass('deny');
+			} else {
+				$li.addClass('allow');
+			}
+		});
+
+		if ($this.attr('data-edition') == 'figure') {
+			$tools.find('li.img').removeClass('deny').addClass('allow');
+			$tools.find('li.split').removeClass('allow').addClass('deny');
+		} else if ($this.attr('data-edition') == 'dynamic') {
+			$tools.find('li.split, li.img').removeClass('allow').addClass('deny');
+		} else if ($this.attr('data-edition') !== 'richtext') {
+			$tools.find('li.split').removeClass('allow').addClass('deny');
+		} else {
+			$tools.find('li.img').removeClass('allow').addClass('deny');
+		}
+
+		if ($this.attr('data-edition') == 'dynamic') {
+			$tools.find('li.prop, li.refresh, li.wide').removeClass('allow').addClass('deny');
+			if ($this.data('name') == 'global-disclaimer'){
+				$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
+				$tools.find('li.split').removeClass('allow').addClass('deny');
+			} else if (($this.data('name')||'').indexOf('front-pages') > -1){
+				$tools.find('li.refresh').removeClass('deny').addClass('allow');
+				$tools.find('li.split, li.remove').removeClass('allow').addClass('deny');
+			} else if (($this.data('name')||'').indexOf('back-pages') > -1){
+				$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
+				$tools.find('li.split').removeClass('allow').addClass('deny');
+			} else if (($this.data('name')||'').indexOf('financial-data-summary') > -1){
+				$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
+				$tools.find('li.split').removeClass('allow').addClass('deny');
+			}
+		} else if ($this.attr('data-edition') == 'toc') {
+			$tools.find('li.prop, li.pick, li.editable, li.refresh, li.wide, li.split').removeClass('allow').addClass('deny');
+		} else {
+			$tools.find('li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
+		}
+
+		$tools.find('li.join, li.removeall').removeClass('deny').addClass('allow');
+
+	});
 	Report.document.on('edition:tools','[data-edition]',function(event){
 		var $this = $(this);
 		var $tools = $this.siblings('.selection-actions, .edition-actions');
 		var $wrap = $this.parent();
 		if (!$tools.length){
 			$tools = $toolsEdition.clone();
-			var allowActions = $this.data('actions-allow') || '';
-			var denyActions = $this.data('actions-deny') || '';
-			$tools.find('li.label:last').text($this.attr('data-edition').charAt(0).toUpperCase() + $this.attr('data-edition').slice(1));
-			$tools.find('li[data-action]').each(function(){
-				var $li = $(this).removeClass('deny allow');
-				var a = $li.data('action');
-				if (a == 'margin'){
-					if ($this.is('[data-extramargin]')) $li.children('a').addClass('active');
-					else $li.children('a').removeClass('active');
-				} else if (a == 'editable'){
-					if ($this.attr('contenteditable') == "true") $li.children('a').addClass('active');
-					else $li.children('a').removeClass('active');
-				}
-				if (denyActions === 'all' || denyActions.indexOf(a) > -1 || (allowActions && allowActions.indexOf(a) === -1)){
-					$li.addClass('deny');
-				} else {
-					$li.addClass('allow');
-				}
-			});
-
-			if ($this.attr('data-edition') == 'figure') {
-				$tools.find('li.img').removeClass('deny').addClass('allow');
-				$tools.find('li.split').removeClass('allow').addClass('deny');
-			} else if ($this.attr('data-edition') == 'dynamic') {
-				$tools.find('li.split, li.img').removeClass('allow').addClass('deny');
-			} else if ($this.attr('data-edition') !== 'richtext') {
-				$tools.find('li.split').removeClass('allow').addClass('deny');
-			} else {
-				$tools.find('li.img').removeClass('allow').addClass('deny');
-			}
-
-			if ($this.attr('data-edition') == 'dynamic') {
-				$tools.find('li.prop, li.refresh, li.wide').removeClass('allow').addClass('deny');
-				if ($this.data('name') == 'global-disclaimer'){
-					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
-					$tools.find('li.split').removeClass('allow').addClass('deny');
-				} else if (($this.data('name')||'').indexOf('front-pages') > -1){
-					$tools.find('li.refresh').removeClass('deny').addClass('allow');
-					$tools.find('li.split, li.remove').removeClass('allow').addClass('deny');
-				} else if (($this.data('name')||'').indexOf('back-pages') > -1){
-					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
-					$tools.find('li.split').removeClass('allow').addClass('deny');
-				} else if (($this.data('name')||'').indexOf('financial-data-summary') > -1){
-					$tools.find('li.refresh, li.remove').removeClass('deny').addClass('allow');
-					$tools.find('li.split').removeClass('allow').addClass('deny');
-				}
-			} else if ($this.attr('data-edition') == 'toc') {
-				$tools.find('li.prop, li.pick, li.editable, li.refresh, li.wide, li.split').removeClass('allow').addClass('deny');
-			} else {
-				$tools.find('li.pick, li.editable, li.refresh').removeClass('allow').addClass('deny');
-			}
-
-			$tools.find('li.join, li.removeall').removeClass('deny').addClass('allow');
-
 			$wrap.prepend($tools);
+			$this.trigger('edition:allowtools');
 			$tools.find('[data-tip]').tip();
 		}
 		var height = $wrap.height();
