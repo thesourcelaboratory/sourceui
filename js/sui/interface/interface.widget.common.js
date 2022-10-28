@@ -171,7 +171,33 @@ sourceui.interface.widget.common = function ($widget, setup) {
 		} else if ($this.data('alias') == 'upload') {
 			var link = $this.link();
 			Plugin.gridupload(Common.widget, link);
+		} else if ($this.data('alias') == 'grid-export') {
+			var table = '<table>';
+			Common.widget.find('.list .header').each(function(){
+				var $line = $(this);
+				table += '<tr>';
+				$line.find('.col[data-index]:not(.seq)').each(function(){
+					table += '<th>'+$(this).text()+'</th>';
+				});
+				table += '</tr>';
+			});
+			Common.widget.find('.list .line').each(function(){
+				var $line = $(this);
+				table += '<tr>';
+				$line.find('.col[data-index]:not(.seq)').each(function(){
+					table += '<td>'+$(this).text()+'</td>';
+				});
+				table += '</tr>';
+			});
+			table += '</table>';
+			const a = document.createElement("a");
+			const file = new Blob([table], { type: 'application/vnd.ms-excel' });
+			const fileName = $this.data('filename') || 'data_exported.xls';
+			a.href = URL.createObjectURL(file);
+			a.download = fileName;
+			a.click();
 		}
+
 	});
 	Common.calcSort = function (axis, dragger, droppers) {
 		return $.calcSort(axis, dragger, droppers);
@@ -636,7 +662,20 @@ sourceui.interface.widget.common = function ($widget, setup) {
 						filter: filt,
 						ondone: function (setup) {
 							var hot = Finder.widget.find('.sheet').data('hot');
-							hot.loadData(setup.response.parsedJSON);
+							var parsed = setup.response.parsedJSON.data || [];
+							var json = [];
+							if ($.isArray(parsed)){
+								for (const i in parsed){
+									if ($.isArray(parsed[i])){
+										json.push(parsed[i]);
+									} else if ($.isPlainObject(setup.response.parsedJSON[i])){
+										json.push(parsed[i].values());
+									}
+								}
+								hot.loadData(json);
+							} else {
+								console.error('No valid array to load into spreadsheet', parsed);
+							}
 						}
 					}
 				}
