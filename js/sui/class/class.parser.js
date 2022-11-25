@@ -909,7 +909,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'</div>'+
 				'</div>'+
 				'<div class="sui-report-foundmap"></div>'+
-				'<div class="sui-report-document @{paper}" lang="@{lang}">@{child:content}</div>',
+				'<div class="sui-report-document @{paper} @{class}" lang="@{lang}" data-class="@{class}">@{child:content}</div>',
 			validations:
 				'<div class="sui-validations">@{child:content}</div>',
 			templates:
@@ -923,7 +923,7 @@ sourceui.templates.interface = new sourceui.Template({
 			main:
 				'<div class="main"@{data}@{style}>@{child:content}</div>',
 			cover:
-				'<div class="cover @{data:type}@{type}"@{data}@{style}>@{child:content}</div>',
+				'<div class="cover @{data:prop} @{data:type} @{type}"@{data}@{style}>@{child:content}</div>',
 			row:
 				'<div class="row @{name} @{type}"@{data}@{style}>@{child:content}</div>',
 			cell:
@@ -2913,6 +2913,7 @@ sourceui.Parser = function () {
 					},
 					cover : function(sui){
 						var htmlContent = '';
+						if (sui.attr('data:background')) sui.attr('style:background-image','url(\''+sui.attr('data:background')+'\')');
 						sui.findChild(function () {
 							if (this.nodeName == 'row') htmlContent += Components.libs.widget.report.row(this);
 							else if (this.nodeName == 'cell') htmlContent += Components.libs.widget.report.cell(this);

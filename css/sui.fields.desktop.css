@@ -470,7 +470,7 @@
 .sui-field.search.single > .wrap > .table > .cell.button:before { font-size:14px; }
 .sui-field.search.single > .wrap > .table > .cell.value { display:none; width:300px; text-align:left; cursor:pointer; }
 .sui-field.search.single > .wrap > .table > .cell.search { border:none; width:300px; text-align:left; }
-.sui-field.search.single > .wrap > .table > .cell .option > .remove { margin-top:-16px; right:0; width:32px; height:32px; line-height:32px; }
+.sui-field.search.single > .wrap > .table > .cell .option > .remove { margin-top:-16px; right:0; width:26px; height:32px; line-height:32px; }
 .sui-field.search.single.selected > .wrap > .table > .cell.value { display:table-cell; }
 .sui-field.search.single.selected > .wrap > .table > .cell.search { display:none; }
 .sui-field.search.single.selected > .wrap > .table > .cell .placeholder { display:none; }

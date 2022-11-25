@@ -2417,8 +2417,34 @@ sourceui.Network = function () {
 				if (ActiveRequests[setup.rid]) {
 					$.tipster.notify(isPT ? 'Aguarde, a requisição ainda está ativa...' : 'Wait, the request is still active...');
 				} else {
-					ActiveRequests[setup.rid] = new Ajax(setup);
-					ActiveRequests[setup.rid].exec();
+					if (setup.recaptcha){
+						if (typeof grecaptcha != 'undefined'){
+							var $meta = $('meta[name="grecaptcha-key"]');
+							var grecaptchaKey = $meta.attr('content');
+							if (grecaptchaKey){
+								grecaptcha.ready(function() {
+									grecaptcha.execute(grecaptchaKey, {action: setup.recaptcha}).then((token) => {
+										$.tipster.notify(isPT ? 'Validando reCaptcha' : 'Validating reCaptcha');
+										setup.data = setup.data||{};
+										setup.data.recaptcha_token = token;
+										/////////////////////////////////////////////////////////
+										ActiveRequests[setup.rid] = new Ajax(setup);
+										ActiveRequests[setup.rid].exec();
+										/////////////////////////////////////////////////////////
+									});
+								});
+							} else {
+								console.warn('There is no Google reCaprcha public key into a meta element');
+							}
+						} else {
+							console.warn('There is no Google reCaprcha script into header element');
+						}
+					} else {
+						/////////////////////////////////////////////////////////
+						ActiveRequests[setup.rid] = new Ajax(setup);
+						ActiveRequests[setup.rid].exec();
+						/////////////////////////////////////////////////////////
+					}
 				}
 			});
 			/*

@@ -486,7 +486,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $this = $(this);
 				content += $this.html() + $this.attr('style') + $this.css('color');
 			});
-			content += $page.attr('data-background') + $page.attr('data-visible') + $page.attr('data-layout');
+			content += $page.attr('data-background') + $page.find('.cover').attr('data-background') + $page.attr('data-visible') + $page.attr('data-layout');
 			return $.md5(content);
 		},
 		spanwidth: function($elem){
@@ -1883,6 +1883,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $target;
 			var $page;
 
+			Report.document.click();
+
 			if (!$drop[0]) return;
 
 			if ($drop[0].is('.tools.top')){
@@ -2198,7 +2200,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<ul class="page-actions nedt" contenteditable="false">'+
 		'<li class="nedt label" contenteditable="false"></li>'+
 		'<li data-action="edit" class="nedt edit" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit page properties"></a></li>'+
-		'<li data-action="bgimg" class="nedt bgimg" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse page background image"></a></li>'+
+		'<li data-action="bgimg" class="nedt bgimg" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse cover background image"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
 		'<li data-action="normalize" class="nedt normalize" contenteditable="false"><a class="icon-wavearrow" data-tip="Normalize page boxes"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this page"></a></li>'+
@@ -2225,6 +2227,11 @@ sourceui.interface.widget.report = function($widget,setup){
 					$li.addClass('allow');
 				}
 			});
+			if ($this.data('layout') == 'fullcovered' || $this.data('layout') == 'covered-default'){
+				var mincoversize = ($this.data('layout') == 'fullcovered') ? '(proper size: 1586 x 2240)' : '(proper size: 1586 x 300)';
+				mincoversize = $tools.find('.icon-circle-pic').attr('data-tip')+"<br>"+mincoversize;
+			}
+			$tools.find('.icon-circle-pic').attr('data-tip', mincoversize);
 			$this.prepend($tools);
 			$tools.find('[data-tip]').tip();
 		}
@@ -2246,21 +2253,31 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('click','.page-actions .edit a',function(){
 		var $this = $(this);
 		var $page = $this.closest('.page');
-		if ($page.is('.fullcovered')){
-			Report.document.trigger('document:openfloat',[$page, {
-				form:'page',
-				layout: 'fullcovered',
-				prop: $page.attr('data-prop'),
-				uselogo: $page.find('.block.logo').attr('data-visible'),
-				useinfo: $page.find('.block.info').attr('data-visible'),
-				usename: $page.find('.block.reportName').attr('data-visible'),
-			}]);
-		}
+		var $cover = $page.find('.bleed > .cover');
+
+		var $imgtarget = $();
+		if ($page.data('layout') == 'fullcovered') $imgtarget = $page;
+		else if ($page.data('layout') == 'covered-default') $imgtarget = $cover;
+
+		Report.document.trigger('document:openfloat',[$page, {
+			form:'page',
+			layout: $page.data('layout'),
+			prop: $imgtarget.attr('data-prop') || null,
+			uselogo: $imgtarget.find('.block.logo').attr('data-visible') || 'true',
+			useinfo: $imgtarget.find('.block.info').attr('data-visible') || 'true',
+			usename: $imgtarget.find('.block.reportName').attr('data-visible') || 'true',
+		}]);
 	});
 	Report.document.on('click','.page-actions .bgimg a',function(){
 		var $this = $(this);
 		var $page = $this.closest('.page');
-		if (!$page.attr('data-background')){
+		var $cover = $page.find('.bleed > .cover');
+
+		var $imgtarget = $();
+		if ($page.data('layout') == 'fullcovered') $imgtarget = $page;
+		else if ($page.data('layout') == 'covered-default') $imgtarget = $cover;
+
+		if (!$imgtarget.attr('data-background')){
 			var input = document.createElement('input');
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', 'image/*');
@@ -2268,14 +2285,16 @@ sourceui.interface.widget.report = function($widget,setup){
 				var file = this.files[0];
 				var reader = new FileReader();
 				reader.onload = function () {
-					$page.css('background-image','url("'+reader.result+'")');
-					$page.attr('data-background',reader.result);
+					$imgtarget.css('background-image','url("'+reader.result+'")');
+					$imgtarget.attr('data-background',reader.result);
 					///////////////////////////////////////////
 					Figure.post(reader.result, null, function(data){
 						var bgimg = document.createElement('img');
-						bgimg.onload = function(){ $page.css('background-image','url("'+data.src+'")'); }
+						bgimg.onload = function(){
+							$imgtarget.css('background-image','url("'+data.src+'")');
+						}
 						bgimg.src = data.src;
-						$page.attr('data-background',data.src);
+						$imgtarget.attr('data-background',data.src);
 						Report.document.trigger('document:change',[$page]);
 						$.tipster.notify('Image auto uploaded');
 						$page.removeClass('ajax-courtain');
@@ -2290,8 +2309,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			};
 			input.click();
 		} else {
-			$page.removeAttr('data-background');
-			$page.css('background-image','');
+			$imgtarget.removeAttr('data-background');
+			$imgtarget.css('background-image','');
 			Report.document.trigger('document:change',[$page]);
 		}
 	});
@@ -2622,7 +2641,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			form:'dynamic',
 			name: $editionfirst.attr('data-name'),
 			keys: keys,
-			vars:Variable.getAll()
+			vars: Variable.getAll()
 		}]);
 	});
 	Report.document.on('click','.edition-actions .margin a',function(){
@@ -3234,7 +3253,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 	});
 	Report.document.on('blur','[data-edition].reportSummary',function(){
-		Variable.set('reportSummary',tinymce.get(this.id).getContent(), 'html');
+		var $this = $(this);
+		if (!$this.is('.toc')) {
+			Variable.set('reportSummary',tinymce.get(this.id).getContent(), 'html');
+		}
 	});
 
 
@@ -3278,6 +3300,8 @@ sourceui.interface.widget.report = function($widget,setup){
 					$autofill.removeClass('empty-content');
 				}
 			});
+			//Report.document.trigger('edition:bookmark');
+			/*
 			var $indexers = Report.document.find('[data-indexer]');
 			$indexers.each(function(){
 				var $i = $(this);
@@ -3286,6 +3310,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$i.find('bookmark').remove();
 				$i.prepend('<bookmark content="'+$i.text()+'" level="'+dots+'" />');
 			});
+			*/
 			$this.removeClass('keyboarded');
 		}
 	});
@@ -3458,25 +3483,60 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 		var content = '';
 		if ($indexers.length){
-			$indexers.each(function(){
-				var $i = $(this);
-				var $page = $i.closest('.page');
-				var idx = $.trim($i.attr('data-indexer')).replace(/[ \,\_\-\/]/g,'.');
-				var dots = (idx.match(/\./g)||[]).length;
-				$i.attr('data-indexer',idx);
-				content += '<div class="dots'+dots+'" data-idxkey="'+idx+'">'+
-				(dots > 0 ? '<div class="key">'+idx.split('.').pop()+'</div>' : '')+
-				'<div class="lk">'+$i.text()+'</div>'+
-				'<div class="pg">Page '+($allPages.index($page)+1)+'</div>'+
-				'</div>';
-			});
-			$this.html('<h2>Table of Content</h2>');
+			if ($this.is('.reportSummary')){
+				$indexers.each(function(){
+					var $i = $(this);
+					var idx = $.trim($i.attr('data-indexer')).replace(/[ \,\_\-\/]/g,'.');
+					var dots = (idx.match(/\./g)||[]).length;
+					var md5id = $.md5(idx);
+					var $a = $i.find('a');
+					if (!$a.length) $a = $('<a></a>').appendTo($i);
+					$i.attr('data-indexer',idx);
+					$a.attr('name', md5id);
+					content += '<div class="dots'+dots+'" data-idxkey="'+idx+'">'+
+					//(dots > 0 ? '<div class="key">'+idx.split('.').pop()+'</div>' : '')+
+					'<div class="lk"><a href="#'+md5id+'">'+$i.text()+'</a></div>'+
+					'</div>';
+					Report.document.trigger('edition:bookmark',[$i]);
+				});
+				$this.html('<h2>Summary</h2>');
+			} else {
+				$indexers.each(function(){
+					var $i = $(this);
+					var $page = $i.closest('.page');
+					var idx = $.trim($i.attr('data-indexer')).replace(/[ \,\_\-\/]/g,'.');
+					var dots = (idx.match(/\./g)||[]).length;
+					var md5id = $.md5(idx);
+					var $a = $i.find('a');
+					if (!$a.length) $a = $('<a></a>').appendTo($i);
+					$i.attr('data-indexer',idx);
+					$a.attr('name', md5id);
+					content += '<div class="dots'+dots+'" data-idxkey="'+idx+'">'+
+					(dots > 0 ? '<div class="key">'+idx.split('.').pop()+'</div>' : '')+
+					'<div class="lk"><a href="#'+md5id+'">'+$i.text()+'</a></div>'+
+					'<div class="pg">Page '+($allPages.index($page)+1)+'</div>'+
+					'</div>';
+					Report.document.trigger('edition:bookmark',[$i]);
+				});
+				$this.html('<h2>Table of Content</h2>');
+			}
 			$this.append(content);
 		} else {
 			$this.html('<h2>Table of Content is empty</h2><p>You should add indexers to content titles inside richtext boxes.</p>')
 			$wrap.addClass('error');
 		}
 	});
+	Report.document.on('dition:bookmark',function(event, $indexers){
+		$indexers = $indexers || Report.document.find('[data-indexer]');
+		$indexers.each(function(){
+			var $i = $(this);
+			var idx = $.trim($i.attr('data-indexer')).replace(/[ \,\_\-\/]/g,'.');
+			var dots = (idx.match(/\./g)||[]).length;
+			$i.find('bookmark').remove();
+			$i.prepend('<bookmark content="'+$i.text()+'" level="'+dots+'" />');
+		});
+	});
+
 	Report.document.on('click','.fieldwrap.active > [data-edition="toc"] .lk',function(event){
 		var $a = $(this).parent();
 		Report.scroll.scrollTo('[data-indexer="'+$a.data('idxkey')+'"]',150,{ offset:{top:-50} });
@@ -4598,7 +4658,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="text"]:not(.inited)',
 		forced_root_block : false,
 		toolbar: 'undo redo | forecolor | superscript subscript | bold italic underline | removeformat',
-		valid_elements: 'p,strong[style],em,span[style],a[href],sup[style],sub[style],br',
+		valid_elements: 'p,strong[style],em,span[style],a[href|name|target],sup[style],sub[style],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align'
 		},
@@ -4616,7 +4676,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="tinytext"]:not(.inited)',
 		forced_root_block : 'p',
 		toolbar: 'undo redo | removeformat | bold italic underline | superscript subscript | forecolor | alignleft aligncenter alignjustify alignright',
-		valid_elements: 'p[style],h1[style|class],h2[style|class],h3[style|class],h4[style|class],strong[style]/b[style],em,span[style|class],a[href],sup[style],sub[style],br',
+		valid_elements: 'p[style],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],strong[style]/b[style],em,span[style|class],a[href|name|target],sup[style],sub[style],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align,font-style'
 		},
@@ -4637,7 +4697,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'p[style|class|data-joiner],h1[style|class],h2[style|class],h3[style|class],h4[style|class],h5[style|class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
+		valid_elements: 'p[style|class|data-joiner],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],h5[style|class|name],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|name|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
 		valid_styles: {
 			'h1': 'font-size,font-family,color,text-decoration,text-align',
 			'h2': 'font-size,font-family,color,text-decoration,text-align',
@@ -5045,8 +5105,6 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			$elem.trigger('edition:jscode');
 
-
-
 		}
 
 		var altTitle = 'Composer '+$elem.data('edition')+' box';
@@ -5385,8 +5443,9 @@ sourceui.interface.widget.report = function($widget,setup){
 					});
 				}
 				var $sui = wdata.aux.strXQ('<document>'+suiXml+'</document>');
-				$sui.attr('paper',wdata.aux.getClassAt($elem,1));
-				$sui.attr('lang',$elem.attr('lang'));
+				$sui.attr('paper', wdata.aux.getClassAt($elem,1));
+				$sui.attr('lang', $elem.attr('lang'));
+				$sui.attr('class', $elem.attr('data-class'));
 				return wdata.aux.xqString($sui);
 			},
 			templates: function($elem){
