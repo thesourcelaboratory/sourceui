@@ -4664,6 +4664,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.removeData('historystateholdcontent');
 			___cnsl.green('historyworker:stateadd',origin);
 		},timeout||10);
+
 	});
 	/*
 	Report.document.on('historyworker:add',function(event){

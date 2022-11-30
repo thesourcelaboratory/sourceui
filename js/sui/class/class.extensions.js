@@ -1634,7 +1634,9 @@ Math.unique = function (a) {
 
 
 var Clipmemory = {
+
 	memory: null,
+
 	copy: function(type, content){
 		if (type == 'elements'){
 			Clipmemory.memory = $(content).addClass('clipcopied');
