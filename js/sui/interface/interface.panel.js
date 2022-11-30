@@ -46,6 +46,7 @@ sourceui.interface.panel = function () {
 	Dom.navRight = this.navRight = this.asideRight.children('.sui-nav');
 	Dom.sectorTabs = this.sectorTabs = $('#suiTabsSector');
 	Dom.context = this.context = $('#suiContext');
+	Dom.contextmenu = this.context = $('#suiContextMenu');
 	Dom.sectorsContainer = this.sectorsContainer = $('#suiSectorsContainer');
 	Dom.floatSectorContainer = this.floatSectorContainer = $('#suiFloatSectorContainer');
 	Dom.leftAndMain = this.leftAndMain = $([this.navLeft, this.main]).map(function () { return this.toArray(); });
@@ -376,5 +377,4 @@ sourceui.interface.panel = function () {
 		}
 		$draggable.draggabilly('setPosition', x.position).trigger('move', [x.position]);
 	}
-
 };

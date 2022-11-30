@@ -699,6 +699,16 @@ main.sui-load-border .sui-spinner .container,
 
 .scroll-all > .sui-layout.table , .scroll-xy > .sui-layout.table { width:100% !important; }
 
+.sui-contextmenu { display:none; position:fixed; top:0; left:-1000px; background:#FFFFFF; min-width: 54px; min-height:16px; border:solid 1px #DDDDDD; box-shadow: 0 5px 20px rgba(0,0,0,.1); z-index:9967976999; font-size:12px; }
+.sui-contextmenu .options-menu { min-width: 80px; max-width: 300px; min-height:20px; max-height: 400px; overflow:auto; padding:3px 0; }
+.sui-contextmenu .options-menu ol { border-bottom: solid 1px #eaeaea; list-style: none; margin:0; padding:0; }
+.sui-contextmenu .options-menu ol:last-of-type,
+.sui-contextmenu .options-menu ol:only-of-type { border-bottom: none; }
+.sui-contextmenu .options-menu a { display: block; color:#000000; text-decoration:none; padding:5px 15px; cursor:pointer; transition: all 150ms; }
+.sui-contextmenu .options-menu a.disabled { color:#CCCCCC; cursor:default; }
+.sui-contextmenu .options-menu a:not(.disabled):hover { background-color: rgba(0,0,0,.06); }
+.sui-contextmenu.active { display:block !important; }
+
 @media (max-width: 1180px) {
 	.sui-aside.left { width:300px; }
 	.sui-nav:not(.navigation) { width:300px; }

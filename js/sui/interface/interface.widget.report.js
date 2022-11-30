@@ -895,6 +895,34 @@ sourceui.interface.widget.report = function($widget,setup){
 					$.tipster.notify('All boxes were normalized');
 				},150);
 			}
+			// CTRL C ======================================
+			else if (event.code == 'KeyC'){
+				var selection = window.getSelection();
+				if (selection.type === 'Caret'){
+					var $selected = Report.document.find('.fieldwrap.selected, .fieldwrap.active');
+					if ($selected.length){
+						event.preventDefault();
+						Clipmemory.copy('elements',$selected);
+					}
+				} else {
+					Clipmemory.flush();
+				}
+			}
+			// CTRL X ======================================
+			else if (event.code == 'KeyX'){
+				/*
+				var selection = window.getSelection();
+				if (selection.type === 'Caret'){
+					var $selected = Report.document.find('.fieldwrap.selected, .fieldwrap.active');
+					if ($selected.length){
+						event.preventDefault();
+						Clipmemory.cut('elements',Report.document.find('.fieldwrap.selected'));
+					}
+				} else {
+					Clipmemory.flush();
+				}
+				*/
+			}
 			// CTRL Z OU Y =================================
 			else if (event.keyCode == 90 || event.keyCode == 89){
 				/*
@@ -913,8 +941,17 @@ sourceui.interface.widget.report = function($widget,setup){
 				return false;
 				*/
 			}
-			// CTRL V =======================================
-			else if (event.keyCode == 86){
+			// CTRL V ======================================
+			else if (event.code == 'KeyV'){
+				var $elements = Clipmemory.get('elements','.fieldwrap');
+				if ($elements.length){
+					var $page = Report.document.find('.page.active');
+					if ($page.length) {
+						event.preventDefault();
+						Report.document.trigger('document:clipmemorypaste', [$elements, $page.find('.cell.content'), 'append']);
+						return true
+					}
+				}
 				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
 				if (!$activeFieldwrap.length){
 					var $page = Report.document.find('.page.active');
@@ -2201,7 +2238,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li class="nedt label" contenteditable="false"></li>'+
 		'<li data-action="edit" class="nedt edit" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit page properties"></a></li>'+
 		'<li data-action="bgimg" class="nedt bgimg" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse cover background image"></a></li>'+
-		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
+		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move page to relocate"></a></li>'+
 		'<li data-action="normalize" class="nedt normalize" contenteditable="false"><a class="icon-wavearrow" data-tip="Normalize page boxes"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this page"></a></li>'+
 		'</ul>';
@@ -2312,6 +2349,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$imgtarget.removeAttr('data-background');
 			$imgtarget.css('background-image','');
 			Report.document.trigger('document:change',[$page]);
+			$.tipster.notify('Image background removed! Click again to browse');
 		}
 	});
 	Report.document.on('click','.page-actions .move a',function(){
@@ -3013,6 +3051,9 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('click','.container',function(event){
 		event.stopPropagation();
 		var $this = $(this).trigger('container:active');
+		if (!event.originalEvent || event.originalEvent.button === 0){
+			$('#suiContextmenu').trigger('contextmenu:hide');
+		}
 	});
 	Report.document.on('click','.container .col',function(event){
 		event.stopPropagation();
@@ -3271,8 +3312,10 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('focus','[data-edition]',function(event){
 		var $this = $(this);
 		var $wrap = $this.parent();
+		if (!event.originalEvent || event.originalEvent.button === 0) $wrap.removeClass('menucontexted');
 		$this.trigger('edition:active');
 		$wrap.addClass('focus');
+
 	});
 	Report.document.on('blur','[data-edition]',function(){
 		var $this = $(this);
@@ -3358,6 +3401,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (!$target.is('img,.pastedelement td')){
 				Report.scaler.removeClass('active');
 			}
+		}
+		if (!event.originalEvent || event.originalEvent.button === 0){
+			$('#suiContextmenu').trigger('contextmenu:hide');
 		}
 	});
 	/*
@@ -3526,7 +3572,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$wrap.addClass('error');
 		}
 	});
-	Report.document.on('dition:bookmark',function(event, $indexers){
+	Report.document.on('edition:bookmark',function(event, $indexers){
 		$indexers = $indexers || Report.document.find('[data-indexer]');
 		$indexers.each(function(){
 			var $i = $(this);
@@ -3924,34 +3970,47 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	// -------------------------------------------------------------------------------------
 	Report.document.on('mousedown','.fieldwrap',function(event){
-		if (event.ctrlKey){
-			event.preventDefault();
-			event.stopPropagation();
-			var $wrap = $(this);
-			$wrap.removeClass('active focus');
-			Report.document.find('.fieldwrap.active:not(.selected)').removeClass('active focus').addClass('selected');
-			Report.document.find('.fieldwrap.currentselect').removeClass('currentselect');
-			$wrap.addClass('selected currentselect');
-			$wrap.children('[data-edition]').trigger('edition:tools');
-			var $selected = Report.document.find('.fieldwrap.selected');
-			var allsame = null;
-			$selected.each(function(){
-				var $s = $(this);
-				var edition = $s.children('[data-edition]').attr('data-edition');
-				if (allsame != null && allsame != edition){
-					allsame = false;
-					return false;
+		var $wrap = $(this);
+		if (!event.originalEvent || event.originalEvent.button === 0){
+			$wrap.removeClass('menucontexted');
+			$wrap.find('[data-edition][contenteditable="false"]').attr('contenteditable',true);
+			if (event.ctrlKey || event.shiftKey){
+				event.preventDefault();
+				event.stopPropagation();
+				if (!$wrap.is('.selected')){
+					Report.document.find('.fieldwrap.active').removeClass('active focus').addClass('selected');
+					Report.document.find('.fieldwrap.currentselect').removeClass('currentselect');
+					$wrap.addClass('selected currentselect');
+					$wrap.children('[data-edition]').trigger('edition:tools');
+					var $selected = Report.document.find('.fieldwrap.selected');
+					var allsame = null;
+					$selected.each(function(){
+						var $s = $(this);
+						var edition = $s.children('[data-edition]').attr('data-edition');
+						if (allsame != null && allsame != edition){
+							allsame = false;
+							return false;
+						}
+						allsame = edition;
+					});
+					if (allsame === false || allsame !== 'richtext') $wrap.find('.selection-actions li.join').removeClass('allow').addClass('deny');
+					else $wrap.find('.selection-actions li.join').removeClass('deny').addClass('allow');
+					$wrap.children('ul.selection-actions').find('li.name').text(Report.document.find('.fieldwrap.selected').length+' box(es) selected');
 				}
-				allsame = edition;
-			});
-			if (allsame === false || allsame !== 'richtext') $wrap.find('.selection-actions li.join').removeClass('allow').addClass('deny');
-			else $wrap.find('.selection-actions li.join').removeClass('deny').addClass('allow');
-			$wrap.children('ul.selection-actions').find('li.name').text(Report.document.find('.fieldwrap.selected').length+' box(es) selected');
+			}
+		} else {
+			$wrap.addClass('menucontexted');
+			if ($wrap.is('.selected')){
+				event.preventDefault();
+				event.stopPropagation();
+			}
 		}
 	});
 	Report.document.on('mousedown',function(event){
 		Report.document.find('.fieldwrap.currentselect').removeClass('currentselect');
-		Report.document.find('.fieldwrap.selected').removeClass('selected');
+		if (!event.originalEvent || event.originalEvent.button === 0){
+			Report.document.find('.fieldwrap.selected').removeClass('selected');
+		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -4180,6 +4239,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		event.stopPropagation();
 		var $this = $(this);
 		$this.trigger('page:active');
+		if (!event.originalEvent || event.originalEvent.button === 0){
+			$('#suiContextmenu').trigger('contextmenu:hide');
+		}
 	});
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -4416,10 +4478,162 @@ sourceui.interface.widget.report = function($widget,setup){
 			$.tipster.notify('Relocate is already empty');
 		}
 	});
+	Report.document.on('document:clipmemorypaste',function(event, $elements, $target, placement){
+		Report.document.trigger('historyworker:statehold',['document:clipmemorypaste']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		var $first;
+		$elements.each(function(){
+			var $el = $(this);
+			if ($el.is('.clipcopied')){
+				$el = $el.clone();
+			}
+			if (!placement || placement == 'append') $target.append($el);
+			else if (placement == 'prepend') $target.prepend($el);
+			else if (placement == 'before') $target.before($el);
+			else if (placement == 'after') $target.after($el);
+			else if (placement == 'replace') $target.replaceWith($el);
+			$el.find('.edition-actions, .selection-actions').remove();
+			$el.trigger('edition:cleanmce');
+			$el.trigger('edition:init');
+			$el.trigger('edition:tools');
+			$.tipster.notify($el.length+' Elements Pasted');
+			if (!$first) $first = $el;
+			Clipmemory.flush();
+		});
+		if (!$first) boxFitter.normalizeBoxes($first);
+		Report.document.trigger('historyworker:stateadd',['document:clipmemorypaste']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+
+	});
 	Report.document.on('click',function(event){
 		Report.document.trigger('page:unactive');
 		Report.document.trigger('container:unactive');
+		if (!event.originalEvent || event.originalEvent.button === 0){
+			$('#suiContextmenu').trigger('contextmenu:hide');
+		}
 	});
+	Report.document.on('contextmenu',function(event){
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		var $target = $(event.target);
+		var $closestbox = $target.closest('.fieldwrap');
+		var $closestpage = $target.closest('.page');
+		var optionsA = [], optionsB = [], optionsC = [], optionsD = [];
+
+		var countelements = Clipmemory.count('elements','.fieldwrap');
+
+		if ($closestbox.length){
+			if (!$closestbox.is('.active')){
+				$(event.target).trigger('click');
+			}
+			if ($closestbox.is('.selected')){
+				optionsA.push({
+					label: 'Copy '+(Report.document.find('.fieldwrap.selected').length)+' selected boxes',
+					callback: function(){ Clipmemory.copy('elements',Report.document.find('.fieldwrap.selected')); }
+				});
+				$closestbox.children('.selection-actions').find('li.allow a').each(function(){
+					var $a = $(this);
+					optionsB.push({
+						label: $a.data('tip'),
+						callback: function(){ $a.trigger('click'); }
+					});
+				});
+			} else {
+				optionsA.push({
+					label: 'Copy this box',
+					callback: function(){ Clipmemory.copy('elements',$closestbox); }
+				});
+				if (countelements > 0){
+					optionsB.push({
+						label: 'Paste '+(countelements > 1 ? countelements+' boxes' : 'box')+' before',
+						callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestbox, 'before']); }
+					});
+					optionsB.push({
+						label: 'Paste '+(countelements > 1 ? countelements+' boxes' : 'box')+' after',
+						callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestbox, 'after']); }
+					});
+				}
+				$closestbox.children('.edition-actions').find('li.allow a').each(function(){
+					var $a = $(this);
+					optionsC.push({
+						label: $a.data('tip'),
+						callback: function(){ $a.trigger('click'); }
+					});
+				});
+			}
+		} else if ($closestpage.length){
+			if (!$closestpage.is('.active')){
+				$(event.target).trigger('click');
+			}
+			if (countelements > 0){
+				optionsA.push({
+					label: 'Paste '+(countelements > 1 ? countelements+' copied boxes' : 'copied box'),
+					callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestpage.find('.cell.content'), 'append']); }
+				});
+			}
+			$closestpage.children('.page-actions').find('li.allow a').each(function(){
+				var $a = $(this);
+				optionsB.push({
+					label: $a.data('tip'),
+					callback: function(){ $a.trigger('click'); }
+				});
+			});
+			optionsC.push({
+				label: 'Undo Structure',
+				callback: function(){ Report.document.trigger('historyworker:back'); }
+			});
+			optionsC.push({
+				label: 'Redo Structure',
+				callback: function(){ Report.document.trigger('historyworker:forward'); }
+			});
+			optionsD.push({
+				label: 'Zoom in',
+			});
+			optionsD.push({
+				label: 'Zoom out',
+			});
+		} else {
+			$(event.target).trigger('click');
+			optionsA.push({
+				label: 'Save document',
+				callback: Report.viewtools.find('.save:not(.disable) a').length ? function(){ Report.viewtools.find('.save a').trigger('click'); } : null
+			});
+			optionsA.push({
+				label: 'View document as PDF',
+				callback: Report.viewtools.find('.view:not(.disable) a').length ? function(){ Report.viewtools.find('.view a').trigger('click'); } : null
+			});
+			optionsA.push({
+				label: 'Refresh document',
+				callback: Report.viewtools.find('.refresh:not(.disable) a').length ? function(){ Report.viewtools.find('.refresh a').trigger('click'); } : null
+			});
+			optionsB.push({
+				label: 'Undo Structure',
+				callback: function(){ Report.document.trigger('historyworker:back'); }
+			});
+			optionsB.push({
+				label: 'Redo Structure',
+				callback: function(){ Report.document.trigger('historyworker:forward'); }
+			});
+			optionsC.push({
+				label: 'Find/Replace',
+				callback: function(){ Report.view.children('.toolbar').find('.tools.right .replacer a').trigger('click'); }
+			});
+			optionsD.push({
+				label: 'Zoom in',
+			});
+			optionsD.push({
+				label: 'Zoom out',
+			});
+		}
+		var $contextmenu = $('#suiContextmenu');
+		$contextmenu.trigger('contextmenu:options',[optionsA, optionsB, optionsC, optionsD]);
+		$contextmenu.trigger('contextmenu:show',[event.pageX, event.pageY]);
+		return false;
+	});
+	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// fake clipmemory ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// History Events ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

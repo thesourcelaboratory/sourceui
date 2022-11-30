@@ -2701,6 +2701,20 @@ sourceui.Network = function () {
 			if (!history || Network.history.following) return;
 			window.history.replaceState({}, '', history);
 		},
+		unfilter: function () {
+			var hash = Network.history.getHash();
+			var unfilthash = hash;
+			var splited = hash.split('/');
+			for (var i = 0; i < splited.length; i++) {
+				if (splited[i].indexOf('?') > -1) {
+					var splcur = splited[i].split('?');
+					unfilthash = unfilthash.replace(splcur[1],'');
+				}
+			}
+			if (hash !== unfilthash){
+				Network.history.replace(unfilthash);
+			}
+		},
 		getHash: function () {
 			var hash, hashash = window.location.href.indexOf("#!");
 			return (hashash > -1) ? window.location.href.substring(window.location.href.indexOf("#!")) : '';

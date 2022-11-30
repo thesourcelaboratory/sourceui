@@ -617,4 +617,58 @@ sourceui.interface.document = function () {
 
     });
 
+	var $contextmenu = $('#suiContextmenu');
+
+	$contextmenu.on('click', 'a', function(event){
+		event.stopPropagation();
+		$contextmenu.trigger('contextmenu:hide');
+	});
+	$contextmenu.on('contextmenu:options', function(){
+		var $options = $contextmenu.children('.options-menu').html('');
+		$options = $options.length ? $options : $('<div class="options-menu"></div>');
+		for (var i=1; i<arguments.length; i++){
+			var $ol = $('<ol></ol>');
+			var hasitem = false
+			var options = arguments[i];
+			if (options.length){
+				for (var j in options){
+					var option = options[j];
+					var $a = $('<a style="'+(option.style||'')+'">'+(option.label||'Item '+j)+'</a>');
+					if (option.disabled) $a.addClass('disabled');
+					if (option.callback){
+						$a.on('click', option.callback);
+					} else {
+						$a.addClass('disabled');
+					}
+					var $li = $('<li></li>').append($a);
+					$ol.append($li);
+					hasitem = true;
+				}
+			}
+			if (hasitem) $options.append($ol);
+		}
+		$contextmenu.append($options);
+	});
+	$contextmenu.on('contextmenu:show', function(event, x, y){
+		var $w =  $(window);
+		var w = $contextmenu.width();
+		var h = $contextmenu.height();
+		var sw = $w.width();
+		var sh = $w.height();
+		$contextmenu.addClass('active');
+		if (y + h > sh) y = y - h;
+		if (x + w > sw) x = x - w;
+		$contextmenu.css({
+			top:y,
+			left:x
+		});
+	});
+	$contextmenu.on('contextmenu:hide', function(event){
+		$contextmenu.removeClass('active');
+	});
+	Dom.document.on('click', function(){
+		$contextmenu.trigger('contextmenu:hide');
+	});
+
+
 };

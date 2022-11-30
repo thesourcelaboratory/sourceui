@@ -1633,6 +1633,40 @@ Math.unique = function (a) {
 };
 
 
+var Clipmemory = {
+	memory: null,
+	copy: function(type, content){
+		if (type == 'elements'){
+			Clipmemory.memory = $(content).addClass('clipcopied');
+			$.tipster.notify(Clipmemory.memory.length+' Elements Copied');
+		}
+	},
+	cut: function(type, content){
+		if (type == 'elements'){
+			Clipmemory.memory = $(content).addClass('clipcutted');
+			$.tipster.notify(Clipmemory.memory.length+' Elements Cutted');
+		}
+	},
+	get: function(type, filter){
+		if (type == 'elements'){
+			return Clipmemory.memory ? Clipmemory.memory.filter(filter) : $();
+		}
+	},
+	count: function(type, filter){
+		if (type == 'elements'){
+			return Clipmemory.memory ? Clipmemory.memory.filter(filter).length : 0;
+		}
+	},
+	flush: function(){
+		if (Clipmemory.memory){
+			if (Clipmemory.memory instanceof jQuery){
+				Clipmemory.memory.removeClass('clipcutted clipcopied');
+			}
+		}
+		Clipmemory.memory = null;
+	}
+};
+
 
 String.prototype.allReplace = function (obj) {
 	var retStr = this;

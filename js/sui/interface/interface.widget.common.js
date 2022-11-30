@@ -557,11 +557,13 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				if ($this.hasClass('clear')) {
 					var $filt = Finder.element.find('.sui-filter');
 					var $issel = $filt.filter('.selected');
-					$filt.parent().remove();
-					Finder.fields.find('.input').val('');
+					$filt.filter(':not(.unclosable)').parent().remove();
+					$filt.removeClass('selected');
 					if ($issel.length) Finder.widget.trigger('widget:filter');
 					else Finder.widget.trigger('filter:change');
 					Finder.clearEnable();
+					Finder.fields.find('.input').val('');
+					Network.history.unfilter();
 				} else if ($this.hasClass('search')) {
 					Finder.widget.trigger('widget:search');
 				} else if ($this.hasClass('filter')) {
