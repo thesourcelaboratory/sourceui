@@ -2438,6 +2438,10 @@ sourceui.Network = function () {
 							}
 						} else {
 							console.warn('There is no Google reCaprcha script into header element');
+							/////////////////////////////////////////////////////////
+							ActiveRequests[setup.rid] = new Ajax(setup);
+							ActiveRequests[setup.rid].exec();
+							/////////////////////////////////////////////////////////
 						}
 					} else {
 						/////////////////////////////////////////////////////////
