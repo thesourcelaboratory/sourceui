@@ -1133,6 +1133,7 @@ sourceui.Parser = function () {
 				str = JSON.parse(str);
 				//str = '';
 			} else if (render == '@sheet-data') {
+				console.log(sui);
 				sui.find('datasheet',function(){
 					str = JSONX.parse((this.content() || '[]').trim());
 				});
