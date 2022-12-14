@@ -1133,9 +1133,10 @@ sourceui.Parser = function () {
 				str = JSON.parse(str);
 				//str = '';
 			} else if (render == '@sheet-data') {
-				console.log(sui);
 				sui.find('datasheet',function(){
 					str = JSONX.parse((this.content() || '[]').trim());
+				}, function(){
+					str = JSONX.parse((sui.content() || '[]').trim());
 				});
 			} else if (render == '@datagrid-list') {
 				sui.findChild(function () {

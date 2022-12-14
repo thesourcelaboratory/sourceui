@@ -665,7 +665,6 @@ sourceui.interface.widget.common = function ($widget, setup) {
 						ondone: function (setup) {
 							var hot = Finder.widget.find('.sheet').data('hot');
 							var parsed = setup.response.parsedJSON ? (setup.response.parsedJSON.data ? setup.response.parsedJSON.data : ($.isArray(setup.response.parsedJSON) ? setup.response.parsedJSON : [])) : [];
-							console.log(setup.response,parsed);
 							var json = [];
 							if ($.isArray(parsed)){
 								for (const i in parsed){
