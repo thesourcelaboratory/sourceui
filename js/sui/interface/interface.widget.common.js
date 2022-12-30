@@ -196,6 +196,12 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			a.href = URL.createObjectURL(file);
 			a.download = fileName;
 			a.click();
+		} else if ($this.data('alias') == 'popup-export') {
+			if ($this.data('url')){
+				var filters = Finder.getFilters();
+				window.open($this.data('url')+'?'+$.param(filters));
+				console.log(filters);
+			}
 		}
 
 	});

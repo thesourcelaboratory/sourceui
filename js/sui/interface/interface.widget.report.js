@@ -57,6 +57,11 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.tinymceinlinetoolbar = Dom.body.children('#tinymceinlinetoolbar');
 	Report.scaler = $('<mark class="sui-scaler"></mark>').appendTo(Report.area);
 	Report.sizer = $('<mark class="sui-sizer"></mark>').appendTo(Report.area);
+	Report.comments = Report.area.children('.sui-comments');
+
+	if (!Report.comments.length){
+		Report.comments = $('<div class="sui-comments"></div>').appendTo(Report.area);
+	}
 
 	Report.figuretypes = {
 		figure:{ '1':'Figure', '2':'Figura', '7':'Figura'},
@@ -792,14 +797,24 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 			return false;
 		},
-		hasSelection: function($edit){
-			let $fieldwrap = $edit && $edit.length ? $edit.parent() : Report.document.find('.caret-autobreak').closest('.fieldwrap');
+		getSelection: function($edit){
+			let $fieldwrap = $edit && $edit.length ? ( $edit.is('.fieldwrap') ? $edit : $edit.parent() ) : Report.document.find('.caret-autobreak').closest('.fieldwrap');
 			if ($fieldwrap.length){
 				let $edition = $fieldwrap.children('[data-edition]');
-				var ed = tinymce.get($edition.attr('id'));
-				var text = ed.selection.getContent({format : 'text'});
-				return text.length ? true : false;
+				if ($edition.is('.mce-content-body')){
+					var ed = tinymce.get($edition.attr('id'));
+					return ed.selection;
+				}
 			}
+			return null;
+		},
+		getSelectionText: function($edit){
+			var selection = caret.getSelection($edit);
+			return (selection) ? selection.getContent({format : 'text'}) : '';
+		},
+		hasSelection: function($edit){
+			var text = caret.getSelectionText($edit);
+			return text.length ? true : false;
 		},
 		save: function($edit, place){
 			let $fieldwrap = $edit && $edit.length ? $edit.parent() : Report.document.find('.fieldwrap.active');
@@ -827,6 +842,243 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		}
 	};
+	var Comment = {
+		inited: false,
+		init: function(){
+			if (!Comment.inited){
+				var itv = setInterval(function(){
+					var $comments = Report.comments.find('.comment');
+					$comments.each(function(){
+						var $c = $(this);
+						var $datetime = $c.find('.datetime');
+						var timestamp = $datetime.data('timestamp');
+						$datetime.text(moment(parseInt(timestamp)).fromNow());
+					});
+				}, 60000);
+				Comment.inited = true;
+			}
+		},
+		testLink: function(){
+			var $comments = Report.comments.find('.comment');
+			if ($comments.length === 0){
+				Report.document.removeClass('commented');
+			} else {
+				Report.document.addClass('commented');
+				$comments.each(function(){
+					var $c = $(this);
+					var $e = Report.document.find('[data-comment-id="'+$c.attr('id')+'"]');
+					if (!$e.length){
+						$c.addClass('settled');
+						$c.find('.status').text('Settled');
+					} else {
+						var top = $e.offset().top + Report.scroll.scrollTop() - Report.scroll.offset().top;
+						$c.attr('data-toppos',top).css({ top:top });
+					}
+				});
+			}
+		},
+		addModal: function($e, data){
+
+			data = data || {};
+
+			if ($e){
+				var id = $e.attr('data-comment-id') || 'C'+$.md5(Math.rand()).substring(0, 16);
+				$e.attr('data-comment-id', id);
+			} else if (data.id) {
+				var id = data.id;
+				$e = Report.document.find('[data-comment-id="'+id+'"]');
+			} else {
+				$e = $();
+			}
+
+			if (!data.linked){
+				if ($e.is('[data-edition]')) data.linked = 'Box';
+				else if ($e.is('cite')) data.linked = 'Content';
+				else if ($e.is('.page')) data.linked = 'Page';
+			}
+
+			Report.comments.find('.active').removeClass('active');
+
+			var $c = $(
+				'<div id="'+id+'" class="comment '+(!data.id ? 'active' : '')+'" data-linked="'+data.linked+'">'+
+					'<div class="topbar"><span class="title">'+(data.title || data.linked+' Comment Bin')+'</span><b class="postlen"></b></div>'+
+					'<div class="posts"></div>'+
+					'<div class="tools">'+
+						'<span class="status">'+(data.status || 'Opened')+'</span>'+
+						'<a class="settle icon-done" data-tip="Settle all threads"></a>'+
+						'<a class="addpost icon-plus-weak" data-tip="Add a post"></a>'+
+					'</div>'+
+				'</div>'
+			);
+
+			Report.comments.append($c);
+			$c.find('[data-tip]').tip();
+
+			if (data && $.isArray(data.posts)){
+				$.each(data.posts, function(){
+					Comment.addPost($e, $c, this);
+				});
+			} else {
+				Comment.addPost($e, $c);
+			}
+
+			Comment.testLink();
+
+			var top = data.toppos || ($e.offset().top + Report.scroll.scrollTop() - Report.scroll.offset().top);
+			$c.attr('data-toppos',top).css({ top: top });
+
+			var $status = $c.find('.status');
+			var $settle = $c.find('.settle');
+			var $addpost = $c.find('.addpost');
+
+			$c.on('mousedown click', function(event){
+				event.stopPropagation();
+				if (!$c.is('.active')){
+					var $e = Report.document.find('[data-comment-id="'+$c.attr('id')+'"]').first();
+					Report.comments.find('.active').removeClass('active');
+					$c.addClass('active');
+					$e.closest('.page').trigger('click');
+				}
+			});
+
+			$settle.on('click', function(event){
+				event.stopPropagation();
+				var $e = Report.document.find('[data-comment-id="'+$c.attr('id')+'"]');
+				if ($c.is('.settled')){
+					$e.removeClass('settled');
+					$c.removeClass('settled');
+					$status.text('Opened');
+				} else {
+					$e.addClass('settled');
+					$c.addClass('settled');
+					$status.text('Settled');
+				}
+			});
+			$addpost.on('click', function(event){
+				event.stopPropagation();
+				var $e = Report.document.find('[data-comment-id="'+$c.attr('id')+'"]');
+				Comment.addPost($e, $c);
+				$e.removeClass('settled');
+				$c.removeClass('settled');
+				$status.text('Opened');
+			});
+
+			Comment.init();
+
+			$e.addClass('commented');
+
+			return $c;
+		},
+		addPost: function($e, $c, data){
+
+			data = data || {};
+
+			var id = data.id || 'P'+$.md5(Math.rand()).substring(0, 24);
+			var username = $('#N2B13 .usercred h3').text();
+
+			moment.locale('en');
+			var timestamp = data.timestamp || Date.now();
+
+			var $page = $e.closest('.page');
+
+			var $p = $(
+				'<div class="post" id="'+id+'" data-owner="'+(data.username || username)+'">'+
+					(!data.username || data.username == username ? '<a class="delete icon-close3" data-tip="Remove this post"></a>' : '' )+
+					'<div class="user"><b class="name">'+(data.username || username)+'</b> - <span class="datetime" data-timestamp="'+timestamp+'">'+moment(parseInt(timestamp)).fromNow()+':</span></div>'+
+					'<div class="content"'+(!data.username || data.username == username ? ' contenteditable="true" style="cursor:pointer;"' : '' )+'>'+(data.content || 'Write a comment here')+'</div>'+
+				'</div>'
+			);
+
+			var $posts = $c.find('.posts');
+			$posts.append($p);
+			$p.find('[data-tip]').tip();
+
+			var $postlen = $c.find('.topbar .postlen');
+			$postlen.text($posts.find('.post').length);
+
+			var $delete = $p.find('.delete');
+			var $content = $p.find('.content');
+			var $datetime = $p.find('.datetime');
+
+			$content.on('focus', function(event){
+				event.stopPropagation();
+				$content.data('contenthash',$.md5($content.html()));
+				Report.comments.find('.active').removeClass('active');
+				$c.addClass('active');
+			});
+			$content.on('blur', function(event){
+				if ($content.data('contenthash') !== $.md5($content.html())){
+					$content.trigger('modified');
+				}
+			});
+			$content.on('modified', function(event){
+				var timestamp = Date.now();
+				$datetime.attr('data-timestamp', timestamp).text(moment(timestamp).fromNow());
+				Report.document.trigger('document:change',[$page]);
+			});
+			$delete.on('click', function(){
+				$p.remove();
+				if ($c.find('.post').length === 0){
+					Comment.flush($c);
+				}
+			});
+
+			return $p;
+
+		},
+		create: function($e, sel, data){
+			if ($e && $e instanceof jQuery){
+				var $page = $e.closest('.page');
+				if (sel){
+					var id = $.md5(Math.rand()).substring(0, 12);
+					sel = sel.getContent ? sel : caret.getSelection($e);
+					sel.setContent('<cite id="'+id+'" class="commented">'+sel.getContent({format : 'text'})+'</cite>');
+					$e = $e.find('#'+id);
+					$e.removeAttr('id');
+				}
+				Comment.addModal($e, data);
+				Report.document.trigger('document:change',[$page]);
+				$.tipster.notify('Comment bin created');
+			} else {
+				$.tipster.notify('Comment bin could not be created');
+			}
+		},
+		flush: function(elem){
+			var id;
+			if (elem instanceof jQuery) {
+				id = elem.data('comment-id') || elem.attr('id');
+			}
+			else id = elem;
+
+			var $e = Report.document.find('[data-comment-id="'+id+'"]');
+			var $c = Report.comments.find('#'+id);
+			var $page = $e.closest('.page');
+			var $ps = $c.find('.post');
+
+			var escape = false;
+			$ps.each(function(){
+				if (!$(this).find('.delete').length){
+					escape = true;
+					return false;
+				}
+			});
+			if (escape){
+				$.tipster.notify('Comment bin must be empty to be purged');
+				return false;
+			}
+
+			if ($e.is('cite')){
+				$e.contents().unwrap();
+			}
+			if ($c.length){
+				$c.remove();
+				$e.closest('.commented').removeClass('commented settled');
+				Report.document.trigger('document:change',[$page]);
+				$.tipster.notify('Comment bin purged');
+			}
+		}
+
+	}
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -881,6 +1133,24 @@ sourceui.interface.widget.report = function($widget,setup){
 				Report.view.addClass('replacer-visible');
 				Report.replacer.addClass('can-replace');
 				Report.replacer.find('.strfind').focus();
+			}
+			// CTRL Up ======================================
+			else if (event.keyCode == 38){
+				event.preventDefault();
+				var $comments = Report.comments.find('.comment').sort(function(a, b) { return +a.dataset.toppos - +b.dataset.toppos;});
+				var $active = $comments.filter('.active');
+				var idx = $comments.index($active);
+				var $target = $comments.eq(idx - 1);
+				Report.scroll.scrollTo($target.trigger('click'),150,{ offset:{top:-50} });
+			}
+			// CTRL Down ======================================
+			else if (event.keyCode == 40){
+				event.preventDefault();
+				var $comments = Report.comments.find('.comment').sort(function(a, b) { return +a.dataset.toppos - +b.dataset.toppos;});
+				var $active = $comments.filter('.active');
+				var idx = $comments.index($active);
+				var $target = $comments.eq(idx + 1);
+				Report.scroll.scrollTo(($target.length ? $target : $comments.eq(0)).trigger('click'),150,{ offset:{top:-50} });
 			}
 		}
 	});
@@ -3319,8 +3589,8 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('blur','[data-edition]',function(){
 		var $this = $(this);
-		var $wrap = $this.parent();
-		$wrap.removeClass('hover active focus');
+		var $fieldwrap = $this.parent();
+		$fieldwrap.removeClass('hover active focus');
 		Report.document.removeClass('has-active');
 		Report.scaler.removeClass('active');
 		Report.sizer.removeClass('active');
@@ -3339,7 +3609,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					else $af.html(content);
 				});
 				if ($e.text()) {
-					$wrap.removeClass('empty');
+					$fieldwrap.removeClass('empty');
 					$autofill.removeClass('empty-content');
 				}
 			});
@@ -3356,6 +3626,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			*/
 			$this.removeClass('keyboarded');
 		}
+		if ($fieldwrap.is('.commented')) Report.comments.find('[data-id="'+$this.attr('id')+'"]').removeClass('active');
 	});
 	/*
 	Report.document.on('blur','[data-autofill="sectorName"][contenteditable="true"]',function(){
@@ -3393,7 +3664,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('click','[data-edition]',function(event){
 		event.stopPropagation();
 		var $this = $(this);
-		var $wrap = $this.parent();
+		var $fieldwrap = $this.parent();
 		if ($this.is('[data-edition="dynamic"], [data-edition="toc"]')){
 			$this.trigger('edition:active');
 		} else {
@@ -4260,6 +4531,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.trigger('document:validate');
 			Report.widget.trigger('field:input');
 			Report.document.trigger('document:pagelist');
+			Comment.testLink();
 		},100);
 		setTimeout(function(){ Report.document.trigger('document:disclaimerrefpage'); },350);
 	});
@@ -4517,8 +4789,9 @@ sourceui.interface.widget.report = function($widget,setup){
 
 		var $target = $(event.target);
 		var $closestbox = $target.closest('.fieldwrap');
+		var $closestedit = $closestbox.children('[data-edition]');
 		var $closestpage = $target.closest('.page');
-		var optionsA = [], optionsB = [], optionsC = [], optionsD = [];
+		var optionsA = [], optionsB = [], optionsC = [], optionsD = [], optionsE = [];
 
 		var countelements = Clipmemory.count('elements','.fieldwrap');
 
@@ -4560,6 +4833,28 @@ sourceui.interface.widget.report = function($widget,setup){
 						callback: function(){ $a.trigger('click'); }
 					});
 				});
+				if ($target.is('cite.commented')){
+					optionsD.push({
+						label: 'Purge content comment bin',
+						callback: function(){ Comment.flush($target); }
+					});
+				} else if ($closestedit.is('.commented')){
+					optionsD.push({
+						label: 'Purge box comment bin',
+						callback: function(){ Comment.flush($closestedit); }
+					});
+				} else {
+					if (caret.hasSelection($closestedit)){
+						optionsD.push({
+							label: 'Comment selected text',
+							callback: function(){ Comment.create($closestedit, true); }
+						});
+					}
+					optionsD.push({
+						label: 'Comment entire box',
+						callback: function(){ Comment.create($closestedit); }
+					});
+				}
 			}
 		} else if ($closestpage.length){
 			if (!$closestpage.is('.active')){
@@ -4586,10 +4881,21 @@ sourceui.interface.widget.report = function($widget,setup){
 				label: 'Redo Structure',
 				callback: function(){ Report.document.trigger('historyworker:forward'); }
 			});
-			optionsD.push({
+			if ($closestpage.is('.commented')){
+				optionsD.push({
+					label: 'Purge page comment bin',
+					callback: function(){ Comment.flush($closestpage); }
+				});
+			} else {
+				optionsD.push({
+					label: 'Comment entire page',
+					callback: function(){ Comment.create($closestpage); }
+				});
+			}
+			optionsE.push({
 				label: 'Zoom in',
 			});
-			optionsD.push({
+			optionsE.push({
 				label: 'Zoom out',
 			});
 		} else {
@@ -4630,6 +4936,16 @@ sourceui.interface.widget.report = function($widget,setup){
 		$contextmenu.trigger('contextmenu:show',[event.pageX, event.pageY]);
 		return false;
 	});
+
+	Report.document.on('mousedown',function(event){
+		var $target = $(event.target);
+		var $commented = $target.closest('.commented');
+		Report.comments.find('.active').removeClass('active');
+		if ($commented.length){
+			Report.comments.find('#'+$commented.data('comment-id')).addClass('active');
+		}
+	});
+
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// fake clipmemory ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4891,7 +5207,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="tinytext"]:not(.inited)',
 		forced_root_block : 'p',
 		toolbar: 'undo redo | removeformat | bold italic underline | superscript subscript | forecolor | alignleft aligncenter alignjustify alignright',
-		valid_elements: 'p[style],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],strong[style]/b[style],em,span[style|class],a[href|name|target],sup[style],sub[style],br',
+		valid_elements: 'p[style],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],strong[style]/b[style],em,span[style|class],a[href|name|target],sup[style],sub[style],br,cite[class|id|data-comments]',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align,font-style'
 		},
@@ -4912,7 +5228,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'p[style|class|data-joiner],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],h5[style|class|name],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|name|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,mark,bookmark[content|level]',
+		valid_elements: 'p[style|class|data-joiner],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],h5[style|class|name],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|name|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,cite[class|id|data-comments]',
 		valid_styles: {
 			'h1': 'font-size,font-family,color,text-decoration,text-align',
 			'h2': 'font-size,font-family,color,text-decoration,text-align',
@@ -5126,7 +5442,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'div[class|style],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class]',
+		valid_elements: 'div[class|style],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class],cite[class|id|data-comments]',
 		valid_styles: {
 			'div': 'height',
 			'figure': 'width',
@@ -5406,6 +5722,17 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.trigger('document:init');
 	//Report.document.trigger('edition:init',[true]);
 	Report.document.trigger('historyworker:clear');
+
+	setTimeout(function(){
+		var $commentcode = Report.comments.find('code');
+		if ($commentcode.length){
+			var comments = JSON.parse($commentcode.text());
+			$.each(comments, function(){
+				Comment.addModal(null, this);
+			});
+			$commentcode.remove();
+		}
+	},88)
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.wgdata = {};
@@ -5693,6 +6020,30 @@ sourceui.interface.widget.report = function($widget,setup){
 				Report.wgdata[$var.attr('name')||$var.attr('id')] = value;
 				return wdata.aux.xqString($var);
 			},
+			comments: function($elem){
+				var comments = [];
+				$elem.find('.comment').each(function(){
+					var comment = {};
+					var $c = $(this);
+					comment.id = $c.attr('id');
+					comment.linked = $c.attr('data-linked');
+					comment.toppos = $c.attr('data-toppos');
+					comment.title = $c.children('.title').text();
+					comment.status = $c.children('.tools').find('.status').text();
+					comment.posts = [];
+					$c.find('.post').each(function(){
+						var post = {};
+						var $p = $(this);
+						post.username = $p.find('.user > b.name').text();
+						post.content = $p.find('.content').html();
+						post.timestamp = $p.find('.user > span.datetime').attr('data-timestamp');
+						comment.posts.push(post);
+					});
+
+					comments.push(comment);
+				});
+				return '<comments><![CDATA['+JSON.stringify(comments)+']]></comments>';
+			},
 			getAll: function(){
 				Report.wgdata.usedimages = [];
 				Report.document.find('img:not([src*="blob:"]), img:not([src*="data:"])').each(function(){
@@ -5721,6 +6072,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					if ($this.hasClass('sui-validations')) suiXml += wdata.suify.validations($this);
 					else if ($this.hasClass('sui-templates')) suiXml += wdata.suify.templates($this);
 					else if ($this.hasClass('sui-report-document')) suiXml += wdata.suify.document($this);
+					else if ($this.hasClass('sui-comments')) suiXml += wdata.suify.comments($this);
 				});
 				Report.wgdata.document = suiXml;
 			},

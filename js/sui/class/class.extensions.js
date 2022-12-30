@@ -243,6 +243,8 @@ Extensor do método de expressão de seltor de jquery que retorna todos os eleme
 	};
 })();
 
+
+
 /*
 ---------------------------
 jQuery.fn.tag
@@ -489,7 +491,6 @@ Extensr do plugin de scroll que verifica os atributos data como argumentos de co
 		return closest;
 	};
 })();
-
 
 
 /*

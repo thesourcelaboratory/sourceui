@@ -910,6 +910,8 @@ sourceui.templates.interface = new sourceui.Template({
 				'</div>'+
 				'<div class="sui-report-foundmap"></div>'+
 				'<div class="sui-report-document @{paper} @{class}" lang="@{lang}" data-class="@{class}">@{child:content}</div>',
+			comments:
+				'<div class="sui-comments"><code>@{child:content}</code></div>',
 			validations:
 				'<div class="sui-validations">@{child:content}</div>',
 			templates:
@@ -2966,6 +2968,10 @@ sourceui.Parser = function () {
 						});
 						return sui.toHTML('wg', 'report', 'document', { child: { content: htmlContent }},  Template.get);
 					},
+					comments : function(sui){
+						var htmlContent = sui.content();
+						return sui.toHTML('wg', 'report', 'comments', { child: { content: htmlContent }},  Template.get);
+					},
 					templates : function(sui, pgnum, headers, footers){
 						var htmlContent = '';
 						sui.findChild(function () {
@@ -3002,6 +3008,7 @@ sourceui.Parser = function () {
 								else if (this.nodeName == 'validation') htmlList += this.toHTML('wg', 'report', 'validations', { child: { content: $(this).html() }},  Template.get);
 								else if (this.nodeName == 'templates') htmlList += Components.libs.widget.report.templates(this, pgnum, headers, footers);
 								else if (this.nodeName == 'document') htmlList += Components.libs.widget.report.document(this, pgnum, headers, footers);
+								else if (this.nodeName == 'comments') htmlList += Components.libs.widget.report.comments(this);
 								else if (this.nodeName == 'tip') htmlList += Components.libs.tip(this);
 							});
 							htmlArea = Template.replace(htmlArea, { child: { area: htmlList } });
