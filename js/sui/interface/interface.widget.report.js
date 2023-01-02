@@ -1011,6 +1011,17 @@ sourceui.interface.widget.report = function($widget,setup){
 					$content.trigger('modified');
 				}
 			});
+			$content.on('paste', function(event){
+				event.stopPropagation();
+				event.preventDefault();
+				let paste = (event.originalEvent.clipboardData || window.clipboardData).getData('text');
+				paste = $('<div>'+paste+'</div>').text();
+				const selection = window.getSelection();
+				if (!selection.rangeCount) return;
+				selection.deleteFromDocument();
+				selection.getRangeAt(0).insertNode(document.createTextNode(paste));
+				selection.collapseToEnd();
+			});
 			$content.on('modified', function(event){
 				var timestamp = Date.now();
 				$datetime.attr('data-timestamp', timestamp).text(moment(timestamp).fromNow());
@@ -1022,7 +1033,6 @@ sourceui.interface.widget.report = function($widget,setup){
 					Comment.flush($c);
 				}
 			});
-
 			return $p;
 
 		},
@@ -1222,8 +1232,9 @@ sourceui.interface.widget.report = function($widget,setup){
 						return true
 					}
 				}
+				var $activeCommentBin = Report.comments.find('.comment.active');
 				var $activeFieldwrap = Report.document.find('.fieldwrap.focus, .fieldwrap.active');
-				if (!$activeFieldwrap.length){
+				if (!$activeCommentBin.length && !$activeFieldwrap.length){
 					var $page = Report.document.find('.page.active');
 					var $container = Report.document.find('.container.active');
 					var content = {};
