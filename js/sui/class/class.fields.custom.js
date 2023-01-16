@@ -339,25 +339,36 @@ sourceui.customField = function (element, setup) {
 				Dom.search.on('click', function (event) {
 
 				});
-				Dom.search.add(Dom.input).on('input', function (event) {
-					Element.trigger('field:search', [this.value]);
-				});
-				Dom.droplistsearch.on('input', function (event) {
-					Element.trigger('field:search', [this.value]);
-				});
+				if (Element.data('remote')){
+					Dom.search.add(Dom.input).on('change', function (event) {
+						Element.trigger('field:search', [this.value]);
+					});
+					Dom.droplistsearch.on('change', function (event) {
+						Element.trigger('field:search', [this.value]);
+					});
+				} else {
+					Dom.search.add(Dom.input).on('input', function (event) {
+						Element.trigger('field:search', [this.value]);
+					});
+					Dom.droplistsearch.on('input', function (event) {
+						Element.trigger('field:search', [this.value]);
+					});
+				}
 				Element.on('field:search', function (event, value) {
-					var $items = Dom.droplist.find('.options li');
-					if (value != '') {
-						if (!Device.ismobile && !Element.hasClass('droplisted')) Dom.droplist.trigger('droplist:open');
-						$items.hide();
-						$items.filter(':containsNC("' + value + '")').show();
-						Dom.listoptions.unmark().mark(value);
-					} else {
-						//if (!Device.ismobile) Dom.droplist.trigger('droplist:close');
-						Dom.listoptions.unmark();
-						$items.show();
+					if (!Element.data('remote')){
+						var $items = Dom.droplist.find('.options li');
+						if (value != '') {
+							if (!Device.ismobile && !Element.hasClass('droplisted')) Dom.droplist.trigger('droplist:open');
+							$items.hide();
+							$items.filter(':containsNC("' + value + '")').show();
+							Dom.listoptions.unmark().mark(value);
+						} else {
+							//if (!Device.ismobile) Dom.droplist.trigger('droplist:close');
+							Dom.listoptions.unmark();
+							$items.show();
+						}
+						Dom.listoptions.scrollTop(0);
 					}
-					Dom.listoptions.scrollTop(0);
 				});
 				Element.trigger('field:loaded');
 			},
