@@ -3889,7 +3889,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (mce) mce.remove();
 		}
 		$this.removeClass('mce-content-body inited content-placeholder mce-edit-focus');
-		$this.removeAttr('id')
+		$this.removeAttr('id');
 		$this.removeAttr('contenteditable');
 	});
 	Report.document.on('edition:cleanempty','[data-edition]',function(event){
@@ -4428,7 +4428,10 @@ sourceui.interface.widget.report = function($widget,setup){
 				}
 				$refed.trigger('edition:cleanempty');
 			}
-			if ($ref.is('.wide')) $new.addClass('wide');
+			if ($ref.is('.wide') || $ref.closest('.content.full').length) {
+				$new.addClass('wide');
+				$edit.attr('data-wide','S');
+			}
 			$new.find('.pep-dpa').removeClass('pep-dpa pep-dropping');
 		} else {
 			$page.find('.main .cell:eq(0)').append($new);
@@ -4764,25 +4767,27 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('document:clipmemorypaste',function(event, $elements, $target, placement){
 		Report.document.trigger('historyworker:statehold',['document:clipmemorypaste']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $first;
+		console.log('',$elements, $target, placement);
 		$elements.each(function(){
-			var $el = $(this);
-			if ($el.is('.clipcopied')){
-				$el = $el.clone();
+			var $elem = $(this);
+			if ($elem.is('.clipcopied')){
+				$elem = $elem.clone();
 			}
-			if (!placement || placement == 'append') $target.append($el);
-			else if (placement == 'prepend') $target.prepend($el);
-			else if (placement == 'before') $target.before($el);
-			else if (placement == 'after') $target.after($el);
-			else if (placement == 'replace') $target.replaceWith($el);
-			$el.find('.edition-actions, .selection-actions').remove();
-			$el.trigger('edition:cleanmce');
-			$el.trigger('edition:init');
-			$el.trigger('edition:tools');
-			$.tipster.notify($el.length+' Elements Pasted');
-			if (!$first) $first = $el;
-			Clipmemory.flush();
+			var $edit = $elem.find('[data-edition]');
+			if (!placement || placement == 'append') $target.append($elem);
+			else if (placement == 'prepend') $target.prepend($elem);
+			else if (placement == 'before') $target.before($elem);
+			else if (placement == 'after') $target.after($elem);
+			else if (placement == 'replace') $target.replaceWith($elem);
+			$elem.find('.edition-actions, .selection-actions').remove();
+			$edit.trigger('edition:cleanmce');
+			$edit.trigger('edition:init');
+			$edit.trigger('edition:tools');
+			if (!$first) $first = $edit;
 		});
+		Clipmemory.flush();
 		if (!$first) boxFitter.normalizeBoxes($first);
+		$.tipster.notify($elements.length+' Elements Pasted');
 		Report.document.trigger('historyworker:stateadd',['document:clipmemorypaste']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 
 	});

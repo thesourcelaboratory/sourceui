@@ -770,6 +770,7 @@ $(function () {
 
 	$.fn.disable = function (bool) {
 		var $this = $(this);
+		var $parent = $this.parent();
 		if (bool === false) return $this.enable();
 		if ($this.hasClass('toolbar')) {
 			$this.find('li').disable(bool);
@@ -785,6 +786,8 @@ $(function () {
 			$this.find('.sui-field').disable(bool);
 		} else if ($this.hasClass('sui-buttonset')) {
 			$this.find('.sui-button').disable(bool);
+		} else if ($parent.hasClass('sui-button')) {
+			$this = $parent;
 		} else if ($this.hasClass('sui-field')) {
 			$this.find('.button').disable(bool);
 			$this.find('.input').prop('disabled', true);
@@ -801,11 +804,16 @@ $(function () {
 	};
 	$.fn.enable = function (bool) {
 		var $this = $(this);
+		var $parent = $this.parent();
 		var $prevent = $this.find('.addons .disable');
 		if (bool === false) return $this.disable();
-		$this.removeClass('disable');
-		$this.find('.input, :input').prop('disabled', false);
-		$this.find('.disable' + (!bool ? ':not([data-event-enable]):not(.already-disable)' : '')).not($prevent).removeClass('disable');
+		if ($parent.is('.sui-button')){
+			$parent.removeClass('disable');
+		} else {
+			$this.removeClass('disable');
+			$this.find('.input, :input').prop('disabled', false);
+			$this.find('.disable' + (!bool ? ':not([data-event-enable]):not(.already-disable)' : '')).not($prevent).removeClass('disable');
+		}
 		$this.trigger('enable');
 		return this;
 	};
