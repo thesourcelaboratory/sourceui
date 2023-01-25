@@ -1766,12 +1766,19 @@ sourceui.interface.widget.report = function($widget,setup){
 							else $sourcemovedcontent.html($wrappedmovedcontent.html() || content);
 							$sourcemovedcontent.removeClass('sourcemovedcontent movedafter');
 						} else {
+							/*
+
+							// Erro do joiner em 24/01/2023 - Indexer -1 não funciona mais para GC107
+
 							var $contentChild = $edition.children();
 							var $joiner = $contentChild.filter('[data-joiner]');
 							if ($joiner.length){
 								$joiner.each(function(){
 									var $join = $(this);
 									var $next = $join.next();
+									console.log('[join:'+$join.is(':first-child')+']',$join.get(0).outerHTML);
+									console.log('[next]',$next.length ? $next.get(0).outerHTML : ' ... ');
+									console.log('---------------------------------------------------------------');
 									if ($next.length && $next.attr('data-joiner') == $join.attr('data-joiner')) {
 										$join.append(' '+$next.html()).removeAttr('data-joiner').removeData('joiner');
 										$next.remove();
@@ -1782,6 +1789,44 @@ sourceui.interface.widget.report = function($widget,setup){
 											$join.remove();
 										}
 									}
+								});
+								content = $edition.html();
+								$contentAll.append(content);
+							} else {
+								$contentAll.append(content);
+							}
+							*/
+							var $contentChild = $edition.children();
+							var $joiner = $contentChild.filter('[data-joiner]');
+							var joiners = {};
+							if ($joiner.length){
+								$joiner.each(function(){
+									var j = $(this).attr('data-joiner');
+									joiners[j] = j;
+								});
+								$.each(joiners, function(k,v){
+									var $joinergroup = $contentChild.filter('[data-joiner="'+v+'"]');
+									var $joinerslice = $joinergroup.slice(0,2);
+									$joinergroup.slice(2).removeAttr('data-joiner').removeData('joiner');
+									//console.log($joinerslice);
+									$joinerslice.each(function(){
+										var $join = $(this);
+										var $next = $join.next();
+										//console.log('[join :first-child('+$join.is(':first-child')+') :index('+$joinergroup.index($join)+')]',$join.get(0).outerHTML);
+										//console.log('[next]',$next.length ? $next.get(0).outerHTML : ' ... ');
+										if ($join.is(':first-child')) {
+											var $joinlast = $contentAll.find('[data-joiner="'+$join.attr('data-joiner')+'"]:last-child');
+											//console.log('[last :index('+$joinergroup.index($joinlast)+')]',$joinlast.length ? $joinlast.get(0).outerHTML : ' ... ');
+											if ($joinlast.length && $joinergroup.index($join) > $joinergroup.index($joinlast)){
+												$joinlast.append(' '+$join.html()).removeAttr('data-joiner').removeData('joiner');
+												$join.remove();
+											}
+										} else if ($next.length && $next.attr('data-joiner') == $join.attr('data-joiner')) {
+											$join.append(' '+$next.html()).removeAttr('data-joiner').removeData('joiner');
+											$next.remove();
+										}
+										//console.log('---------------------------------------------------------------');
+									});
 								});
 								content = $edition.html();
 								$contentAll.append(content);
