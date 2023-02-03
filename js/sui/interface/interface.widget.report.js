@@ -4812,23 +4812,25 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('document:clipmemorypaste',function(event, $elements, $target, placement){
 		Report.document.trigger('historyworker:statehold',['document:clipmemorypaste']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		var $first;
-		console.log('',$elements, $target, placement);
 		$elements.each(function(){
 			var $elem = $(this);
 			if ($elem.is('.clipcopied')){
-				$elem = $elem.clone();
+				var $celem = $elem.clone();
+				$elem.removeClass('selected');
+				var $cedit = $celem.find('[data-edition]').removeAttr('id');
+				if (!placement || placement == 'append') $target.append($celem);
+				else if (placement == 'prepend') $target.prepend($celem);
+				else if (placement == 'before') $target.before($celem);
+				else if (placement == 'after') $target.after($celem);
+				else if (placement == 'replace') $target.replaceWith($celem);
+				$celem.find('.edition-actions, .selection-actions').remove();
+				$cedit.trigger('edition:cleanmce');
+				$cedit.trigger('edition:init');
+				$cedit.trigger('edition:tools');
+				$celem.removeClass('clipcopied');
+				$celem.addClass('selected');
+				if (!$first) $first = $cedit;
 			}
-			var $edit = $elem.find('[data-edition]');
-			if (!placement || placement == 'append') $target.append($elem);
-			else if (placement == 'prepend') $target.prepend($elem);
-			else if (placement == 'before') $target.before($elem);
-			else if (placement == 'after') $target.after($elem);
-			else if (placement == 'replace') $target.replaceWith($elem);
-			$elem.find('.edition-actions, .selection-actions').remove();
-			$edit.trigger('edition:cleanmce');
-			$edit.trigger('edition:init');
-			$edit.trigger('edition:tools');
-			if (!$first) $first = $edit;
 		});
 		Clipmemory.flush();
 		if (!$first) boxFitter.normalizeBoxes($first);
