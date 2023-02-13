@@ -340,9 +340,16 @@ sourceui.customField = function (element, setup) {
 
 				});
 				if (Element.data('remote')){
+					Dom.search.on('keydown', function(event){
+						if (event.key === 'Enter'){
+							Element.trigger('field:search', [this.value]);
+						}
+					});
+					/*
 					Dom.search.add(Dom.input).on('change', function (event) {
 						Element.trigger('field:search', [this.value]);
 					});
+					*/
 					Dom.droplistsearch.on('change', function (event) {
 						Element.trigger('field:search', [this.value]);
 					});
@@ -499,6 +506,7 @@ sourceui.customField = function (element, setup) {
 							Dom.search.val('').focus();
 							Element.trigger('field:search', ['']);
 						} else {
+							Dom.search.val('');
 							$(this).trigger('droplist:close');
 						}
 					});

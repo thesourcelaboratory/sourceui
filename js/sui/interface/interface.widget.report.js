@@ -4847,157 +4847,160 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('contextmenu',function(event){
 
-		event.preventDefault();
-		event.stopPropagation();
+		if (event.ctrlKey){
 
-		var $target = $(event.target);
-		var $closestbox = $target.closest('.fieldwrap');
-		var $closestedit = $closestbox.children('[data-edition]');
-		var $closestpage = $target.closest('.page');
-		var optionsA = [], optionsB = [], optionsC = [], optionsD = [], optionsE = [];
+			event.preventDefault();
+			event.stopPropagation();
 
-		var countelements = Clipmemory.count('elements','.fieldwrap');
+			var $target = $(event.target);
+			var $closestbox = $target.closest('.fieldwrap');
+			var $closestedit = $closestbox.children('[data-edition]');
+			var $closestpage = $target.closest('.page');
+			var optionsA = [], optionsB = [], optionsC = [], optionsD = [], optionsE = [];
 
-		if ($closestbox.length){
-			if (!$closestbox.is('.active')){
-				$(event.target).trigger('click');
-			}
-			if ($closestbox.is('.selected')){
-				optionsA.push({
-					label: 'Copy '+(Report.document.find('.fieldwrap.selected').length)+' selected boxes',
-					callback: function(){ Clipmemory.copy('elements',Report.document.find('.fieldwrap.selected')); }
-				});
-				$closestbox.children('.selection-actions').find('li.allow a').each(function(){
-					var $a = $(this);
-					optionsB.push({
-						label: $a.data('tip'),
-						callback: function(){ $a.trigger('click'); }
-					});
-				});
-			} else {
-				optionsA.push({
-					label: 'Copy this box',
-					callback: function(){ Clipmemory.copy('elements',$closestbox); }
-				});
-				if (countelements > 0){
-					optionsB.push({
-						label: 'Paste '+(countelements > 1 ? countelements+' boxes' : 'box')+' before',
-						callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestbox, 'before']); }
-					});
-					optionsB.push({
-						label: 'Paste '+(countelements > 1 ? countelements+' boxes' : 'box')+' after',
-						callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestbox, 'after']); }
-					});
+			var countelements = Clipmemory.count('elements','.fieldwrap');
+
+			if ($closestbox.length){
+				if (!$closestbox.is('.active')){
+					$(event.target).trigger('click');
 				}
-				$closestbox.children('.edition-actions').find('li.allow a').each(function(){
-					var $a = $(this);
-					optionsC.push({
-						label: $a.data('tip'),
-						callback: function(){ $a.trigger('click'); }
+				if ($closestbox.is('.selected')){
+					optionsA.push({
+						label: 'Copy '+(Report.document.find('.fieldwrap.selected').length)+' selected boxes',
+						callback: function(){ Clipmemory.copy('elements',Report.document.find('.fieldwrap.selected')); }
 					});
-				});
-				if ($target.is('cite.commented')){
-					optionsD.push({
-						label: 'Purge content comment bin',
-						callback: function(){ Comment.flush($target); }
-					});
-				} else if ($closestedit.is('.commented')){
-					optionsD.push({
-						label: 'Purge box comment bin',
-						callback: function(){ Comment.flush($closestedit); }
+					$closestbox.children('.selection-actions').find('li.allow a').each(function(){
+						var $a = $(this);
+						optionsB.push({
+							label: $a.data('tip'),
+							callback: function(){ $a.trigger('click'); }
+						});
 					});
 				} else {
-					if (caret.hasSelection($closestedit)){
-						optionsD.push({
-							label: 'Comment selected text',
-							callback: function(){ Comment.create($closestedit, true); }
+					optionsA.push({
+						label: 'Copy this box',
+						callback: function(){ Clipmemory.copy('elements',$closestbox); }
+					});
+					if (countelements > 0){
+						optionsB.push({
+							label: 'Paste '+(countelements > 1 ? countelements+' boxes' : 'box')+' before',
+							callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestbox, 'before']); }
+						});
+						optionsB.push({
+							label: 'Paste '+(countelements > 1 ? countelements+' boxes' : 'box')+' after',
+							callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestbox, 'after']); }
 						});
 					}
-					optionsD.push({
-						label: 'Comment entire box',
-						callback: function(){ Comment.create($closestedit); }
+					$closestbox.children('.edition-actions').find('li.allow a').each(function(){
+						var $a = $(this);
+						optionsC.push({
+							label: $a.data('tip'),
+							callback: function(){ $a.trigger('click'); }
+						});
+					});
+					if ($target.is('cite.commented')){
+						optionsD.push({
+							label: 'Purge content comment bin',
+							callback: function(){ Comment.flush($target); }
+						});
+					} else if ($closestedit.is('.commented')){
+						optionsD.push({
+							label: 'Purge box comment bin',
+							callback: function(){ Comment.flush($closestedit); }
+						});
+					} else {
+						if (caret.hasSelection($closestedit)){
+							optionsD.push({
+								label: 'Comment selected text',
+								callback: function(){ Comment.create($closestedit, true); }
+							});
+						}
+						optionsD.push({
+							label: 'Comment entire box',
+							callback: function(){ Comment.create($closestedit); }
+						});
+					}
+				}
+			} else if ($closestpage.length){
+				if (!$closestpage.is('.active')){
+					$(event.target).trigger('click');
+				}
+				if (countelements > 0){
+					optionsA.push({
+						label: 'Paste '+(countelements > 1 ? countelements+' copied boxes' : 'copied box'),
+						callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestpage.find('.cell.content'), 'append']); }
 					});
 				}
-			}
-		} else if ($closestpage.length){
-			if (!$closestpage.is('.active')){
-				$(event.target).trigger('click');
-			}
-			if (countelements > 0){
-				optionsA.push({
-					label: 'Paste '+(countelements > 1 ? countelements+' copied boxes' : 'copied box'),
-					callback: function(){ Report.document.trigger('document:clipmemorypaste', [Clipmemory.get('elements','.fieldwrap'), $closestpage.find('.cell.content'), 'append']); }
+				$closestpage.children('.page-actions').find('li.allow a').each(function(){
+					var $a = $(this);
+					optionsB.push({
+						label: $a.data('tip'),
+						callback: function(){ $a.trigger('click'); }
+					});
 				});
-			}
-			$closestpage.children('.page-actions').find('li.allow a').each(function(){
-				var $a = $(this);
-				optionsB.push({
-					label: $a.data('tip'),
-					callback: function(){ $a.trigger('click'); }
+				optionsC.push({
+					label: 'Undo Structure',
+					callback: function(){ Report.document.trigger('historyworker:back'); }
 				});
-			});
-			optionsC.push({
-				label: 'Undo Structure',
-				callback: function(){ Report.document.trigger('historyworker:back'); }
-			});
-			optionsC.push({
-				label: 'Redo Structure',
-				callback: function(){ Report.document.trigger('historyworker:forward'); }
-			});
-			if ($closestpage.is('.commented')){
-				optionsD.push({
-					label: 'Purge page comment bin',
-					callback: function(){ Comment.flush($closestpage); }
+				optionsC.push({
+					label: 'Redo Structure',
+					callback: function(){ Report.document.trigger('historyworker:forward'); }
+				});
+				if ($closestpage.is('.commented')){
+					optionsD.push({
+						label: 'Purge page comment bin',
+						callback: function(){ Comment.flush($closestpage); }
+					});
+				} else {
+					optionsD.push({
+						label: 'Comment entire page',
+						callback: function(){ Comment.create($closestpage); }
+					});
+				}
+				optionsE.push({
+					label: 'Zoom in',
+				});
+				optionsE.push({
+					label: 'Zoom out',
 				});
 			} else {
+				$(event.target).trigger('click');
+				optionsA.push({
+					label: 'Save document',
+					callback: Report.viewtools.find('.save:not(.disable) a').length ? function(){ Report.viewtools.find('.save a').trigger('click'); } : null
+				});
+				optionsA.push({
+					label: 'View document as PDF',
+					callback: Report.viewtools.find('.view:not(.disable) a').length ? function(){ Report.viewtools.find('.view a').trigger('click'); } : null
+				});
+				optionsA.push({
+					label: 'Refresh document',
+					callback: Report.viewtools.find('.refresh:not(.disable) a').length ? function(){ Report.viewtools.find('.refresh a').trigger('click'); } : null
+				});
+				optionsB.push({
+					label: 'Undo Structure',
+					callback: function(){ Report.document.trigger('historyworker:back'); }
+				});
+				optionsB.push({
+					label: 'Redo Structure',
+					callback: function(){ Report.document.trigger('historyworker:forward'); }
+				});
+				optionsC.push({
+					label: 'Find/Replace',
+					callback: function(){ Report.view.children('.toolbar').find('.tools.right .replacer a').trigger('click'); }
+				});
 				optionsD.push({
-					label: 'Comment entire page',
-					callback: function(){ Comment.create($closestpage); }
+					label: 'Zoom in',
+				});
+				optionsD.push({
+					label: 'Zoom out',
 				});
 			}
-			optionsE.push({
-				label: 'Zoom in',
-			});
-			optionsE.push({
-				label: 'Zoom out',
-			});
-		} else {
-			$(event.target).trigger('click');
-			optionsA.push({
-				label: 'Save document',
-				callback: Report.viewtools.find('.save:not(.disable) a').length ? function(){ Report.viewtools.find('.save a').trigger('click'); } : null
-			});
-			optionsA.push({
-				label: 'View document as PDF',
-				callback: Report.viewtools.find('.view:not(.disable) a').length ? function(){ Report.viewtools.find('.view a').trigger('click'); } : null
-			});
-			optionsA.push({
-				label: 'Refresh document',
-				callback: Report.viewtools.find('.refresh:not(.disable) a').length ? function(){ Report.viewtools.find('.refresh a').trigger('click'); } : null
-			});
-			optionsB.push({
-				label: 'Undo Structure',
-				callback: function(){ Report.document.trigger('historyworker:back'); }
-			});
-			optionsB.push({
-				label: 'Redo Structure',
-				callback: function(){ Report.document.trigger('historyworker:forward'); }
-			});
-			optionsC.push({
-				label: 'Find/Replace',
-				callback: function(){ Report.view.children('.toolbar').find('.tools.right .replacer a').trigger('click'); }
-			});
-			optionsD.push({
-				label: 'Zoom in',
-			});
-			optionsD.push({
-				label: 'Zoom out',
-			});
+			var $contextmenu = $('#suiContextmenu');
+			$contextmenu.trigger('contextmenu:options',[optionsA, optionsB, optionsC, optionsD]);
+			$contextmenu.trigger('contextmenu:show',[event.pageX, event.pageY]);
+			return false;
 		}
-		var $contextmenu = $('#suiContextmenu');
-		$contextmenu.trigger('contextmenu:options',[optionsA, optionsB, optionsC, optionsD]);
-		$contextmenu.trigger('contextmenu:show',[event.pageX, event.pageY]);
-		return false;
 	});
 
 	Report.document.on('mousedown',function(event){
