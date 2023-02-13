@@ -5491,6 +5491,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			});
 		}
 	});
+
+	// [2023-02-13 - Now I got you in my space; I won't let go of you ] <3
+
 	var mceSetupFigure = $.extend(true, {}, mceSetup, {
 		selector: '[data-edition="figure"]:not(.inited)',
 		placeholder:'Paste images, pictures and glyphs here...',
