@@ -3470,7 +3470,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$cols.removeAttr('style');
 				$ctn.addClass('sidenoted').attr('data-type','sidenoted');
 			} else {
-				$ctn.removeClass('sidenoted');
+				$ctn.removeClass('sidenoted').removeAttr('data-type');
 			}
 		} else {
 			$ctn.removeClass('sidenoted').removeAttr('data-type');
