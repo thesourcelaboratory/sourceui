@@ -1278,7 +1278,7 @@ sourceui.interface.widget.report = function($widget,setup){
 											} else if (content.html){
 												var $clone = Report.templates.children('[data-edition="richtext"]').clone();
 												$clone.append(content.html);
-												$clone.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
+												$clone = mceCleanPasted($clone);
 												$clone = $('<div class="fieldwrap richtext" />').append($clone);
 											} else if (content.text){
 												var $clone = Report.templates.children('[data-edition="richtext"]').clone();
@@ -5138,6 +5138,30 @@ sourceui.interface.widget.report = function($widget,setup){
 	// MCE Setup --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	//let allowedRegEX = /[^\x00-\xFF€]/g;
 	let allowedRegEX = false;
+	var mceCleanPasted = function($content){
+		var $contentelements = $content.find('h1,h2,h3,h4,h5,p,i,a,b,u,small,big,code,em,mark,sub,sup, strong,span,abbr');
+		$contentelements.each(function(){
+			var $c = $(this);
+			var txtcolor = ($c.css('color')||'').toLowerCase();
+			var bgcolor = ($c.css('background-color') || $c.css('background') || '').toLowerCase();
+			var iscolorwhite, iscolorblack, isbgwhite, isbgblack;
+			if (txtcolor == '#FFF' || txtcolor == '#FFFFFF' || txtcolor == 'rgb(255, 255, 255)' || txtcolor == 'white') iscolorwhite = true;
+			if (txtcolor == '#000' || txtcolor == '#000000' || txtcolor == 'rgb(0, 0, 0)' || txtcolor == 'black') iscolorblack = true;
+			if (bgcolor == '#FFF' || bgcolor == '#FFFFFF' || bgcolor == 'rgb(255, 255, 255)' || bgcolor == 'white') isbgwhite = true;
+			if (bgcolor == '#000' || bgcolor == '#000000' || bgcolor == 'rgb(0, 0, 0)' || bgcolor == 'black') isbgblack = true;
+			if ((iscolorwhite && isbgwhite)
+			 || (iscolorblack && isbgwhite)
+			 || (iscolorblack && isbgblack)
+			 || (!txtcolor && (isbgwhite || isbgblack))
+			 || (!bgcolor && (iscolorwhite || iscolorblack))
+			) $c.css({'background-color':'', 'background':'', 'color':''});
+			$c.css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':'', 'margin':'', 'padding':''});
+			$c.removeAttr('class');
+			if (($c.attr('style')||'').trim() === '') $c.removeAttr('style');
+		});
+		$contentelements.filter('b,strong,span').filter(function() { return this.attributes.length === 0; }).contents().unwrap();
+		return $content;
+	};
 	var mceSetup = {
 		menubar: false,
 		inline: true,
@@ -5333,8 +5357,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$imgtable.addClass('pastedelement');
 				$imglocal.addClass('localsource');
 				$tablocal = $tablocal.wrap('<figure class="tablewrap"/>');
-				$content.find('h1,h2,h3,h4,h5,p,strong,span').css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':''});
-				o.content = $content.html();
+				o.content = mceCleanPasted($content).html();
 				if ($imglocal.length){
 					$field.addClass('ajax-courtain');
 				}
