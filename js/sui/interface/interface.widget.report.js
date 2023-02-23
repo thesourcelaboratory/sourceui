@@ -3465,10 +3465,13 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('container:dimension','.container',function(event, type){
 		var $ctn = $(this);
 		var $cols = $ctn.find('.line > .col');
+		var newctnwidth = false;
+		$ctn.removeClass('overflew toolarge');
 		if (type == 'sidenote'){
 			if (!$ctn.hasClass('sidenoted')){
 				$cols.removeAttr('style');
 				$ctn.addClass('sidenoted').attr('data-type','sidenoted');
+				newctnwidth = 710;
 			} else {
 				$ctn.removeClass('sidenoted').removeAttr('data-type');
 			}
@@ -3479,7 +3482,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $c = $(this);
 			$c.innerWidth($ctn.hasClass('sidenoted') ? parseInt($c.css('min-width'))-8 : $c.innerWidth());
 		});
-		$ctn.css('width',$ctn.outerWidth());
+		$ctn.css('width',(newctnwidth || $ctn.outerWidth()));
 		$cols.find('.resize').height($ctn.outerHeight());
 		$ctn.removeAttr('data-style').find('[data-style]').removeAttr('data-style');
 	});
