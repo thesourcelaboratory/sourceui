@@ -3527,7 +3527,6 @@ sourceui.interface.widget.report = function($widget,setup){
 							$c.innerWidth($c.innerWidth());
 						});
 						var basewidth = ($ctn.outerWidth() - ($col.innerWidth() - dpos.left));
-						console.log(basewidth, mainwidth, basewidth > mainwidth, margins);
 						basewidth = (basewidth > mainwidth) ? mainwidth : basewidth;
 						$ctn.css('width', basewidth);
 						$col.css({ width: '' });
