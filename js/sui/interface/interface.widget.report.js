@@ -3465,13 +3465,16 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('container:dimension','.container',function(event, type){
 		var $ctn = $(this);
 		var $cols = $ctn.find('.line > .col');
+		var $main = $ctn.closest('.main',Report.document);
+		var margins = parseInt($ctn.css('margin-left')) + parseInt($ctn.css('margin-right'));
+		var mainwidth = Math.floor($main.innerWidth() - (margins));
 		var newctnwidth = false;
 		$ctn.removeClass('overflew toolarge');
 		if (type == 'sidenote'){
 			if (!$ctn.hasClass('sidenoted')){
 				$cols.removeAttr('style');
 				$ctn.addClass('sidenoted').attr('data-type','sidenoted');
-				newctnwidth = 710;
+				newctnwidth = mainwidth;
 			} else {
 				$ctn.removeClass('sidenoted').removeAttr('data-type');
 			}
@@ -3492,7 +3495,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $page = $main.closest('.page',Report.document);
 		var $cols = $ctn.find('.line:eq(0) > .col');
 		var $nopep = $cols.filter(':not(.haspep)');
-		var mainwidth = $main.innerWidth();
+		var margins = parseInt($ctn.css('margin-left')) + parseInt($ctn.css('margin-right'));
+		var mainwidth = Math.floor($main.innerWidth() - (margins));
 		if ($nopep.length){
 			$nopep.prepend('<a class="resize" />');
 			var $resizes = $nopep.find('.resize');
@@ -3512,6 +3516,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					var $col = $d.parent();
 					var $colthisnext = $().add($col).add($col.next('.col'));
 					var dpos = $d.position();
+					$ctn.removeClass('overflew toolarge');
 					$colthisnext.find('img:not(.scaled)').css({width:'', height:''});
 					if (!$ctn.is('[style*="width"]')){
 						$ctn.css('width',$ctn.outerWidth());
@@ -3522,7 +3527,8 @@ sourceui.interface.widget.report = function($widget,setup){
 							$c.innerWidth($c.innerWidth());
 						});
 						var basewidth = ($ctn.outerWidth() - ($col.innerWidth() - dpos.left));
-						basewidth = (basewidth > mainwidth) ? /*mainwidth + (parseInt($ctn.css('border-width')) * 6)*/ parseInt($ctn.css('max-width')) : basewidth;
+						console.log(basewidth, mainwidth, basewidth > mainwidth, margins);
+						basewidth = (basewidth > mainwidth) ? mainwidth : basewidth;
 						$ctn.css('width', basewidth);
 						$col.css({ width: '' });
 					} else {
