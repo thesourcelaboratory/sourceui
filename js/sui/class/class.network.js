@@ -515,6 +515,9 @@ sourceui.Network = function () {
 						else if (setup.placement.indexOf('close-all-views') > -1 || setup.placement.indexOf('close-views') > -1) {
 							$viewsToClose = setup.view.siblings();
 						}
+						else if (setup.placement.indexOf('close-self-view-only') > -1) {
+							setup.view.trigger('view:close');
+						}
 						else if (setup.placement.indexOf('close-self-view') > -1) {
 							$viewsToClose = Array.prototype.reverse.call(setup.view.nextAll());
 							setup.view.trigger('view:close');
@@ -809,6 +812,10 @@ sourceui.Network = function () {
 						else if (target == '@view-self') {
 							collection = (setup.view && setup.view.length) ? setup.view : (setup.element && setup.element.length) ? setup.element.closest('.sui-view') : null;
 							setup.placement = setup.placement || 'replace';
+						}
+						else if (target == '@view-first') {
+							collection = (setup.view && setup.view.prev('.sui-view').length) ? setup.view.prevAll('.sui-view:first-of-type') : (setup.element && setup.element.length) ? setup.element.closest('.sui-view').prevAll('.sui-view:first-of-type') : null;
+							setup.placement = setup.placement || '@close-self-view-and-replace';
 						}
 						else if (target == '@widget-area') {
 							collection = (setup.widget && setup.widget.length) ? setup.widget.find('.area') : (setup.element && setup.element.length) ? setup.element.closest('.sui-widget').find('.area') : null;
