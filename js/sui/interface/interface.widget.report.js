@@ -5305,7 +5305,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="tinytext"]:not(.inited)',
 		forced_root_block : 'p',
 		toolbar: 'undo redo | removeformat | bold italic underline | superscript subscript | forecolor | alignleft aligncenter alignjustify alignright',
-		valid_elements: 'p[style],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],strong[style]/b[style],em,span[style|class],a[href|name|target],sup[style],sub[style],br,cite[class|id|data-comments]',
+		valid_elements: 'p[style],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],strong[style]/b[style],em,span[style|class],a[href|name|target],sup[style],sub[style],br,cite[class|id|data-comments],bookmark[content|level]',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align,font-style'
 		},
@@ -5326,7 +5326,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'p[style|class|data-joiner],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],h5[style|class|name],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|name|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,cite[class|id|data-comments]',
+		valid_elements: 'p[style|class|data-joiner],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],h5[style|class|name],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|name|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,cite[class|id|data-comments],bookmark[content|level]',
 		valid_styles: {
 			'h1': 'font-size,font-family,color,text-decoration,text-align',
 			'h2': 'font-size,font-family,color,text-decoration,text-align',
@@ -5542,7 +5542,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'div[class|style],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class],cite[class|id|data-comments]',
+		valid_elements: 'div[class|style],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class],cite[class|id|data-comments],bookmark[content|level]',
 		valid_styles: {
 			'div': 'height',
 			'figure': 'width',
