@@ -11,6 +11,7 @@
  * Dual licensed under the MIT and GPL licenses.
  * Copyright (c) 2006-2015 - SourceLab Tecnologia Ltda
  * --------------------------------------------------------- */
+
 window.unescape = window.unescape || window.decodeURI; // hack para o deprected
 
 sourceui.Network = function () {
