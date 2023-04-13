@@ -1140,6 +1140,14 @@ sourceui.Parser = function () {
 				}, function(){
 					str = JSONX.parse((sui.content() || '[]').trim());
 				});
+			} else if (render == '@download-data') {
+				console.log(sui);
+				sui.find('download',function(){
+					var content = this.content();
+					download(content, this.attr('filename'), this.attr('header') || null);
+				}, function(){
+					console.error('THERE IS NO DOWNLOAD ELEMENT AT SOURCEUI OUTPUT');
+				});
 			} else if (render == '@datagrid-list') {
 				sui.findChild(function () {
 					if (this.nodeName == 'list'){
