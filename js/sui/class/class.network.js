@@ -1030,19 +1030,32 @@ sourceui.Network = function () {
 					}
 					//////////////////////////////////////////////
 					$.each(setup.filter||[], function(k,v){
-						if (typeof v != 'string') return false;
 						var $t;
 						var $orig = setup.caller || setup.element;
 						if ($orig) $orig = $orig.closest('.sui-fieldset, .sui-widget, .sui-view, .sui-sector');
-						if (v.indexOf('#') > -1) {
-							$t = $(v);
-						} else if (v.indexOf('@') > -1 && v.indexOf('@')+3 < v.length && v.indexOf('.') === -1) {
-							$t = $.ache('field', v, [($orig.length ? $orig : setup.view || setup.sector), $(document)]);
-						}
-						if ($t && $t.length){
-							if ($t.is('.sui-field')) setup.filter[k] = $t.val();
-							else if ($t.data('value'))  setup.filter[k] = $t.data('value');
-							else setup.filter[k] = $t.text();
+						if (k.indexOf('@filterset') > -1){
+							var $widget = $orig.is('.sui-widget') ? $orig : $orig.find('.sui-widget');
+							$widget.each(function(){
+								var $wg = $(this);
+								if ($wg.data('Finder')) {
+									console.warn('============', setup.filter);
+									setup.filter = $.extend(true, setup.filter, $wg.data('Finder').getFilters());
+								}
+							});
+							console.warn('============', setup.filter);
+							return false;
+						} else {
+							if (typeof v != 'string') return false;
+							if (v.indexOf('#') > -1) {
+								$t = $(v);
+							}  else if (v.indexOf('@') > -1 && v.indexOf('@')+3 < v.length && v.indexOf('.') === -1) {
+								$t = $.ache('field', v, [($orig.length ? $orig : setup.view || setup.sector), $(document)]);
+							}
+							if ($t && $t.length){
+								if ($t.is('.sui-field')) setup.filter[k] = $t.val();
+								else if ($t.data('value'))  setup.filter[k] = $t.data('value');
+								else setup.filter[k] = $t.text();
+							}
 						}
 					});
 					//////////////////////////////////////////////

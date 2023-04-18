@@ -726,6 +726,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 			}
 
 			Finder.clearEnable();
+			Finder.widget.data('Finder', Finder); // Global expose of Fnder Class
 		}
 	}
 

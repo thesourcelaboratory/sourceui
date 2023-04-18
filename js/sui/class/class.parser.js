@@ -1154,8 +1154,12 @@ sourceui.Parser = function () {
 						str = Components.libs.widget.datagrid.list(this);
 					} else {
 						this.find('area',function(){
-							this.findChild('list',function(){
-								str = Components.libs.widget.datagrid.list(this);
+							this.findChild(function(){
+								if (this.nodeName == 'list'){
+									str += Components.libs.widget.datagrid.list(this);
+								} else if (this.nodeName == 'tip'){
+									str += Components.libs.tip(this);
+								}
 							});
 						});
 					}
