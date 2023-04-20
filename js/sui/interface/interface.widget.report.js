@@ -2710,6 +2710,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		'<li data-action="addline" class="nedt addline" contenteditable="false"><a class="text" data-tip="Add one line at end">+1L</a></li>'+
 		'<li data-action="reset" class="nedt reset" contenteditable="false"><a class="icon-tab" data-tip="Reset container dimension"></a></li>'+
 		'<li data-action="sidenote" class="nedt sidenote" contenteditable="false"><a class="icon-input" data-tip="Resize as side note container"></a></li>'+
+		'<li data-action="clone" class="nedt clone" contenteditable="false"><a class="icon-copy" data-tip="Clone this container as next"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move box to relocate"></a></li>'+
 		'<li data-action="remove" class="nedt remove" contenteditable="false"><a class="icon-subtract"  data-tip="Remove this box"></a></li>'+
 		'</ul>';
@@ -2779,6 +2780,15 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.find('.line > .col').removeAttr('style');
 		$ctn.trigger('container:dimension',['sidenote']);
 		boxFitter.normalizeBoxes($ctn);
+	});
+	Report.document.on('click','.container-actions .clone a',function(){
+		var $this = $(this);
+		var $ctn = $this.closest('.container');
+		var $page = $ctn.closest('.page');
+		var $clone = $ctn.clone();
+		$page.trigger('page:addcontainer',[$clone,$ctn,'after']);
+		$clone.children('[data-edition]:eq(0)').focus();
+		Report.document.trigger('document:boxcount');
 	});
 	Report.document.on('click','.container-actions .move a',function(){
 		var $this = $(this);
@@ -3592,9 +3602,12 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('container:active','.container',function(){
 		var $this = $(this);
 		var $page = $this.closest('.page',Report.document);
-		if (!$page.is('.active')) $page.trigger('page:active');
+		if (!$page.is('.active')) {
+			$page.trigger('page:active');
+			return;
+		}
 		$this.removeClass('hover');
-		Report.document.find('.fieldwrap.active').removeClass('active hover focus').find('[data-edition]').blur();
+		Report.document.find('.fieldwrap.active, .container.active').removeClass('active hover focus').find('[data-edition]').blur();
 		Report.document.addClass('has-active');
 		$this.addClass('active');
 		$this.trigger('container:tools');
@@ -4357,8 +4370,9 @@ sourceui.interface.widget.report = function($widget,setup){
 	// Page Events ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Report.document.on('page:addcontainer','.page',function(event,$new,$ref,placement,y){
 		Report.document.trigger('historyworker:statehold',['page:addcontainer']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		Report.document.trigger('container:unactive');
 		var $page = $(this);
-		$new.siblings('.container-actions').remove();
+		$new.find('.container-actions').remove();
 		$new.removeAttr('id');
 		if ($ref){
 			if (placement == 'after'){
