@@ -891,6 +891,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$e = $();
 			}
 
+
 			if (!data.linked){
 				if ($e.is('[data-edition]')) data.linked = 'Box';
 				else if ($e.is('cite')) data.linked = 'Content';
@@ -911,6 +912,11 @@ sourceui.interface.widget.report = function($widget,setup){
 				'</div>'
 			);
 
+			if (data.status == 'Settled'){
+				$e.addClass('settled');
+				$c.addClass('settled');
+			}
+
 			Report.comments.append($c);
 			$c.find('[data-tip]').tip();
 
@@ -926,6 +932,8 @@ sourceui.interface.widget.report = function($widget,setup){
 
 			var top = data.toppos || ($e.offset().top + Report.scroll.scrollTop() - Report.scroll.offset().top);
 			$c.attr('data-toppos',top).css({ top: top });
+
+			var $page = $e.closest('.page');
 
 			var $status = $c.find('.status');
 			var $settle = $c.find('.settle');
@@ -953,6 +961,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					$c.addClass('settled');
 					$status.text('Settled');
 				}
+				Report.document.trigger('document:change',[$page]);
 			});
 			$addpost.on('click', function(event){
 				event.stopPropagation();
@@ -1025,6 +1034,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			$content.on('modified', function(event){
 				var timestamp = Date.now();
 				$datetime.attr('data-timestamp', timestamp).text(moment(timestamp).fromNow());
+				$e.removeClass('settled');
+				$c.removeClass('settled');
+				$c.find('.status').text('Opened');
 				Report.document.trigger('document:change',[$page]);
 			});
 			$delete.on('click', function(){
@@ -1032,6 +1044,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				if ($c.find('.post').length === 0){
 					Comment.flush($c);
 				}
+				Report.document.trigger('document:change',[$page]);
 			});
 			return $p;
 
