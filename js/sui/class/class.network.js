@@ -1403,6 +1403,7 @@ sourceui.Network = function () {
 									content: error
 								});
 								if ((xhr.responseText||'').indexOf('<notify') === -1){
+
 									Notify.open({
 										type: 'error',
 										name: isPT ? 'Falha de Requisição' : 'Request error',
