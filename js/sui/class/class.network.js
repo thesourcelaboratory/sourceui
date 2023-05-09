@@ -1402,12 +1402,14 @@ sourceui.Network = function () {
 									title: 'Request failure',
 									content: error
 								});
-								Notify.open({
-									type: 'error',
-									name: isPT ? 'Falha de Requisição' : 'Request error',
-									label: setup.suiname,
-									message: error,
-								});
+								if ((xhr.responseText||'').indexOf('<notify') === -1){
+									Notify.open({
+										type: 'error',
+										name: isPT ? 'Falha de Requisição' : 'Request error',
+										label: setup.suiname,
+										message: error,
+									});
+								}
 							}
 							Cache.remove(setup);
 						}
