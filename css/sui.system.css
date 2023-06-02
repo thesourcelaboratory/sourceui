@@ -1410,7 +1410,7 @@ body:not(.leftcollapsed) .sui-nav > .area > .blocklist.only-one { display:none; 
 .sui-widget.reord > .title > .toolbar a.reord { color:#FFF; background:rgba(0,0,0,.35) !important; }
 .sui-widget.reord > .area .list { padding-bottom:inherit !important; }
 .sui-widget.reord > .area .list .header .col.reord { display:table-cell !important; }
-.sui-widget.reord > .area .list .line { opacity:0.6; }
+.sui-widget.reord > .area .list .line { opacity:0.6; cursor: move; cursor: grab !important; }
 .sui-widget.reord > .area .list .line .col.reord { display:table-cell !important; cursor:move !important;  }
 .sui-widget.reord > .area .list .paginator { display:none !important;  }
 .sui-widget.reord > .area .list .header .col.swiper { display:none !important; }
