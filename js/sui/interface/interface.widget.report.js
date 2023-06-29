@@ -1102,6 +1102,74 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 
 	}
+	var Footnote = {
+		addReference: function($e, $page, seq, id, data){
+
+			data = data || {};
+
+			var $bleed = $page.children('.bleed');
+			var $notes = $page.children('.notes');
+			if ($notes.length === 0){
+				$notes = $('<div class="notes"><table></table></div>').append($bleed.find('.main'));
+			}
+
+			var $entrance = $(
+				'<tr data-footnoteid="'+id+'">'+
+					'<td class="seq"><sup>'+seq+'</sup></td>'+
+					'<td class="content" contenteditable="true"></td>'+
+					'<td class="action"><a class="delete icon-close3" data-tip="Purge this footnote"></a></td>'+
+				'</tr>'
+			);
+
+			$notes.find('table').append($entrance);
+			$entrance.find('.delete').on('click', function(){
+				Footnote.purgeReference(id);
+			});
+			setTimeout(function(){ $entrance.find('.content').focus(); },300);
+			Report.scroll.scrollTo($entrance,150,{ offset:{top:-50} });
+
+			return $e;
+		},
+		create: function($e, sel, data){
+			if ($e && $e instanceof jQuery){
+				var $page = $e.closest('.page');
+				if (sel){
+					var id = $.md5(Math.rand()).substring(0, 12);
+					var seq = -1;
+					sel = sel.getContent ? sel : caret.getSelection($e);
+					sel.setContent('<cite id="'+id+'" class="footnoted" data-sequence="">'+sel.getContent({format : 'text'})+' <sup class="sequence nedt"></sup></cite>');
+					Report.document.find('cite.footnoted').each(function(k,v){
+						var $this = $(v);
+						if ($this.attr('id') === id){
+							seq = k+1;
+							return false;
+						}
+					});
+				}
+				Footnote.addReference($e, $page, seq, id, data);
+				Report.document.trigger('document:change',[$page]);
+				$.tipster.notify('Footnote #'+seq+' created');
+			} else {
+				$.tipster.notify('Footnote could not be created');
+			}
+		},
+		flush: function(elem){
+			var id;
+			if (elem instanceof jQuery) {
+				id = elem.attr('id');
+			}
+			else id = elem;
+
+			var $f = Report.comments.find('#'+id);
+			var $page = $e.closest('.page');
+
+			if ($f.length && $f.is('cite')){
+				$f.contents().unwrap();
+				// remover referencia do termo na box da página
+			}
+		}
+
+	}
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4955,6 +5023,21 @@ sourceui.interface.widget.report = function($widget,setup){
 							callback: function(){ Comment.create($closestedit); }
 						});
 					}
+					/*
+					if ($target.is('cite.footnoted')){
+						optionsD.push({
+							label: 'Purge Footnote',
+							callback: function(){ Footnote.flush($target); }
+						});
+					} else {
+						if (caret.hasSelection($closestedit)){
+							optionsD.push({
+								label: 'Insert Footnote',
+								callback: function(){ Footnote.create($closestedit, true); }
+							});
+						}
+					}
+					*/
 				}
 			} else if ($closestpage.length){
 				if (!$closestpage.is('.active')){
