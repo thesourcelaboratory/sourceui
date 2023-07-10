@@ -924,6 +924,8 @@ sourceui.templates.interface = new sourceui.Template({
 				'<div class="page @{data:layout} @{data:structure} @{data:breaker} @{data:prop} @{data:visible}"@{data}@{style}><div class="breakermark"><a class="delete icon-subtract"></a></div><div class="pagedropper"></div><div class="bleed">@{child:content}</div></div>',
 			main:
 				'<div class="main"@{data}@{style}>@{child:content}</div>',
+			notes:
+				'<div class="notes"@{style}@{data}>@{child:content}</div>',
 			cover:
 				'<div class="cover @{data:prop} @{data:type} @{type}"@{data}@{style}>@{child:content}</div>',
 			row:
@@ -1090,6 +1092,8 @@ sourceui.Parser = function () {
 						if (customfield) {
 							customfield.snip(suiSnip);
 						}
+					} else {
+						console.warn('Field '+name+' not found to snip');
 					}
 				} else if (target) {
 					var $t;
@@ -1099,6 +1103,12 @@ sourceui.Parser = function () {
 						$t = $(target);
 						if ($t.is('.sui-fieldset')){
 							$keep = $t.find('h3.name');
+						}
+						else if ($t.is('.sui-field')){
+							var customfield = $t.data('customField');
+							if (customfield) {
+								return customfield.snip(suiSnip);
+							}
 						}
 					} else if (target.indexOf('@') > -1) {
 						$t = $.ache('field', target, [(setup.view || setup.sector), $(document)]).val();
@@ -2947,6 +2957,13 @@ sourceui.Parser = function () {
 						});
 						return sui.toHTML('wg', 'report', 'main', { child: { content: htmlContent }},  Template.get);
 					},
+					notes : function(sui){
+						var htmlContent = '';
+						sui.findChild(function () {
+							if (this.nodeName == 'block') htmlContent += Components.libs.widget.report.block(this);
+						});
+						return sui.toHTML('wg', 'report', 'notes', { child: { content: htmlContent }},  Template.get);
+					},
 					page : function(sui, pgnum, headers, footers){
 						var htmlContent = '';
 						if (sui.attr('data:background')) sui.attr('style:background-image','url(\''+sui.attr('data:background')+'\')');
@@ -2959,6 +2976,7 @@ sourceui.Parser = function () {
 							}
 							else if (this.nodeName == 'header') htmlContent += Components.libs.widget.report.header(this);
 							else if (this.nodeName == 'main') htmlContent += Components.libs.widget.report.main(this);
+							else if (this.nodeName == 'notes') htmlContent += Components.libs.widget.report.notes(this);
 							else if (this.nodeName == 'repetition' && this.attr('type') == 'footer') {
 								var repid = this.attr('id') || 'default';
 								var content = footers[repid];

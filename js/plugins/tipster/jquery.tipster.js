@@ -174,7 +174,7 @@ $(function () {
             });
         },
 
-        notify: function (content, duration) {
+        notify: function (content, setup) {
 
             var Network = sourceui.instances.network;
             var Template = sourceui.templates.interface;
@@ -183,10 +183,16 @@ $(function () {
             var Interface = sourceui.interface;
             var Dom = Interface.dom;
 
+			if (typeof setup == 'number') setup = {duration: setup};
+			else if (typeof setup == 'string') setup = {type: setup};
+			else if (typeof setup == 'object') setup = $.extend({duration: 100}, setup);
+			else setup = {duration: 100};
+
             var $tipster = $(tipsterTemplate.notify);
             var $container = $('#suiTipster');
             $container.find('.tipster').remove();
             $tipster.html('<span>' + content + '</span>').appendTo($container);
+			if (setup.type) $tipster.addClass(setup.type);
 
             $tipster.velocity({
                 opacity: [1, 0],
@@ -198,7 +204,7 @@ $(function () {
                             opacity: 0,
                             display: 'none'
                         }, {
-							delay: duration||100,
+							delay: setup.duration,
 							duration: 3000,
 							easing: "easeInSine",
 							complete: function () {

@@ -52,6 +52,12 @@
     top:80%;
 	left:calc(50% - 90px);
 }
+.sui-tipster .tip.warn {
+	background-color: #e6ad05;
+}
+.sui-tipster .tip.error {
+	background-color: #e24040;
+}
 
 .sui-tipster .tip, .tipstant {
   -webkit-touch-callout: none; /* iOS Safari */

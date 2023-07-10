@@ -468,6 +468,7 @@ sourceui.customField = function (element, setup) {
 						if (Dom.value.find('.option').length == 0) Field.val('');
 						if (Data.mode == 'multiple') Dom.badge.text(Dom.options.find('.option').length);
 						if (!fake) Element.trigger('field:change');
+						Element.trigger('field:input');
 					});
 					Dom.droplist.on('droplist:select', function (event, $item) {
 						var $droplist = $(this).unmark();
@@ -3432,6 +3433,28 @@ sourceui.customField = function (element, setup) {
 				if (Parser.setup.list.options) {
 					html.options = Parser.methods.getParts('options');
 				}
+				if (sui.attr('required')){
+					if (sui.attr('required') === 'true'){
+						Data.required = true;
+						Element.children('.label').tex(Dom.label+' *');
+					} else {
+						Data.required = false;
+						Element.children('.label').tex(Dom.label);
+					}
+				}
+				if (sui.attr('consider')){
+					if (sui.attr('consider') === 'true'){
+						Element.consider();
+					} else {
+						Element.ignore();
+					}
+				} else if (sui.attr('ignore')){
+					if (sui.attr('ignore') === 'true'){
+						Element.ignore();
+					} else {
+						Element.consider();
+					}
+				}
 				// falta colocar o do file
 			} else {
 				html = sui;
@@ -3442,6 +3465,8 @@ sourceui.customField = function (element, setup) {
 			var $li = $ul.find('li.selected');
 			if ($li.length && (html.value === '' || html.value === undefined)) {
 				Field.val($li.data('value'));
+			} else {
+				Field.val('');
 			}
 		}
 		// falta colocar o do file

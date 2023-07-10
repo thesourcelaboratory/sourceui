@@ -90,7 +90,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.addClass('preventhistorystack');
 
 	var ___cnsl = {
-		active: false,
+		active: true,
 		stack: function(where){
 			___cnsl.green('initStack',where);
 		},
@@ -842,6 +842,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		}
 	};
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	var Comment = {
 		inited: false,
 		init: function(){
@@ -1102,74 +1103,315 @@ sourceui.interface.widget.report = function($widget,setup){
 		}
 
 	}
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	var Footnote = {
-		addReference: function($e, $page, seq, id, data){
-
-			data = data || {};
-
-			var $bleed = $page.children('.bleed');
-			var $notes = $page.children('.notes');
-			if ($notes.length === 0){
-				$notes = $('<div class="notes"><table></table></div>').append($bleed.find('.main'));
-			}
-
-			var $entrance = $(
-				'<tr data-footnoteid="'+id+'">'+
-					'<td class="seq"><sup>'+seq+'</sup></td>'+
-					'<td class="content" contenteditable="true"></td>'+
-					'<td class="action"><a class="delete icon-close3" data-tip="Purge this footnote"></a></td>'+
-				'</tr>'
-			);
-
-			$notes.find('table').append($entrance);
-			$entrance.find('.delete').on('click', function(){
-				Footnote.purgeReference(id);
+		allfootnotes: Report.document.find('[data-edition="footnote"]'),
+		textmemory:{},
+		init: function(){
+			Footnote.allfootnotes.find('.reference').each(function(){
+				var $reference = $(this);
+				var $notation = Footnote.getNotation($reference);
+				var text = $reference.find('.text').html();
+				Footnote.setTextmemory($notation, text);
+				if (text) $notation.removeClass('undescribed');
+				else $notation.addClass('undescribed');
 			});
-			setTimeout(function(){ $entrance.find('.content').focus(); },300);
-			Report.scroll.scrollTo($entrance,150,{ offset:{top:-50} });
-
-			return $e;
 		},
-		create: function($e, sel, data){
+		setTextmemory: function(id, text){
+			id = (id instanceof jQuery) ? id.attr('id') || id.attr('data-id') : id;
+			return Footnote.textmemory[id] = text;
+		},
+		getTextmemory: function(id){
+			id = (id instanceof jQuery) ? id.attr('id') || id.attr('data-id') : id;
+			return Footnote.textmemory[id];
+		},
+		deleteTextmemory: function(id){
+			id = (id instanceof jQuery) ? id.attr('id') || id.attr('data-id') : id;
+			delete Footnote.textmemory[id];
+		},
+		getReference: function($notation){
+			$notation = ($notation instanceof jQuery) ? $notation : Report.document.find('cite.notation#'+$notation);
+			return Footnote.allfootnotes.find('.reference[data-id="'+$notation.attr('id')+'"]');
+		},
+		getNotation: function($reference){
+			$reference = ($reference instanceof jQuery) ? $reference : Footnote.allfootnotes.find('.reference[data-id="'+$reference+'"]');
+			return Report.document.find('cite.notation#'+$reference.attr('data-id'));
+		},
+		getNextNotationBox: function($notation){
+			var $nextbox = $();
+			Footnote.allfootnotes.each(function(){
+				var $footnote = $(this);
+				if ($footnote.offset().top > $notation.offset().top){
+					$nextbox = $footnote;
+					return false;
+				}
+			});
+			return $nextbox;
+		},
+		addReference: function($notation, $footnote){
+			$notation = ($notation instanceof jQuery) ? $notation : Report.document.find('cite.notation#'+$notation);
+			$footnote = $footnote ? $footnote : Footnote.getNextNotationBox($notation);
+			var textmemory = Footnote.getTextmemory($notation);
+			if ($footnote.length){
+				var $reference = $(
+					'<tr class="reference" data-id="'+$notation.attr('id')+'" data-sequence="'+$notation.attr('data-sequence')+'">'+
+						'<td class="seq"><sup>'+$notation.attr('data-sequence')+'</sup></td>'+
+						'<td class="text" contenteditable="true">'+(textmemory || '')+'</td>'+
+						'<td class="action"><a class="delete icon-close3" title="Purge this footnote"></a></td>'+
+					'</tr>'
+				);
+				if (textmemory) $notation.removeClass('undescribed');
+				else $notation.addClass('undescribed');
+
+				Footnote.appendReference($footnote, $reference);
+				return $reference;
+			}
+			return $();
+		},
+		appendReference: function($footnote, $reference){
+			var $list = $footnote.children('.list');
+			if (!$list.length){
+				$list = $('<table class="list"></table>').appendTo($footnote);
+			}
+			$list.append($reference);
+			$footnote.children('.empty').remove();
+		},
+		create: function($e, sel){
 			if ($e && $e instanceof jQuery){
-				var $page = $e.closest('.page');
 				if (sel){
 					var id = $.md5(Math.rand()).substring(0, 12);
 					var seq = -1;
 					sel = sel.getContent ? sel : caret.getSelection($e);
-					sel.setContent('<cite id="'+id+'" class="footnoted" data-sequence="">'+sel.getContent({format : 'text'})+' <sup class="sequence nedt"></sup></cite>');
-					Report.document.find('cite.footnoted').each(function(k,v){
-						var $this = $(v);
-						if ($this.attr('id') === id){
-							seq = k+1;
-							return false;
-						}
-					});
+					sel.setContent('<cite id="'+id+'" class="notation undescribed" data-sequence="">'+sel.getContent({format : 'text'})+' <sup class="sequence nedt"></sup></cite>');
+					var $reference = Footnote.addReference(id);
+					Footnote.normalize();
+					if ($reference.length){
+						var $page = $reference.closest('.page');
+						Report.document.trigger('document:change',[$page]);
+						setTimeout(function(){ $reference.find('.text').focus(); },300);
+						Report.scroll.scrollTo($reference,150,{ offset:{top:-100} });
+						$.tipster.notify('Footnote reference created');
+					} else {
+						$.tipster.notify('Notation created. Add Footnote Box below');
+					}
+					return id;
+				} else {
+					$.tipster.notify('You must select a text for notation', 'error');
 				}
-				Footnote.addReference($e, $page, seq, id, data);
-				Report.document.trigger('document:change',[$page]);
-				$.tipster.notify('Footnote #'+seq+' created');
 			} else {
-				$.tipster.notify('Footnote could not be created');
+				$.tipster.notify('Footnote could not be created', 'error');
 			}
 		},
-		flush: function(elem){
-			var id;
-			if (elem instanceof jQuery) {
-				id = elem.attr('id');
+		populate: function(){
+			Footnote.allfootnotes = Report.document.find('[data-edition="footnote"]');
+			Footnote.normalize();
+			Footnote.testEmpty();
+		},
+		normalize: function(){
+			var $notations = Report.document.find('cite.notation');
+			$notations.each(function(k,v){
+				var $notation = $(this);
+				var $sequence = $notation.find('sup.sequence');
+				var seq = k+1;
+				if ($sequence.length) $sequence.text(seq);
+				else $notation.append('<sup class="sequence nedt">'+seq+'</sup>');
+				$notation.attr('data-sequence',seq);
+				var $reference = Footnote.getReference($notation);
+				var $footnote = Footnote.getNextNotationBox($notation);
+				var textmemory = Footnote.getTextmemory($notation);
+				if ($reference.length){
+					var $text = $reference.find('td.text');
+					$reference.attr('data-sequence', seq);
+					$reference.find('td.seq sup').text(seq);
+					Footnote.appendReference($footnote, $reference);
+					if (textmemory && $text.html() == ''){
+						$reference.find('td.text').html(textmemory);
+						$notation.removeClass('undescribed');
+					}
+				} else {
+					Footnote.addReference($notation, $footnote);
+				}
+			});
+			Footnote.testEmpty();
+		},
+		testEmpty: function(){
+			Footnote.allfootnotes.each(function(){
+				var $footnote = $(this);
+				$footnote.find('tr.reference').each(function(){
+					var $reference = $(this);
+					var $notation = Footnote.getNotation($reference);
+					if (!$notation.length || $notation.offset().top > $footnote.offset().top){
+						$reference.remove();
+						$notation.addClass('undescribed');
+					} else {
+						Footnote.setTextmemory($notation, $reference.find('.text').html());
+					}
+				});
+				var $boxrefs = $footnote.find('tr.reference');
+				if (!$boxrefs.length){
+					$footnote.html('<p class="empty"><strong>Footnote is empty.</strong> You must add notations selecting some text above and chosing the last option on CTRL+rightClick command.</p>');
+				}
+			});
+		},
+		purge: function($element){
+			//Report.document.trigger('historyworker:statehold',['footnote:purge']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+			var $reference, $notation;
+			if ($element.is('cite.notation')) {
+				$notation = $element;
+				$reference = Footnote.getReference($element);
+			} else if ($element.is('.reference')) {
+				$notation = Footnote.getNotation($element);
+				$reference = $element;
 			}
-			else id = elem;
+			var $page = $reference.closest('.page');
+			$reference.remove();
+			$notation.find('sup.sequence').remove();
+			$notation.contents().unwrap();
+			Footnote.testEmpty();
+			Footnote.normalize();
+			Report.document.trigger('document:change', [$page]);
+			$.tipster.notify('Footnote purged');
+			//Report.document.trigger('historyworker:stateadd',['footnote:purge']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+		},
+	};
+	Footnote.init();
+	/*
+	var FootnoteOLD = {
+		allreferences: $(),
+		create: function($e, sel, data){
+			if ($e && $e instanceof jQuery){
+				if (sel){
+					var id = $.md5(Math.rand()).substring(0, 12);
+					var seq = -1;
+					sel = sel.getContent ? sel : caret.getSelection($e);
+					sel.setContent('<cite id="'+id+'" class="notation" data-sequence="">'+sel.getContent({format : 'text'})+' <sup class="sequence nedt"></sup></cite>');
+					var wasappended = Footnote.reference(id);
+					Footnote.sequence();
+					//Footnote.empty();
+					Report.document.trigger('document:change');
+					if (wasappended) $.tipster.notify('Footnote reference created');
+					else $.tipster.notify('Notation created. Add Footnote Box below', 'warn');
 
-			var $f = Report.comments.find('#'+id);
-			var $page = $e.closest('.page');
-
-			if ($f.length && $f.is('cite')){
-				$f.contents().unwrap();
-				// remover referencia do termo na box da página
+				}
+			} else {
+				$.tipster.notify('Footnote could not be created', 'error');
+			}
+		},
+		reference: function($cite){
+			$cite = ($cite instanceof jQuery) ? $cite : Report.document.find('cite.notation#'+$cite);
+			var id = $cite.attr('id');
+			var $page = $cite.closest('.page');
+			var $nextpages = $();
+			var wasappended = false;
+			$nextpages = $nextpages.add($page);
+			$nextpages = $nextpages.add($page.nextAll('.page'));
+			$nextpages.each(function(){
+				var $p = $(this);
+				var $footnote = $p.find('[data-edition="footnote"]');
+				if ($footnote.length){
+					var $reference = Footnote.allreferences.filter('[data-id="'+id+'"]');
+					if (!$reference.length){
+						$reference = Footnote.append($cite, $footnote);
+						setTimeout(function(){ $reference.find('.text').focus(); },300);
+						Report.scroll.scrollTo($reference,150,{ offset:{top:-100} });
+						wasappended = true;
+					}
+					return false;
+				}
+			});
+			return wasappended;
+		},
+		append: function($cite, $footnote){
+			var id = $cite.attr('id');
+			var $list = $footnote.children('.list');
+			if (!$list.length){
+				$list = $('<table class="list"></table>').appendTo($footnote);
+			}
+			var $reference = $(
+				'<tr class="reference" data-id="'+id+'" data-sequence="">'+
+					'<td class="seq"><sup></sup></td>'+
+					'<td class="text" contenteditable="true"></td>'+
+					'<td class="action"><a class="delete icon-close3" data-tip="Purge this footnote"></a></td>'+
+				'</tr>'
+			);
+			$list.append($reference);
+			Footnote.allreferences = Report.document.find('[data-edition="footnote"] tr.reference');
+			$footnote.children('.empty').remove();
+			return $reference;
+		},
+		populate: function($box){
+			var $page = $box.closest('.page');
+			var $prevpages = $();
+			$prevpages = $prevpages.add($page);
+			$prevpages = $prevpages.add($page.prevAll('.page'));
+			Array.prototype.reverse.call($prevpages);
+			$prevpages.each(function(){
+				var $p = $(this);
+				var $footnote = $p.find('[data-edition="footnote"]');
+				if ($footnote.length && $footnote.get(0) !== $box.get(0)) return false;
+				var $cites = $p.find('cite.notation');
+				$cites.each(function(){
+					var $cite = $(this);
+					var $ref = Footnote.allreferences.filter('[data-id="'+$cite.attr('id')+'"]');
+					console.log($ref);
+					if (!$ref.length){
+						Footnote.append($cite, $box);
+					}
+				});
+			});
+			Footnote.sequence();
+			Footnote.empty($box);
+			Report.document.trigger('document:change');
+		},
+		sequence: function(){
+			var hasrefremoved = false;
+			var $allnotation = Report.document.find('cite.notation');
+			$allnotation.each(function(k,v){
+				var $this = $(v);
+				var $sequence = $this.find('sup.sequence');
+				var seq = k+1;
+				$sequence.text(seq);
+				$this.attr('data-sequence',seq);
+				var $reference = Footnote.allreferences.filter('[data-id="'+$this.attr('id')+'"]');
+				if ($reference.length){
+					if ($reference.offset().top > $this.offset().top){
+						$reference.attr('data-sequence', seq);
+						$reference.find('td.seq sup').text(seq);
+						$reference.appendTo($reference.parent());
+					} else {
+						$reference.remove();
+						hasrefremoved = true;
+					}
+				}
+			});
+			if (hasrefremoved) {
+				Footnote.allreferences = Report.document.find('[data-edition="footnote"] tr.reference');
+			}
+		},
+		purge: function($cite){
+			$cite = ($cite instanceof jQuery) ? $cite : Report.document.find('cite.notation#'+$cite);
+			var $reference = Footnote.allreferences.filter('[data-id="'+$cite.attr('id')+'"]');
+			var $box = $reference.closest('[data-edition="footnote"]');
+			$reference.remove();
+			$cite.find('sup.sequence').remove();
+			$cite.contents().unwrap();
+			Footnote.empty($box);
+			Footnote.sequence();
+			Report.document.trigger('document:change');
+			$.tipster.notify('Footnote purged');
+			Footnote.allreferences = Report.document.find('[data-edition="footnote"] tr.reference');
+		},
+		empty: function($box){
+			var $wrap = $box.closest('.fieldwrap');
+			var $boxrefs = $box.find('tr.reference');
+			if (!$boxrefs.length){
+				$box.children('.list').remove();
+				$box.html('<p class="empty"><strong>Footnote is empty.</strong> You must add notations selecting some text above and chosing the last option on CTRL+rightClick command.</p>');
 			}
 		}
-
 	}
+	Footnote.allreferences = Report.document.find('[data-edition="footnote"] tr.reference');
+	*/
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1253,6 +1495,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$.tipster.notify('Normalizing. Wait...');
 				setTimeout(function(){
 					boxFitter.normalizeBoxes();
+					Footnote.normalize();
 					$.tipster.notify('All boxes were normalized');
 				},150);
 			}
@@ -1551,17 +1794,17 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $contentNew = $('<pre></pre>');
 
 			////////////////////////////////////////////////////////////////////////////////////////
-			var $mayfuckedges = $edition.find('img');
-			var hasfucked = false;
-			$mayfuckedges.each(function(){
+			var $maylargeedges = $edition.find('img');
+			var haslarge = false;
+			$maylargeedges.each(function(){
 				var $mfe = $(this);
 				if ($mfe.outerHeight(true) >= edgeHeight){
-					hasfucked = true;
+					haslarge = true;
 					___cnsl.red('breakBox','imagetoolarge:'+($mfe.outerHeight(true) >= edgeHeight),$mfe.get(0));
 					return false;
 				}
 			});
-			if (hasfucked){
+			if (haslarge){
 				$.tipster.notify('Image is too large');
 				return false;
 			}
@@ -1978,10 +2221,21 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 
 		},
+		/*
+		footnoteGap: function($edge){
+			var fngap = 0;
+			var $footnote = $edge.find('[data-edition="footnote"]');
+			var gap = boxFitter.hasGap($edge, $footnote.prev('.fieldwrap, .container'));
+			fngap = $footnote.height();
+			$footnote.attr('data-gap', gap - fngap);
+			return fngap;
+		},
+		*/
 		hasOverflow: function($edge){
 			var el = $edge.get(0);
 			var curOverf = el.style.overflow;
 			if ( !curOverf || curOverf === "visible" ) el.style.overflow = "hidden";
+
 			var isOverflowing = el.clientHeight+20 < el.scrollHeight;
 			//var isOverflowing = el.clientWidth+20 < el.scrollWidth || el.clientHeight+20 < el.scrollHeight;
 			el.style.overflow = curOverf;
@@ -2019,6 +2273,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			var paddingTolerance = 8; // is the P padding at end of box, that always overflow the height.
 
 			$edge = $edge || $box.parent();
+
 			if ($edge.is('.content, .boxstack')){
 				var boxPos = $box.position(), strapolateWidth, strapolateHeight, edgeWidth = $edge.closest('.main').width(), edgeHeight = $edge.height() + paddingTolerance;
 			} else {
@@ -2768,6 +3023,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $this = $(this);
 		var $page = $this.closest('.page');
 		boxFitter.normalizeBoxes($page);
+		Footnote.normalize();
 		$.tipster.notify('Pages boxes normalized untill next session breaker');
 	});
 	Report.document.on('click','.page-actions .remove a',function(){
@@ -2839,12 +3095,14 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $ctn = $this.closest('.container');
 		$ctn.trigger('container:addcolumn');
 		boxFitter.normalizeBoxes($ctn);
+		Footnote.normalize();
 	});
 	Report.document.on('click','.container-actions .addline a',function(){
 		var $this = $(this);
 		var $ctn = $this.closest('.container');
 		$ctn.trigger('container:addline');
 		boxFitter.normalizeBoxes($ctn);
+		Footnote.normalize();
 	});
 	Report.document.on('click','.container-actions .reset a',function(){
 		var $this = $(this);
@@ -2853,6 +3111,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.find('.line > .col').removeAttr('style');
 		$ctn.trigger('container:dimension');
 		boxFitter.normalizeBoxes($ctn);
+		Footnote.normalize();
 	});
 	Report.document.on('click','.container-actions .sidenote a',function(){
 		var $this = $(this);
@@ -2861,6 +3120,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.find('.line > .col').removeAttr('style');
 		$ctn.trigger('container:dimension',['sidenote']);
 		boxFitter.normalizeBoxes($ctn);
+		Footnote.normalize();
 	});
 	Report.document.on('click','.container-actions .clone a',function(){
 		var $this = $(this);
@@ -2878,6 +3138,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$ctn.trigger('container:clipboardmoved');
 		$page.trigger('page:active');
 		boxFitter.normalizeBoxes($ctn);
+		Footnote.normalize();
 	});
 	Report.document.on('click','.container-actions .remove a',function(){
 		var $this = $(this);
@@ -3129,6 +3390,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			$fieldwrap.removeClass('wide');
 		}
 		boxFitter.normalizeBoxes($fieldwrap);
+		Footnote.normalize();
 	});
 	Report.document.on('click','.edition-actions .editable a',function(){
 		var $this = $(this);
@@ -3158,6 +3420,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		$edit.trigger('edition:clipboardmoved');
 		$page.trigger('page:active');
 		boxFitter.normalizeBoxes($fieldwrap);
+		Footnote.normalize();
 	});
 	Report.document.on('click','.edition-actions .split a',function(){
 		var $this = $(this);
@@ -3174,6 +3437,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $fieldwrap = $this.closest('.fieldwrap');
 		var $edit = $fieldwrap.children('[data-edition]');
 		boxFitter.normalizeBoxes($fieldwrap);
+		Footnote.normalize();
 		$edit.trigger('edition:active');
 		$.tipster.notify('Boxes normalized untill next session breaker');
 	});
@@ -3198,6 +3462,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		var selectlen = $selected.length;
 		var $box = boxFitter.joinBox($selected);
 		boxFitter.normalizeBoxes($box);
+		Footnote.normalize();
 		Report.document.trigger('historyworker:stateadd',['edition:join']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 		$.tipster.notify(selectlen+' selected boxes joined');
 	});
@@ -3823,7 +4088,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		event.stopPropagation();
 		var $this = $(this);
 		var $fieldwrap = $this.parent();
-		if ($this.is('[data-edition="dynamic"], [data-edition="toc"]')){
+		if ($this.is('[data-edition="dynamic"], [data-edition="toc"], [data-edition="footnote"]')){
 			$this.trigger('edition:active');
 		} else {
 			var $target = $(event.target);
@@ -4011,12 +4276,89 @@ sourceui.interface.widget.report = function($widget,setup){
 			$i.prepend('<bookmark content="'+$i.text()+'" level="'+dots+'" />');
 		});
 	});
-
 	Report.document.on('click','.fieldwrap.active > [data-edition="toc"] .lk',function(event){
 		var $a = $(this).parent();
 		Report.scroll.scrollTo('[data-indexer="'+$a.data('idxkey')+'"]',150,{ offset:{top:-50} });
 		event.preventDefault();
 	});
+	Report.document.on('edition:buildfootnote','[data-edition="footnote"]',function(event){
+		var $this = $(this);
+		var $wrap = $this.parent().removeClass('error');
+		if ($wrap.is('.fieldwrap')){
+			$wrap.addClass('footnote');
+		}
+		var $notespot = $this.closest('.bleed').children('.notes');
+		if ($notespot.length){
+			if ($notespot.html() == ''){
+				$notespot.append($wrap);
+				Footnote.populate();
+			} else {
+				$wrap.remove();
+				$.tipster.notify('Only single footnote per page is allowed', 'error');
+			}
+		} else {
+			$wrap.remove();
+			$.tipster.notify('Current report template doesn\'t allow footnotes', 'error');
+		}
+	});
+
+	Report.document.on('mouseenter','cite.notation',function(event){
+		var $this = $(this);
+		if ($this.is('.undescribed')) $this.attr('title','Undescribed Notation #'+$this.attr('data-sequence'));
+		else $this.attr('title','Described Notation #'+$this.attr('data-sequence'));
+	});
+	Report.document.on('dblclick','cite.notation',function(event){
+		var $this = $(this);
+		var id = $this.attr('id');
+		var $reference = Report.document.find('[data-edition="footnote"] .reference[data-id="'+id+'"]');
+		setTimeout(function(){ $reference.find('.text').focus(); },300);
+		Report.scroll.scrollTo($reference,150,{ offset:{top:-100} });
+	});
+	Report.document.on('mouseenter','[data-edition="footnote"] .reference',function(event){
+		var $this = $(this);
+		if ($this.find('.text').is(':empty')) $this.attr('title','Undescribed Reference #'+$this.attr('data-sequence'));
+		else $this.attr('title','Described Reference #'+$this.attr('data-sequence'));
+	});
+	Report.document.on('dblclick','[data-edition="footnote"] .reference .seq',function(event){
+		var $this = $(this);
+		var id = $this.closest('.reference').attr('data-id');
+		var $cite = Report.document.find('cite#'+id);
+		Report.scroll.scrollTo($cite,150,{ offset:{top:-100} });
+	});
+	Report.document.on('click','[data-edition="footnote"] .reference .delete',function(event){
+		var $this = $(this);
+		var id = $this.closest('.reference').attr('data-id');
+		var $cite = Report.document.find('cite#'+id);
+		Footnote.purge($cite);
+	});
+	Report.document.on('input','[data-edition="footnote"] .reference .text',function(event){
+		var $this = $(this);
+		var $reference = $this.closest('.reference');
+		$reference.addClass('edited');
+	});
+	Report.document.on('paste','[data-edition="footnote"] .reference .text',function(event){
+		var $this = $(this);
+		if (event.originalEvent && event.originalEvent.clipboardData){
+			var text = event.originalEvent.clipboardData.getData('text');
+			setTimeout(function(){
+				$this.html($('<div>'+text+'</div>').text());
+			},150);
+		}
+	});
+	Report.document.on('blur','[data-edition="footnote"] .reference .text',function(event){
+		var $this = $(this);
+		var $reference = $this.closest('.reference');
+		if ($reference.hasClass('edited')) {
+			var $notation = Footnote.getNotation($reference);
+			var referencetext = $this.html();
+			Footnote.setTextmemory($notation, referencetext);
+			if (referencetext) $notation.removeClass('undescribed');
+			else $notation.addClass('undescribed');
+			$reference.removeClass('edited');
+			Report.document.trigger('document:change',[$this.closest('.page')]);
+		}
+	});
+
 	Report.document.on('edition:jscode','[data-edition]',function(event){
 		var $this = $(this);
 		$this.find('code[data-type="javascript"]').each(function(){
@@ -4237,7 +4579,17 @@ sourceui.interface.widget.report = function($widget,setup){
 		} else {
 			$reference = $fieldwrap.prev();
 			$page = $this.closest('.page');
-			$fieldwrap.remove();
+			if ($fieldwrap.is('.footnote')){
+				$fieldwrap.find('.reference').each(function(){
+					var $ref = $(this);
+					var $notation = Footnote.getNotation($ref);
+					$notation.addClass('undescribed');
+				});
+				$fieldwrap.remove();
+				Footnote.allfootnotes = Report.document.find('[data-edition="footnote"]');
+			} else {
+				$fieldwrap.remove();
+			}
 		}
 		///////////////////////////////////
 		if ($preved.attr('data-belongstogroup') && $preved.attr('data-belongstogroup') === $nexted.attr('data-belongstogroup')){
@@ -4385,9 +4737,10 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 	Report.document.on('mouseenter','[data-edition] tbody:first-of-type th:not(:last-of-type), [data-edition] tbody:first-of-type tr:first-of-type td:not(:last-of-type)',function(event){
 		var $this = $(this);
-		if (!$this.closest('[data-edition]').hasClass('sizing')){
+		var $closest = $this.closest('[data-edition]');
+		if (!$closest.data('edition') == 'footnote' && !$closest.hasClass('sizing')){
 			Report.sizer.addClass('active');
-			$this.closest('[data-edition]').trigger('edition:elementsizer', [$this]);
+			$closest.trigger('edition:elementsizer', [$this]);
 		}
 	});
 	Report.document.on('dragstart drop','[data-edition] img, [data-edition] table, [data-edition] td',function(event){
@@ -4690,6 +5043,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		Report.document.find('[data-edition="toc"]:eq(0)').trigger('edition:buildtoc');
 		if ($page) setTimeout(function(){
 			boxFitter.normalizeBoxes($page);
+			Footnote.normalize();
 			Report.document.trigger('document:validate');
 			Report.widget.trigger('field:input');
 			Report.document.trigger('document:pagelist');
@@ -4937,6 +5291,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 		Clipmemory.flush();
 		if (!$first) boxFitter.normalizeBoxes($first);
+		Footnote.normalize();
 		$.tipster.notify($elements.length+' Elements Pasted');
 		Report.document.trigger('historyworker:stateadd',['document:clipmemorypaste']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
 
@@ -5023,11 +5378,11 @@ sourceui.interface.widget.report = function($widget,setup){
 							callback: function(){ Comment.create($closestedit); }
 						});
 					}
-					/*
-					if ($target.is('cite.footnoted')){
+
+					if ($target.is('cite.notation')){
 						optionsD.push({
 							label: 'Purge Footnote',
-							callback: function(){ Footnote.flush($target); }
+							callback: function(){ Footnote.purge($target); }
 						});
 					} else {
 						if (caret.hasSelection($closestedit)){
@@ -5037,7 +5392,7 @@ sourceui.interface.widget.report = function($widget,setup){
 							});
 						}
 					}
-					*/
+
 				}
 			} else if ($closestpage.length){
 				if (!$closestpage.is('.active')){
@@ -5257,25 +5612,30 @@ sourceui.interface.widget.report = function($widget,setup){
 	//let allowedRegEX = /[^\x00-\xFF€]/g;
 	let allowedRegEX = false;
 	var mceCleanPasted = function($content){
-		var $contentelements = $content.find('h1,h2,h3,h4,h5,p,i,a,b,u,small,big,code,em,mark,sub,sup, strong,span,abbr');
+		var $contentelements = $content.find('h1,h2,h3,h4,h5,p,i,a,b,u,small,big,code,em,mark,sub,sup, strong,span,abbr, cite');
 		$contentelements.each(function(){
 			var $c = $(this);
-			var txtcolor = ($c.css('color')||'').toLowerCase();
-			var bgcolor = ($c.css('background-color') || $c.css('background') || '').toLowerCase();
-			var iscolorwhite, iscolorblack, isbgwhite, isbgblack;
-			if (txtcolor == '#FFF' || txtcolor == '#FFFFFF' || txtcolor == 'rgb(255, 255, 255)' || txtcolor == 'white') iscolorwhite = true;
-			if (txtcolor == '#000' || txtcolor == '#000000' || txtcolor == 'rgb(0, 0, 0)' || txtcolor == 'black') iscolorblack = true;
-			if (bgcolor == '#FFF' || bgcolor == '#FFFFFF' || bgcolor == 'rgb(255, 255, 255)' || bgcolor == 'white') isbgwhite = true;
-			if (bgcolor == '#000' || bgcolor == '#000000' || bgcolor == 'rgb(0, 0, 0)' || bgcolor == 'black') isbgblack = true;
-			if ((iscolorwhite && isbgwhite)
-			 || (iscolorblack && isbgwhite)
-			 || (iscolorblack && isbgblack)
-			 || (!txtcolor && (isbgwhite || isbgblack))
-			 || (!bgcolor && (iscolorwhite || iscolorblack))
-			) $c.css({'background-color':'', 'background':'', 'color':''});
-			$c.css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':'', 'margin':'', 'padding':''});
-			$c.removeAttr('class');
-			if (($c.attr('style')||'').trim() === '') $c.removeAttr('style');
+			if ($c.is('cite.notation')){
+				$c.find('sup').remove();
+				$c.contents().unwrap();
+			} else {
+				var txtcolor = ($c.css('color')||'').toLowerCase();
+				var bgcolor = ($c.css('background-color') || $c.css('background') || '').toLowerCase();
+				var iscolorwhite, iscolorblack, isbgwhite, isbgblack;
+				if (txtcolor == '#FFF' || txtcolor == '#FFFFFF' || txtcolor == 'rgb(255, 255, 255)' || txtcolor == 'white') iscolorwhite = true;
+				if (txtcolor == '#000' || txtcolor == '#000000' || txtcolor == 'rgb(0, 0, 0)' || txtcolor == 'black') iscolorblack = true;
+				if (bgcolor == '#FFF' || bgcolor == '#FFFFFF' || bgcolor == 'rgb(255, 255, 255)' || bgcolor == 'white') isbgwhite = true;
+				if (bgcolor == '#000' || bgcolor == '#000000' || bgcolor == 'rgb(0, 0, 0)' || bgcolor == 'black') isbgblack = true;
+				if ((iscolorwhite && isbgwhite)
+				|| (iscolorblack && isbgwhite)
+				|| (iscolorblack && isbgblack)
+				|| (!txtcolor && (isbgwhite || isbgblack))
+				|| (!bgcolor && (iscolorwhite || iscolorblack))
+				) $c.css({'background-color':'', 'background':'', 'color':''});
+				$c.css({'font-size':'', 'font-family':'', 'text-decoration':'', 'text-align':'', 'margin':'', 'padding':''});
+				$c.removeAttr('class');
+				if (($c.attr('style')||'').trim() === '') $c.removeAttr('style');
+			}
 		});
 		$contentelements.filter('b,strong,span').filter(function() { return this.attributes.length === 0; }).contents().unwrap();
 		return $content;
@@ -5397,7 +5757,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="text"]:not(.inited)',
 		forced_root_block : false,
 		toolbar: 'undo redo | forecolor | superscript subscript | bold italic underline | removeformat',
-		valid_elements: 'p,strong[style],em,span[style],a[href|name|target],sup[style],sub[style],br',
+		valid_elements: 'p,strong[style],em,span[style],a[href|name|target],sup[class|style],sub[style],br',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align'
 		},
@@ -5415,7 +5775,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		selector: '[data-edition="tinytext"]:not(.inited)',
 		forced_root_block : 'p',
 		toolbar: 'undo redo | removeformat | bold italic underline | superscript subscript | forecolor | alignleft aligncenter alignjustify alignright',
-		valid_elements: 'p[style],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],strong[style]/b[style],em,span[style|class],a[href|name|target],sup[style],sub[style],br,cite[class|id|data-comments],bookmark[content|level]',
+		valid_elements: 'p[style],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],strong[style]/b[style],em,span[style|class],a[href|name|target],sup[class|style],sub[style],br,cite[class|id|data-comments],bookmark[content|level]',
 		valid_styles: {
 			'*': 'color,text-decoration,text-align,font-style'
 		},
@@ -5436,7 +5796,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'p[style|class|data-joiner],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],h5[style|class|name],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|name|target],sup[style],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,cite[class|id|data-comments],bookmark[content|level]',
+		valid_elements: 'p[style|class|data-joiner],h1[style|class|name],h2[style|class|name],h3[style|class|name],h4[style|class|name],h5[style|class|name],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|name|target],sup[class|tyle],sub[style],strong[style],b[style],ul[style],ol[style],li[style],span[style|class],em,br,cite[class|id|data-comments],bookmark[content|level]',
 		valid_styles: {
 			'h1': 'font-size,font-family,color,text-decoration,text-align',
 			'h2': 'font-size,font-family,color,text-decoration,text-align',
@@ -5556,6 +5916,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						Report.document.addClass('preventeventchange');
 						caret.save($ed,'end');
 						boxFitter.normalizeBoxes(boxFitter.groupNext($ed));
+						Footnote.normalize();
 						caret.focus();
 						e.preventDefault();
 						Report.document.removeClass('preventeventchange');
@@ -5565,6 +5926,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						Report.document.addClass('preventeventchange');
 						caret.save($ed,'begining');
 						boxFitter.normalizeBoxes(boxFitter.groupPrev($ed));
+						Footnote.normalize();
 						caret.focus();
 						e.preventDefault();
 						Report.document.removeClass('preventeventchange');
@@ -5574,6 +5936,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					//caret.save($ed);
 					Report.document.trigger('page:unactive');
 					boxFitter.normalizeBoxes($ed.parent());
+					Footnote.normalize();
 					//caret.focus($ed);
 				} else if (e.key != 'Control' && e.key != 'Shift' && e.key != 'Alt') {
 					$ed.addClass('contentchanged');
@@ -5652,7 +6015,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		powerpaste_allow_local_images: true,
 		table_toolbar: '',
 		table_resize_bars: false,
-		valid_elements: 'div[class|style],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class],cite[class|id|data-comments],bookmark[content|level]',
+		valid_elements: 'div[class|style],p[class],h4[class],h5[class],figure[style|class],img[style|src|class|draggable],table[style|border|cellpadding|cellspacing|class|draggable],colgroup[style],col[style,span],tbody,thead,tfoot,tr[style|height],th[style|colspan|rowspan|align],td[style|colspan|rowspan|align],a[href|target],sup[class|style],sub[style],strong[style|class],b[style|class],span[style|class],em,br,mark[class],cite[class|id|data-comments],bookmark[content|level]',
 		valid_styles: {
 			'div': 'height',
 			'figure': 'width',
@@ -5899,6 +6262,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				var $page = boxFitter.documentOverflow();
 				if ($page) boxFitter.normalizeBoxes($page);
 			}
+			Footnote.normalize();
 			Report.document.trigger('document:numpage');
 			Report.document.find('.block.logo, .block.info, .block.reportName').trigger('edition:draggable');
 			Report.document.find('.block.analysts').trigger('edition:analystsdrag');
@@ -5991,6 +6355,8 @@ sourceui.interface.widget.report = function($widget,setup){
 						} else if ($this.attr('data-edition').indexOf('dynamic') > -1){
 							content = $this.html();
 						} else if ($this.attr('data-edition').indexOf('toc') > -1){
+							content = $this.html();
+						} else if ($this.attr('data-edition').indexOf('footnote') > -1){
 							content = $this.html();
 						}
 						var $sui = wdata.aux.strXQ('<'+nodename+'>'+(content?'<![CDATA['+content+']]>':'')+'</'+nodename+'>');
@@ -6109,6 +6475,17 @@ sourceui.interface.widget.report = function($widget,setup){
 					return '<footer>'+suiXml+'</footer>';
 				}
 			},
+			notes: function($elem){
+				var suiXml = '';
+				var h = $elem.height();
+				$elem.children().each(function(){
+					var $this = $(this);
+					if ($this.hasClass('fieldwrap')) suiXml += wdata.suify.fieldwrap($this);
+					else if ($this.hasClass('row')) suiXml += wdata.suify.row($this);
+					else if ($this.hasClass('cell')) suiXml += wdata.suify.cell($this);
+				});
+				return '<notes>'+suiXml+'</notes>';
+			},
 			main: function($elem){
 				var suiXml = '';
 				var h = $elem.height();
@@ -6156,6 +6533,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					if ($this.hasClass('cover')) suiXml += wdata.suify.cover($this);
 					else if ($this.hasClass('header')) suiXml += wdata.suify.header($this,true);
 					else if ($this.hasClass('main')) suiXml += wdata.suify.main($this);
+					else if ($this.hasClass('notes')) suiXml += wdata.suify.notes($this);
 					else if ($this.hasClass('footer')) suiXml += wdata.suify.footer($this, $this.find('.wide').length ? false : true);
 				});
 				if ($elem.is('.covered-default') && (!Report.wgdata.reportName || !Report.wgdata.reportTitle)){
