@@ -1174,6 +1174,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				$list = $('<table class="list"></table>').appendTo($footnote);
 			}
 			$list.append($reference);
+			$footnote.removeClass('empty-content');
 			$footnote.children('.empty').remove();
 		},
 		create: function($e, sel){
@@ -1249,6 +1250,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				});
 				var $boxrefs = $footnote.find('tr.reference');
 				if (!$boxrefs.length){
+					$footnote.addClass('empty-content');
 					$footnote.html('<p class="empty"><strong>Footnote is empty.</strong> You must add notations selecting some text above and chosing the last option on CTRL+rightClick command.</p>');
 				}
 			});
@@ -1275,143 +1277,6 @@ sourceui.interface.widget.report = function($widget,setup){
 		},
 	};
 	Footnote.init();
-	/*
-	var FootnoteOLD = {
-		allreferences: $(),
-		create: function($e, sel, data){
-			if ($e && $e instanceof jQuery){
-				if (sel){
-					var id = $.md5(Math.rand()).substring(0, 12);
-					var seq = -1;
-					sel = sel.getContent ? sel : caret.getSelection($e);
-					sel.setContent('<cite id="'+id+'" class="notation" data-sequence="">'+sel.getContent({format : 'text'})+' <sup class="sequence nedt"></sup></cite>');
-					var wasappended = Footnote.reference(id);
-					Footnote.sequence();
-					//Footnote.empty();
-					Report.document.trigger('document:change');
-					if (wasappended) $.tipster.notify('Footnote reference created');
-					else $.tipster.notify('Notation created. Add Footnote Box below', 'warn');
-
-				}
-			} else {
-				$.tipster.notify('Footnote could not be created', 'error');
-			}
-		},
-		reference: function($cite){
-			$cite = ($cite instanceof jQuery) ? $cite : Report.document.find('cite.notation#'+$cite);
-			var id = $cite.attr('id');
-			var $page = $cite.closest('.page');
-			var $nextpages = $();
-			var wasappended = false;
-			$nextpages = $nextpages.add($page);
-			$nextpages = $nextpages.add($page.nextAll('.page'));
-			$nextpages.each(function(){
-				var $p = $(this);
-				var $footnote = $p.find('[data-edition="footnote"]');
-				if ($footnote.length){
-					var $reference = Footnote.allreferences.filter('[data-id="'+id+'"]');
-					if (!$reference.length){
-						$reference = Footnote.append($cite, $footnote);
-						setTimeout(function(){ $reference.find('.text').focus(); },300);
-						Report.scroll.scrollTo($reference,150,{ offset:{top:-100} });
-						wasappended = true;
-					}
-					return false;
-				}
-			});
-			return wasappended;
-		},
-		append: function($cite, $footnote){
-			var id = $cite.attr('id');
-			var $list = $footnote.children('.list');
-			if (!$list.length){
-				$list = $('<table class="list"></table>').appendTo($footnote);
-			}
-			var $reference = $(
-				'<tr class="reference" data-id="'+id+'" data-sequence="">'+
-					'<td class="seq"><sup></sup></td>'+
-					'<td class="text" contenteditable="true"></td>'+
-					'<td class="action"><a class="delete icon-close3" data-tip="Purge this footnote"></a></td>'+
-				'</tr>'
-			);
-			$list.append($reference);
-			Footnote.allreferences = Report.document.find('[data-edition="footnote"] tr.reference');
-			$footnote.children('.empty').remove();
-			return $reference;
-		},
-		populate: function($box){
-			var $page = $box.closest('.page');
-			var $prevpages = $();
-			$prevpages = $prevpages.add($page);
-			$prevpages = $prevpages.add($page.prevAll('.page'));
-			Array.prototype.reverse.call($prevpages);
-			$prevpages.each(function(){
-				var $p = $(this);
-				var $footnote = $p.find('[data-edition="footnote"]');
-				if ($footnote.length && $footnote.get(0) !== $box.get(0)) return false;
-				var $cites = $p.find('cite.notation');
-				$cites.each(function(){
-					var $cite = $(this);
-					var $ref = Footnote.allreferences.filter('[data-id="'+$cite.attr('id')+'"]');
-					console.log($ref);
-					if (!$ref.length){
-						Footnote.append($cite, $box);
-					}
-				});
-			});
-			Footnote.sequence();
-			Footnote.empty($box);
-			Report.document.trigger('document:change');
-		},
-		sequence: function(){
-			var hasrefremoved = false;
-			var $allnotation = Report.document.find('cite.notation');
-			$allnotation.each(function(k,v){
-				var $this = $(v);
-				var $sequence = $this.find('sup.sequence');
-				var seq = k+1;
-				$sequence.text(seq);
-				$this.attr('data-sequence',seq);
-				var $reference = Footnote.allreferences.filter('[data-id="'+$this.attr('id')+'"]');
-				if ($reference.length){
-					if ($reference.offset().top > $this.offset().top){
-						$reference.attr('data-sequence', seq);
-						$reference.find('td.seq sup').text(seq);
-						$reference.appendTo($reference.parent());
-					} else {
-						$reference.remove();
-						hasrefremoved = true;
-					}
-				}
-			});
-			if (hasrefremoved) {
-				Footnote.allreferences = Report.document.find('[data-edition="footnote"] tr.reference');
-			}
-		},
-		purge: function($cite){
-			$cite = ($cite instanceof jQuery) ? $cite : Report.document.find('cite.notation#'+$cite);
-			var $reference = Footnote.allreferences.filter('[data-id="'+$cite.attr('id')+'"]');
-			var $box = $reference.closest('[data-edition="footnote"]');
-			$reference.remove();
-			$cite.find('sup.sequence').remove();
-			$cite.contents().unwrap();
-			Footnote.empty($box);
-			Footnote.sequence();
-			Report.document.trigger('document:change');
-			$.tipster.notify('Footnote purged');
-			Footnote.allreferences = Report.document.find('[data-edition="footnote"] tr.reference');
-		},
-		empty: function($box){
-			var $wrap = $box.closest('.fieldwrap');
-			var $boxrefs = $box.find('tr.reference');
-			if (!$boxrefs.length){
-				$box.children('.list').remove();
-				$box.html('<p class="empty"><strong>Footnote is empty.</strong> You must add notations selecting some text above and chosing the last option on CTRL+rightClick command.</p>');
-			}
-		}
-	}
-	Footnote.allreferences = Report.document.find('[data-edition="footnote"] tr.reference');
-	*/
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
