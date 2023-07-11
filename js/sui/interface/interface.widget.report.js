@@ -3207,9 +3207,10 @@ sourceui.interface.widget.report = function($widget,setup){
 		input.click();
 	});
 	Report.document.on('click','.edition-actions .pick a',function(){
-		var $this = $(this);
+		var $this = $(this).addClass('picking');
 		if ($this.closest('.disable').length) return;
 		var $fieldwrap = $this.closest('.fieldwrap');
+		$fieldwrap.addClass('picking');
 		var $edit = $fieldwrap.children('[data-edition]');
 		if ($fieldwrap.is('[data-boxgroup]')) $edit = Report.document.find('[data-boxgroup="'+$fieldwrap.data('boxgroup')+'"] > [data-edition]');
 		var $editionfirst = $edit.first();
@@ -3224,6 +3225,9 @@ sourceui.interface.widget.report = function($widget,setup){
 			keys: keys,
 			vars: Variable.getAll()
 		}]);
+		$('#suiFloatSectorContainer').one('click', function(){
+			$fieldwrap.removeClass('picking');
+		});
 	});
 	Report.document.on('click','.edition-actions .margin a',function(){
 		var $this = $(this);
@@ -4149,14 +4153,17 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('edition:buildfootnote','[data-edition="footnote"]',function(event){
 		var $this = $(this);
 		var $wrap = $this.parent().removeClass('error');
+		var $page = $(this).closest('.page');
 		if ($wrap.is('.fieldwrap')){
 			$wrap.addClass('footnote');
 		}
-		var $notespot = $this.closest('.bleed').children('.notes');
+		var $notespot = $page.children('.bleed').children('.notes');
 		if ($notespot.length){
 			if ($notespot.html() == ''){
 				$notespot.append($wrap);
 				Footnote.populate();
+				Report.document.trigger('document:change',[$page]);
+				Report.scroll.scrollTo($wrap, 150, { offset:{top:-300} });
 			} else {
 				$wrap.remove();
 				$.tipster.notify('Only single footnote per page is allowed', 'error');
@@ -4738,6 +4745,9 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $page = $(this);
 		var $edit = $new.children('[data-edition]');
 		$edit.removeAttr('id');
+		if ($edit.attr('data-edition') == 'dynamic'){
+			$new.addClass('picking');
+		}
 		if ($ref && $ref.length){
 			if ($ref.hasClass('content')){
 				var $stack = $ref.children('.boxstack');
