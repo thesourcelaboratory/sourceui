@@ -593,9 +593,38 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				var $this = $(this);
 				var $filt = $this.parent();
 				if ($filt.is('.undeselectable')) return false;
-				$filt.closest('ul').find('[data-name="'+$filt.data('name')+'"]').not($filt).removeClass('selected');
-				$filt.toggleClass('selected');
-				Finder.widget.trigger('widget:filter');
+				if ($filt.data('alias') == 'droplist') {
+					if (!$filt.data('droplist')) {
+						var $droplist = $filt.find('.sui-droplist');
+						$droplist.on('click', 'li', function () {
+							var $li = $(this);
+							var v = $li.data('value');
+							var $b = $li.find('b, strong');
+							if (!$b.length) $b = $li.text();
+							$droplist.trigger('droplist:close');
+							if (v !== false){
+								$filt.data('value', v);
+								$this.children('strong').text($b.text());
+								$filt.closest('ul').find('[data-name="'+$filt.data('name')+'"]').not($filt).removeClass('selected');
+								$filt.addClass('selected');
+								Finder.widget.trigger('widget:filter');
+							} else {
+								$filt.data('value', null);
+								$this.children('strong').text($filt.data('placeholder') || 'Selecione...');
+								$filt.closest('ul').find('[data-name="'+$filt.data('name')+'"]').removeClass('selected');
+								$filt.removeClass('selected');
+								Finder.widget.trigger('widget:filter');
+							}
+						});
+						$filt.data('droplist', $droplist);
+					}
+					$filt.data('droplist').trigger('droplist:open');
+					event.stopPropagation();
+				} else {
+					$filt.closest('ul').find('[data-name="'+$filt.data('name')+'"]').not($filt).removeClass('selected');
+					$filt.toggleClass('selected');
+					Finder.widget.trigger('widget:filter');
+				}
 			});
 			Finder.widget.on('widget:filter', function (event) {
 				Finder.widget.trigger('remote:finder', [Finder.getFilters()]);
@@ -614,7 +643,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 					}
 					Finder.sector.attr('data-history',fhpath);
 				}
-				Network.history.replace(fhpath);
+				//Network.history.replace(fhpath);
 			});
 			Finder.widget.on('widget:search', function (event) {
 				var $ul = Finder.ul;

@@ -866,6 +866,7 @@ sourceui.templates.interface = new sourceui.Template({
 				'<div class="sui-filter @{class:selected} @{class:prop}"@{style}@{data}>' +
 				'<a><label>@{label:name}</label><strong>@{label:value}</strong>@{label:content}</a>' +
 				'<span class="close icon-cross"></span>' +
+				'@{child:list}' +
 				'</div>' +
 				'</li>',
 			fieldset:
@@ -2778,13 +2779,29 @@ sourceui.Parser = function () {
 					}
 				},
 				form: {
+					filter: function (sui) {
+						var suiFilter = sui,
+							htmlFilter = '',
+							htmlList = '';
+						suiFilter.findChild('list', function () {
+							suiFilter.attr('class:hasdrop', 'hasdroplist');
+							htmlList += Components.libs.common.droplist(this);
+							htmlFilter += suiFilter.toHTML('wg', 'form', 'filter', { label: { value: sui.attr('data:placeholder') || 'Selecione...' } }, Template.get);
+						}, function(){
+							htmlFilter += suiFilter.toHTML('wg', 'form', 'filter', { label: { value: sui.attr('label:value') || suiFilter.content() } }, Template.get);
+						});
+						return Template.replace(htmlFilter, { child: { list: htmlList } });
+					},
 					filterset: function (sui) {
 						var suiFilterset = sui,
 							htmlFilter = '',
 							htmlFilterset = suiFilterset.toHTML('wg', 'form', 'filterset', Template.get);
 						suiFilterset.findChild('filter', function () {
+							htmlFilter += Components.libs.widget.form.filter(this);
+							/*
 							var suiFilter = this;
 							htmlFilter += suiFilter.toHTML('wg', 'form', 'filter', { label: { content: suiFilter.content() } }, Template.get);
+							*/
 						});
 						return Template.replace(htmlFilterset, { child: { filters: htmlFilter } });
 					},

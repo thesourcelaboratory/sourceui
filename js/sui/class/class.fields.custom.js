@@ -330,6 +330,27 @@ sourceui.customField = function (element, setup) {
 				Validate.required().limit().size().same().remote().mask();
 				Element.trigger('field:loaded');
 			},
+			charcount: function () {
+				var len = Element.data('len') || 0;
+				var min = Element.data('minlen') || 0;
+				var max = Element.data('maxlen') || 0;
+				if (len || min || max){
+					if (!Dom.charcount.length) Dom.charcount = $('<div class="charcount"></div>').appendTo(Dom.value);
+					Dom.input.on('input', function (event) {
+						var v = Dom.input.val();
+						if (len === v.length || (min <= v.length && (max === 0 || (max > 0 && max >= v.length)))) Element.removeClass('invalid');
+						else Element.addClass('invalid');
+						Dom.charcount.text(v.length+(isPT ? ' caracteres' : ' chars'));
+					});
+					Dom.input.on('focus', function (event) {
+						Dom.charcount.text(Dom.input.val().length+(isPT ? ' caracteres' : ' chars'));
+						Dom.charcount.show();
+					});
+					Dom.input.on('blur', function (event) {
+						Dom.charcount.hide();
+					});
+				}
+			},
 			search: function () {
 				Bind.common.input();
 				Bind.common.buttons.droplist();
@@ -2091,6 +2112,7 @@ sourceui.customField = function (element, setup) {
 			simple: function () {
 				Bind.common.buttons.simple();
 				Bind.common.text();
+				Bind.common.charcount();
 			},
 			url: function () {
 				Bind.common.buttons.simple();
@@ -2105,10 +2127,12 @@ sourceui.customField = function (element, setup) {
 			textarea: function () {
 				Bind.common.buttons.simple();
 				Bind.common.text();
+				Bind.common.charcount();
 			},
 			password: function () {
 				Bind.common.buttons.password();
 				Bind.common.text();
+				Bind.common.charcount();
 			},
 		},
 		number: {
@@ -2885,8 +2909,8 @@ sourceui.customField = function (element, setup) {
 				if (!vdata.limit) return true;
 				var value = val || Dom.input.val();
 				value = $.toNumber(value);
-				if (!isNaN(Data.min) && value !== null && value !== '' && value < Data.min) Element.trigger('field:error', ['length','min', Data.min + ' é o valor mínimo']);
-				else if (!isNaN(Data.max) && value !== null && value !== '' && value > Data.max) Element.trigger('field:error', ['length','max', Data.max + ' é o valor máximo']);
+				if (!isNaN(Data.min) && value !== null && value !== '' && value < Data.min) Element.trigger('field:error', ['length','min', Data.min + (isPT ? ' é o valor mínimo' : ' is the minimun value')]);
+				else if (!isNaN(Data.max) && value !== null && value !== '' && value > Data.max) Element.trigger('field:error', ['length','max', Data.max + (isPT ? ' é o valor máximo' : 'is the maximun value')]);
 				else {
 					Element.trigger('field:valid');
 					if (!isNaN(Data.min) && value !== null && value !== '' && value === Data.min) Element.trigger('field:min');
@@ -2901,8 +2925,8 @@ sourceui.customField = function (element, setup) {
 				var value = val || Dom.input.val();
 				value = String(value);
 				if (!isNaN(Data.len) && value.length !== Data.len) Element.trigger('field:error', ['len', Data.len + ' caractere(s) exatos']);
-				else if (!isNaN(Data.minlen) && value.length > 0 && value.length < Data.minlen) Element.trigger('field:error', ['minlen', Data.minlen + ' caractere(s) no mínimo']);
-				else if (!isNaN(Data.maxlen) && value.length > 0 && value.length > Data.maxlen) Element.trigger('field:error', ['maxlen', Data.maxlen + ' caractere(s) no máximo']);
+				else if (!isNaN(Data.minlen) && value.length > 0 && value.length < Data.minlen) Element.trigger('field:error', ['minlen', Data.minlen + (isPT ? ' caractere(s) no mínimo' : ' min characters')]);
+				else if (!isNaN(Data.maxlen) && value.length > 0 && value.length > Data.maxlen) Element.trigger('field:error', ['maxlen', Data.maxlen + (isPT ? ' caractere(s) no máximo' : 'max characters')]);
 				else {
 					Element.trigger('field:valid');
 					if (!isNaN(Data.len) && value.length === Data.len) Element.trigger('field:len');
@@ -2920,7 +2944,7 @@ sourceui.customField = function (element, setup) {
 						var $fd = $(this);
 						var fdval = $fd.val();
 						if (fdval !== '' && lastval !== false && lastval !== fdval) {
-							$fd.trigger('field:error', ['same', 'Dados não são idênticos']);
+							$fd.trigger('field:error', ['same', isPT ? 'Dados não são idênticos' : 'Data does not seem the same']);
 							return false;
 						}
 						lastval = fdval;
@@ -2934,12 +2958,12 @@ sourceui.customField = function (element, setup) {
 				if (Data.pattern instanceof RegExp) {
 					if (Data.pattern && value !== '') {
 						valueValid = Data.pattern.test(value);
-						if (!valueValid) Element.trigger('field:error', ['pattern', Data.patternError || 'Dado inválido']);
+						if (!valueValid) Element.trigger('field:error', ['pattern', Data.patternError || (isPT ? 'Dado inválido' : 'Invalid data')]);
 						else Element.trigger('field:valid');
 					}
 				} else if ($.jMaskPatterns[Data.pattern] || $.jMaskValidates[Data.pattern]) {
 					valueValid = Element.valida(Data.pattern);
-					if (!valueValid) Element.trigger('field:error', ['pattern', $.jMaskPatternsErrors[Data.pattern] || 'Dado inválido']);
+					if (!valueValid) Element.trigger('field:error', ['pattern', $.jMaskPatternsErrors[Data.pattern] || (isPT ? 'Dado inválido' : 'Invalid data')]);
 					else Element.trigger('field:valid');
 				}
 				return valueValid;
@@ -3506,6 +3530,7 @@ sourceui.customField = function (element, setup) {
 			Dom.box = Dom.wrap.children('.box');
 			Dom.sliders = Dom.wrap.find('.table > .row');
 			Dom.value = Dom.wrap.find('.cell.value');
+			Dom.charcount = Dom.wrap.find('.charcount');
 			Dom.options = Dom.value.find('.options');
 			Dom.input = Dom.value.find('.input');
 			Dom.search = Dom.wrap.find('.cell .search');

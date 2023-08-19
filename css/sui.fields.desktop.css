@@ -105,6 +105,9 @@
 .sui-field > .wrap > .table > .cell.button.listopened div:before { -webkit-transform:rotate(180deg); transform:rotate(180deg); }
 .sui-field > .wrap > .table > .cell.color.blue { background:#4F8DDA; color:#FFF; }
 
+.sui-field .charcount { position:absolute; bottom:4; left:8px; font-size:10px; color:#666666; opacity:0.65 }
+.sui-field.invalid .charcount { color:#cb2b2b; }
+
 .sui-field.time > .wrap > .addons > .list > .options .clock { width:114px; height:200px; position:relative; background:#F8F8F8; float:left; }
 .sui-field.time > .wrap > .addons > .list > .options .clock > .foreground { position:absolute; top:0; right:0; bottom:0; left:0; z-index:10; }
 .sui-field.time > .wrap > .addons > .list > .options .clock > .foreground:before { display:block; font-size:12px; color:rgba(0,0,0,.2); position:absolute; top:50%; left:0; margin-top:-6px; }
@@ -301,6 +304,7 @@
 .sui-field.textarea > .wrap > .table > .cell { vertical-align:top; }
 .sui-field.textarea > .wrap > .table > .cell.value { width:500px; height:100px; }
 .sui-field.textarea > .wrap > .table > .cell .input { height:100%; padding:8px; font-weight:normal; resize: none; }
+.sui-field.textarea[data-minlen] > .wrap > .table > .cell.value, .sui-field.textarea[data-maxlen] > .wrap > .table > .cell.value { padding-bottom:18px; }
 
 
 /* NUMBER */

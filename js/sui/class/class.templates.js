@@ -558,6 +558,7 @@ sourceui.Template = function(lib){
 				str = str.replace(regex,vg);
 			}
 		});
+		//console.log(str.match(/@\{((?!child:)[\s\S])+?\}/g));
 		str = str.replace(/@\{((?!child:)[\s\S])+?\}/g, '');
 		/*
 		str = str.replace(/(\s+")|("\s+)/g, '"');
