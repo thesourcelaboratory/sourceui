@@ -2926,7 +2926,7 @@ sourceui.customField = function (element, setup) {
 				value = String(value);
 				if (!isNaN(Data.len) && value.length !== Data.len) Element.trigger('field:error', ['len', Data.len + ' caractere(s) exatos']);
 				else if (!isNaN(Data.minlen) && value.length > 0 && value.length < Data.minlen) Element.trigger('field:error', ['minlen', Data.minlen + (isPT ? ' caractere(s) no mínimo' : ' min characters')]);
-				else if (!isNaN(Data.maxlen) && value.length > 0 && value.length > Data.maxlen) Element.trigger('field:error', ['maxlen', Data.maxlen + (isPT ? ' caractere(s) no máximo' : 'max characters')]);
+				else if (!isNaN(Data.maxlen) && value.length > 0 && value.length > Data.maxlen) Element.trigger('field:error', ['maxlen', Data.maxlen + (isPT ? ' caractere(s) no máximo' : ' max characters')]);
 				else {
 					Element.trigger('field:valid');
 					if (!isNaN(Data.len) && value.length === Data.len) Element.trigger('field:len');
