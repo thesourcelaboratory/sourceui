@@ -79,7 +79,7 @@ sourceui.interface.panel = function () {
 	if (this.navTools.find('li.notifications.notified').length) {
 		Plugin.notification.badge(0);
 	}
-	Dom.navTools.on('click', 'li', function (event) {
+	Dom.navTools.on('click', 'li', async function (event) {
 		var $this = $(this);
 		var $navs = $this.removeClass('selected').closest('.navtools').siblings('nav');
 		var $nav = $navs.filter('#' + $this.data('id'));
@@ -116,6 +116,24 @@ sourceui.interface.panel = function () {
 					},50);
 				}
 			}
+			if ($nav.is('.dataalmanac')){
+				offlineParser.updateNavArea($nav);
+				/*
+				var localrecords = Object.values(await sourceui.idb.almanac.localrecords());
+				var $pin = $nav.find('.usercred .pin');
+				var $block = $pin.closest('.menu.block');
+				if (localrecords.length){
+					$pin.text(localrecords.length).css('background','#3d5ea7');
+					if (!$block.is('.ajax-courtain')) $nav.find('.sync-localrecords').enable();
+				} else {
+					$pin.text('0').css('background','#646464');
+					$nav.find('.sync-localrecords').disable();
+				}
+				*/
+			}
+
+
+
 		}
 		if (!Device.ismobile) $.CURR.navTool = $this;
 		event.stopPropagation();
@@ -377,4 +395,38 @@ sourceui.interface.panel = function () {
 		}
 		$draggable.draggabilly('setPosition', x.position).trigger('move', [x.position]);
 	}
+
+
+
+	if (Device.offline()){
+		Dom.document.on('mouseup', '.sync-localrecords', async function(event){
+			var queuerecords;
+			var $button = $(this);
+			if ($button.isDisable()) return false;
+			var $orig = $button.closest('.sui-nav');
+			if ($orig.length){
+				queuerecords = await offlineParser.recordsFromMenu();
+			} else {
+				$orig = $button.closest('.line.swiped');
+				if ($orig.length){
+					queuerecords = await offlineParser.recordsFromGridLine($orig);
+				} else {
+					$orig = $button.closest('.sui-view');
+					if ($orig.length){
+						var $list = $orig.find('.list.localrecords');
+						if ($list.length) queuerecords = await offlineParser.recordsFromGridList($list);
+					}
+				}
+			}
+			if (queuerecords){
+				offlineParser.loadingSync(queuerecords, $orig);
+			}
+		});
+
+		setTimeout(function(){
+			offlineParser.badgeNavIcon();
+			offlineParser.updateNavArea();
+		}, 1234);
+	}
+
 };

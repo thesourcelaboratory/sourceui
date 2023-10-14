@@ -56,20 +56,23 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		if (!force && $this.isDisable()) return;
 		var evtenable = $this.data('event-enable');
 		if (evtenable && (evtenable.has('pickline') || evtenable.has('checklines'))) {
-			var data = { key: [], seed: 0 };
+			var data = { key: [], numerickey: [], seed: 0 };
 			var $lines = Datagrid.widget.find('.area > .list .line.selected, .area > .list .line.swiped, .area > .treeview .node.selected');
 			if ($lines.length) {
 				Datagrid.widget.trigger('alias:' + $this.data('alias'), [$lines]);
 				if ($this.is(':attrHas("data-link")')) {
 					$lines.each(function () {
 						var $line = $(this);
+						var numerickey = $line.find('.col.key small').text();
 						var d = $line.link('_self');
 						if (d.sui) data.sui = d.sui;
 						if (d.command) data.command = d.command;
 						if (d.process) data.process = d.process;
 						if (d.target) data.target = d.target;
 						if (d.placement) data.placement = d.placement;
+						if (d.requestkeydata) data.requestkeydata = d.requestkeydata;
 						if (d.key) data.key.push(d.key[0]);
+						if (numerickey) data.numerickey.push(numerickey);
 						$.each(['stack', 'code', 'date', 'str', 'seq', 'num', 'json'], function (k, v) {
 							if (d[v]) {
 								data[v] = data[v] ? data[v] : [];
@@ -292,8 +295,11 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		Datagrid.common.swipe.close($line);
 		event.stopPropagation();
 	});
-	this.widget.on('click', '.area > .list .line > .col.swiper > .actions li', function (event) {
+	this.widget.on('click', '.area > .list .line > .col.swiper > .actions', function (event) {
 		event.stopPropagation();
+	});
+	this.widget.on('click', '.area > .list .line > .col.swiper > .actions li', function (event) {
+		//event.stopPropagation();
 		var $this = $(this),
 			$line = $this.closest('.line'),
 			clone = $this.data('clone'),
@@ -375,17 +381,23 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 	this.widget.on('pickline', function (event, $line) {
 		event.stopPropagation();
 		if ($line.isDisable()) return;
-		var link = $line.link();
-		if (link.href || link.download || (link.command && link.sui && link.placement)) {
-			Network.link.call($line, link);
+		if ($line.is('.localrecord')){
+			$line.find('.col.swiper .actions li:eq(0)').trigger('click');
 		} else {
-			Datagrid.common.toggleTools.call($line, 'pickline');
-			var $button = Datagrid.common.controller.find('[data-event-enable*="pickline"]');
-			var linetype = $line.data('type');
-			if (linetype) $button = $button.filter('[data-type-enable*="' + linetype + '"]:eq(0)');
-			else $button = $button.filter(':eq(0)');
-			if (!$button.is('[data-event-autoclick="false"]')){
-				$button.trigger('click');
+			var link = $line.link();
+			var numerickey = $line.find('.col.key small').text();
+			if (numerickey) link.numerickey = numerickey;
+			if (link.href || link.download || (link.command && link.sui && link.placement)) {
+				Network.link.call($line, link);
+			} else {
+				Datagrid.common.toggleTools.call($line, 'pickline');
+				var $button = Datagrid.common.controller.find('[data-event-enable*="pickline"]:visible');
+				var linetype = $line.data('type');
+				if (linetype) $button = $button.filter('[data-type-enable*="' + linetype + '"]:eq(0)');
+				else $button = $button.filter(':eq(0)');
+				if (!$button.is('[data-event-autoclick="false"]')){
+					$button.trigger('click');
+				}
 			}
 		}
 	});

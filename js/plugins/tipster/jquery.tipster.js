@@ -160,8 +160,10 @@ $(function () {
                         }
                     });
                 } else {
+					$tipster.hide();
                     $tipster.appendTo($parent);
                     $parent.removeClass('tipstant');
+
                 }
             });
 

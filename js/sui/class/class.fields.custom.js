@@ -2969,20 +2969,24 @@ sourceui.customField = function (element, setup) {
 				return valueValid;
 			},
 			remote: function (val) {
-				var vdata = Element.data('validate') || {};
-				if (!vdata.remote) return true;
-				var value = val || Dom.input.val();
-				if (value !== '' && value !== null){
-					var d = {};
-					d.cache = false;
-					d.validate = {};
-					d.validate[Element.data('name')] = $.extend({ id: Element.attr('id') }, Element.data('validate'));
-					d.data = {};
-					d.data[Element.data('name')] = Element.val();
-					valueValid = null;
-					Network.link.call(Element, d);
+				if (Network.online){
+					var vdata = Element.data('validate') || {};
+					if (!vdata.remote) return true;
+					var value = val || Dom.input.val();
+					if (value !== '' && value !== null){
+						var d = {};
+						d.cache = false;
+						d.validate = {};
+						d.validate[Element.data('name')] = $.extend({ id: Element.attr('id') }, Element.data('validate'));
+						d.data = {};
+						d.data[Element.data('name')] = Element.val();
+						valueValid = null;
+						Network.link.call(Element, d);
+					}
+					return valueValid;
+				} else {
+					$.tipster.notify(isPT ? 'Validação remota offline desabilitada' : 'Offline remote validation disabled');
 				}
-				return valueValid;
 			},
 			all: function (val) {
 				if (valueValid !== false) Validate.test.required(val);

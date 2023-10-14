@@ -717,7 +717,7 @@ sourceui.interface.plugins = function () {
 					var cs = { background: '#E85348' };
 					var bg = cs.background;
 				} else {
-					var cs = css2obj(v.parent().attr('style'));
+					var cs = css2obj(v.is('a') ? v.parent().attr('style') : v.attr('style'));
 					var bg = confirm.buttonscolor || cs['background-color'] || cs['background'] || v.parent().css('background') || v.parent().css('background-color') || v.css('background') || v.css('background-color') || '';
 					bg = (bg.indexOf('rgba(0, 0, 0, 0)') > -1) ? cs['color'] || v.css('color') : bg;
 				}

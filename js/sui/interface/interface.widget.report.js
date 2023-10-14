@@ -19,6 +19,7 @@
  * @param {string} author - The author of the book.
  */
 
+
 sourceui.interface.widget.report = function($widget,setup){
 
 
@@ -443,37 +444,15 @@ sourceui.interface.widget.report = function($widget,setup){
 	Replacer.init();
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	var Figure = {
-		base64: function(url,callback,failback){
-			var xhr = new XMLHttpRequest();
-			xhr.onload = function() {
-				var reader = new FileReader();
-				reader.onloadend = function() {
-					callback(reader.result);
-				}
-				reader.readAsDataURL(xhr.response);
-			};
-			xhr.onerror = function(e){
-				failback(e);
-			}
-			xhr.open('GET', url);
-			xhr.responseType = 'blob';
-			xhr.send();
-		},
+		base64: sourceui.figure.base64,
 		post: function(imgdata,imgname,callback,failback){
-			$.post(
-				Report.widget.data('imgdatauploader'),{
-				imgname:imgname,
-				dochash:Variable.get('docHash'),
-				origin:Report.view.data('link-origin'),
-				imgdata:imgdata
-			},function(data){
-				if (callback) callback(data);
-				Console.info({ mode: 'AJAX', title: 'Figure.post: imgdataUploader DONE', content: data}).trace();
-			},"json")
-			.fail(function(e,data){
-				if (failback) failback(data);
-				Console.error({ mode: 'AJAX', title: 'Figure.post: imgdataUploader FAIL', content: data }).trace();
-			});
+			sourceui.figure.post({
+					imgname: imgname,
+					dochash: Variable.get('docHash'),
+					origin: Report.view.data('link-origin'),
+					imgdata: imgdata
+				},callback,failback
+			);
 		}
 	};
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2186,6 +2165,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			if (Report.document.hasClass('normalizing')) return false;
 			Report.document.addClass('normalizing');
 
+			Report.document.find('.picking').removeClass('picking');
+
 			___cnsl.stack('normalizeBoxes');
 
 			var $page, $boxedge, origin;
@@ -2342,7 +2323,8 @@ sourceui.interface.widget.report = function($widget,setup){
 
 
 	// Widget Tools -----------------------------------------------------------------------------------------------------------------------------------------------
-	Report.wgtools.filter('.top').find('li:eq(0)').on('click',function(){
+	Report.wgtools.filter('.top').find('li:eq(0) a').on('click',function(){
+		var $a = $(this);
 		var rules = []
 		Report.validations.each(function(){
 			var $v = $(this);
@@ -2357,12 +2339,13 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 			rules.push(rule);
 		});
-		Report.document.trigger('document:openfloat',[Report.document, {
+		Report.document.trigger('document:openfloat',[Report.document, $a, {
 			form:'validations',
 			rules:rules
 		}]);
 	});
-	Report.wgtools.filter('.top').find('li:eq(1)').on('click',function(){
+	Report.wgtools.filter('.top').find('li:eq(1) a').on('click',function(){
+		var $a = $(this);
 		var data = {}, post = {};
 		Report.variables.each(function(){
 			var $v = $(this);
@@ -2373,10 +2356,11 @@ sourceui.interface.widget.report = function($widget,setup){
 			delete data.reportSummary;
 		}
 		data.usecover = Report.document.find('.page.fullcovered').attr('data-visible');
-		data.reportName = $.trim(Report.document.find('.page.covered-default .block.reportName, .page.covered-default .cell.reportName .block').first().text());
-		Report.document.trigger('document:openfloat',[Report.document, $.extend(data,{
+		var $repname = Report.document.find('.page.covered-default .fieldwrap .block.reportName');
+		data.reportName = $.trim(($repname.length ? $repname.first() : Report.document.find('.page.covered-default .cell.reportName').first()).text());
+		Report.document.trigger('document:openfloat',[Report.document, $a, $.extend(data,{
 			form:'metadata',
-		}),post]);
+		})]);
 	});
 	var pepObject = {
 		place: false,
@@ -2763,7 +2747,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	var toolsPage = ''+
 		'<ul class="page-actions nedt" contenteditable="false">'+
 		'<li class="nedt label" contenteditable="false"></li>'+
-		'<li data-action="edit" class="nedt edit" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit page properties"></a></li>'+
+		'<li data-action="edit" class="nedt edit" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit page properties" data-link-requestkeydata="dynamic-page"></a></li>'+
 		'<li data-action="bgimg" class="nedt bgimg" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse cover background image"></a></li>'+
 		'<li data-action="move" class="nedt move" contenteditable="false"><a class="icon-move-up-down" data-tip="Move page to relocate"></a></li>'+
 		'<li data-action="normalize" class="nedt normalize" contenteditable="false"><a class="icon-wavearrow" data-tip="Normalize page boxes"></a></li>'+
@@ -2823,7 +2807,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if ($page.data('layout') == 'fullcovered') $imgtarget = $page;
 		else if ($page.data('layout') == 'covered-default') $imgtarget = $cover;
 
-		Report.document.trigger('document:openfloat',[$page, {
+		Report.document.trigger('document:openfloat',[$page, $this, {
 			form:'page',
 			layout: $page.data('layout'),
 			prop: $imgtarget.attr('data-prop') || null,
@@ -2859,6 +2843,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						}
 						bgimg.src = data.src;
 						$imgtarget.attr('data-background',data.src);
+						Report.document.trigger('document:addbucket',[data.src]);
 						Report.document.trigger('document:change',[$page]);
 						$.tipster.notify('Image auto uploaded');
 						$page.removeClass('ajax-courtain');
@@ -2907,7 +2892,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	var toolsContainer = ''+
 		'<ul class="container-actions nedt" contenteditable="false">'+
 		'<li class="nedt label" contenteditable="false">Container</li>'+
-		//'<li data-action="edit" class="nedt edit" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit container properties"></a></li>'+
+		//'<li data-action="edit" class="nedt edit" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit container properties" data-link-requestkeydata="dynamic-container"></a></li>'+
 		'<li data-action="addcol" class="nedt addcol" contenteditable="false"><a class="text" data-tip="Add one column at end">+1C</a></li>'+
 		'<li data-action="addline" class="nedt addline" contenteditable="false"><a class="text" data-tip="Add one line at end">+1L</a></li>'+
 		'<li data-action="reset" class="nedt reset" contenteditable="false"><a class="icon-tab" data-tip="Reset container dimension"></a></li>'+
@@ -2949,7 +2934,7 @@ sourceui.interface.widget.report = function($widget,setup){
 	Report.document.on('click','.container-actions .edit a',function(){
 		var $this = $(this);
 		var $ctn = $this.closest('.container');
-		Report.document.trigger('document:openfloat',[$ctn, {
+		Report.document.trigger('document:openfloat',[$ctn, $this, {
 			form:'container',
 			lines: $ctn.children('.line').length,
 			columns: $ctn.children('.line').children('.col').length,
@@ -3025,8 +3010,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		'</ul>'+
 		'<ul class="edition-actions nedt" contenteditable="false">'+
 		'<li class="nedt label" contenteditable="false"></li>'+
-		'<li data-action="prop" class="nedt prop" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit box properties"></a></li>'+
-		'<li data-action="pick" class="nedt pick" contenteditable="false"><a class="icon-picker-gd" data-tip="Pick box data"></a></li>'+
+		'<li data-action="prop" class="nedt prop" contenteditable="false"><a class="icon-wrench-cog" data-tip="Edit box properties" data-link-requestkeydata="edition-prop" data-link-requestkeyignore="key"></a></li>'+
+		'<li data-action="pick" class="nedt pick" contenteditable="false"><a class="icon-picker-gd" data-tip="Pick box data" data-link-requestkeydata="dynamic-edition" data-link-requestkeyignore="key"></a></li>'+
 		'<li data-action="img" class="nedt img" contenteditable="false"><a class="icon-circle-pic" data-tip="Browse a local image"></a></li>'+
 		//'<li data-action="margin" class="nedt margin" contenteditable="false"><a class="icon-box-margin-y" data-tip="Toggle box extra margin"></a></li>'+
 		'<li data-action="wide" class="nedt wide" contenteditable="false"><a class="icon-box-wide-right" data-tip="Toggle wide width"></a></li>'+
@@ -3109,6 +3094,8 @@ sourceui.interface.widget.report = function($widget,setup){
 		var $wrap = $this.parent();
 		if (!$tools.length){
 			$tools = $toolsEdition.clone();
+			var $prop = $tools.find('.prop a');
+			$prop.attr('data-link-requestkeydata', $prop.attr('data-link-requestkeydata')+'-'+$this.attr('data-edition'));
 			$wrap.prepend($tools);
 			$this.trigger('edition:allowtools');
 			$tools.find('[data-tip]').tip();
@@ -3133,7 +3120,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				text: $h.clone().find('.counter').remove().end().text(),
 			});
 		});
-		Report.document.trigger('document:openfloat',[$edit, {
+		Report.document.trigger('document:openfloat',[$edit, $this, {
 			form:'edition',
 			type: $edit.attr('data-edition'),
 			titles: titles.length ? titles : [{indexer:'',type:'',text:''}],
@@ -3178,6 +3165,7 @@ sourceui.interface.widget.report = function($widget,setup){
 								// pngData is base64 png string
 								Figure.post(pngData, null, function(data){
 									$img.attr('src',data.src);
+									Report.document.trigger('document:addbucket',[data.src]);
 									Report.document.trigger('document:change',[$page]);
 									$.tipster.notify('Image auto converted and uploaded');
 									$edit.removeClass('ajax-courtain');
@@ -3191,6 +3179,7 @@ sourceui.interface.widget.report = function($widget,setup){
 				} else {
 					Figure.post(reader.result, null, function(data){
 						$img.attr('src',data.src);
+						Report.document.trigger('document:addbucket',[data.src]);
 						Report.document.trigger('document:change',[$page]);
 						$.tipster.notify('Image auto uploaded');
 						$edit.removeClass('ajax-courtain');
@@ -3219,7 +3208,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			keys.push($(this).attr('data-key'));
 		});
 		if ($editionfirst.attr('data-key')) keys.push($edit.attr('data-key'));
-		Report.document.trigger('document:openfloat',[$editionfirst, {
+		Report.document.trigger('document:openfloat',[$editionfirst, $this, {
 			form:'dynamic',
 			name: $editionfirst.attr('data-name'),
 			keys: keys,
@@ -4279,7 +4268,7 @@ sourceui.interface.widget.report = function($widget,setup){
 		if (!$this.hasClass('has-resizable')) $this.trigger('edition:resizable');
 		if (!$this.hasClass('has-draggable')) $this.trigger('edition:draggable');
 	});
-	Report.document.on('edition:uploadimgs','[data-edition]',function(){
+	Report.document.on('edition:uploadimgs','[data-edition]',function(event, callback, failback){
 		var $this = $(this);
 		var $wrap = $this.parent();
 		setTimeout(function(){
@@ -4290,59 +4279,77 @@ sourceui.interface.widget.report = function($widget,setup){
 				$img.height($img.height());
 				/////////////////////////////////////////////////
 				Figure.base64($img.attr('src'),function(base64){
-					Figure.post(base64, null, function(data){
+					if (Network.online && !Report.view.is('.localrecord')){
+						Figure.post(base64, null, function(data){
+							$img.attr('src',data.src);
+							$img.removeClass('error');
+							$img.removeClass('uploading');
+							$img.removeClass('localsource');
+							$img.addClass('uploaded');
+							$.tipster.notify('Image uploaded');
+							$wrap.removeClass('error');
+							Report.document.trigger('document:addbucket',[data.src]);
+							Report.document.trigger('document:change');
+							if ($this.find('img.localsource').length === 0) {
+								$this.removeClass('ajax-courtain');
+								if (callback) callback.call(data);
+							}
+						},function(){
+							$img.addClass('localsource error');
+							$.tipster.notify('Image upload not allowed');
+							$this.removeClass('ajax-courtain');
+							$img.removeClass('uploading');
+							$wrap.addClass('error');
+							if (failback) failback();
+						});
+					} else {
+						$img.attr('src', base64);
+						$.tipster.notify('Image upload offline not allowed');
+						$this.removeClass('ajax-courtain');
+						$img.removeClass('uploading');
+					}
+				}, function(){
+					$img.addClass('localsource error');
+					$.tipster.notify('Image data not converted');
+					$this.removeClass('ajax-courtain');
+					$img.removeClass('uploading');
+					$wrap.addClass('error');
+					if (failback) failback();
+				});
+				/////////////////////////////////////////////////
+			});
+			if (Network.online && !Report.view.is('.localrecord')){
+				var $imgsData = $this.find('img.localsource[src*="data:"]:not(.uploading)');
+				$imgsData.each(function(){
+					var $img = $(this).addClass('uploading');
+					$img.width($img.width());
+					$img.height($img.height());
+					/////////////////////////////////////////////////
+					Figure.post($img.attr('src'), null, function(data){
 						$img.attr('src',data.src);
 						$img.removeClass('error');
 						$img.removeClass('uploading');
 						$img.removeClass('localsource');
 						$img.addClass('uploaded');
 						$.tipster.notify('Image uploaded');
-						if ($this.find('img.localsource').length === 0) $this.removeClass('ajax-courtain');
 						$wrap.removeClass('error');
+						Report.document.trigger('document:addbucket',[data.src]);
 						Report.document.trigger('document:change');
+						if ($this.find('img.localsource').length === 0) {
+							$this.removeClass('ajax-courtain');
+							if (callback) callback.call(data);
+						}
 					},function(){
 						$img.addClass('localsource error');
 						$.tipster.notify('Image upload not allowed');
-						$this.removeClass('ajax-courtain')
+						$this.removeClass('ajax-courtain');
 						$img.removeClass('uploading');
 						$wrap.addClass('error');
+						if (failback) failback();
 					});
-				},function(){
-					$img.addClass('localsource error');
-					$.tipster.notify('Image data not converted');
-					$this.removeClass('ajax-courtain');
-					$img.removeClass('uploading');
-					$wrap.addClass('error');
+					/////////////////////////////////////////////////
 				});
-				/////////////////////////////////////////////////
-			});
-			var $imgsData = $this.find('img.localsource[src*="data:"]:not(.uploading)');
-			$imgsData.each(function(){
-				var $img = $(this).addClass('uploading');
-				$img.width($img.width());
-				$img.height($img.height());
-				/////////////////////////////////////////////////
-				Figure.post($img.attr('src'), null, function(data){
-					$img.attr('src',data.src);
-					$img.removeClass('error');
-					$img.removeClass('uploading');
-					$img.removeClass('localsource');
-					$img.addClass('uploaded');
-					$.tipster.notify('Image uploaded');
-					if ($this.find('img.localsource').length === 0) {
-						$this.removeClass('ajax-courtain');
-						$wrap.removeClass('error');
-						Report.document.trigger('document:change');
-					}
-				},function(){
-					$img.addClass('localsource error');
-					$.tipster.notify('Image upload not allowed');
-					$this.removeClass('ajax-courtain');
-					$img.removeClass('uploading');
-					$wrap.addClass('error');
-				});
-				/////////////////////////////////////////////////
-			});
+			}
 		},100);
 	});
 	Report.document.on('edition:tablefit','[data-edition]',function(){
@@ -4394,44 +4401,48 @@ sourceui.interface.widget.report = function($widget,setup){
 	});
 
 	Report.document.on('edition:activecontentrefresh','[data-edition]',function(event){
-		Report.document.trigger('historyworker:statehold',['edition:activecontentrefresh']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
-		var $edit = $(this);
-		var $wrap = $edit.parent();
-		var $tool = $wrap.find('ul.edition-actions li').addClass('disable');
-		var id = $edit.attr('id') || 'sui' + $.md5(Math.rand()).substring(0, 16);
-		$edit = $edit.data('belongstogroup') ? Report.document.find('[data-belongstogroup="'+$edit.data('belongstogroup')+'"]') : $edit;
-		$edit.attr('id',id);
-		$edit.addClass('ajax-courtain');
-		Report.viewtools.disable().addClass('ajax-courtain');
-		Network.link({
-			id: id,
-			sui: Report.widget.data('activecontent'),
-			key: Report.view.data('link-key'),
-			command: 'contentrefresh',
-			json: {
-				languageId: Variable.get('languageId'),
-				companyId: Variable.get('companyId'),
-				boxname: $edit.attr('data-name'),
-			},
-			ondone: function(){
-				$edit.removeClass('ajax-courtain');
-				$tool.removeClass('disable');
-				Report.viewtools.enable().removeClass('ajax-courtain');
-				Report.document.trigger('historyworker:stateadd',['edition:activecontentrefresh']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
-			},
-			onfail: function(){
-				$edit.removeClass('ajax-courtain');
-				$tool.removeClass('disable');
-				Report.viewtools.enable().removeClass('ajax-courtain');
-				Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
-			},
-			oncancel: function(){
-				$edit.removeClass('ajax-courtain');
-				$tool.removeClass('disable');
-				Report.viewtools.enable().removeClass('ajax-courtain');
-				Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
-			}
-		});
+		if (Network.online){
+			Report.document.trigger('historyworker:statehold',['edition:activecontentrefresh']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+			var $edit = $(this);
+			var $wrap = $edit.parent();
+			var $tool = $wrap.find('ul.edition-actions li').addClass('disable');
+			var id = $edit.attr('id') || 'sui' + $.md5(Math.rand()).substring(0, 16);
+			$edit = $edit.data('belongstogroup') ? Report.document.find('[data-belongstogroup="'+$edit.data('belongstogroup')+'"]') : $edit;
+			$edit.attr('id',id);
+			$edit.addClass('ajax-courtain');
+			Report.viewtools.disable().addClass('ajax-courtain');
+			Network.link({
+				id: id,
+				sui: Report.widget.data('activecontent'),
+				key: Report.view.data('link-key'),
+				command: 'contentrefresh',
+				json: {
+					languageId: Variable.get('languageId'),
+					companyId: Variable.get('companyId'),
+					boxname: $edit.attr('data-name'),
+				},
+				ondone: function(){
+					$edit.removeClass('ajax-courtain');
+					$tool.removeClass('disable');
+					Report.viewtools.enable().removeClass('ajax-courtain');
+					Report.document.trigger('historyworker:stateadd',['edition:activecontentrefresh']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+				},
+				onfail: function(){
+					$edit.removeClass('ajax-courtain');
+					$tool.removeClass('disable');
+					Report.viewtools.enable().removeClass('ajax-courtain');
+					Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+				},
+				oncancel: function(){
+					$edit.removeClass('ajax-courtain');
+					$tool.removeClass('disable');
+					Report.viewtools.enable().removeClass('ajax-courtain');
+					Report.document.trigger('historyworker:stateclear');/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+				}
+			});
+		} else {
+			$.tipster.notify("Refresh active content offline not allowed");
+		}
 	});
 	Report.document.on('edition:remove','[data-edition]',function(event){
 		Report.document.trigger('historyworker:statehold',['edition:remove']);/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
@@ -4926,6 +4937,23 @@ sourceui.interface.widget.report = function($widget,setup){
 		},100);
 		setTimeout(function(){ Report.document.trigger('document:disclaimerrefpage'); },350);
 	});
+	Report.document.on('document:uploadimgs',function(event, $editions, callback, failback){
+		$editions = $editions||Report.document.find('img.localsource').closest('[data-edition]');
+		if ($editions instanceof jQuery){
+			$editions = $editions.toArray();
+		}
+		if ($editions.length){
+			var $edition = $($editions[0]);
+			$edition.trigger('edition:uploadimgs',[function(){
+				$editions.shift();
+				if ($editions.length) Report.document.trigger('document:uploadimgs',[$editions, callback, failback]);
+				else if (callback) callback();
+			}, failback]);
+		}
+	});
+	Report.document.on('document:addbucket',function(event,url){
+		Network.cacheBucket.add(url);
+	});
 	Report.document.on('document:disclaimerrefpage',function(event){
 		var $page = Report.document.find('.block.global-disclaimer:eq(0)').closest('.page');
 		var pgnum = $page.find('.footer .right i').text();
@@ -4954,8 +4982,8 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 		});
 	});
-	Report.document.on('document:openfloat',function(event,$origin,json,post){
-		var data = $origin.link();
+	Report.document.on('document:openfloat',function(event,$origin,$element,json,post){
+		var data = $.extend($origin.link(), $element.link('_self'));
 		var id = $origin.attr('id') || 'sui' + $.md5(Math.rand()).substring(0, 16);
 		data.id = id;
 		data.json = $.extend(true, json, Report.view.link('json') || {});
@@ -6075,11 +6103,16 @@ sourceui.interface.widget.report = function($widget,setup){
 			else if ($elem.is('[data-edition="richtext"]')) setup = $.extend(true, {}, mceSetupRichtext);
 			else if ($elem.is('[data-edition="figure"]')) setup = $.extend(true, {}, mceSetupFigure);
 
-			if (!$.isEmptyObject(setup)){
+			if ((!Network.online || Report.view.is('.localrecord')) && !$.isEmptyObject(setup)){
+				// prevent tinymce conver images to blob onload
+				setup.images_dataimg_filter = function(img) {
+					return img.hasAttribute('internal-blob');
+				}
+			}
 
+			if (!$.isEmptyObject(setup)){
 				setup.selector = '#'+id;
 				tinymce.init(setup); //////////////////////////////////////////////////////////////
-
 			}
 
 			$elem.trigger('edition:jscode');
@@ -6129,6 +6162,16 @@ sourceui.interface.widget.report = function($widget,setup){
 		});
 
 		var initFN = function(){
+			$images.filter('[src*="https://"]').each(function(){
+				Report.document.trigger('document:addbucket',[this.src]);
+			});
+			Report.document.trigger('document:uploadimgs', [$images.filter('.localsource').closest('[data-edition]'), function(){
+				$.tipster.notify('Local Images uploaded! Save Document',{
+					duration: 5000,
+					type: 'info'
+				});
+			}])
+
 			Report.document.removeClass('preventhistorystack');
 			Report.document.trigger('document:hasinited');
 			if (Report.viewtools.find('.save > a').data('link-process') == 'insert'){
@@ -6141,7 +6184,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			Report.document.trigger('document:numpage');
 			Report.document.find('.block.logo, .block.info, .block.reportName').trigger('edition:draggable');
 			Report.document.find('.block.analysts').trigger('edition:analystsdrag');
-
 		};
 
 		var timeinc = 0;
@@ -6155,7 +6197,7 @@ sourceui.interface.widget.report = function($widget,setup){
 					if (this.naturalHeight !== 0) imagesloaded++;
 					if (imagesloaded == $images.length || timeinc >= timeout){
 						clearInterval(itv);
-						initFN();
+						initFN($images);
 						if (timeinc >= timeout) $.tipster.notify('Images not properly loaded to normalize boxes');
 						return false;
 					}

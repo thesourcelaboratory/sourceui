@@ -14,63 +14,6 @@
 
 window.unescape = window.unescape || window.decodeURI; // hack para o deprected
 
-sourceui.idb = {};
-
-sourceui.figure = {
-	url: function() { return (document.getElementsByTagName('base')[0].href)+atob('aW1nZGF0YS91cGxvYWRlci5waHA=') },
-	//url: null,
-	base64: function(url,callback,failback){
-		var xhr = new XMLHttpRequest();
-		xhr.onload = function() {
-			var reader = new FileReader();
-			reader.onloadend = function() {
-				callback(reader.result);
-			}
-			reader.readAsDataURL(xhr.response);
-		};
-		xhr.onerror = function(e){
-			failback(e);
-		}
-		xhr.open('GET', url);
-		xhr.responseType = 'blob';
-		xhr.send();
-	},
-	post: function(postdata,callback,failback){
-		postdata = (postdata||{});
-		var Console = sourceui.instances.device.Debug.get('JS');
-		var url = postdata.url || sourceui.figure.url();
-		delete postdata.url;
-		if (url){
-			$.post(url,postdata,function(data){
-				if (callback) callback(data);
-				Console.info({ mode: 'AJAX', title: 'Figure.post: upload DONE', content: data}).trace();
-			},"json")
-			.fail(function(e,data){
-				if (failback) failback(data);
-				Console.error({ mode: 'AJAX', title: 'Figure.post: upload FAIL', content: data }).trace();
-			});
-		} else {
-			Console.error({ mode: 'AJAX', title: 'Figure.post: no URL fetched', content: postdata }).trace();
-		}
-	},
-	batch: function(postdatas,setup={}){
-		var Console = sourceui.instances.device.Debug.get('JS');
-		if (postdatas.length){
-			var postdata = postdatas[0];
-			sourceui.figure.post(postdata, function(data){
-				if(setup.onpost) setup.onpost.call(postdata, data);
-				postdatas.shift();
-				sourceui.figure.batch(postdatas, setup);
-			}, setup.onfail);
-		} else {
-			if(setup.ondone) setup.ondone();
-			Console.info({ mode: 'AJAX', title: 'Figure.batch: collection of images UPLOADED', content: data}).trace();
-		}
-	}
-};
-
-
-
 sourceui.Network = function () {
 
 	'use strict';
@@ -98,8 +41,6 @@ sourceui.Network = function () {
 	var ActiveRequests = {};
 
 	var isPT = ($('html').attr('lang').indexOf('pt-') > -1);
-
-	var $body = $('#suiBody');
 
 
 	this.online = typeof navigator.onLine !== 'undefined' ? navigator.onLine : true;
@@ -130,13 +71,13 @@ sourceui.Network = function () {
 	});
 
 	if (this.online) {
-		$body.removeClass('offline');
+		$('#suiBody').removeClass('offline');
 		Debug.get('Network').notice({
 			mode: 'Status',
 			title: 'Network is online and idle',
 		});
 	} else {
-		$body.addClass('offline');
+		$('#suiBody').addClass('offline');
 		Debug.get('Network').error({
 			mode: 'Status',
 			title: 'Network is offline',
@@ -145,35 +86,21 @@ sourceui.Network = function () {
 	Debug.get('Network').trace();
 
 	window.addEventListener("offline", function () {
-		$body.addClass('offline');
+		$('#suiBody').addClass('offline');
 		Network.online = false;
 		Debug.get('Network').error({
 			mode: 'Status',
 			title: 'Internet is offline',
 		}).trace();
-		if (Device.offline()){
-			offlineParser.relabelActions();
-			if (!Cookies.get('offlineStatusWarning')){
-				Network.offlineFrame ('status-warning', $body);
-			}
-		}
 	}, false);
 	window.addEventListener("online", function () {
-		$body.removeClass('offline');
+		$('#suiBody').removeClass('offline');
 		Network.online = true;
 		Debug.get('Network').notice({
 			mode: 'Status',
 			title: 'Internet is online',
 		}).trace();
-		if (Device.offline()){
-			offlineParser.relabelActions();
-			$body.children('.sui-offline').remove();
-		}
 	}, false);
-
-	if (this.offline && !Cookies.get('offlineStatusWarning')){
-		Cookies.set('offlineStatusWarning','dispatched');
-	}
 
 	class Metric {
 		constructor() {
@@ -231,243 +158,6 @@ sourceui.Network = function () {
 		}
 	}
 
-	class IDBAlmanac {
-		constructor() {
-			var Almanac = this;
-			var Ready = false;
-			var DB;
-			var now = new Date().getTime();
-			var expire = 2592000; // 30 dias
-			var Console = Debug.get('IndexDB');
-			if (typeof IDBStore == 'function')
-				DB = new IDBStore({
-					dbVersion: 1,
-					storeName: 'suiAlmanac',
-					keyPath: 'requestkey',
-					autoIncrement: false,
-					indexes: [
-						{ name: 'transaction', keyPath: 'transaction', unique: false, multiEntry: false },
-						{ name: 'sui', keyPath: 'sui', unique: false, multiEntry: false },
-						{ name: 'command', keyPath: 'command', unique: false, multiEntry: false },
-						{ name: 'process', keyPath: 'process', unique: false, multiEntry: false },
-					],
-					onStoreReady: function () {
-						Ready = true;
-						Console.notice({
-							mode: 'Status',
-							title: 'IDBStore Almanac is ready',
-						});
-						if (Console.length == 4){
-							Console.trace();
-						}
-					}
-				});
-			this.failback = function (error) {
-				Console.error({
-					mode: 'Status',
-					title: 'IDBStore Almanac error',
-					content: error
-				});
-				if (Console.length == 3){
-					Console.trace();
-				}
-			};
-			this.set = function (setup, callback, failback) {
-				var key = setup.requestkey;
-				var s = {
-					requestkey: setup.requestkey,
-					transaction: setup.transaction || (setup.process && setup.data ? 'write' : 'read'),
-					sui: setup.sui,
-				};
-				if (setup.origin) s.origin = setup.origin;
-				if (setup.system) s.system = setup.system;
-				if (setup.action) s.action = setup.action;
-				if (setup.command) s.command = setup.command;
-				if (setup.process) s.process = setup.process;
-				if (setup.parentkey) s.parentkey = setup.parentkey;
-				if (setup.key) s.key = setup.key;
-				if (setup.numerickey) s.numerickey = setup.numerickey;
-				if (setup.filter) s.filter = setup.filter;
-				if (setup.requestkeystring) s.requestkeystring = setup.requestkeystring;
-				if (setup.originkey) s.originkey = setup.originkey;
-				if (setup.data) s.data = setup.data;
-				if (setup.cache) s.cache = setup.cache;
-				if (setup.owner) s.owner = setup.owner;
-				if (setup.id) s.id = setup.id;
-				if (setup.viewname) s.viewname = setup.viewname;
-				if (setup.stack) s.stack = setup.stack;
-				if (setup.code) s.code = setup.code;
-				if (setup.date) s.date = setup.date;
-				if (setup.email) s.email = setup.email;
-				if (setup.addr) s.addr = setup.addr;
-				if (setup.str) s.str = setup.str;
-				if (setup.seq) s.seq = setup.seq;
-				if (setup.num) s.num = setup.num;
-				if (setup.json) s.json = setup.json;
-				if (setup.group) s.group = setup.group;
-				if (setup.targetSelector) s.target = setup.targetSelector;
-				if (setup.fieldSelector) s.field = setup.fieldSelector;
-				if (setup.render) s.render = setup.render;
-				if (setup.navigationicon) s.navigationicon = setup.navigationicon;
-				if (setup.navigationlabel) s.navigationlabel = setup.navigationlabel;
-				if (setup.navigationsublabel) s.navigationsublabel = setup.navigationsublabel;
-
-				if (setup.response){
-					s.response = {
-						key: setup.response.key,
-						responsekey: setup.response.responsekey,
-						localData: setup.response.localData,
-						status: setup.response.status,
-						textData: setup.response.textData,
-						responseLength: setup.response.textData.length,
-					}
-				}
-				s.fingerprint = Device.fingerprint.get();
-				s.dcad = setup.dcad || Math.floor(Date.now() / 1000);
-				s.dalt = Math.floor(Date.now() / 1000);
-
-				if (DB){
-					DB.get(key, function(from){
-						if (from) s = $.extend(from, s);
-						s.size = Object.values(s).map(function(str){return (str+'').length;}).reduce((a, b) => a + b, 0);
-						s.size += Object.values(s.data||[]).map(function(str){return (str+'').length;}).reduce((a, b) => a + b, 0);
-						s.size += Object.values(s.json||[]).map(function(str){return (str+'').length;}).reduce((a, b) => a + b, 0);
-						s.size += Object.values(s.key||[]).map(function(str){return (str+'').length;}).reduce((a, b) => a + b, 0);
-						s.size += Object.values(s.response||[]).map(function(str){return (str+'').length;}).reduce((a, b) => a + b, 0);
-						DB.put(s, function() {
-							if (callback) callback(key);
-						}, failback || Almanac.failback);
-					});
-				}
-			};
-			this.get = function (filters, callback, failback) {
-				return new Promise(resolve =>{
-					var Alm = this;
-					var key = $.type(filters) == 'string' ? filters : filters.requestkey;
-					var sorts;
-					if (typeof callback == 'object'){
-						sorts = callback;
-						callback = typeof failback == 'function' ? failback : null;
-					}
-					if (DB){
-						if (key){
-							DB.get(key, callback, failback);
-						} else {
-							this.getAll(function(alldata){
-								var dataset = [];
-								for (var a in alldata){
-									if ((alldata[a].command == 'edit' || alldata[a].command == 'look') && (alldata[a].dalt + (30*86400)) < Math.floor(Date.now()/1000)){
-										Alm.remove(alldata[a].requestkey);
-										continue;
-									}
-									var counts = 0;
-									for (var s in filters){
-										if ($.isArray(filters[s])){
-											for(var f in filters[s]){
-												if (alldata[a][s] === filters[s][f]) {
-													counts++;
-													break;
-												}
-											}
-										} else if (alldata[a][s] === filters[s]) counts++;
-									}
-									if (counts === Object.keys(filters).length){
-										dataset.push(alldata[a]);
-									}
-								}
-								if (sorts){
-									dataset.sort(function(a, b) {
-										var txta = '', txtb = '';
-										for (var s in sorts){
-											if (sorts[s] == 'asc'){
-												txta += (a[s]+' ').toUpperCase();
-												txtb += (b[s]+' ').toUpperCase();
-											} else {
-												txtb += (a[s]+' ').toUpperCase();
-												txta += (b[s]+' ').toUpperCase();
-											}
-										}
-										return (txta < txtb) ? -1 : (txta > txtb) ? 1 : 0;
-									});
-								}
-								if (callback) resolve(callback.call(filters,dataset));
-								else resolve(dataset);
-							}, failback || Almanac.failback);
-						}
-					}
-				});
-			};
-			this.localrecords = function(filters, callback, failback){
-				return new Promise(resolve =>{
-					var dataset = [];
-					filters = $.extend(filters, {transaction: 'localrecord'});
-					var sorts = {};
-					if (typeof callback == 'object'){
-						sorts = callback;
-						callback = typeof failback == 'function' ? failback : null;
-					}
-					Almanac.get(filters, sorts, function(dataset){
-						if (callback) resolve(callback.call(filters,dataset));
-						else resolve(dataset);
-					});
-					/*
-					this.getAll(function(alldata){
-						for (var a in alldata){
-							var counts = 0;
-							for (var s in filters){
-								if ($.isArray(filters[s])){
-									for(var f in filters[s]){
-										if (alldata[a][s] === filters[s][f]) {
-											counts++;
-											break;
-										}
-									}
-								} else if (alldata[a][s] === filters[s]) counts++;
-							}
-							if (counts === Object.keys(filters).length){
-								dataset.push(alldata[a]);
-							}
-						}
-						if (callback) resolve(callback.call(filters,dataset));
-						else resolve(dataset);
-					});
-					*/
-				});
-			};
-			this.getAll = function (callback, failback) {
-				if (DB)
-					DB.getAll(function (result) {
-						if (callback) callback(result);
-					}, failback || Almanac.failback);
-			};
-			this.remove = function (setup, callback, failback) {
-				return new Promise(resolve =>{
-					//if (callback) resolve(callback.call(setup));
-					var key = $.type(setup) == 'string' ? setup : setup.requestkey;
-					if (DB){
-						DB.remove(key, function (result) {
-							if (result !== false){
-								if (callback) resolve(callback.call(setup, result));
-								else resolve(result);
-							}
-						}, failback || Almanac.failback);
-					}
-				});
-			};
-			this.clear = function (callback, failback) {
-				if (DB)
-					DB.clear(function () {
-						if (callback)
-							callback();
-					}, failback || Almanac.failback);
-			};
-			this.ready = function () {
-				return Ready;
-			};
-		}
-	}
-
-
 	class IDBCache {
 		constructor() {
 			var Cache = this;
@@ -479,9 +169,9 @@ sourceui.Network = function () {
 			var Console = Debug.get('IndexDB');
 			if (typeof IDBStore == 'function')
 				DB = new IDBStore({
-					dbVersion: 2,
+					dbVersion: 1,
 					storeName: 'suiCache',
-					keyPath: 'requestkey',
+					keyPath: 'requestKey',
 					autoIncrement: false,
 					onStoreReady: function () {
 						//Cache.clear();
@@ -490,7 +180,7 @@ sourceui.Network = function () {
 							mode: 'Status',
 							title: 'IDBStore Cache is ready',
 						});
-						if (Console.length == 4)
+						if (Console.length == 3)
 							Console.trace();
 						Cache.getAll();
 					}
@@ -501,16 +191,16 @@ sourceui.Network = function () {
 					title: 'IDBStore Cache error',
 					content: error
 				});
-				if (Console.length == 3)
+				if (Console.length == 2)
 					Console.trace();
 			};
 			this.set = function (setup, callback, failback) {
-				if (!setup.requestkey || !setup.response || setup.error) return;
-				var key = setup.requestkey;
+				if (!setup.requestKey || !setup.response || setup.error) return;
+				var key = setup.requestKey;
 				var s;
 				if (caches[key]) {
 					caches[key].response = {
-						responsekey: setup.response.responsekey,
+						responseKey: setup.response.responseKey,
 						status: setup.response.status,
 						textData: setup.response.textData,
 						cacheData: setup.response.cacheData || {},
@@ -519,14 +209,14 @@ sourceui.Network = function () {
 				}
 				else {
 					s = {
-						requestkey: setup.requestkey,
+						requestKey: setup.requestKey,
 						key: setup.key,
 						name: setup.name,
 						origin: setup.origin,
 						tab: setup.tab,
 						sui: setup.sui,
 						response: {
-							responsekey: setup.response.responsekey,
+							responseKey: setup.response.responseKey,
 							status: setup.response.status,
 							textData: setup.response.textData,
 							cacheData: setup.response.cacheData || {},
@@ -542,7 +232,7 @@ sourceui.Network = function () {
 					}, failback || this.failback);
 			};
 			this.get = function (setup) {
-				var key = setup.requestkey;
+				var key = setup.requestKey;
 				var cache = caches[key];
 				if (cache) {
 					$.extend(true, setup, cache);
@@ -554,12 +244,12 @@ sourceui.Network = function () {
 				if (DB)
 					DB.getAll(function (result) {
 						$.each(result, function (k, v) {
-							caches[v.requestkey] = v;
+							caches[v.requestKey] = v;
 						});
 					}, failback || this.failback);
 			};
 			this.remove = function (setup, callback, failback) {
-				var key = setup.requestkey;
+				var key = setup.requestKey;
 				delete caches[key];
 				if (DB)
 					DB.remove(key, function (result) {
@@ -603,7 +293,7 @@ sourceui.Network = function () {
 							mode: 'Status',
 							title: 'IDBStore Local Data is ready',
 						});
-						if (Console.length == 4)
+						if (Console.length == 3)
 							Console.trace();
 					}
 				});
@@ -613,7 +303,7 @@ sourceui.Network = function () {
 					title: 'IDBStore Local Data error',
 					content: error
 				});
-				if (Console.length == 3)
+				if (Console.length == 2)
 					Console.trace();
 			};
 			this.set = function (data, callback, failback) {
@@ -668,20 +358,13 @@ sourceui.Network = function () {
 
 	var Local = new IDBLocal();
 	var Cache = new IDBCache();
-	var Almanac = new IDBAlmanac();
 
-	// expondo o método de clear IDB
+	// expondo o método de clear cache
 	// --------------------------------
 	this.cacheClear = Cache.clear;
 	this.localClear = Local.clear;
-	// --------------------------------
-	// expondo o método de get IDB
-	// --------------------------------
 	this.localGet = Local.get;
 	// --------------------------------
-	sourceui.idb.almanac = Almanac;
-	// --------------------------------
-
 	class Ajax {
 		constructor(setup) {
 			var Ajax = this;
@@ -1019,8 +702,6 @@ sourceui.Network = function () {
 					if (setup.loadborder && setup.loadborder.hasClass('sui-ajax')) {
 						clearTimeout(setup.preloadTimeout);
 						var $spinner = setup.loadborder.removeClass('loading sui-ajax').children('.sui-spinner:eq(0)').remove();
-					} else if (!Network.online) {
-						$('.sui-ajax').removeClass('loading sui-ajax').children('.sui-spinner:eq(0)').remove();
 					}
 				},
 				/*
@@ -1031,7 +712,7 @@ sourceui.Network = function () {
 					@setup - object - required - objeto de setup da requisição
 				---------------------------
 				*/
-				offline: function (type) {
+				offline: function () {
 					if (!setup.target) {
 						if (setup.element && setup.element.length)
 							setup.loadborder = setup.element.closest('.sui-views-container, form');
@@ -1040,7 +721,14 @@ sourceui.Network = function () {
 						setup.loadborder = setup.target.closest('.sui-views-container, form');
 					}
 					if (setup.loadborder) {
-						Network.offlineFrame(type, setup.loadborder);
+						var $offline = $(Template.get('offline',isPT ? 'pt-br' : 'en-us')).css('opacity', 0);
+						setup.loadborder.prepend($offline);
+						$offline.velocity({ opacity: [1, 0] }, 300);
+						$offline.find('.button').on('click', function () {
+							$offline.velocity({ opacity: [0, 1] }, 300, function () {
+								$offline.remove();
+							});
+						});
 					}
 				}
 			};
@@ -1335,14 +1023,10 @@ sourceui.Network = function () {
 					// FILTER SORT
 					//////////////////////////////////////////////
 					if (setup.command == 'list') {
-						if (Network.online){
-							var globalname = 'request-filter-sort:' + setup.sui;
-							var globaldata = Device.Global.get(globalname) || null;
-							setup.filter = (setup.filter) ? $.extend(true, globaldata, setup.filter) : globaldata;
-							delete setup.filter.key;
-						} else {
-							setup.filter = setup.filter || {};
-						}
+						var globalname = 'request-filter-sort:' + setup.sui;
+						var globaldata = Device.Global.get(globalname) || null;
+						setup.filter = (setup.filter) ? $.extend(true, globaldata, setup.filter) : globaldata;
+						delete setup.filter.key;
 					}
 					//////////////////////////////////////////////
 					$.each(setup.filter||[], function(k,v){
@@ -1389,7 +1073,6 @@ sourceui.Network = function () {
 						id: setup.id,
 						key: setup.key,
 						name: setup.name,
-						viewname: setup.viewname,
 						stack: setup.stack,
 						code: setup.code,
 						date: setup.date,
@@ -1412,14 +1095,25 @@ sourceui.Network = function () {
 						modified: setup.modified,
 						validate: setup.validate
 					};
+					var requestKey = {
+						sui: setup.sui,
+						system: setup.system,
+						action: setup.action,
+						command: setup.command,
+						process: setup.process,
+						parentkey: setup.parentkey,
+						owner: setup.owner,
+						key: setup.key,
+						id: setup.id,
+						group: setup.group,
+						session: Device.session.id(),
+					};
 					// ==========================================================================
 					// AJAX REQUEST HEADER PAYLOAD
 					// ==========================================================================
-					if (!setup.requestkey){
-						Network.buildRequestKey(setup);
-					}
+					setup.requestKey = $.md5(JSON.stringify(requestKey));
 					var requestHeaderPayload = {
-						key: setup.requestkey,
+						key: setup.requestKey,
 						data: headerData,
 						get: getData,
 						post: postData,
@@ -1435,7 +1129,6 @@ sourceui.Network = function () {
 					if (setup.geolocation)
 						requestHeaderPayload.geolocation = setup.geolocation;
 					// ==========================================================================
-
 					//////////////////////////////////////////////
 					// CACHE GETTER
 					//////////////////////////////////////////////
@@ -1446,14 +1139,14 @@ sourceui.Network = function () {
 						if (cache) {
 							setup.hascache = true;
 							if (setup.cache !== false) {
-								setup.fromcache = cache.response.responsekey;
+								setup.fromcache = cache.response.responseKey;
 								requestHeaderPayload.cache = setup.fromcache;
 								//xhr.setRequestHeader('X-Sui-Request-Cache', setup.fromcache);
 								cache.iscache = true;
 								Console.groupData('cache', true).log({
 									mode: 'Cache',
-									color: '#282a33',
-									title: 'UI retrieved from CACHE (' + cache.response.responsekey + ')'
+									color: '#ADAAA9',
+									title: 'UI retrieved from CACHE (' + cache.response.responseKey + ')'
 								});
 								if (cache.target) {
 									if (Parser.load(cache)) {
@@ -1479,7 +1172,6 @@ sourceui.Network = function () {
 						}
 					}
 					else {
-						config.cache = false; // disable global cache
 						Console.groupData('cache', false);
 					}
 					//////////////////////////////////////////////
@@ -1527,150 +1219,6 @@ sourceui.Network = function () {
 						})));
 						*/
 					}
-
-
-					//////////////////////////////////////////////
-					// ALMANAC GETTER
-					//////////////////////////////////////////////
-					if (setup.almanacformdata || (Device.offline() && !Network.online)){
-						setup.metric.add('requestStartTime');
-						Almanac.get(setup.almanackey || setup.requestkey, async function(almanac){
-
-							delete ActiveRequests[setup.rid];
-
-							if (almanac){
-
-								setup = $.extend(true, {}, almanac, setup);
-
-								// when register comes from online list
-								if (setup.key && setup.key.length && !setup.almanackey){
-									setup.almanackey = setup.requestkey;
-								}
-
-								var localData = setup.response.localData;
-								if (localData) {
-									localData = JSON.parse(localData);
-									if (localData.session) {
-										Local.set(localData);
-									} else {
-										Local.remove();
-									}
-								}
-
-								/////////////////////////////////////////////////////////
-								if (setup.sui.indexOf('almanac.') > -1){
-									await offlineParser.parsePanel(setup);
-								} else if (setup.sui.indexOf('.grid') > -1){
-									await offlineParser.addGridList(setup);
-								}
-								/////////////////////////////////////////////////////////
-
-								setup.hasparsed = Parser.load(offlineParser.load(setup));
-								setup.exists = Ajax.exists();
-								// CSS =======================
-								if (setup.response.parsedCSS) {
-									var $css = $(setup.response.parsedCSS);
-									var id = $css.attr('id');
-									$('#suiHead > #' + id).remove();
-									$css.appendTo($('#suiHead'));
-								}
-								// ===========================
-								if (setup.hasparsed) {
-									setup.iscache = false;
-									Ajax.html();
-								}
-								Dom.document.trigger('parseui', [setup]);
-								if (setup.followscroll && setup.view) {
-									var scrolltop = setup.view.data('scrollTop');
-									var $scrollers = setup.view.find('.sui-content.scroll-default');
-									$scrollers.each(function () {
-										var $scr = $(this);
-										if ($scr.scrollTop() < scrolltop) {
-											$scr.scrollTop(scrolltop);
-											var $paginator = $scr.find('.paginator:not(.clicked):last');
-											$paginator.attr('data-link-cache', 'false');
-											$paginator.attr('data-link-followscroll', 'true');
-											$paginator.trigger('click');
-										}
-									});
-								}
-
-								offlineParser.relabelActions(setup.response.parsedJQ, setup.requestkey);
-
-								if (typeof setup.ondone == 'function') setup.ondone.call(Ajax, setup);
-								if (setup.element) setup.element.trigger('ajax:done',[setup.response.parsedJQ]);
-
-								// JS ========================
-								if (setup.response.parsedJS) {
-									var $js = $(setup.response.parsedJS);
-									$js.appendTo($('#suiHead')).remove();
-								}
-								// ===========================
-
-								//////////////////////////////////////////////
-								// FILTER SORT
-								//////////////////////////////////////////////
-								if (setup.command == 'list') {
-									var globalname = 'request-filter-sort:' + setup.sui;
-									var globaldata = {};
-									if (setup.filter.sortBy)
-										globaldata.sortBy = setup.filter.sortBy;
-									if (setup.filter.sortOrd)
-										globaldata.sortOrd = setup.filter.sortOrd;
-									Device.Global.set(globalname, globaldata);
-								}
-
-								//////////////////////////////////////////////
-								if (!setup.response.error && setup.element && setup.response.parsedJQ) {
-									setup.element.trigger('ajax:done', [setup.response.parsedJQ]);
-								}
-
-								clearTimeout(setup.obtimeout);
-								clearTimeout(setup.slowtimeout);
-								Ajax.loading.stop();
-								//Console.trace();
-
-								if (typeof setup.onalways == 'function')
-									setup.onalways.call(Ajax, setup, data, status, xhr);
-								if (setup.element && setup.response && setup.response.parsedJQ)
-									setup.element.trigger('ajax:always', [setup.response.parsedJQ]);
-								if (setup.close) {
-									var $close = Ajax.closePart(setup);
-									$close.trigger('close');
-								}
-								Dom.document.trigger('panelready');
-
-								Console.log({
-									mode: 'Offline',
-									color: '#282a33',
-									title: 'Almanac has found for requestkey "'+setup.requestkey+'"',
-									content: {
-										'Setup Object': setup,
-									}
-								});
-								Console.trace();
-
-							} else {
-
-								Ajax.loading.offline('no-almanac');
-								Console.log({
-									mode: 'Offline',
-									color: '#8d6835',
-									title: 'No almanac found for requestkey "'+setup.requestkey+'"',
-									content: {
-										'Setup Object': setup,
-									}
-								});
-								Console.trace();
-							}
-						});
-
-						return false;
-					}
-					//////////////////////////////////////////////
-
-
-
 					//////////////////////////////////////////////
 					// AJAX REQUEST HEADER ASSIGNMENT ===========================================
 					xhr.setRequestHeader('X-Sui-Request-Engine', setup.engine || 'default');
@@ -1690,276 +1238,222 @@ sourceui.Network = function () {
 					Ajax.loading.start();
 					setup.metric.add('requestStartTime');
 				};
-				if (setup.almanacformdata || (Device.offline() && !Network.online)){
+				setup.xhr = $.ajax(config)
+					.done(function (data, status, xhr) {
 
-					setTimeout(function(){
-						config.beforeSend({});
-					},100);
-
-				} else {
-					setup.xhr = $.ajax(config)
-						.done(async function (data, status, xhr) {
-
-							clearTimeout(setup.slowtimeout);
-							var timestamp = xhr.getResponseHeader('X-Sui-Response-Timestamp');
-							sourceui.timediff = timestamp ? Math.round((Date.now() / 1000) - timestamp) : sourceui.timediff;
-							Ajax.loading.stop();
-							////////////////////
-							// objeto de resposta do servidor
-							////////////////////
-							setup.response = $.extend(setup.response, {
-								error: false,
-								xhr: xhr,
-								key: setup.requestkey,
-								localData: xhr.getResponseHeader('X-Sui-Response-Local'),
-								responsekey: xhr.getResponseHeader('X-Sui-Response-Key'),
-								headerdatakey: xhr.getResponseHeader('X-Sui-Headerdata-Key'),
-								//mergedSeed : xhr.getResponseHeader('X-Sui-Response-Seeds'),
-								responseLength: data.length,
-								dataKey: null,
-								textData: data,
-								status: status,
-								parsedHTML: null,
-								parsedJQ: null,
-							});
-
-							var tosavealmanac = $.extend(true, {}, setup);
-
-							/////////////////////////////////////////////////////////
-							if (Device.offline()){
-								if (setup.sui.indexOf('almanac.') > -1){
-									await offlineParser.parsePanel(setup);
-								} else if (setup.sui.indexOf('.grid') > -1){
-									await offlineParser.addGridList(setup);
-								}
-							}
-							/////////////////////////////////////////////////////////
-
-
-							//var localData = xhr.getResponseHeader('X-Sui-Response-Local');
-							var localData = setup.response.localData;
-							if (localData) {
-								localData = JSON.parse(localData);
-								if (localData.session) {
-									Local.set(localData);
-								} else {
-									Local.remove();
-								}
-							}
-							////////////////////
-							if (Device.cache() && setup.fromcache === setup.response.responsekey) {
-								setup.fromcache = false;
-								Parser.load(setup);
-								setup.metric.add('processEndTime');
-								setup.metric.add('bytesTotal', parseInt(setup.response.responseLength));
-								setup.metric.calc();
-								if (typeof setup.ondone == 'function')
-									setup.ondone.call(Ajax, setup);
+						clearTimeout(setup.slowtimeout);
+						var timestamp = xhr.getResponseHeader('X-Sui-Response-Timestamp');
+						sourceui.timediff = timestamp ? Math.round((Date.now() / 1000) - timestamp) : sourceui.timediff;
+						Ajax.loading.stop();
+						////////////////////
+						// objeto de resposta do servidor
+						////////////////////
+						setup.response = $.extend(setup.response, {
+							error: false,
+							xhr: xhr,
+							key: setup.requestKey,
+							localData: xhr.getResponseHeader('X-Sui-Response-Local'),
+							responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
+							//mergedSeed : xhr.getResponseHeader('X-Sui-Response-Seeds'),
+							responseLength: data.length,
+							dataKey: null,
+							textData: data,
+							status: status,
+							parsedHTML: null,
+							parsedJQ: null,
+						});
+						//var localData = xhr.getResponseHeader('X-Sui-Response-Local');
+						var localData = setup.response.localData;
+						if (localData) {
+							localData = JSON.parse(localData);
+							if (localData.session) {
+								Local.set(localData);
 							} else {
-								setup.metric.add('processEndTime');
-								setup.hasparsed = Parser.load(setup);
-								setup.exists = Ajax.exists();
-								// CSS =======================
-								if (setup.response.parsedCSS) {
-									var $css = $(setup.response.parsedCSS);
-									var id = $css.attr('id');
-									$('#suiHead > #' + id).remove();
-									$css.appendTo($('#suiHead'));
-								}
-								// ===========================
-								if (setup.hasparsed) {
-									setup.iscache = false;
-									Ajax.html();
-								}
-								setup.metric.calc();
-								if (!setup.response.error) {
-									Dom.document.trigger('parseui', [setup]);
-									if (setup.followscroll && setup.view) {
-										var scrolltop = setup.view.data('scrollTop');
-										var $scrollers = setup.view.find('.sui-content.scroll-default');
-										$scrollers.each(function () {
-											var $scr = $(this);
-											if ($scr.scrollTop() < scrolltop) {
-												$scr.scrollTop(scrolltop);
-												var $paginator = $scr.find('.paginator:not(.clicked):last');
-												$paginator.attr('data-link-cache', 'false');
-												$paginator.attr('data-link-followscroll', 'true');
-												$paginator.trigger('click');
-											}
-										});
-									}
-									if (Device.offline()){
-										if (setup.almanacignore !== true){
-											if (!setup.almanacsync && setup.data && setup.process && (setup.process.indexOf('insert') > -1 || setup.process.indexOf('update') > -1)){
-												var almanacfind = Network.buildRequestKey({
-													sui: setup.sui.replace(/\.[^.]*$/,'.form'),
-													key: $.isArray(setup.key) ? setup.key[0] : setup.key,
-													command: 'edit'
-												});
-												sourceui.idb.almanac.get(almanacfind.requestkey, function(localrecord){
-													if (localrecord){
-														localrecord.almanacformdata = tosavealmanac.data;
-														localrecord = offlineParser.load(localrecord);
-														Console.log({
-															mode: 'Almanac',
-															title: 'UI request/response was updated in local database almanac: "'+localrecord.requestkey+'"',
-															content: setup
-														});
-														Almanac.set(localrecord);
-													}
-												});
-											} else if (!setup.process){
-												Console.log({
-													mode: 'Almanac',
-													color: '#282a33',
-													title: 'UI request/response was saved in local database as almanac: "'+tosavealmanac.requestkey+'"',
-													content: setup
-												});
-												Almanac.set(tosavealmanac);
-											}
-										}
-									}
-									if (Device.cache()) {
-										if (((setup.target || setup.field) && setup.cache !== false) || setup.hascache) {
-											Cache.set(setup);
-											Console.log({
-												mode: 'Cache',
-												color: '#282a33',
-												title: 'UI CACHE was saved in local database (' + setup.response.responsekey + ')',
-											});
-										}
-									}
-									if (typeof setup.ondone == 'function') setup.ondone.call(Ajax, setup);
-									if (setup.element) setup.element.trigger('ajax:done',[setup.response.parsedJQ]);
-								} else {
-									if (typeof setup.onfail == 'function') setup.onfail.call(Ajax, xhr, status, error);
-									if (setup.element) setup.element.trigger('ajax:fail');
-									Console.error({
-										type: 'Response',
-										title: 'Connection error',
-										content: setup.response.error
-									});
-									Cache.remove(setup);
-									return false;
-								}
-								// JS ========================
-								if (setup.response.parsedJS) {
-									var $js = $(setup.response.parsedJS);
-									$js.appendTo($('#suiHead')).remove();
-								}
-								// ===========================
+								Local.remove();
 							}
-							//////////////////////////////////////////////
-							// FILTER SORT
-							//////////////////////////////////////////////
-							if (setup.command == 'list') {
-								var globalname = 'request-filter-sort:' + setup.sui;
-								var globaldata = {};
-								if (setup.filter.sortBy)
-									globaldata.sortBy = setup.filter.sortBy;
-								if (setup.filter.sortOrd)
-									globaldata.sortOrd = setup.filter.sortOrd;
-								Device.Global.set(globalname, globaldata);
-							}
-							//////////////////////////////////////////////
-							if (!setup.response.error && setup.element && setup.response.parsedJQ) {
-								setup.element.trigger('ajax:done', [setup.response.parsedJQ]);
-							}
-							//////////////////////////////////////////////
-							// HISTORY
-							//////////////////////////////////////////////
-							var historyData = xhr.getResponseHeader('X-Sui-Response-History');
-							if (historyData == 'follow') {
-								if (Server.hash) {
-									if (!Dom.body.hasClass('sui-ajax'))
-										Dom.body.addClass('sui-ajax').addClass('loading').prepend($(Template.get('spinner')));
-									Network.history.follow(Server.hash.split('/'), Dom.body);
-								}
-								else {
-									Dom.document.trigger('panelready');
-								}
-							}
-							//////////////////////////////////////////////
-						})
-						.fail(function (xhr, status, error) {
-							clearTimeout(setup.slowtimeout);
-							Ajax.loading.stop(true);
+						}
+						////////////////////
+						if (Device.cache() && setup.fromcache === setup.response.responseKey) {
+							setup.fromcache = false;
+							Parser.load(setup);
 							setup.metric.add('processEndTime');
-							setup.metric.add('bytesTotal', 0);
+							setup.metric.add('bytesTotal', parseInt(setup.response.responseLength));
 							setup.metric.calc();
-							if (Network.online) {
-								if (status == 'abort' || status == 'canceled'){
-									if (typeof setup.oncancel == 'function') setup.oncancel.call(Ajax, xhr, status, error);
-									return;
-								}
-								setup.response = {
-									error: error,
-									status: status,
-									xhr: xhr,
-									key: setup.requestkey,
-									responsekey: xhr.getResponseHeader('X-Sui-Response-Key'),
-									textData: xhr.responseText,
-								};
-								Parser.load(setup);
-								if (!Console.has('bug') && !Console.has('error') && !Console.has('fatal') && !Console.has('fail')) {
-									Console.error({
-										mode: 'XHR',
-										title: 'Request failure',
-										content: error
+							if (typeof setup.ondone == 'function')
+								setup.ondone.call(Ajax, setup);
+						} else {
+							setup.metric.add('processEndTime');
+							setup.hasparsed = Parser.load(setup);
+							setup.exists = Ajax.exists();
+							// CSS =======================
+							if (setup.response.parsedCSS) {
+								var $css = $(setup.response.parsedCSS);
+								var id = $css.attr('id');
+								$('#suiHead > #' + id).remove();
+								$css.appendTo($('#suiHead'));
+							}
+							// ===========================
+							if (setup.hasparsed) {
+								setup.iscache = false;
+								Ajax.html();
+							}
+							setup.metric.calc();
+							if (!setup.response.error) {
+								Dom.document.trigger('parseui', [setup]);
+								if (setup.followscroll && setup.view) {
+									var scrolltop = setup.view.data('scrollTop');
+									var $scrollers = setup.view.find('.sui-content.scroll-default');
+									$scrollers.each(function () {
+										var $scr = $(this);
+										if ($scr.scrollTop() < scrolltop) {
+											$scr.scrollTop(scrolltop);
+											var $paginator = $scr.find('.paginator:not(.clicked):last');
+											$paginator.attr('data-link-cache', 'false');
+											$paginator.attr('data-link-followscroll', 'true');
+											$paginator.trigger('click');
+										}
 									});
-									if ((xhr.responseText||'').indexOf('<notify') === -1){
-										Notify.open({
-											type: 'error',
-											name: isPT ? 'Falha de Requisição' : 'Request error',
-											label: setup.suiname,
-											message: error,
+								}
+								if (Device.cache()) {
+									if (((setup.target || setup.field) && setup.cache !== false) || setup.hascache) {
+										Cache.set(setup);
+										Console.log({
+											mode: 'Cache',
+											color: '#ADAAA9',
+											title: 'UI CACHE was saved in local database (' + setup.response.responseKey + ')',
 										});
 									}
 								}
+								if (typeof setup.ondone == 'function') setup.ondone.call(Ajax, setup);
+								if (setup.element) setup.element.trigger('ajax:done',[setup.response.parsedJQ]);
+							} else {
+								if (typeof setup.onfail == 'function') setup.onfail.call(Ajax, xhr, status, error);
+								if (setup.element) setup.element.trigger('ajax:fail');
+								Console.error({
+									type: 'Response',
+									title: 'Connection error',
+									content: setup.response.error
+								});
 								Cache.remove(setup);
+								return false;
+							}
+							// JS ========================
+							if (setup.response.parsedJS) {
+								var $js = $(setup.response.parsedJS);
+								$js.appendTo($('#suiHead')).remove();
+							}
+							// ===========================
+						}
+						//////////////////////////////////////////////
+						// FILTER SORT
+						//////////////////////////////////////////////
+						if (setup.command == 'list') {
+							var globalname = 'request-filter-sort:' + setup.sui;
+							var globaldata = {};
+							if (setup.filter.sortBy)
+								globaldata.sortBy = setup.filter.sortBy;
+							if (setup.filter.sortOrd)
+								globaldata.sortOrd = setup.filter.sortOrd;
+							Device.Global.set(globalname, globaldata);
+						}
+						//////////////////////////////////////////////
+						if (!setup.response.error && setup.element && setup.response.parsedJQ) {
+							setup.element.trigger('ajax:done', [setup.response.parsedJQ]);
+						}
+						//////////////////////////////////////////////
+						// HISTORY
+						//////////////////////////////////////////////
+						var historyData = xhr.getResponseHeader('X-Sui-Response-History');
+						if (historyData == 'follow') {
+							if (Server.hash) {
+								if (!Dom.body.hasClass('sui-ajax'))
+									Dom.body.addClass('sui-ajax').addClass('loading').prepend($(Template.get('spinner')));
+								Network.history.follow(Server.hash.split('/'), Dom.body);
 							}
 							else {
-								if (!setup.fromcache) {
-									Ajax.loading.offline();
+								Dom.document.trigger('panelready');
+							}
+						}
+						//////////////////////////////////////////////
+					})
+					.fail(function (xhr, status, error) {
+						clearTimeout(setup.slowtimeout);
+						Ajax.loading.stop(true);
+						setup.metric.add('processEndTime');
+						setup.metric.add('bytesTotal', 0);
+						setup.metric.calc();
+						if (Network.online) {
+							if (status == 'abort' || status == 'canceled'){
+								if (typeof setup.oncancel == 'function') setup.oncancel.call(Ajax, xhr, status, error);
+								return;
+							}
+							setup.response = {
+								error: error,
+								status: status,
+								xhr: xhr,
+								key: setup.requestKey,
+								responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
+								textData: xhr.responseText,
+							};
+							Parser.load(setup);
+							if (!Console.has('bug') && !Console.has('error') && !Console.has('fatal') && !Console.has('fail')) {
+								Console.error({
+									mode: 'XHR',
+									title: 'Request failure',
+									content: error
+								});
+								if ((xhr.responseText||'').indexOf('<notify') === -1){
+									Notify.open({
+										type: 'error',
+										name: isPT ? 'Falha de Requisição' : 'Request error',
+										label: setup.suiname,
+										message: error,
+									});
 								}
 							}
-							if (typeof setup.onfail == 'function')
-								setup.onfail.call(Ajax, xhr, status, error);
-							if (setup.element)
-								setup.element.trigger('ajax:fail');
-						})
-						.always(function (data, status, xhr) {
-							delete ActiveRequests[setup.rid];
-							clearTimeout(setup.obtimeout);
-							clearTimeout(setup.slowtimeout);
-							Ajax.loading.stop();
-							Console.log({
-								mode: 'Ajax',
-								color: '#ADAAA9',
-								title: 'Async Connection (' + status + ')',
-								content: {
-									'Setup Object': setup,
-									'Metrics': setup.metric.result()
-								}
-							});
-							Console.trace();
-							if (typeof setup.onalways == 'function')
-								setup.onalways.call(Ajax, setup, data, status, xhr);
-							if (setup.element && setup.response && setup.response.parsedJQ)
-								setup.element.trigger('ajax:always', [setup.response.parsedJQ]);
-						});
-					setup.obtimeout = setTimeout(function () {
-						clearTimeout(setup.slowtimeout);
-						if (!setup.response) {
-							Ajax.abort();
+							Cache.remove(setup);
 						}
-					}, setup.timeout);
-					if (setup.close) {
-						var $close = Ajax.closePart(setup);
-						$close.trigger('close');
+						else {
+							if (!setup.fromcache) {
+								Ajax.loading.offline(setup);
+							}
+						}
+						if (typeof setup.onfail == 'function')
+							setup.onfail.call(Ajax, xhr, status, error);
+						if (setup.element)
+							setup.element.trigger('ajax:fail');
+					})
+					.always(function (data, status, xhr) {
+						delete ActiveRequests[setup.rid];
+						clearTimeout(setup.obtimeout);
+						clearTimeout(setup.slowtimeout);
+						Ajax.loading.stop();
+						Console.log({
+							mode: 'Ajax',
+							color: '#ADAAA9',
+							title: 'Async Connection (' + status + ')',
+							content: {
+								'Setup Object': setup,
+								'Metrics': setup.metric.result()
+							}
+						});
+						Console.trace();
+						if (typeof setup.onalways == 'function')
+							setup.onalways.call(Ajax, setup, data, status, xhr);
+						if (setup.element && setup.response && setup.response.parsedJQ)
+							setup.element.trigger('ajax:always', [setup.response.parsedJQ]);
+					});
+				setup.obtimeout = setTimeout(function () {
+					clearTimeout(setup.slowtimeout);
+					if (!setup.response) {
+						Ajax.abort();
 					}
-					return setup.xhr;
+				}, setup.timeout);
+				if (setup.close) {
+					var $close = Ajax.closePart(setup);
+					$close.trigger('close');
 				}
+				return setup.xhr;
 			};
 		}
 	}
@@ -2086,7 +1580,7 @@ sourceui.Network = function () {
 							validate: setup.validate,
 							timeout: setup.timeout
 						};
-						var requestkey = {
+						var requestKey = {
 							sui: setup.sui,
 							system: setup.system,
 							action: setup.action,
@@ -2105,9 +1599,9 @@ sourceui.Network = function () {
 						// ==========================================================================
 						// AJAX REQUEST HEADER PAYLOAD
 						// ==========================================================================
-						setup.requestkey = $.md5(JSON.stringify(requestkey));
+						setup.requestKey = $.md5(JSON.stringify(requestKey));
 						var requestHeaderPayload = {
-							key: setup.requestkey,
+							key: setup.requestKey,
 							data: headerData,
 							local: Local.get(),
 							agent: Device.session.data(),
@@ -2133,9 +1627,9 @@ sourceui.Network = function () {
 							setup.response = {
 								error: false,
 								xhr: xhr,
-								key: setup.requestkey,
+								key: setup.requestKey,
 								localData: xhr.getResponseHeader('X-Sui-Response-Local'),
-								responsekey: xhr.getResponseHeader('X-Sui-Response-Key'),
+								responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
 								responseLength: data.length,
 								dataKey: null,
 								textData: data,
@@ -2192,8 +1686,8 @@ sourceui.Network = function () {
 								error: error,
 								status: status,
 								xhr: xhr,
-								key: setup.requestkey,
-								responsekey: xhr.getResponseHeader('X-Sui-Response-Key'),
+								key: setup.requestKey,
+								responseKey: xhr.getResponseHeader('X-Sui-Response-Key'),
 								textData: xhr.responseText,
 								traces: []
 							};
@@ -2627,54 +2121,6 @@ sourceui.Network = function () {
 		Network.link(setup);
 	}
 
-	this.offlineFrame = function(type, $border){
-		var $offline = $(Template.get(type || 'offline', isPT ? 'pt-br' : 'en-us')).css('opacity', 0);
-		$border = $border && $border.length ? $border : $body;
-		$border.prepend($offline);
-		$offline.velocity({ opacity: [1, 0] }, 300);
-		$offline.find('.button').on('click', function () {
-			var $btn = $(this);
-			if (type == 'status-warning'){
-				Cookies.set('offlineStatusWarning','dispatched');
-			}
-			if ($btn.is('.refresh')){
-				location.reload(true);
-			} else {
-				$offline.velocity({ opacity: [0, 1] }, 300, function () {
-					$offline.remove();
-				});
-			}
-		});
-		$(document).one('keydown',function(event){
-			if(event.key === "Escape") {
-				//$offline.remove();
-				$offline.find('.button:not(.refresh)').trigger('click');
-			}
-		});
-	}
-
-	this.buildRequestKey = function(setup){
-		var rkbase = {
-			sui: 			setup.requestkeyignore == 'sui' ? '' : setup.sui,
-			system: 		setup.requestkeyignore == 'system' ? '' : setup.system,
-			action: 		setup.requestkeyignore == 'action' ? '' : setup.action,
-			command: 		setup.requestkeyignore == 'command' ? '' : setup.command,
-			process: 		setup.requestkeyignore == 'process' ? '' : setup.process,
-			key: 			setup.requestkeyignore == 'key' ? '' : setup.key,
-			parentkey: 		setup.requestkeyignore == 'parentkey' ? '' : setup.parentkey,
-			render: 		setup.requestkeyignore == 'render' ? '' : setup.render,
-			snippet: 		setup.requestkeyignore == 'snippet' ? '' : setup.snippet,
-			requestkeydata: setup.requestkeyignore == 'requestkeydata' ? '' : setup.requestkeydata
-		};
-		if ($.isArray(rkbase.key) && rkbase.length === 1) rkbase.key = rkbase.key[0];
-		setup.requestkeystring = JSON.stringify($.ksort($.nonull(rkbase)));
-		setup.requestkey = $.md5(setup.requestkeystring);
-		return setup;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////
-	// Network Link ---------------------------------------------------------------
-	////////////////////////////////////////////////////////////////////////////////
 	this.link = function (setup) {
 
 		setup = $.isPlainObject(setup) ? setup : {};
@@ -2708,19 +2154,6 @@ sourceui.Network = function () {
 		if (Dom.body.hasClass('ctrl-click')) setup.cache = false;
 
 		setup.name = setup.name || setup.label || setup.title || setup.sui;
-
-		var Console = Debug.get('Link', {
-			mode: (Server.cors ? 'CORS ' : '') + Server.protocol.toUpperCase(),
-			key: setup.sui
-		});
-
-		// requestkey data ----------s
-		if (setup.requestkeydata && $.type(setup.requestkeydata) == 'string'){
-			if (setup.requestkeydata.indexOf('@post') > -1) setup.requestkeydata = setup.data;
-			else if (setup.requestkeydata.indexOf('@json') > -1) setup.requestkeydata = setup.json;
-			else if (setup.requestkeydata.indexOf('@filter') > -1) setup.requestkeydata = setup.filter;
-		}
-		// --------------------------
 
 		// system link --------------
 		if (setup.system){
@@ -2798,6 +2231,7 @@ sourceui.Network = function () {
 			else dwld = download(setup.download);
 			if (dwld) $.tipster.notify(isPT ? 'Aguarde, baixando arquivo...' : 'Wait, dowloading file...');
 			return dwld;
+
 		}
 		// --------------------------
 
@@ -2903,9 +2337,6 @@ sourceui.Network = function () {
 			setup.widget = (setup.widget) ? setup.widget : setup.element.closest('.sui-widget');
 			setup.view = (setup.view) ? setup.view : setup.element.closest('.sui-view');
 			setup.sector = (setup.sector) ? setup.sector : setup.view.closest('.sui-sector');
-			setup.navigationicon = (setup.sector.children('.sui-sector-title').find('.name').attr('class') || '').split(' ')[1];
-			setup.navigationlabel = (setup.view.attr('data-name') || setup.sector.children('.sui-sector-title').find('.name').text());
-			setup.navigationsublabel = (setup.field) ? $(setup.field).children('.label').text().replace(' *','') : setup.widget.children('.title').find('.label span').text();
 		}
 
 		if (setup.confirm && !setup.ignoreconfirm) {
@@ -2937,25 +2368,6 @@ sourceui.Network = function () {
 					hilite: isPT ? 'Você poderá restaurar essa ação.' : 'You can recover this action',
 					buttonlink: setup.trigger || setup.element
 				});
-			} else if (setup.confirm == '@remove-localrecord') {
-				var name = setup.element.closest('.line').find('.col.name strong').text();
-				Confirm.open({
-					trigger: setup.element,
-					title: isPT ? 'Deletar Registro Local' : 'Delete Local Record',
-					desc: isPT ? 'Você está prestes a deletar o registro local <strong>' + name + '</strong> do almanaque de dados.' : 'You are about to delete local record <strong>' + name + '</strong> from data almanac.',
-					hilite: isPT ? 'Essa ação não pode ser desfeita.' : 'This action can\'t be undone.',
-					buttonlink: setup.trigger || setup.element
-				});
-			} else if (setup.confirm == '@vanish-almanacs') {
-				var name = setup.element.closest('.line').find('.col.name:eq(0) strong:eq(0)').text()
-				name = name ? name+' Data Almanac' : ' All Almanacs Available';
-				Confirm.open({
-					trigger: setup.element,
-					title: isPT ? 'Limpar Almanaque de Dados' : 'Vanish Data Almanac',
-					desc: isPT ? 'Você está prestes a limpar <strong>' + name + '</strong>.' : 'You are about to vanish <strong>' + name + '</strong>.',
-					hilite: isPT ? 'Essa ação não pode ser desfeita.' : 'This action can\'t be undone.',
-					buttonlink: setup.trigger || setup.element
-				});
 			} else {
 				if (typeof setup.confirm == 'object') {
 					Confirm.open({
@@ -2985,7 +2397,7 @@ sourceui.Network = function () {
 		setup.system = Dom.body.attr('data-system');
 
 		// chave para identificar a conexão
-		setup.rid = $.md5(JSON.stringify($.nonull({
+		setup.rid = $.md5(JSON.stringify({
 			sui: setup.sui,
 			system: setup.system,
 			action: setup.action,
@@ -2996,185 +2408,23 @@ sourceui.Network = function () {
 			key: setup.key,
 			stack: setup.stack,
 			str: setup.str,
-		})));
-
-
-
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////
-		// Offline Almanac Transaction -------------------------------------------------------------------
-		///////////////////////////////////////////////////////////////////////////////////////////////////
-		if (Device.offline()){
-			var Console = Debug.get('Offline', {
-				mode: (Server.cors ? 'CORS ' : '') + Server.protocol.toUpperCase(),
-				key: 'Offline Almanac Transaction'
-			});
-			if (setup.almanaccommand == 'remove'){
-				Almanac.remove(setup.key, function(){
-					offlineParser.removeRecord(setup.element.closest('.line'));
-					Console.log({
-						mode: 'Command',
-						title: 'Local Record removed successfully: '+setup.key,
-						content: setup || 'NULL'
-					});
-				});
-				return false;
-			} else if (setup.almanaccommand == 'vanish') {
-				var $lines = setup.view.find('.localrecords .line');
-				if (setup.element && setup.element.closest('.toolbar').length){
-					Almanac.get({transaction: 'read'}, async function(data){
-						for(var d in data){
-							await Almanac.remove(data[d].requestkey, function(){
-								offlineParser.vanishAlmanac($lines.filter('[data-link-key*="'+data[d].requestkey+'"]'), data[d].requestkey);
-							});
-						}
-						Console.log({
-							mode: 'Command',
-							title: 'All Data Almanac vanished successfully: '+data.length+' entries',
-							content: setup || 'NULL'
-						});
-					});
-				} else {
-					var keys = setup.key.split(',');
-					for(var k in keys){
-						Almanac.remove(keys[k], function(){
-							offlineParser.vanishAlmanac($lines.filter('[data-link-key*="'+keys[k]+'"]'), keys[k]);
-						});
-					}
-					Console.log({
-						mode: 'Command',
-						title: 'Selected Data Almanac vanished successfully: '+keys.length+' entries',
-						content: setup || 'NULL'
-					});
-
-				}
-				return false;
-			} else if (setup.almanaccommand == 'recache') {
-				fetch("offline-resources.json").then(function (res) {
-					return res.json();
-				}).then(async function (data) {
-					var cache = await caches.open('sourceui-cache-v1');
-					var keys = await cache.keys();
-					var cacheurls = [];
-					var numchanges = 0;
-					keys.forEach(async (request, index, array) => {
-						cacheurls.push(request.url);
-						if (!data.includes(request.url)){
-							await cache.delete(request);
-							numchanges++;
-							Console.log({
-								mode: 'Command',
-								title: 'Cache removed: '+request.url,
-							});
-						}
-					});
-					data.forEach(async (fileurl, index, array) => {
-						if (!cacheurls.includes(fileurl)){
-							await cache.add(fileurl);
-							numchanges++;
-							Console.log({
-								mode: 'Command',
-								title: 'Cache added from file: '+fileurl,
-							});
-						}
-					});
-					if (numchanges){
-						setup.view.find('.toolbar .refresh a').trigger('click');
-						setup.view.find('.toolbar .update-cache').disable();
-						$.tipster.notify(isPT ? 'Recursos Offline Atualizados' : 'Offline Resources Updated');
-					}
-				})
-				return false;
-			} else if (setup.almanaccommand == 'edit') {
-				if (setup.key && setup.almanacoriginkey){
-					Almanac.get(setup.key, function(from){
-						Almanac.get(setup.almanacoriginkey, function(target){
-							target = target || {
-								sui: from.sui,
-								command: from.command,
-								process: from.process,
-							}
-							target.almanackey = setup.key;
-							target.almanacformdata = from.data;
-							target.target = '@views-container';
-							target.placement = 'close-next-views-and-append';
-							target.element = setup.element;
-							target.dcad = setup.dcad;
-							Network.link(target);
-						});
-					});
-				}
-				return false;
-			}
-			if (!Network.online || (setup.requestkey && !setup.almanacsync)){ // SAVE ACTIONS
-				if (setup.element && setup.element.attr('data-alias') == 'save' && setup.process && setup.data){
-					if (setup.process.indexOf('insert') > -1 || setup.process.indexOf('update') > -1){
-						if (!setup.requestkey){
-							// create a new almanac when post comes from new form
-							setup.requestkeystring = setup.requestkeystring || setup.sui+':'+Date.now();
-							setup.requestkey = $.md5(setup.requestkeystring);
-						}
-						setup.transaction = 'localrecord';
-						Almanac.set(setup, function(){
-							if (!setup.element.attr('data-link-requestkey')) setup.element.attr('data-link-requestkey', setup.requestkey).data('link-requestkey', setup.requestkey);
-							if (setup.ondone) setup.ondone.call({}, setup);
-							if (setup.view && setup.view.length){
-								var $prevviews = setup.view.prevAll('.sui-view');
-								$prevviews.each(function(){
-									var $pv = $(this);
-									var $dg = $pv.find('.sui-widget.datagrid');
-									if ($dg.length){
-										setup.sector.find('.sui-tabs-view li[data-view="'+$pv.attr('id')+'"]').one('click', function(){
-											var $a = $pv.children('.toolbar').find('li.refresh a');
-											if ($a.length) $a.trigger('click');
-											else $view.trigger('widget:filter');
-										});
-									}
-								});
-								offlineParser.badgeNavIcon();
-							}
-							Notify.open({
-								type: 'log',
-								name: isPT ? 'Dados salvos localmente!' : 'Data saved locally!',
-								label: setup.suiname,
-								message: isPT ? 'Os dados foram salvos localmente. Eles poderão ser sincronizados online mais tarde.' : 'Data was saved locally into a data almanaq. It may be synced online later.',
-							});
-							Console.log({
-								mode: 'LocalRecord',
-								color: '#979ec8',
-								title: 'Data process was saved locally into a data almanaq. It may be synced online later.',
-								content: setup
-							});
-							Console.trace();
-						} , function(){
-							console.error('IDB error');
-						});
-					}
-					return setup;
-				}
-			}
-		}
-		///////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
+		}));
 		////////////////////////////////////
+
 		if (setup.sui) {
 			////////////////////////////////////
 			// PROMISE DE indexDB
 			////////////////////////////////////
 			var promiseDB = function () {
 				return new Promise(function (resolve, reject) {
-					if (!Local.ready() || !Cache.ready() || !Almanac.ready()) {
+					if (!Local.ready() || !Cache.ready()) {
 						var readyhops = 0;
 						var readyinterval = setInterval(function () {
 							if (readyhops == 100) {
 								Trace.error('IDB ajax waiting timeout').show();
 								clearInterval(readyinterval);
 							}
-							if ((Local.ready() && Cache.ready() && Almanac.ready())) {
+							if ((Local.ready() && Cache.ready())) {
 								resolve(true);
 								clearInterval(readyinterval);
 							}
@@ -3217,7 +2467,6 @@ sourceui.Network = function () {
 							/////////////////////////////////////////////////////////
 						}
 					} else {
-
 						/////////////////////////////////////////////////////////
 						ActiveRequests[setup.rid] = new Ajax(setup);
 						ActiveRequests[setup.rid].exec();
@@ -3239,10 +2488,6 @@ sourceui.Network = function () {
 		}
 		return setup.rid;
 	};
-	////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////
-
-
 
 	this.abort = function (rid) {
 		if (rid) {
@@ -3511,36 +2756,6 @@ sourceui.Network = function () {
 	$(window).on('hashchange', function () {
 		//console.log('hashchange', location.hash);
 	});
-
-
-	this.cacheBucket = {
-		key: "sourceui-bucket-v1",
-		add: function(url){
-			var cb = this;
-			caches.open(this.key).then((cache) => {
-				cache.add(url);
-				cb.slice();
-			});
-		},
-		get: async function(url){
-			var cache = await caches.open(this.key);
-			var keys = await cache.keys();
-			return keys;
-		},
-		slice: function(){
-			var cb = this;
-			caches.open(this.key).then((cache) => {
-				cache.keys().then((keys) => {
-					if (keys.length > 2000){
-						keys = keys.slice(0, keys.length - 2000);
-						keys.forEach((request, index, array) => {
-							cache.delete(request);
-						});
-					}
-				});
-			});
-		}
-	};
 
 	/*
 	---------------------------

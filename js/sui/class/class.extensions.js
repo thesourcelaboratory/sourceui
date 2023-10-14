@@ -365,6 +365,7 @@ propriedade data-link de um dado elemento.
 				var closest = this.parent().closest('*:attrHas("data-link")');
 				if (closest.length) closest.link(data);
 			}
+
 			return data;
 		} else if (typeof args[0] == 'string') {
 			if (typeof args[1] == 'undefined') {
@@ -1073,7 +1074,6 @@ $(function () {
 
 });
 
-
 $.levenshtein = function (a, b) {
 	var tmp;
 	if (a.length === 0) { return b.length; }
@@ -1123,10 +1123,11 @@ $.strPad = function (input, pad_length, pad_string, pad_type) {
 $.formatBytes = function (bytes, decimals) {
 	if (bytes == 0) return '0 Byte';
 	var k = 1000;
-	var dm = decimals + 1 || 3;
+	var dm = decimals || 2;
 	var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 	var i = Math.floor(Math.log(bytes) / Math.log(k));
-	return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
+	var j = bytes / Math.pow(k, i);
+	return (Math.round(j * 100) / 100) + ' ' + sizes[i];
 };
 $.formatSpeed = function (bytes, decimals) {
 	if (bytes == 0) return '0 bps';
@@ -1134,7 +1135,8 @@ $.formatSpeed = function (bytes, decimals) {
 	var dm = decimals + 1 || 3;
 	var sizes = ['bps', 'Kbps', 'Mbps', 'Gbps', 'Tbps', 'Pbps'];
 	var i = Math.floor(Math.log(bytes) / Math.log(k));
-	return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
+	var j = bytes / Math.pow(k, i);
+	return (Math.round(j * 100) / 100) + ' ' + sizes[i];
 };
 
 $.colorfy = function (value, color) {
@@ -1609,14 +1611,29 @@ $.cloneCanvas = function (oldCanvas) {
 };
 
 $.nonull = function (obj){
-	var propNames = Object.getOwnPropertyNames(obj);
-	for (var i = 0; i < propNames.length; i++) {
-		var propName = propNames[i];
-		if (obj[propName] === null || obj[propName] === '' || obj[propName] === undefined) {
-			delete obj[propName];
-		} else if (typeof obj[propName] == 'object'){
-			obj[propName] = $.nonull(obj[propName]);
+	if (typeof obj === 'object'){
+		var propNames = Object.keys(obj);
+		for (var i in propNames) {
+			var propName = propNames[i];
+			if (obj[propName] === null || obj[propName] === '' || obj[propName] === undefined || $.isEmptyObject(obj[propName]) || ($.isArray(obj[propName]) && !obj[propName].length)) {
+				delete obj[propName];
+			} else if (typeof obj[propName] == 'object'){
+				obj[propName] = $.nonull(obj[propName]);
+			}
 		}
+	}
+	return obj;
+}
+$.ksort = function (obj, sort){
+	if (typeof obj === 'object'){
+		var nobj = {};
+		var ord = Object.keys(obj).sort();
+		ord = (sort === 'desc') ? ord.reverse() : ord;
+		ord.forEach(function(v, i) {
+			if (typeof obj[v] === 'object') nobj[v] = $.ksort(obj[v]);
+			else nobj[v] = obj[v];
+		});
+		return nobj;
 	}
 	return obj;
 }

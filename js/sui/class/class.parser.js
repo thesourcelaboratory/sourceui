@@ -35,13 +35,13 @@ sourceui.templates.interface = new sourceui.Template({
 		'</svg>'+
 		'</div>',
 	*/
-	spinner:
+	'spinner':
 		'<div class="sui-spinner">' +
 		'<svg class="container" width="12%" viewBox="0 0 52 52">' +
 		'<circle class="path" cx="26px" cy="26px" r="20px" fill="none" stroke-dasharray="31" stroke-width="6px"/>' +
 		'</svg>' +
 		'</div>',
-	offline: {
+	'offline': {
 		"pt-br":
 			'<div class="sui-offline icon-network-offline">' +
 			'<h2>Sem internet</h2>' +
@@ -53,6 +53,36 @@ sourceui.templates.interface = new sourceui.Template({
 			'<h2>No internet</h2>' +
 			'<p><b>This action needs an idle internet connection.</b><br>Some information might be out of date.</p>' +
 			'<a class="button">Ok, got it</a>' +
+			'</div>',
+	},
+	'no-almanac' : {
+		"pt-br":
+			'<div class="sui-offline icon-network-offline no-almanac">' +
+			'<h2>Sem Almanaque de Dados</h2>' +
+			'<p><b>Esta ação precisa de um almanaque de dados para uso no modo offline.</b><br>Quando uma conexão com a internet for possível, navegue até aqui para gerar um almanaque automaticamente.</p>' +
+			'<a class="button">Ok, entendi</a>' +
+			'</div>',
+		"en-us":
+			'<div class="sui-offline icon-network-offline no-almanac">' +
+			'<h2>No Data Almanac</h2>' +
+			'<p><b>This action needs a data almanac to use offline mode.</b><br>When an internet connection is possible, navigate here to automatically generate an almanac.</p>' +
+			'<a class="button">Ok, got it</a>' +
+			'</div>',
+	},
+	'status-warning' : {
+		"pt-br":
+			'<div class="sui-offline icon-network-offline status-warning">' +
+			'<h2>Modo Offline</h2>' +
+			'<p><b>Essa ferramenta pode ser usada sem uma conxão com a internet.</b><br>Porém, ela precisa ser <b>reiniciada em modo offline</b> para garantir que todas as dependencias estejam disponíveis.</p>' +
+			'<a class="button refresh">Ok, reiniciar agora</a>' +
+			'<a class="button">Talvez depois</a>' +
+			'</div>',
+		"en-us":
+			'<div class="sui-offline icon-network-offline status-warning">' +
+			'<h2>Offline Mode</h2>' +
+			'<p><b>This application can be used without an internet connection.</b><br>However, it needs to be <b>restarted in offline mode</b> to ensure that all dependencies are available.</p>' +
+			'<a class="button refresh">Ok, restart now</a>' +
+			'<a class="button">Maybe later</a>' +
 			'</div>',
 	},
 	imgeditor: {
@@ -227,6 +257,7 @@ sourceui.templates.interface = new sourceui.Template({
 				'<ol class="screen">' +
 				'<li class="name">@{label:screen}</li>' +
 				'<li class="label">@{label:system}</li>' +
+				'<li class="offline">@{label:offline}</li>' +
 				'</ol>' +
 				'</div>' +
 				'<div>' +
@@ -444,7 +475,7 @@ sourceui.templates.interface = new sourceui.Template({
 				'</div>',
 		},
 		container:
-			'<section class="sui-view @{class:scroll} @{class:selected} @{class:covered} @{class:prop}" @{style} id="@{attr:id}"@{data}>' +
+			'<section class="sui-view @{class:scroll} @{class:selected} @{class:covered} @{class:prop} @{class:type}" @{style} id="@{attr:id}"@{data}>' +
 			'@{child:content}' +
 			'</section>',
 		cover:
@@ -518,6 +549,8 @@ sourceui.templates.interface = new sourceui.Template({
 			'<section class="area @{scroll} @{paginator} @{class:type} @{class:selected} @{class:has}"@{data}@{style}>@{child:area}</section>',
 		tip:
 			'<div id="@{id}" class="sui-tip @{class:icon} @{class:type} @{class:size} @{class:prop}"@{style}@{attr}>@{child:tip}</div>',
+		button:
+			'<a id="@{id}" class="button @{class:type} @{class:size} @{class:prop}"@{style}@{attr}>@{child:content}</a>',
 		footer:
 			'<div class="footer @{type} icon-dots-small"></div>'
 	},
@@ -605,7 +638,7 @@ sourceui.templates.interface = new sourceui.Template({
 						'<ul>@{child:actions}</ul>' +
 						'</div>',
 					action:
-						'<li class="@{class:icon}"@{style}@{data}>@{label:name}</li>'
+						'<li class="@{class:icon} @{class:type}"@{style}@{data}>@{label:name}</li>'
 				}
 			},
 			paginator: {
@@ -910,7 +943,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'</div>'+
 				'</div>'+
 				'<div class="sui-report-foundmap"></div>'+
-				'<div class="sui-report-document @{paper} @{class}" lang="@{lang}" data-class="@{class}">@{child:content}</div>',
+				'<div id="@{id}" class="sui-report-document @{paper} @{class}" lang="@{lang}" data-class="@{class}">@{child:content}</div>',
 			comments:
 				'<div class="sui-comments"><code>@{child:content}</code></div>',
 			validations:
@@ -1613,6 +1646,9 @@ sourceui.Parser = function () {
 					content = this.content();
 					sui.findChild('buttonset', function () {
 						content += Components.libs.widget.form.buttonset(this);
+					});
+					sui.findChild('button', function () {
+						content += this.toHTML('widget', 'button', { child: { content: this.content() } }, Template.get);
 					});
 				}, function () {
 					content = sui.content();
@@ -3367,6 +3403,21 @@ sourceui.Parser = function () {
 			if (xmlIndex > -1) {
 
 				//data = setup.response.parsedXML = $.parseXML(dataTrim);
+
+				if (dataTrim.indexOf('@[setup.') > -1){
+					var found = dataTrim.match(/@\[setup\..+\]/g);
+					$.each(found, function(k,v){
+						var slicev = v.slice(0,-1);
+						var propkey = slicev.split('.').slice(1);
+						var newpropv = '';
+						if (propkey.length === 1) newpropv = setup[propkey[0]];
+						else if (propkey.length === 2) newpropv = setup[propkey[0]][propkey[1]];
+						else if (propkey.length === 3) newpropv = setup[propkey[0]][propkey[1]][propkey[2]];
+						else if (propkey.length === 4) newpropv = setup[propkey[0]][propkey[1]][propkey[2]][propkey[3]];
+						dataTrim = dataTrim.replace(v, newpropv);
+						console.log('REPLACEMENT IN PARSER FOR SETUP VALUES:', v, propkey, newpropv);
+					});
+				}
 
 				var parser = new DOMParser();
 				var doc = parser.parseFromString(dataTrim, "application/xml");

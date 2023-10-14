@@ -88,6 +88,7 @@ sourceui.Device = function (c) {
 	var Config = {
 		_debug: null,
 		_cache: null,
+		_offline: null,
 		set: function (type, cfg) {
 			if (cfg === true || cfg === 'true') {
 				Config['_' + type] = true;
@@ -110,6 +111,10 @@ sourceui.Device = function (c) {
 			if (cfg) Config.set('cache', cfg);
 			else return Config.get('cache');
 		},
+		offline: function (cfg) {
+			if (cfg) Config.set('offline', cfg);
+			else return Config.get('offline');
+		},
 		clear: function (type) {
 			Config['_' + type] = null;
 		}
@@ -117,6 +122,7 @@ sourceui.Device = function (c) {
 
 	if (c.debug) Config.debug(c.debug);
 	if (c.cache) Config.cache(c.cache);
+	if (c.offline) Config.offline(c.offline);
 
 	var Agent = {
 		data: {
@@ -304,6 +310,7 @@ sourceui.Device = function (c) {
 
 	this.isdebug = Config.get('debug');
 	this.iscache = Config.get('cache');
+	this.isoffline = Config.get('offline');
 	this.isapp = Fingerprint.ua.isapp ? true : false;
 	//this.ismobile = (Agent.data.device.type == 'computer') ? false : true;
 	this.ismobile = ((
@@ -337,6 +344,9 @@ sourceui.Device = function (c) {
 	};
 	this.cache = function (cfg) {
 		return (cfg) ? Config.cache(cfg) : Config.cache();
+	};
+	this.offline = function (cfg) {
+		return (cfg) ? Config.offline(cfg) : Config.offline();
 	};
 
 	this.agent = {

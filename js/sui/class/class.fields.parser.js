@@ -577,6 +577,7 @@ sourceui.parserField = function (element, setup) {
 						initval: setup.initval,
 						type: setup.type,
 						mode: setup.mode,
+						charcount: setup.charcount,
 						orient: setup.orient,
 						required: setup.required,
 						autofocus: setup.autofocus,

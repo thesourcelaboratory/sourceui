@@ -52,6 +52,9 @@
     top:80%;
 	left:calc(50% - 90px);
 }
+.sui-tipster .tip.info {
+	background-color: #1d52b4;
+}
 .sui-tipster .tip.warn {
 	background-color: #e6ad05;
 }

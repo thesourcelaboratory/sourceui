@@ -227,7 +227,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 					sortOrd: null
 				}
 			};
-			if (data.filter.limitStart + data.filter.limitLength < data.filter.limitTotal) {
+			if (Network.online && data.filter.limitStart + data.filter.limitLength < data.filter.limitTotal) {
 				if (!$header.data('strictdatanameorder') || ($header.data('strictdatanameorder') && $col.attr('data-name') && $col.text())){
 					Common.order.remote.call(data, $li, o);
 				}
@@ -284,7 +284,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				}
 			}
 			data.lines = data.list.find('.lines');
-			data.lines = (!data.lines.length) ? data.area.find('.list') : data.lines;
+			data.lines = (!data.lines.length) ? data.list : data.lines;
 			if (data.lines.length) {
 				data.lines.each(function () {
 					var $line = $(this);
@@ -378,6 +378,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				render: '@datagrid-line',
 				filter: data.filter,
 			};
+			//if (Device.offline()) setup.requestkeydata = '@filter';
 			setup.ondone = function () {
 				data.list.data('start', data.filter.limitStart);
 				data.list.attr('data-start', data.filter.limitStart);
@@ -468,15 +469,18 @@ sourceui.interface.widget.common = function ($widget, setup) {
 	Common.line = {
 		linkData: function (data, $line) {
 			var lata = $line.link('_self');
+			var numerickey = $line.find('.col.key small').text();
 			if (data.seed) data.seed += $.toInt($line.closest('[data-link-origin][data-link-seed]').data('link-seed')) || 0;
 			if (lata.key || lata.parentkey) {
 				if (lata.key) data.key = $.isArray(lata.key) ? lata.key[0] : lata.key;
 				if (lata.parentkey) data.parentkey = lata.parentkey;
 				data.seed = (data.seed) ? data.seed + (lata.seed || 0) || 0 : lata.seed || 0;
+
 				delete lata.key;
 				delete lata.parentkey;
 				delete lata.seed;
 			}
+			if (numerickey) data.numerickey = numerickey;
 			data.cancelnested = true;
 			return $.extend(data, lata);
 		}
@@ -717,7 +721,8 @@ sourceui.interface.widget.common = function ($widget, setup) {
 					}
 				}
 				setup = $.extend(true,{},setup,Finder.element.link());
-				if (setup.render === false) delete setTimeout.render
+				if (setup.render === false) delete setTimeout.render;
+				//if (Device.offline()) setup.requestkeydata = '@filter';
 				Network.link.call(Finder.element, setup);
 			});
 			Finder.widget.on('filter:floatform', function (event, $el) {
