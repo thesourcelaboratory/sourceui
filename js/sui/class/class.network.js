@@ -2956,6 +2956,15 @@ sourceui.Network = function () {
 					hilite: isPT ? 'Essa ação não pode ser desfeita.' : 'This action can\'t be undone.',
 					buttonlink: setup.trigger || setup.element
 				});
+			} else if (setup.confirm == '@clear-cache') {
+				var name = setup.sector.find('#suiTabsView [data-view="' + setup.view.attr('id') + '"] div strong').text() || setup.view.find('.sui-field.text:eq(0)').val();
+				Confirm.open({
+					trigger: setup.element,
+					title: isPT ? 'Limpar Cache de Recursos Offline' : 'Clear Offline Resources Cache',
+					desc: isPT ? 'Você está prestes a limpar <strong>' + name + '</strong>.' : 'You are about to clear <strong>' + name + '</strong>.',
+					hilite: isPT ? 'Essa ação não pode ser desfeita.' : 'This action can\'t be undone.',
+					buttonlink: setup.trigger || setup.element
+				});
 			} else {
 				if (typeof setup.confirm == 'object') {
 					Confirm.open({
@@ -3005,10 +3014,13 @@ sourceui.Network = function () {
 		// Offline Almanac Transaction -------------------------------------------------------------------
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		if (Device.offline()){
+			var cacheName = 'sourceui-cache-v1';
 			var Console = Debug.get('Offline', {
 				mode: (Server.cors ? 'CORS ' : '') + Server.protocol.toUpperCase(),
 				key: 'Offline Almanac Transaction'
 			});
+			var $main = $('#suiMain');
+			var $spinner = $(sourceui.templates.interface.get('spinner'));
 			if (setup.almanaccommand == 'remove'){
 				Almanac.remove(setup.key, function(){
 					offlineParser.removeRecord(setup.element.closest('.line'));
@@ -3017,6 +3029,7 @@ sourceui.Network = function () {
 						title: 'Local Record removed successfully: '+setup.key,
 						content: setup || 'NULL'
 					});
+					Console.trace();
 				});
 				return false;
 			} else if (setup.almanaccommand == 'vanish') {
@@ -3033,6 +3046,7 @@ sourceui.Network = function () {
 							title: 'All Data Almanac vanished successfully: '+data.length+' entries',
 							content: setup || 'NULL'
 						});
+						Console.trace();
 					});
 				} else {
 					var keys = setup.key.split(',');
@@ -3046,44 +3060,61 @@ sourceui.Network = function () {
 						title: 'Selected Data Almanac vanished successfully: '+keys.length+' entries',
 						content: setup || 'NULL'
 					});
-
+					Console.trace();
 				}
 				return false;
+			} else if (setup.almanaccommand == 'clearcache') {
+				var cache = caches.delete(cacheName);
+				$.tipster.notify(isPT ? 'Cache foi limpo' : 'Cache was clear');
+				setup.view.find('.toolbar .refresh a').trigger('click');
+				setup.view.find('.toolbar .clear-cache').disable();
 			} else if (setup.almanaccommand == 'recache') {
-				fetch("offline-resources.json").then(function (res) {
+				setup.element.addClass('ajax-courtain');
+				$main.addClass('sui-ajax loading').prepend($spinner);
+				$spinner.addClass('fade-in');
+				fetch("./offline-resources.json").then(function (res) {
 					return res.json();
 				}).then(async function (data) {
-					var cache = await caches.open('sourceui-cache-v1');
+					var cache = await caches.open(cacheName);
 					var keys = await cache.keys();
 					var cacheurls = [];
 					var numchanges = 0;
-					keys.forEach(async (request, index, array) => {
+					for (var request of keys){
 						cacheurls.push(request.url);
 						if (!data.includes(request.url)){
 							await cache.delete(request);
 							numchanges++;
 							Console.log({
-								mode: 'Command',
+								mode: 'Recache',
 								title: 'Cache removed: '+request.url,
 							});
 						}
-					});
-					data.forEach(async (fileurl, index, array) => {
+					}
+					for (var fileurl of data){
 						if (!cacheurls.includes(fileurl)){
 							await cache.add(fileurl);
 							numchanges++;
 							Console.log({
-								mode: 'Command',
+								mode: 'Recache',
 								title: 'Cache added from file: '+fileurl,
 							});
 						}
-					});
+					}
 					if (numchanges){
 						setup.view.find('.toolbar .refresh a').trigger('click');
 						setup.view.find('.toolbar .update-cache').disable();
 						$.tipster.notify(isPT ? 'Recursos Offline Atualizados' : 'Offline Resources Updated');
+					} else {
+						Console.log({
+							mode: 'Recache',
+							title: 'No updates needed',
+						});
+						$.tipster.notify(isPT ? 'Atualizações não necessárias' : 'No updates needed');
 					}
-				})
+					$main.removeClass('sui-ajax loading').children('.sui-spinner:eq(0)').remove();
+					setup.element.removeClass('ajax-courtain');
+					Console.trace();
+				});
 				return false;
 			} else if (setup.almanaccommand == 'edit') {
 				if (setup.key && setup.almanacoriginkey){

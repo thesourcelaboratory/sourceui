@@ -2103,6 +2103,7 @@ body .sui-tip.localrecords.offline-only { display:none !important; }
 body.offline .sui-tip.localrecords { background-color: #919195; }
 body.offline .sync-localrecords { display:none !important; }
 body.offline .sui-tip.localrecords.offline-only { display:block !important; }
+body.offline .clear-cache,
 body.offline .update-cache { display:none !important; }
 
 body.confirmed > .sui-aside > .logo,

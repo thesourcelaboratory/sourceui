@@ -585,6 +585,110 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		return Datagrid.valid;
 	};
 
+
+	if (Datagrid.widget.is('.excel')){
+		Datagrid.widget.on('click','.line .col', function(){
+			var $cell = $(this);
+			if (!$cell.is('.focus')){
+				var $changed = Datagrid.widget.find('.line .col.haschange');
+				if ($changed.length){
+					$changed.removeClass('haschange').data('editioninitval','');
+					Datagrid.widget.trigger('datagrid:datachange',[$focus]);
+				}
+				Datagrid.widget.find('.line .col.focus').removeClass('focus editing').removeAttr('contenteditable');
+				$cell.addClass('focus');
+			}
+		});
+		Datagrid.widget.on('dblclick','.line .col.editable', function(){
+			var $cell = $(this);
+			if (!$cell.is('.editing')){
+				Datagrid.widget.find('.line .col.editing').removeClass('focus editing');
+				$cell.addClass('focus editing').attr('contenteditable','true').focus().select();
+				document.execCommand('selectAll',false,null);
+				$cell.data('editioninitval', $cell.html());
+			}
+		});
+		Dom.document.on('keydown', function(event){
+			var $focus = Datagrid.widget.find('.line .col.focus');
+			if ($focus.length){
+				if ($focus.is('.haschange') && event.key === 'Escape'){
+					event.preventDefault();
+					$focus.removeClass('haschange').html($focus.data('editioninitval'));
+				} else if (event.key === 'Enter'){
+					if ($focus.is('.haschange')) {
+						event.preventDefault();
+						$focus.removeClass('haschange').data('editioninitval','');
+						Datagrid.widget.trigger('datagrid:datachange',[$focus]);
+					}
+					var $targ = $focus.closest('.line').next('.line').find('.col[data-index="'+$focus.data('index')+'"]');
+					if ($targ.length){
+						$targ.trigger('click');
+						//Datagrid.area.scrollTo($targ);
+					}
+				} else if (event.key === 'Tab'){
+					event.preventDefault();
+					var $targ = $focus.nextAll('.col[data-index="'+($focus.data('index')+1)+'"]');
+					if ($targ.length){
+						$targ.trigger('click');
+						$targ.trigger('cell:scroll',['right']);
+					}
+					return false;
+				} else if (event.key.indexOf('Arrow') > -1){
+					event.preventDefault();
+					var $line = $focus.closest('.line'), $targ = $();
+					if (event.key === 'ArrowRight') $targ = $line.find('.col[data-index="'+($focus.data('index')+1)+'"]');
+					else if (event.key === 'ArrowLeft') $targ = $line.find('.col[data-index="'+($focus.data('index')-1)+'"]');
+					else if (event.key === 'ArrowUp') $targ = $line.prev('.line').find('.col[data-index="'+$focus.data('index')+'"]');
+					else if (event.key === 'ArrowDown') $targ = $line.next('.line').find('.col[data-index="'+$focus.data('index')+'"]');
+					if ($targ.length){
+						$targ.trigger('click');
+						$targ.trigger('cell:scroll',[event.key]);
+					}
+				} else if ($focus.is('.editable') && !$focus.is('.editing')) {
+					if (event.key === 'F2'){
+						event.preventDefault();
+						$focus.trigger('dblclick');
+					} else if ((event.which >= 48 && event.which <= 57) || (event.which >= 65 && event.which <= 90) || (event.which >= 96 && event.which <= 105)){
+						$focus.trigger('click').trigger('dblclick').html(event.key).addClass('haschange');
+					}
+				} else if ($focus.is('.editing')){
+					if ((event.which >= 48 && event.which <= 57) || (event.which >= 65 && event.which <= 90) || (event.which >= 96 && event.which <= 105)){
+						$focus.addClass('haschange');
+					}
+				}
+			}
+		});
+		Datagrid.widget.on('cell:scroll','.line .col', function(event,direction){
+			this.scrollIntoViewIfNeeded(false);
+			//this.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+
+			/*
+			direction = direction.toLowerCase();
+			var $cell = $(this);
+			var cellrect = $cell.get(0).getBoundingClientRect();
+			var arearect = Datagrid.area.get(0).getBoundingClientRect();
+			var isvisible = (
+				cellrect.top >= arearect.top &&
+				cellrect.left >= arearect.left &&
+				cellrect.bottom <= arearect.bottom &&
+				cellrect.right <= arearect.right
+			);
+			if (!isvisible){
+				if (direction.indexOf('left') > -1) Datagrid.area.scrollLeft(cellrect.left - arearect.left);
+				else if (direction.indexOf('right') > -1) Datagrid.area.scrollLeft(cellrect.left - arearect.left);
+				else if (direction.indexOf('top') > -1) Datagrid.area.scrollLeft(cellrect.top - arearect.top);
+				else if (direction.indexOf('down') > -1) Datagrid.area.scrollLeft(cellrect.top - arearect.top);
+			}
+			console.log(cellrect, arearect);
+			*/
+			/*
+			setTimeout(function(){
+				Datagrid.area.scrollTo($cell, 150);
+			},100);
+			*/
+		});
+	}
+
 	setTimeout(function () {
 		Datagrid.nodes.filter('.fold:not(.collapsed)').each(function () {
 			$(this).trigger('node:connect');

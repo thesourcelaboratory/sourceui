@@ -2324,7 +2324,7 @@ sourceui.Parser = function () {
 										data = {
 											value: { tag: 'div', index: colidx },
 											style: {},
-											class: hd.class ? { type: hd.class.type, is: hd.class.is, order: hd.class.order } : {},
+											class: hd.class ? { type: hd.class.type+' '+suiColumn.attr('class:type'), is: hd.class.is, order: hd.class.order } : {},
 											label: { content: suiColumn.content() },
 											prop: { color: suiColumn.attr('prop:color'), prefix: suiColumn.attr('prop:prefix'), original: suiColumn.attr('prop:original') }
 										};
