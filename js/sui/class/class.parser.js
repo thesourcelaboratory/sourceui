@@ -2818,7 +2818,7 @@ sourceui.Parser = function () {
 					filter: function (sui) {
 						var suiFilter = sui,
 							htmlFilter = '',
-							htmlList = '';
+							htmlList = ' ';
 						suiFilter.findChild('list', function () {
 							suiFilter.attr('class:hasdrop', 'hasdroplist');
 							htmlList += Components.libs.common.droplist(this);

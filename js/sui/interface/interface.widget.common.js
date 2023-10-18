@@ -661,7 +661,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 					$(Template.get('wg', 'form', 'filter', {
 						label: { name: isPT ? 'Pesquisa' : 'Search', value: value, content: '' },
 						data: { name: 'search', value: value }
-					}).replace("@{child:list}","")).appendTo($ul).find('a').trigger('click');
+					}).replace('@{child:list}',"")).appendTo($ul).find('a').trigger('click');
 				}
 
 			});

@@ -183,7 +183,7 @@ sourceui.interface.view = function ($view, setup) {
 													class: { selected: 'selected' },
 													label: { name: wgdata.info[k].label, value: wgdata.info[k].text || ($.isArray(v) ? v.join(',') : v), content: '' },
 													data: { name: k }
-												}));
+												}).replace('@{child:list}',""));
 												$ul.find('[data-name="' + k + '"]').data('value', v);
 											}
 										}

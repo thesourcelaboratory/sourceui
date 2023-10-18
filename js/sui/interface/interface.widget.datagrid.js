@@ -593,7 +593,7 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 				var $changed = Datagrid.widget.find('.line .col.haschange');
 				if ($changed.length){
 					$changed.removeClass('haschange').data('editioninitval','');
-					Datagrid.widget.trigger('datagrid:datachange',[$focus]);
+					Datagrid.widget.trigger('datagrid:datachange',[$changed]);
 				}
 				Datagrid.widget.find('.line .col.focus').removeClass('focus editing').removeAttr('contenteditable');
 				$cell.addClass('focus');
