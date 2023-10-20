@@ -35,6 +35,8 @@ sourceui.interface.widget.custom = function($widget,setup){
 	Custom.common = new Interface.widget.common($widget,setup);
 	Custom.widget = $widget;
 
+	/*
+
 	var Promises = {
 		visible : function(){
 			return new Promise(function(resolve, reject){
@@ -119,4 +121,6 @@ sourceui.interface.widget.custom = function($widget,setup){
         $elem = Custom.widget.find('[data-chart-type]');
         if ($elem.length) Custom.chart.init($elem);
     });
+
+	*/
 };

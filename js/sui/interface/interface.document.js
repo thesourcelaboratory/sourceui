@@ -57,6 +57,7 @@ sourceui.interface.document = function () {
 		});
 	};
 
+
 	Document.element.on('scope:context', '#suiFloatSectorContainer, #suiContext', function () {
 		var context = $(this);
 		context.on('click', '.viewnav > .prev', function (event) {
@@ -422,7 +423,7 @@ sourceui.interface.document = function () {
 			$droplistContainer.removeData('parent');
 			$droplistContainer.removeData('ctrler');
 		})
-		.on('droplist:open', '.sui-droplist', function (event) {
+		.on('droplist:open', '.sui-droplist', function (event, eventclick) {
 			var $body = $('#suiBody');
 			var $droplistContainer = $('#suiDroplistContainer').attr('class', 'sui-droplist-container');
 			var $drop = $droplistContainer.children('.sui-droplist');
@@ -435,7 +436,11 @@ sourceui.interface.document = function () {
 			var coord = {};
 			var $parent = $droplistContainer.data('parent');
 			var $controller = $droplistContainer.data('ctrler');
-			if ($controller.is('.sui-field')) {
+			if (eventclick && !sourceui.instances.device.ismobile){
+				coord.width = $parent.outerWidth();
+				coord.height = $controller.outerHeight();
+				coord.offset = {left:eventclick.clientX, top:eventclick.clientY};
+			} else if ($controller.is('.sui-field')) {
 				var $wrap = $parent.closest('.wrap');
 				$wrap.css('height', $wrap.outerHeight());
 				if (!sourceui.instances.device.ismobile) {

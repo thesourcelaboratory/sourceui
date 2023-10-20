@@ -246,6 +246,34 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 		}
 		event.stopPropagation();
 	});
+	this.widget.on('contextmenu', '.area .header', function (event) {
+		var $header = $(this);
+		if (!$header.data('droplist')) $header.data('droplist', $header.children('.sui-droplist').data('parent', $header));
+		var $droplist = $header.data('droplist');
+		var $options = $droplist.find('.options li');
+		$options.off('click');
+		$options.on('click', function(){
+			var $li = $(this);
+			var $droplist = $li.closest('.sui-droplist');
+			var $list = $droplist.data('parent').closest('.list');
+			var $cols = $list.find('.col[data-index="'+$li.data('index')+'"]');
+			if ($li.hasClass('icon-0')) {
+				$li.removeClass('icon-0').addClass('icon-done');
+				$cols.removeClass('invisible');
+			} else {
+				$li.addClass('icon-0').removeClass('icon-done');
+				$cols.addClass('invisible');
+			}
+		});
+		$header.find('.col').each(function(){
+			var $col = $(this);
+			if ($col.is(':visible')) $options.filter('[data-index="'+$col.data('index')+'"]').removeClass('icon-0').addClass('icon-done');
+			else $options.filter('[data-index="'+$col.data('index')+'"]').removeClass('icon-done').addClass('icon-0');
+		});
+		$droplist.trigger('droplist:open', event);
+		event.preventDefault();
+		event.stopPropagation();
+	});
 	this.widget.on('click', '.area .header .col', function (event) {
 		var $col = $(this);
 		if (!$col.is('.image, .icon, .swiper, .pad, .check')){
@@ -687,13 +715,54 @@ sourceui.interface.widget.datagrid = function ($widget, setup) {
 			},100);
 			*/
 		});
+
 	}
 
 	setTimeout(function () {
 		Datagrid.nodes.filter('.fold:not(.collapsed)').each(function () {
 			$(this).trigger('node:connect');
 		});
+
+		/*
+		$.clusterscroll.bind({
+			list: Datagrid.list,
+			line: Datagrid.line
+		});
+		*/
+
 	}, 200);
 
 	this.init();
 };
+
+
+$(function () {
+	$.clusterscroll = {
+		bind: function(options){
+
+			var $list = options.list || $(this);
+			var $lines = options.line || $list.find('.line');
+			var $scroller = options.scroller ? options.scroller : $list.closest('.scroll-default');
+
+			var totallines = $lines.length;
+			var $clusters = $();
+
+			for (var i=0; i<=totallines; i+=100){
+				console.log(i, totallines);
+				var $slice = $lines.slice(i, i+100);
+				$slice.wrapAll('<div class="clusterscroll" style="display: table-row;" />');
+			}
+
+			$scroller.on('scroll', function(){
+
+			});
+		},
+		isvisible: function($cluster, $scroller){
+			const rect = $cluster.getBoundingClientRect();
+			return (
+				rect.top >= 0 &&
+				rect.bottom <= ($scroller.innerHeight())
+			);
+		}
+	};
+});

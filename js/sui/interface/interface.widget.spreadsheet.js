@@ -196,7 +196,7 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
             height: cfg.height || sh,
             afterChange: function (changes, source) {
                 if (source != 'loadData') {
-                    Handson.widget.trigger('field:input');
+                    Handson.widget.trigger('field:input', [changes]);
                 }
             },
             afterValidate: function (isValid, value, row, prop, source) {
@@ -219,12 +219,14 @@ sourceui.interface.widget.spreadsheet = function ($widget, setup) {
                 var data = this.getData();
                 Handson.area.children('.empty').remove();
                 if (!data.length){
+					var info = '';
                     if (initialLoad){
-                        if (cfg.searchRequiredInfo) Handson.area.prepend('<div class="empty icon-lens-blocked">'+(isPT ? 'Você precisa realizar uma pesquisa para mostrar dados nessa grade.' : 'You will need to do a search to show data into the datagrid.')+'</div>');
-                        else if (cfg.filterRequiredInfo) Handson.area.prepend('<div class="empty icon-funnel-blocked">'+(isPT ? 'Você precisa realizar uma pesquisa ou filtrar dados para que sejam mostrados nessa grade.' : 'You will need to do a search or filter data to show them into the datagrid')+'</div>');
+                        if (cfg.searchRequiredInfo) info = ('<div class="empty icon-lens-blocked">'+(isPT ? 'Você precisa realizar uma pesquisa para mostrar dados nessa grade.' : 'You will need to do a search to show data into the datagrid.')+'</div>');
+                        else if (cfg.filterRequiredInfo) info = ('<div class="empty icon-funnel-blocked">'+(isPT ? 'Você precisa realizar uma pesquisa ou filtrar dados para que sejam mostrados nessa grade.' : 'You will need to do a search or filter data to show them into the datagrid')+'</div>');
                     } else {
-                        Handson.area.prepend('<div class="empty icon-table-blocked">'+(isPT ? 'Não ha dados para serem mostrados nessa grade.' : 'There is no data to be shown into this datagrid')+'</div>');
+                        info = ('<div class="empty icon-table-blocked">'+(isPT ? 'Não ha dados para serem mostrados nessa grade.' : 'There is no data to be shown into this datagrid')+'</div>');
                     }
+					Handson.area.prepend(info);
                     Handson.widget.trigger('widget:emptyload');
                 } else {
                     Handson.widget.trigger('widget:dataload',[data]);

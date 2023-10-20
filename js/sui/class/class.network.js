@@ -707,6 +707,7 @@ sourceui.Network = function () {
 			}
 			this.abort = function (silent) {
 				if (setup.xhr) {
+					Ajax.loading.stop(true);
 					if (setup.process) {
 						Notify.open({
 							type: 'warn',
@@ -718,7 +719,6 @@ sourceui.Network = function () {
 					else {
 						setup.xhr.abort();
 						if (!silent) {
-							Ajax.loading.stop(true);
 							Console.warn({
 								type: 'XHR',
 								title: 'Connection aborted'
@@ -1681,9 +1681,9 @@ sourceui.Network = function () {
 						setup.slowtimeout = setTimeout(function () {
 							Notify.open({
 								type: 'warn',
-								name: isPT ? 'Está bem lento...' : 'Very very slow...',
+								name: isPT ? 'Está bem lento...' : 'Too slow...',
 								label: setup.suiname,
-								message: isPT ? 'Tentaremos concluir essa tarefa a tempo.<br/>Verifique a conexão de internet logo em seguida.' : 'We gonna try to get things finished on server.<br/>Check your internet connection quality before you keep going forward.',
+								message: isPT ? 'Tentaremos concluir essa tarefa a tempo.<br/>Verifique a conexão de internet logo em seguida.' : 'Trying to get things finished on server...',
 							});
 						}, 25000);
 					}

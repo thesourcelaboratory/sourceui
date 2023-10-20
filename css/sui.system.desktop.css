@@ -253,21 +253,22 @@
 .sui-widget.datagrid > .area .list.no-seq .line > .col.seq,
 .sui-widget.datagrid > .area .list.noseq .header > .col.seq,
 .sui-widget.datagrid > .area .list.noseq .line > .col.seq { display:none !important; }
+.sui-widget.datagrid > .area .list .col.invisible { display:none !important; }
 
 /* --------------------------------------------------- */
 
 /* TABLE ------------------------------------------ */
 .sui-widget.datagrid.table > .area { overflow-x:auto; }
 .sui-widget.datagrid.table > .area .list { display:table; width:100%; }
-.sui-widget.datagrid.table > .area .list > .header { background:#F4F4F4; position: sticky; top: 0; z-index: 9999; }
-.sui-widget.datagrid.table > .area .list > .header > .col { border:#e8e8e8 solid 1px; border-top:none; border-left:none; padding:2px 6px; line-height:20px; text-align:left; white-space:nowrap; color:#333; font-size:11px; font-weight:bold; }
-.sui-widget.datagrid.table > .area .list > .header > .col.pad { display:none; }
-.sui-widget.datagrid.table > .area .list > .header > .col.key { text-align:center; }
-.sui-widget.datagrid.table > .area .list > .header > .col.check { display:none; }
-.sui-widget.datagrid.table > .area .list > .header > .col.image { display:none; }
-.sui-widget.datagrid.table > .area .list > .header > .col.icon { display:none; }
-.sui-widget.datagrid.table > .area .list > .header > .col.rounded { text-align:center; }
-.sui-widget.datagrid.table > .area .list > .header > .col.swiper { display:none; }
+.sui-widget.datagrid.table > .area .list .header { background:#F4F4F4; position: sticky; top: 0; z-index: 9999; }
+.sui-widget.datagrid.table > .area .list .header > .col { border:#e8e8e8 solid 1px; border-top:none; border-left:none; padding:2px 6px; line-height:20px; text-align:left; white-space:nowrap; color:#333; font-size:11px; font-weight:bold; }
+.sui-widget.datagrid.table > .area .list .header > .col.pad { display:none; }
+.sui-widget.datagrid.table > .area .list .header > .col.key { text-align:center; }
+.sui-widget.datagrid.table > .area .list .header > .col.check { display:none; }
+.sui-widget.datagrid.table > .area .list .header > .col.image { display:none; }
+.sui-widget.datagrid.table > .area .list .header > .col.icon { display:none; }
+.sui-widget.datagrid.table > .area .list .header > .col.rounded { text-align:center; }
+.sui-widget.datagrid.table > .area .list .header > .col.swiper { display:none; }
 .sui-widget.datagrid.table > .area .list .line { position:relative; background:#F2F2F2; display:table-row; color:#555555; font-size:12px; }
 .sui-widget.datagrid.table > .area .list .line:nth-child(odd) { background:#EAEAEA; }
 .sui-widget.datagrid.table > .area .list .line > .col { display:table-cell; padding:4px 6px; vertical-align:middle; border:#e4e4e4 solid 1px; border-top:none; border-left:none; position:relative; min-width:32px; cursor:default; transition: none; }

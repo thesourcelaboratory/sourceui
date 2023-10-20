@@ -154,7 +154,7 @@ sourceui.templates.interface = new sourceui.Template({
 			empty:
 				'<div class="empty sn">@{label}</div>',
 			simple:
-				'<li class="sn @{selected} @{icon}" data-value="@{value}"@{data}@{style}>@{label}</li>'
+				'<li class="sn @{selected} @{icon}" data-index="@{index}" data-value="@{value}"@{data}@{style}>@{label}</li>'
 		},
 		tools: {
 			top: {
@@ -578,6 +578,7 @@ sourceui.templates.interface = new sourceui.Template({
 					'<div class="col context"></div>' +
 					'<div class="col swiper"></div>' +
 					'<div class="col pad"></div>' +
+					'@{child:droplist}'+
 					'</div>',
 				column:
 					'<div data-index="@{value:index}" class="col sui-link @{class:order} @{class:type} @{class:is} icon-some"@{style}@{data}>@{label:name}@{drag}</div>'
@@ -1945,6 +1946,7 @@ sourceui.Parser = function () {
 							var attr = suiColumn.attr();
 							var hd = {
 								icon: 'icon-0',
+								index: attr['data:index'],
 								value: attr['data:name'],
 								label: attr['label:name'] || suiColumn.content()
 							};
@@ -2280,7 +2282,8 @@ sourceui.Parser = function () {
 						var suiHeader = sui,
 							colidx = 0,
 							htmlHeader = suiHeader.toHTML('wg', 'datagrid', 'header', 'container', Template.get),
-							htmlColumn = '';
+							htmlColumn = '',
+							htmlDroplist = '';
 						headerData.totalheadercols = suiHeader.countChild('column');
 						suiHeader.findChild('column', function () {
 							colidx++;
@@ -2298,12 +2301,14 @@ sourceui.Parser = function () {
 									attr: { title: attr['label:name'] || suiColumn.content() },
 									label: { name: attr['label:name'] || suiColumn.content() }
 								};
+							suiColumn.attr('data:index', colidx);
 							if (hd.class.type != 'key' && hd.class.type != 'icon' && hd.class.type != 'image') {
 								hd.drag = Template.get('drag');
 							}
 							htmlColumn += suiColumn.toHTML('wg', 'datagrid', 'header', 'column', hd, Template.get);
 						});
-						return Template.replace(htmlHeader, { child: { column: htmlColumn } });
+						htmlDroplist = Components.libs.common.droplist(suiHeader);
+						return Template.replace(htmlHeader, { child: { column: htmlColumn, droplist:htmlDroplist } });
 					},
 					line: function (sui, lineseq, headerData) {
 						if (sui.nodeName != 'line') return '';
@@ -2494,7 +2499,7 @@ sourceui.Parser = function () {
 									lineseq++;
 									htmlChild += Components.libs.widget.datagrid.line(this, lineseq, headerData);
 								}, function () {
-									suiList.findChild('empty', function () {
+									suiGroup.findChild('empty', function () {
 										htmlChild += this.toHTML('empty', { child: { html: this.content() } }, Template.get);
 									}, function () {
 										htmlChild += suiList.toHTML('empty', { child: { html: 'Não há registros' } }, Template.get);
@@ -3415,7 +3420,7 @@ sourceui.Parser = function () {
 						else if (propkey.length === 3) newpropv = setup[propkey[0]][propkey[1]][propkey[2]];
 						else if (propkey.length === 4) newpropv = setup[propkey[0]][propkey[1]][propkey[2]][propkey[3]];
 						dataTrim = dataTrim.replace(v, newpropv);
-						console.log('REPLACEMENT IN PARSER FOR SETUP VALUES:', v, propkey, newpropv);
+						//console.log('REPLACEMENT IN PARSER FOR SETUP VALUES:', v, propkey, newpropv);
 					});
 				}
 

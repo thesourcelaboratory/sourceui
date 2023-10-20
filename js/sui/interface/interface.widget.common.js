@@ -63,6 +63,7 @@ sourceui.interface.widget.common = function ($widget, setup) {
 	if (!this.controller) {
 		this.controller = this.toolbar;
 	}
+
 	Common.toggleTools = function (action, toggle, controller) {
 		var $source = this;
 		controller = controller || Common.controller;
@@ -171,23 +172,49 @@ sourceui.interface.widget.common = function ($widget, setup) {
 		} else if ($this.data('alias') == 'upload') {
 			var link = $this.link();
 			Plugin.gridupload(Common.widget, link);
+		} else if ($this.data('alias') == 'chart-export') {
+			var $svgs = Common.widget.find('.chart .highcharts-container svg');
+			console.log($svgs);
+			$svgs.each(function(){
+				var $svg = $(this);
+				var content = $svg.parent().html();
+				const a = document.createElement("a");
+				const file = new Blob([content], { type: 'image/svg+xml' });
+				const fileName = $this.data('filename') || 'image_exported.svg';
+				a.href = URL.createObjectURL(file);
+				a.download = fileName;
+				a.click();
+			});
 		} else if ($this.data('alias') == 'grid-export') {
 			var table = '<table>';
-			Common.widget.find('.list .header').each(function(){
-				var $line = $(this);
-				table += '<tr>';
-				$line.find('.col[data-index]:not(.seq)').each(function(){
-					table += '<th>'+$(this).text()+'</th>';
+			var $lists = Common.widget.find('.list');
+			$lists.each(function(){
+				var $list = $(this);
+				var $linegroup = $list.find('.linegroup');
+				$list = $linegroup.length ? $linegroup : $list;
+				$list.each(function(){
+					var $this = $(this);
+					var grplabel = $this.children('h3').html();
+					if (grplabel){
+						table += '<tr><th>'+grplabel+'</th></tr>';
+					}
+					$this.find('.header').each(function(){
+						var $line = $(this);
+						table += '<tr>';
+						$line.find('.col[data-index]:not(.seq):visible').each(function(){
+							table += '<th>'+$(this).text()+'</th>';
+						});
+						table += '</tr>';
+					});
+					$this.find('.line').each(function(){
+						var $line = $(this);
+						table += '<tr>';
+						$line.find('.col[data-index]:not(.seq):visible').each(function(){
+							table += '<td>'+$(this).text()+'</td>';
+						});
+						table += '</tr>';
+					});
 				});
-				table += '</tr>';
-			});
-			Common.widget.find('.list .line').each(function(){
-				var $line = $(this);
-				table += '<tr>';
-				$line.find('.col[data-index]:not(.seq)').each(function(){
-					table += '<td>'+$(this).text()+'</td>';
-				});
-				table += '</tr>';
 			});
 			table += '</table>';
 			const a = document.createElement("a");
