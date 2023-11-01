@@ -22,7 +22,7 @@ sourceui.templates.interface = new sourceui.Template({
 	variable:
 		'<var class="sui-variable" name="@{name}"@{data}>@{value}</var>',
 	empty:
-		'<div class="sn empty @{class:type}">@{child:html}</div>',
+		'<div class="sn empty @{class:type}"@{style}>@{child:html}</div>',
 	chart:
 		'<div class="chart" data-chart-type="@{data:type}">@{data:json}</div>',
 	datasheet:

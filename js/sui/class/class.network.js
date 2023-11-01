@@ -1723,10 +1723,11 @@ sourceui.Network = function () {
 								parsedJQ: null,
 							});
 
-							var tosavealmanac = $.extend(true, {}, setup);
+							var tosavealmanac = {};
 
 							/////////////////////////////////////////////////////////
 							if (Device.offline()){
+								tosavealmanac = $.extend(true, tosavealmanac, setup);
 								if (setup.sui.indexOf('almanac.') > -1){
 									await offlineParser.parsePanel(setup);
 								} else if (setup.sui.indexOf('.grid') > -1){
@@ -2907,7 +2908,6 @@ sourceui.Network = function () {
 			setup.navigationlabel = (setup.view.attr('data-name') || setup.sector.children('.sui-sector-title').find('.name').text());
 			setup.navigationsublabel = (setup.field) ? $(setup.field).children('.label').text().replace(' *','') : setup.widget.children('.title').find('.label span').text();
 		}
-
 		if (setup.confirm && !setup.ignoreconfirm) {
 			if (setup.confirm == '@delete-selected-lines') {
 				var qtde = setup.view.find('.sui-widget.datagrid .line.selected, .sui-widget.datagrid .line.swiped').length;

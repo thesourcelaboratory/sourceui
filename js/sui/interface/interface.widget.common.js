@@ -186,43 +186,55 @@ sourceui.interface.widget.common = function ($widget, setup) {
 				a.click();
 			});
 		} else if ($this.data('alias') == 'grid-export') {
-			var table = '<table>';
-			var $lists = Common.widget.find('.list');
-			$lists.each(function(){
-				var $list = $(this);
-				var $linegroup = $list.find('.linegroup');
-				$list = $linegroup.length ? $linegroup : $list;
-				$list.each(function(){
-					var $this = $(this);
-					var grplabel = $this.children('h3').html();
-					if (grplabel){
-						table += '<tr><th>'+grplabel+'</th></tr>';
-					}
-					$this.find('.header').each(function(){
-						var $line = $(this);
-						table += '<tr>';
-						$line.find('.col[data-index]:not(.seq):visible').each(function(){
-							table += '<th>'+$(this).text()+'</th>';
+			if (Common.widget.is('.datagrid')){
+				var table = '<table>';
+				var $lists = Common.widget.find('.list');
+				$lists.each(function(){
+					var $list = $(this);
+					var $linegroup = $list.find('.linegroup');
+					$list = $linegroup.length ? $linegroup : $list;
+					$list.each(function(){
+						var $this = $(this);
+						var grplabel = $this.children('h3').html();
+						if (grplabel){
+							table += '<tr><th>'+grplabel+'</th></tr>';
+						}
+						$this.find('.header').each(function(){
+							var $line = $(this);
+							table += '<tr>';
+							$line.find('.col[data-index]:not(.seq):visible').each(function(){
+								table += '<th>'+$(this).text()+'</th>';
+							});
+							table += '</tr>';
 						});
-						table += '</tr>';
-					});
-					$this.find('.line').each(function(){
-						var $line = $(this);
-						table += '<tr>';
-						$line.find('.col[data-index]:not(.seq):visible').each(function(){
-							table += '<td>'+$(this).text()+'</td>';
+						$this.find('.line').each(function(){
+							var $line = $(this);
+							table += '<tr>';
+							$line.find('.col[data-index]:not(.seq):visible').each(function(){
+								var $col = $(this);
+								table += '<td>'+($col.data('value')||$(this).text())+'</td>';
+							});
+							table += '</tr>';
 						});
-						table += '</tr>';
 					});
 				});
-			});
-			table += '</table>';
-			const a = document.createElement("a");
-			const file = new Blob([table], { type: 'application/vnd.ms-excel' });
-			const fileName = $this.data('filename') || 'data_exported.xls';
-			a.href = URL.createObjectURL(file);
-			a.download = fileName;
-			a.click();
+				table += '</table>';
+				const a = document.createElement("a");
+				const file = new Blob([table], { type: 'application/vnd.ms-excel' });
+				const fileName = $this.data('filename') || 'data_exported.xls';
+				a.href = URL.createObjectURL(file);
+				a.download = fileName;
+				a.click();
+			} else if (Common.widget.is('.spreadsheet')){
+				var hot = Common.widget.find('.sheet').data("hot");
+				var hotname = $this.data('filename') || 'data_exported.csv';
+				var exportPlugin = hot.getPlugin('exportFile');
+				exportPlugin.downloadFile('csv', {
+					filename: hotname,
+					columnHeaders: true,
+					columnDelimiter: ';',
+				});
+			}
 		} else if ($this.data('alias') == 'popup-export') {
 			if ($this.data('url')){
 				var filters = Finder.getFilters();

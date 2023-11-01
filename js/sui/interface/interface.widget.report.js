@@ -1391,6 +1391,7 @@ sourceui.interface.widget.report = function($widget,setup){
 			}
 			// CTRL V ======================================
 			else if (event.code == 'KeyV'){
+				/*
 				var $elements = Clipmemory.get('elements','.fieldwrap');
 				if ($elements.length){
 					var $page = Report.document.find('.page.active');
@@ -1463,6 +1464,7 @@ sourceui.interface.widget.report = function($widget,setup){
 						});
 					}
 				}
+				*/
 			}
 		}
 		if (event.keyCode == 18){
@@ -2351,10 +2353,6 @@ sourceui.interface.widget.report = function($widget,setup){
 			var $v = $(this);
 			data[$v.attr('name')] = $v.attr('value') || $v.html();
 		});
-		if (data.reportSummary) {
-			post.reportSummary = btoa(encodeURIComponent(data.reportSummary));
-			delete data.reportSummary;
-		}
 		data.usecover = Report.document.find('.page.fullcovered').attr('data-visible');
 		var $repname = Report.document.find('.page.covered-default .fieldwrap .block.reportName');
 		data.reportName = $.trim(($repname.length ? $repname.first() : Report.document.find('.page.covered-default .cell.reportName').first()).text());
